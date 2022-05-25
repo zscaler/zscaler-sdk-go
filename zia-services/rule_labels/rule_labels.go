@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/terraform-provider-zia/gozscaler/common"
+	"github.com/willguibr/terraform-provider-zia/gozscaler/common"
 )
 
 const (
