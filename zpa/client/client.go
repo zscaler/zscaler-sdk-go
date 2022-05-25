@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
-	"github.com/zscaler/zscaler-sdk-go/gozscaler"
+	"github.com/willguibr/zscaler-sdk-go/gozscaler"
 )
 
 type Client struct {
