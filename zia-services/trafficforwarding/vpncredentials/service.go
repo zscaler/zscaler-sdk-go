@@ -1,7 +1,7 @@
 package vpncredentials
 
 import (
-	"github.com/willguibr/terraform-provider-zia/gozscaler/client"
+	"github.com/willguibr/zscaler-sdk-go/zia/client"
 )
 
 type Service struct {

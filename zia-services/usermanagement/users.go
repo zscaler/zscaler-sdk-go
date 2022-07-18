@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/willguibr/terraform-provider-zia/gozscaler/common"
+	"github.com/willguibr/zscaler-sdk-go/zia-services/common"
 )
 
 const (

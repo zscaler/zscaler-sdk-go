@@ -1,8 +1,8 @@
-package appconnectorcontroller
+package inspection_profile
 
 import (
-	"github.com/willguibr/zscaler-sdk-go/client"
-	"github.com/willguibr/zscaler-sdk-go/gozscaler"
+	"github.com/willguibr/terraform-provider-zpa/gozscaler"
+	"github.com/willguibr/terraform-provider-zpa/gozscaler/client"
 )
 
 type Service struct {
