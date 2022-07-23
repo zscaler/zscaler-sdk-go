@@ -1,3 +1,8 @@
+[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/zscaler/zscaler-sdk-go)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go)
+
 # Zscaler GO SDK
 
 ## Aim and Scope
