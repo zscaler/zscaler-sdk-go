@@ -1,0 +1,13 @@
+# Visit https://goreleaser.com for documentation on how to customize this
+# behavior.
+builds:
+  -
+    skip: true
+release:
+  github:
+    owner: zscaler
+    name: zscaler-sdk-go
+
+  draft: true
+changelog:
+  skip: true
