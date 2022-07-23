@@ -9,7 +9,6 @@ release:
     name: zscaler-sdk-go
 
   draft: true
-  discussion_category_name: Annoucements
 
 changelog:
   skip: true
