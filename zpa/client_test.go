@@ -1,16 +1,15 @@
 package zpa
 
-/*
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/zscaler/zscaler-sdk-go/gozscaler"
 )
 
 type dummyStruct struct {
@@ -24,6 +23,10 @@ var (
 )
 
 const getResponse = `{"id": 1234}`
+const authResponse = `{
+	"token_type": "token_type",
+	"access_token": "access_token"
+}`
 
 func TestClient_NewRequestDo(t *testing.T) {
 
@@ -96,57 +99,82 @@ func TestClient_NewRequestDo(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
+	os.Setenv(ZPA_CLIENT_ID, "ClientID")
+	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
+	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
+	os.Setenv(ZPA_CLOUD, "test")
 	type args struct {
-		config *zpa.Config
+		config *Config
 	}
 	tests := []struct {
 		name  string
 		args  args
-		wantC *Client
+		wantC *Config
 	}{
 		// NewClient test cases
 		{
 			name: "Successful Client creation with default config values",
-			args: struct{ config *zpa.Config }{config: nil},
-			wantC: &Client{&gozscaler.Config{
+			args: struct{ config *Config }{config: nil},
+			wantC: &Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.private.zscaler.com",
-					Path:   "/signin",
 				},
-			}},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
 		},
 		{
 			name: "Successful Client creation with custom config values",
-			args: struct{ config *zpa.Config }{config: &gozscaler.Config{
-				BaseURL: &url.URL{Host: "https://otherhost.com"},
+			args: struct{ config *Config }{config: &Config{
+				BaseURL:      &url.URL{Host: "https://otherhost.com"},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
 			}},
-			wantC: &Client{&gozscaler.Config{
-				BaseURL: &url.URL{Host: "https://otherhost.com"},
-			}},
+			wantC: &Config{
+				BaseURL:      &url.URL{Host: "https://otherhost.com"},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotC := NewClient(tt.args.config)
-			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.Config.BaseURL.Host)
-			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.Config.BaseURL.Scheme)
-			assert.Equal(t, gotC.Config.BaseURL.Path, tt.wantC.Config.BaseURL.Path)
+			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
+			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
+			assert.Equal(t, gotC.Config.ClientID, tt.wantC.ClientID)
+			assert.Equal(t, gotC.Config.ClientSecret, tt.wantC.ClientSecret)
 		})
 	}
 }
 
-func setupMuxConfig() *zpa.Config {
+func setupMuxConfig() *Config {
 	mux = http.NewServeMux()
+	mux.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Set-Cookie", "JSESSIONID=JSESSIONID;")
+		_, err := w.Write([]byte(authResponse))
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 	server = httptest.NewServer(mux)
-	config, err := gozscaler.NewConfig("", "", "", server.URL)
+	config, err := NewConfig("clientID", "clientID", "customerID", "cloud", "userAgent")
 	if err != nil {
 		panic(err)
 	}
+	url, _ := url.Parse(server.URL)
+	config.BaseURL = url
 	return config
 }
 
 func teardown() {
 	server.Close()
 }
-*/

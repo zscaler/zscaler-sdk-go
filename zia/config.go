@@ -112,7 +112,6 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		Logger:     logger,
 		UserAgent:  userAgent,
 	}
-	_ = cli.refreshSession()
 	return &cli, nil
 }
 
