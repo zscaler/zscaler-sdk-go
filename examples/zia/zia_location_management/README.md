@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cli, err := zia.NewClient("username@securitygeek.io", "pwd", "apiKey", "zscalerthree", "userAgent")
+	cli, err := zia.NewClient("username@acme.com", "pwd", "apiKey", "zscalerthree", "userAgent")
 	if err != nil {
 		log.Printf("[ERROR] creating client failed: %v\n", err)
 		return
