@@ -4,7 +4,6 @@
 [![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
-
 # Zscaler GO SDK
 
 ## Aim and Scope
@@ -43,18 +42,74 @@ To download all packages in the repo with their dependencies, simply run
 ## Getting Started
 
 One can start using Zscaler Go SDK by initializing client and making a request.
-Here is an example of getting IP List.
+Here is an example of creating a ZPA App Connector Group.
 
 ```go
 package main
 
 import (
+	"log"
 
+	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/appconnectorgroup"
 )
 
 func main() {
-
+	/*
+		If you set one of the value of the parameters to empty string, the client will fallback to:
+		 - The env variables: ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID, ZPA_CLOUD
+		 - Or if the env vars are not set, the client will try to use the config file which should be placed at  $HOME/.zpa/credentials.json on Linux and OS X, or "%USERPROFILE%\.zpa/credentials.json" on windows
+		 	with the following format:
+			{
+				"zpa_client_id": "",
+				"zpa_client_secret": "",
+				"zpa_customer_id": "",
+				"zpa_cloud": ""
+			}
+	*/
+	config, err := zpa.NewConfig("clientID", "clientSecret", "customerID", "baseURL", "userAgent")
+	if err != nil {
+		log.Printf("[ERROR] creating config failed: %v\n", err)
+		return
+	}
+	zpaClient := zpa.NewClient(config)
+	appConnectorGroupService := appconnectorgroup.New(zpaClient)
+	app := appconnectorgroup.AppConnectorGroup{
+		Name:                   "Example app connector group",
+		Description:            "Example  app connector group",
+		Enabled:                true,
+		CityCountry:            "California, US",
+		CountryCode:            "US",
+		Latitude:               "37.3382082",
+		Longitude:              "-121.8863286",
+		Location:               "San Jose, CA, USA",
+		UpgradeDay:             "SUNDAY",
+		UpgradeTimeInSecs:      "66600",
+		OverrideVersionProfile: true,
+		VersionProfileID:       "0",
+		DNSQueryType:           "IPV4",
+	}
+	// Create new app connector group
+	createdResource, _, err := appConnectorGroupService.Create(app)
+	if err != nil {
+		log.Printf("[ERROR] creating app connector group failed: %v\n", err)
+		return
+	}
+	// Update app connector group
+	createdResource.Description = "New description"
+	_, err = appConnectorGroupService.Update(createdResource.ID, createdResource)
+	if err != nil {
+		log.Printf("[ERROR] updating app connector group failed: %v\n", err)
+		return
+	}
+	// Delete app connector group
+	_, err = appConnectorGroupService.Delete(createdResource.ID)
+	if err != nil {
+		log.Printf("[ERROR] deleting app connector group failed: %v\n", err)
+		return
+	}
 }
+
 ```
 
 License
