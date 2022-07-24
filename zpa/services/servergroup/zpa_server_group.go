@@ -33,6 +33,7 @@ type Applications struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 }
+
 type AppConnectorGroups struct {
 	Citycountry           string            `json:"cityCountry,omitempty"`
 	CountryCode           string            `json:"countryCode,omitempty"`

@@ -33,6 +33,7 @@ type URLCategory struct {
 	SuperCategory                    string            `json:"superCategory,omitempty"`
 	UrlsRetainingParentCategoryCount int               `json:"urlsRetainingParentCategoryCount"`
 }
+
 type Scopes struct {
 	ScopeGroupMemberEntities []common.IDNameExtensions `json:"scopeGroupMemberEntities,omitempty"`
 	Type                     string                    `json:"Type,omitempty"`

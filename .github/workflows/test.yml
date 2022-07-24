@@ -1,0 +1,34 @@
+on: [pull_request]
+name: Test
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.17, 1.18]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+      - name: Set Credentials
+        env:
+          ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
+          ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
+          ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
+          ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+        run: |
+          go vet ./...
+          go test -v -race ./...
+
+
+

@@ -287,6 +287,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
+
 func getDefaultLogger() *log.Logger {
 	return log.New(os.Stdout, loggerPrefix, log.LstdFlags|log.Lshortfile)
 }

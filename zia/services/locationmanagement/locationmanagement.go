@@ -51,6 +51,7 @@ type Location struct {
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
+
 type ManagedBy struct {
 	ID         int                    `json:"id,omitempty"`
 	Name       string                 `json:"name,omitempty"`

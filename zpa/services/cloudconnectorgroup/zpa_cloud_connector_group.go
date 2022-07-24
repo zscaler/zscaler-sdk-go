@@ -26,6 +26,7 @@ type CloudConnectorGroup struct {
 	ZiaCloud        string            `json:"ziaCloud,omitempty"`
 	ZiaOrgid        string            `json:"ziaOrgId,omitempty"`
 }
+
 type CloudConnectors struct {
 	CreationTime string                 `json:"creationTime,omitempty"`
 	Description  string                 `json:"description,omitempty"`

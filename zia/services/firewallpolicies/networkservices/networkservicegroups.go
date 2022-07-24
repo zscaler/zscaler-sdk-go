@@ -18,6 +18,7 @@ type NetworkServiceGroups struct {
 	Services    []Services `json:"services,omitempty"`
 	Description string     `json:"description,omitempty"`
 }
+
 type Services struct {
 	ID            int            `json:"id"`
 	Name          string         `json:"name,omitempty"`

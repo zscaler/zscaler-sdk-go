@@ -23,11 +23,13 @@ type VPNCredentials struct {
 	Location     *Location  `json:"location,omitempty"`
 	ManagedBy    *ManagedBy `json:"managedBy,omitempty"`
 }
+
 type Location struct {
 	ID         int                    `json:"id"`
 	Name       string                 `json:"name"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
+
 type ManagedBy struct {
 	ID         int                    `json:"id"`
 	Name       string                 `json:"name"`

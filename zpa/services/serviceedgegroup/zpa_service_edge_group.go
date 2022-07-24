@@ -78,6 +78,7 @@ type ServiceEdges struct {
 	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
 }
+
 type TrustedNetworks struct {
 	CreationTime     string `json:"creationTime,omitempty"`
 	Domain           string `json:"domain,omitempty"`

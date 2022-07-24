@@ -46,6 +46,7 @@ type Conditions struct {
 	OP  string `json:"op,omitempty"`
 	RHS string `json:"rhs,omitempty"`
 }
+
 type AssociatedProfileNames struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`

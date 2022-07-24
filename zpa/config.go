@@ -46,10 +46,12 @@ type BackoffConfig struct {
 	RetryWaitMaxSeconds int  // Maximum time to wait
 	MaxNumOfRetries     int  // Maximum number of retries
 }
+
 type AuthToken struct {
 	TokenType   string `json:"token_type"`
 	AccessToken string `json:"access_token"`
 }
+
 type CredentialsConfig struct {
 	ClientID     string `json:"zpa_client_id"`
 	ClientSecret string `json:"zpa_client_secret"`
@@ -117,7 +119,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 
 	baseURL, err := url.Parse(rawUrl)
 	if err != nil {
-		log.Printf("[ERROR] error occured while configuring the client: %v", err)
+		log.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
 	return &Config{
 		BaseURL:      baseURL,

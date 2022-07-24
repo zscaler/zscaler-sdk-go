@@ -36,7 +36,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	defer client.Config.Unlock()
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
 		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
-			log.Printf("[ERROR] No client credentials were provided. Please set %s, %s and %s enviroment variables.\n", ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID)
+			log.Printf("[ERROR] No client credentials were provided. Please set %s, %s and %s environment variables.\n", ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID)
 			return nil, errors.New("no client credentials were provided")
 		}
 		log.Printf("[TRACE] Getting access token for %s=%s\n", ZPA_CLIENT_ID, client.Config.ClientID)
@@ -47,7 +47,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		if err != nil {
 			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-
 		}
 
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -55,7 +54,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 			req.Header.Add("User-Agent", client.Config.UserAgent)
 		}
 		resp, err := client.Config.GetHTTPClient().Do(req)
-
 		if err != nil {
 			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
@@ -75,7 +73,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		if err != nil {
 			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-
 		}
 		// we need keep auth token for future http request
 		client.Config.AuthToken = &a

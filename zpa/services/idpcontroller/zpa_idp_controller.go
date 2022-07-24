@@ -49,6 +49,7 @@ type AdminMetadata struct {
 	SpMetadataURL  string `json:"spMetadataUrl"`
 	SpPostURL      string `json:"spPostUrl"`
 }
+
 type UserMetadata struct {
 	CertificateURL string `json:"certificateUrl,omitempty"`
 	SpBaseURL      string `json:"spBaseUrl"`

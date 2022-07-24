@@ -22,14 +22,15 @@ var (
 	server *httptest.Server
 )
 
-const getResponse = `{"id": 1234}`
-const authResponse = `{
+const (
+	getResponse  = `{"id": 1234}`
+	authResponse = `{
 	"token_type": "token_type",
 	"access_token": "access_token"
 }`
+)
 
 func TestClient_NewRequestDo(t *testing.T) {
-
 	type args struct {
 		method string
 		url    string

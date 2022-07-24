@@ -38,6 +38,7 @@ type AppConnectorGroup struct {
 	AppServerGroup                []AppServerGroup `json:"serverGroups,omitempty"`
 	Connectors                    []*Connector     `json:"connectors,omitempty"`
 }
+
 type Connector struct {
 	ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
 	AppConnectorGroupID              string                 `json:"appConnectorGroupId,omitempty"`
@@ -76,6 +77,7 @@ type Connector struct {
 	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
 }
+
 type AppServerGroup struct {
 	ConfigSpace      string `json:"configSpace,omitempty"`
 	CreationTime     string `json:"creationTime,omitempty"`

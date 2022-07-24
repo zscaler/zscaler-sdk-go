@@ -25,6 +25,7 @@ type NetworkServices struct {
 	Protocol      string         `json:"protocol,omitempty"`
 	IsNameL10nTag bool           `json:"isNameL10nTag,omitempty"`
 }
+
 type NetworkPorts struct {
 	Start int `json:"start,omitempty"`
 	End   int `json:"end,omitempty"`

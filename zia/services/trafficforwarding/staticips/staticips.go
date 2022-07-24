@@ -88,6 +88,7 @@ func (service *Service) Update(staticIpID int, staticIP *StaticIP) (*StaticIP, *
 	log.Printf("returning static ip from update: %d", updatedStaticIP.ID)
 	return updatedStaticIP, nil, nil
 }
+
 func (service *Service) Delete(staticIpID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID))
 	if err != nil {
