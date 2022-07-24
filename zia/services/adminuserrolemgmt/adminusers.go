@@ -35,12 +35,14 @@ type AdminUsers struct {
 	Role                          *Role                     `json:"role,omitempty"`
 	ExecMobileAppTokens           []ExecMobileAppTokens     `json:"execMobileAppTokens,omitempty"`
 }
+
 type Role struct {
 	ID           int                    `json:"id,omitempty"`
 	Name         string                 `json:"name,omitempty"`
 	IsNameL10Tag bool                   `json:"isNameL10nTag,omitempty"`
 	Extensions   map[string]interface{} `json:"extensions,omitempty"`
 }
+
 type ExecMobileAppTokens struct {
 	Cloud       string `json:"cloud,omitempty"`
 	OrgId       int    `json:"orgId,omitempty"`

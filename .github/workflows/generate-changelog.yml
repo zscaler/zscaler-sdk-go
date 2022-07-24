@@ -21,7 +21,7 @@ jobs:
               MSG="Update CHANGELOG.md for #${{ github.event.pull_request.number }}"
             fi
             git config --local user.email github-P@zscaler.com
-            git config --local user.name changelogbot
+            git config --local user.name github-P
             git add CHANGELOG.md
             git commit -m "$MSG"
             git push

@@ -21,8 +21,9 @@ var (
 	server *httptest.Server
 )
 
-const getResponse = `{"id": 1234}`
-const authResponse = `{
+const (
+	getResponse  = `{"id": 1234}`
+	authResponse = `{
 	"authType": "authType",
     "obfuscateApiKey": true,  
     "passwordExpiryTime": 10000,
@@ -30,6 +31,7 @@ const authResponse = `{
     "source": "source",
     "jSessionID": ""
 }`
+)
 
 func TestClient_Request(t *testing.T) {
 	defer teardown()
@@ -66,7 +68,7 @@ func TestClient_Request(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				//panic(fmt.Sprintf("%v", r.Header))
+				// panic(fmt.Sprintf("%v", r.Header))
 			},
 			wantVal: &dummyStruct{
 				ID: 1234,
@@ -97,7 +99,6 @@ func TestClient_Request(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestNewClient(t *testing.T) {

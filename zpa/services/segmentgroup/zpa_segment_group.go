@@ -52,6 +52,7 @@ type Application struct {
 	TCPPortsOut          interface{}      `json:"tcpPortsOut,omitempty"`
 	UDPPortRanges        interface{}      `json:"udpPortRangesg,omitempty"`
 }
+
 type AppServerGroup struct {
 	ConfigSpace      string `json:"configSpace,omitempty"`
 	CreationTime     string `json:"creationTime,omitempty"`

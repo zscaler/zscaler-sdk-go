@@ -21,6 +21,7 @@ type LSSResource struct {
 	PolicyRule         *PolicyRule         `json:"policyRule,omitempty"`
 	PolicyRuleResource *PolicyRuleResource `json:"policyRuleResource,omitempty"`
 }
+
 type LSSConfig struct {
 	AuditMessage  string   `json:"auditMessage,omitempty"`
 	CreationTime  string   `json:"creationTime,omitempty"`
@@ -37,6 +38,7 @@ type LSSConfig struct {
 	SourceLogType string   `json:"sourceLogType,omitempty"`
 	UseTLS        bool     `json:"useTls,omitempty"`
 }
+
 type ConnectorGroups struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
@@ -69,6 +71,7 @@ type PolicyRuleResource struct {
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
 }
+
 type PolicyRule struct {
 	Action                   string       `json:"action,omitempty"`
 	ActionID                 string       `json:"actionId,omitempty"`
@@ -96,6 +99,7 @@ type PolicyRule struct {
 	ZpnInspectionProfileName string       `json:"zpnInspectionProfileName,omitempty"`
 	Conditions               []Conditions `json:"conditions,omitempty"`
 }
+
 type Conditions struct {
 	CreationTime string      `json:"creationTime,omitempty"`
 	ID           string      `json:"id,omitempty"`
@@ -115,10 +119,12 @@ type PolicyRuleResourceConditions struct {
 	Operands     *[]PolicyRuleResourceOperands `json:"operands,omitempty"`
 	Operator     string                        `json:"operator,omitempty"`
 }
+
 type PolicyRuleResourceOperands struct {
 	ObjectType string   `json:"objectType,omitempty"`
 	Values     []string `json:"values,omitempty"`
 }
+
 type Operands struct {
 	CreationTime string `json:"creationTime,omitempty"`
 	ID           string `json:"id,omitempty"`

@@ -12,7 +12,7 @@
 // <type>Map: Accepts a string map of pointers into a string map of values.
 //
 // Not all Golang types are covered here, only those that are commonly used.
-package cloudflare
+package zscaler
 
 import (
 	"reflect"

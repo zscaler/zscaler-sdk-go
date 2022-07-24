@@ -17,18 +17,18 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-      - name: Set ZIA Credentials
+      - name: Set Credentials
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
-      - name: Set ZPA Credentials
-        env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      - name: Vet
-        run: go vet ./...
-      - name: Test
-        run: go test -v -race ./...
+        run: |
+          go vet ./...
+          go test -v -race ./...
+
+
+

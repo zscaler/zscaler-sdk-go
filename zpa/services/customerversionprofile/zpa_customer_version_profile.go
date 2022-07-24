@@ -33,10 +33,12 @@ type CustomScopeCustomerIDs struct {
 	ExcludeConstellation bool   `json:"excludeConstellation"`
 	Name                 string `json:"name"`
 }
+
 type CustomScopeRequestCustomerIDs struct {
 	AddCustomerIDs    string `json:"addCustomerIds"`
 	DeletecustomerIDs string `json:"deleteCustomerIds"`
 }
+
 type Versions struct {
 	CreationTime             string `json:"creationTime"`
 	CustomerID               string `json:"customerId"`

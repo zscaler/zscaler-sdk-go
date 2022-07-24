@@ -25,6 +25,7 @@ type PolicySet struct {
 	PolicyType   string       `json:"policyType,omitempty"`
 	Rules        []PolicyRule `json:"rules"`
 }
+
 type PolicyRule struct {
 	Action                 string               `json:"action,omitempty"`
 	ActionID               string               `json:"actionId,omitempty"`
@@ -76,9 +77,11 @@ type Operands struct {
 	ObjectType   string `json:"objectType,omitempty"`
 	RHS          string `json:"rhs,omitempty"`
 }
+
 type AppServerGroups struct {
 	ID string `json:"id,omitempty"`
 }
+
 type AppConnectorGroups struct {
 	ID string `json:"id,omitempty"`
 }
