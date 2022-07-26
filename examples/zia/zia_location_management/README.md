@@ -9,11 +9,17 @@ import (
 )
 
 func main() {
-	cli, err := zia.NewClient("username@acme.com", "pwd", "apiKey", "zscalerthree", "userAgent")
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
+
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "userAgent")
 	if err != nil {
 		log.Printf("[ERROR] creating client failed: %v\n", err)
 		return
 	}
+
 	locationManagementService := locationmanagement.New(cli)
 	locationManagement := locationmanagement.Locations{
 		Name:              "Example location managment",
