@@ -42,3 +42,9 @@ func (service *Service) GetTimeWindowByName(timeWindowName string) (*TimeWindow,
 	}
 	return nil, fmt.Errorf("no time window found with name: %s", timeWindowName)
 }
+
+func (service *Service) GetAll() ([]TimeWindow, error) {
+	var timeWindow []TimeWindow
+	err := service.Client.Read(timeWindowEndpoint, &timeWindow)
+	return timeWindow, err
+}

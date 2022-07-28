@@ -42,3 +42,9 @@ func (service *Service) GetDepartmentsByName(departmentName string) (*Department
 	}
 	return nil, fmt.Errorf("no department found with name: %s", departmentName)
 }
+
+func (service *Service) GetAll() ([]Department, error) {
+	var departments []Department
+	err := service.Client.Read(departmentEndpoint, &departments)
+	return departments, err
+}

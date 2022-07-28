@@ -83,3 +83,9 @@ func (service *Service) Delete(ruleLabelID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]RuleLabels, error) {
+	var ruleLabels []RuleLabels
+	err := service.Client.Read(ruleLabelsEndpoint, &ruleLabels)
+	return ruleLabels, err
+}

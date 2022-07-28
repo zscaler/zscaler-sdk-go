@@ -79,3 +79,9 @@ func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCod
 	}
 	return &pairVips, nil
 }
+
+func (service *Service) GetAll() ([]GREVirtualIPList, error) {
+	var zscalerVips []GREVirtualIPList
+	err := service.Client.Read(vipRecommendedListEndpoint, &zscalerVips)
+	return zscalerVips, err
+}

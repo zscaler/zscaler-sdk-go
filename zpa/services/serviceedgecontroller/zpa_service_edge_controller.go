@@ -81,3 +81,16 @@ func (service *Service) GetByName(serviceEdgeName string) (*ServiceEdgeControlle
 	}
 	return nil, resp, fmt.Errorf("no service edge named '%s' was found", serviceEdgeName)
 }
+
+func (service *Service) GetAll() ([]ServiceEdgeController, *http.Response, error) {
+	var v struct {
+		List []ServiceEdgeController `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

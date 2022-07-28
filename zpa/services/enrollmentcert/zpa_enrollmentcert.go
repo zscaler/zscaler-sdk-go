@@ -66,3 +66,16 @@ func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Respo
 	}
 	return nil, resp, fmt.Errorf("no signing certificate named '%s' was found", certName)
 }
+
+func (service *Service) GetAll() ([]EnrollmentCert, *http.Response, error) {
+	var v struct {
+		List []EnrollmentCert `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + enrollmentCertEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

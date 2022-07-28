@@ -142,3 +142,9 @@ func (service *Service) GetDevicesByOSVersion(osVersionName string) (*Devices, e
 	}
 	return nil, fmt.Errorf("no device found for version: %s", osVersionName)
 }
+
+func (service *Service) GetAll() ([]Devices, error) {
+	var owners []Devices
+	err := service.Client.Read(devicesEndpoint, &owners)
+	return owners, err
+}

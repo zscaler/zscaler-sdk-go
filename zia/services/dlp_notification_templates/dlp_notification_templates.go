@@ -81,3 +81,9 @@ func (service *Service) Delete(dlpTemplateID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]DlpNotificationTemplates, error) {
+	var dlpTemplates []DlpNotificationTemplates
+	err := service.Client.Read(dlpNotificationTemplatesEndpoint, &dlpTemplates)
+	return dlpTemplates, err
+}

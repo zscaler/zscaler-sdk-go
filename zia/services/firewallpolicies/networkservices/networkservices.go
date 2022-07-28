@@ -90,3 +90,8 @@ func (service *Service) Delete(serviceID int) (*http.Response, error) {
 
 	return nil, nil
 }
+func (service *Service) GetAllNetworkServices() ([]NetworkServices, error) {
+	var networkServices []NetworkServices
+	err := service.Client.Read(networkServicesEndpoint, &networkServices)
+	return networkServices, err
+}

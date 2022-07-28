@@ -123,3 +123,9 @@ func (service *Service) DeleteAdminUser(adminUserID int) (*http.Response, error)
 
 	return nil, nil
 }
+
+func (service *Service) GetAllAdminUsers() ([]AdminUsers, error) {
+	var adminUsers []AdminUsers
+	err := service.Client.Read(adminUsersEndpoint, &adminUsers)
+	return adminUsers, err
+}

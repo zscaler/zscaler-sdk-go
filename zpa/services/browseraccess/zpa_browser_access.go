@@ -120,3 +120,16 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 	}
 	return resp, err
 }
+
+func (service *Service) GetAll() ([]BrowserAccess, *http.Response, error) {
+	var v struct {
+		List []BrowserAccess `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

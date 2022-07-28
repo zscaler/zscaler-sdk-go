@@ -49,3 +49,9 @@ func (service *Service) GetByName(adminRoleName string) (*AdminRoles, error) {
 	}
 	return nil, fmt.Errorf("no admin role found with name: %s", adminRoleName)
 }
+
+func (service *Service) GetAllAdminRoles() ([]AdminRoles, error) {
+	var adminRoles []AdminRoles
+	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
+	return adminRoles, err
+}

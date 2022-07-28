@@ -97,3 +97,8 @@ func (service *Service) Delete(staticIpID int) (*http.Response, error) {
 
 	return nil, nil
 }
+func (service *Service) GetAll() ([]StaticIP, error) {
+	var staticIPs []StaticIP
+	err := service.Client.Read(staticIPEndpoint, &staticIPs)
+	return staticIPs, err
+}

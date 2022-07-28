@@ -120,3 +120,26 @@ func (service *Service) GetByIDAllAssociations(id string) (p *ProvisioningKey, a
 	}
 	return p, assoc_type, resp, err
 }
+
+func (service *Service) GetAllByAssociationType(associationType string) ([]ProvisioningKey, error) {
+	var v struct {
+		List []ProvisioningKey `json:"list"`
+	}
+	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
+	_, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, err
+	}
+	return v.List, nil
+}
+
+func (service *Service) GetAll() (list []ProvisioningKey, err error) {
+	for _, assassociation_type := range ProvisioningKeyAssociationTypes {
+		items, _ := service.GetAllByAssociationType(assassociation_type)
+		if len(items) > 0 {
+			list = append(list, items...)
+		}
+
+	}
+	return list, nil
+}

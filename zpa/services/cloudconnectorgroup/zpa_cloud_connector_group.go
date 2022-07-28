@@ -69,3 +69,16 @@ func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnect
 	}
 	return nil, resp, fmt.Errorf("no application named '%s' was found", cloudConnectorGroupName)
 }
+
+func (service *Service) GetAll() ([]CloudConnectorGroup, *http.Response, error) {
+	var v struct {
+		List []CloudConnectorGroup `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

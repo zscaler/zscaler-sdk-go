@@ -192,3 +192,16 @@ func (service *Service) RulesCount() (int, *http.Response, error) {
 	count, err := strconv.Atoi(v.Count)
 	return count, resp, err
 }
+
+func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Response, error) {
+	var v struct {
+		List []PolicyRule `json:"list"`
+	}
+	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
+	resp, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v.List, resp, nil
+}

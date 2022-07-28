@@ -195,3 +195,16 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 
 	return resp, nil
 }
+
+func (service *Service) GetAll() ([]InspectionProfile, *http.Response, error) {
+	var v struct {
+		List []InspectionProfile `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

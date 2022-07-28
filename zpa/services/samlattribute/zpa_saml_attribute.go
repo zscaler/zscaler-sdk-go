@@ -55,3 +55,17 @@ func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Re
 	}
 	return nil, resp, fmt.Errorf("no saml attribute named '%s' was found", samlAttrName)
 }
+
+func (service *Service) GetAll() ([]SamlAttribute, *http.Response, error) {
+	var v struct {
+		List []SamlAttribute `json:"list"`
+	}
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
+		PageSize: common.DefaultPageSize,
+	}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

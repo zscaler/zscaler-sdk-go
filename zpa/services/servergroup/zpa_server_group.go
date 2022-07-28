@@ -170,3 +170,16 @@ func (service *Service) Delete(groupId string) (*http.Response, error) {
 	}
 	return resp, err
 }
+
+func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
+	var v struct {
+		List []ServerGroup `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}
