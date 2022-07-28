@@ -91,3 +91,8 @@ func (service *Service) DeleteNetworkServiceGroups(serviceGroupID int) (*http.Re
 
 	return nil, nil
 }
+func (service *Service) GetAllNetworkServiceGroups() ([]NetworkServiceGroups, error) {
+	var networkServiceGroups []NetworkServiceGroups
+	err := service.Client.Read(networkServiceGroupsEndpoint, &networkServiceGroups)
+	return networkServiceGroups, err
+}

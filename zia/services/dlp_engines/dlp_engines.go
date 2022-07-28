@@ -45,3 +45,9 @@ func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
 	}
 	return nil, fmt.Errorf("no dlp engine found with name: %s", engineName)
 }
+
+func (service *Service) GetAll() ([]DLPEngines, error) {
+	var dlpEngines []DLPEngines
+	err := service.Client.Read(dlpEnginesEndpoint, &dlpEngines)
+	return dlpEngines, err
+}

@@ -70,3 +70,16 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 	}
 	return nil, resp, fmt.Errorf("no trusted network named '%s' was found", trustedNetworkName)
 }
+
+func (service *Service) GetAll() ([]TrustedNetwork, *http.Response, error) {
+	var v struct {
+		List []TrustedNetwork `json:"list"`
+	}
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v.List, resp, nil
+}

@@ -127,3 +127,9 @@ func (service *Service) DeleteLocationGroup(groupID int) (*http.Response, error)
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]LocationGroup, error) {
+	var locationGroups []LocationGroup
+	err := service.Client.Read(locationGroupEndpoint, &locationGroups)
+	return locationGroups, err
+}

@@ -72,3 +72,16 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 	}
 	return nil, resp, fmt.Errorf("no posture profile named '%s' was found", postureName)
 }
+
+func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
+	var v struct {
+		List []PostureProfile `json:"list"`
+	}
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v.List, resp, nil
+}

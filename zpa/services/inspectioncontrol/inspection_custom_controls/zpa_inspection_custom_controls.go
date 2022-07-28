@@ -119,3 +119,16 @@ func (service *Service) Delete(customID string) (*http.Response, error) {
 
 	return resp, nil
 }
+
+func (service *Service) GetAll() ([]InspectionCustomControl, *http.Response, error) {
+	var v struct {
+		List []InspectionCustomControl `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

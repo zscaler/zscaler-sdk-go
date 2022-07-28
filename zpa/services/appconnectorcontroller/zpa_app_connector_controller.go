@@ -81,3 +81,16 @@ func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http
 	}
 	return nil, resp, fmt.Errorf("no app connector named '%s' was found", appConnectorName)
 }
+
+func (service *Service) GetAll() ([]AppConnector, error) {
+	var v struct {
+		List []AppConnector `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
+	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, err
+	}
+	return v.List, nil
+}

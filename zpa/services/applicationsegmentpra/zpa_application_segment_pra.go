@@ -192,3 +192,16 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 	}
 	return resp, err
 }
+
+func (service *Service) GetAll() ([]AppSegmentPRA, *http.Response, error) {
+	var v struct {
+		List []AppSegmentPRA `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}
