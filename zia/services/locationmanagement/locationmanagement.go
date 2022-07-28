@@ -141,3 +141,10 @@ func (service *Service) GetSublocations(sublocations string) (*Locations, error)
 
 	return &subLocations, nil
 }
+
+func (service *Service) GetAll() ([]Locations, error) {
+	var locations []Locations
+	// We are assuming this location name will be in the firsy 1000 obejcts
+	err := service.Client.Read(fmt.Sprintf("%s?page=1&pageSize=1000", locationsEndpoint), &locations)
+	return locations, err
+}

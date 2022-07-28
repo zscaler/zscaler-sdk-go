@@ -80,3 +80,16 @@ func (service *Service) GetByName(versionProfileName string) (*CustomerVersionPr
 	}
 	return nil, resp, fmt.Errorf("no version profile named '%s' was found", versionProfileName)
 }
+
+func (service *Service) GetAll() ([]CustomerVersionProfile, *http.Response, error) {
+	var v struct {
+		List []CustomerVersionProfile `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

@@ -74,3 +74,15 @@ func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttribu
 	}
 	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimAttributeName)
 }
+
+func (service *Service) GetAllByIdpId(IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
+	var v struct {
+		List []ScimAttributeHeader `json:"list"`
+	}
+	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

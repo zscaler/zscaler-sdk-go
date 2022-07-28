@@ -147,3 +147,16 @@ func (service *Service) Delete(appConnectorGroupID string) (*http.Response, erro
 
 	return resp, nil
 }
+
+func (service *Service) GetAll() ([]AppConnectorGroup, *http.Response, error) {
+	var v struct {
+		List []AppConnectorGroup `json:"list"`
+	}
+
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

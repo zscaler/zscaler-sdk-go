@@ -59,3 +59,15 @@ func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.
 	}
 	return nil, resp, fmt.Errorf("no issued certificate named '%s' was found", CertName)
 }
+
+func (service *Service) GetAll() ([]BaCertificate, *http.Response, error) {
+	var v struct {
+		List []BaCertificate `json:"list"`
+	}
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

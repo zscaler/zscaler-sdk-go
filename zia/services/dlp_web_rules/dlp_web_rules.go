@@ -110,3 +110,9 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]WebDLPRules, error) {
+	var webDlpRules []WebDLPRules
+	err := service.Client.Read(webDlpRulesEndpoint, &webDlpRules)
+	return webDlpRules, err
+}

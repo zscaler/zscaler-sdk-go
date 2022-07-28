@@ -110,3 +110,9 @@ func (service *Service) Delete(vpnCredentialID int) error {
 
 	return nil
 }
+
+func (service *Service) GetAll() ([]VPNCredentials, error) {
+	var vpnTypes []VPNCredentials
+	err := service.Client.Read(vpnCredentialsEndpoint, &vpnTypes)
+	return vpnTypes, err
+}

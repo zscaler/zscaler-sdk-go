@@ -113,3 +113,8 @@ func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Respon
 
 	return nil, nil
 }
+func (service *Service) GetAll() ([]DlpDictionary, error) {
+	var dictionaries []DlpDictionary
+	err := service.Client.Read(dlpDictionariesEndpoint, &dictionaries)
+	return dictionaries, err
+}

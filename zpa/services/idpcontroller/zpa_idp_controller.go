@@ -88,3 +88,17 @@ func (service *Service) GetByName(idpName string) (*IdpController, *http.Respons
 	}
 	return nil, resp, fmt.Errorf("no Idp-Controller named '%s' was found", idpName)
 }
+
+func (service *Service) GetAll() ([]IdpController, *http.Response, error) {
+	var v struct {
+		List []IdpController `json:"list"`
+	}
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
+		PageSize: common.DefaultPageSize,
+	}, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
+}

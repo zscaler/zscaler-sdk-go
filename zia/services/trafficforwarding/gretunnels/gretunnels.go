@@ -110,3 +110,9 @@ func (service *Service) DeleteGreTunnels(greTunnelID int) (*http.Response, error
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]GreTunnels, error) {
+	var greTunnels []GreTunnels
+	err := service.Client.Read(greTunnelsEndpoint, &greTunnels)
+	return greTunnels, err
+}

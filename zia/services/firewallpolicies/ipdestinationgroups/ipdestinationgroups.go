@@ -81,3 +81,8 @@ func (service *Service) Delete(ipGroupID int) (*http.Response, error) {
 
 	return nil, nil
 }
+func (service *Service) GetAll() ([]IPDestinationGroups, error) {
+	var ipDestinationGroups []IPDestinationGroups
+	err := service.Client.Read(ipDestinationGroupsEndpoint, &ipDestinationGroups)
+	return ipDestinationGroups, err
+}

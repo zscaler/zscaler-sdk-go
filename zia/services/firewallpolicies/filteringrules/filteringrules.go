@@ -107,3 +107,8 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+func (service *Service) GetAll() ([]FirewallFilteringRules, error) {
+	var rules []FirewallFilteringRules
+	err := service.Client.Read(firewallRulesEndpoint, &rules)
+	return rules, err
+}

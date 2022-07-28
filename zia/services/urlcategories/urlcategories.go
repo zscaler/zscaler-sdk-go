@@ -105,3 +105,9 @@ func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, 
 
 	return nil, nil
 }
+
+func (service *Service) GetAll() ([]URLCategory, error) {
+	var urlCategories []URLCategory
+	err := service.Client.Read(urlCategoriesEndpoint, &urlCategories)
+	return urlCategories, err
+}
