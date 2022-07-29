@@ -192,7 +192,7 @@ func (service *Service) Delete(lssID string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) GetAll(lssName string) ([]LSSResource, *http.Response, error) {
+func (service *Service) GetAll() ([]LSSResource, *http.Response, error) {
 	var v struct {
 		List []LSSResource `json:"list"`
 	}
