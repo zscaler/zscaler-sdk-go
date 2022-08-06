@@ -3,6 +3,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/zscaler/zscaler-sdk-go/zpa"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/serviceedgegroup"
@@ -21,14 +22,18 @@ func main() {
 				"zpa_cloud": ""
 			}
 	*/
-	config, err := zpa.NewConfig("clientID", "clientSecret", "customerID", "baseURL", "userAgent")
+	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
+	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
+	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
+	zpa_cloud := os.Getenv("ZPA_CLOUD")
+	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "userAgent")
 	if err != nil {
 		log.Printf("[ERROR] creating config failed: %v\n", err)
 		return
 	}
 	zpaClient := zpa.NewClient(config)
 	serviceEdgeGroupService := serviceedgegroup.New(zpaClient)
-	app := serviceedgegroup.serviceEdgeGroupService{
+	app := serviceedgegroup.ServiceEdgeGroup{
 		Name:                   "Example app connector group",
 		Description:            "Example  app connector group",
 		Enabled:                true,
@@ -62,5 +67,4 @@ func main() {
 		return
 	}
 }
-
 ```
