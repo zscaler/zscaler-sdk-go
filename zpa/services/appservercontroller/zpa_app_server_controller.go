@@ -81,7 +81,7 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) Getall() ([]ApplicationServer, *http.Response, error) {
+func (service *Service) GetAll() ([]ApplicationServer, *http.Response, error) {
 	var v struct {
 		List []ApplicationServer `json:"list"`
 	}
