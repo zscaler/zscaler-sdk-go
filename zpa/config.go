@@ -104,6 +104,8 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	rawUrl := defaultBaseURL
 	if cloud == "" {
 		cloud = os.Getenv(ZPA_CLOUD)
+	} else if cloud != "" {
+		rawUrl = cloud
 	}
 	if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL

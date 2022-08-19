@@ -103,19 +103,20 @@ func TestNewClient(t *testing.T) {
 	os.Setenv(ZPA_CLIENT_ID, "ClientID")
 	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
 	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
-	os.Setenv(ZPA_CLOUD, "test")
 	type args struct {
 		config *Config
 	}
 	tests := []struct {
 		name  string
 		args  args
+		cloud string
 		wantC *Config
 	}{
 		// NewClient test cases
 		{
-			name: "Successful Client creation with default config values",
-			args: struct{ config *Config }{config: nil},
+			name:  "Successful Client creation with default config values",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "",
 			wantC: &Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
@@ -128,7 +129,38 @@ func TestNewClient(t *testing.T) {
 			},
 		},
 		{
-			name: "Successful Client creation with custom config values",
+			name:  "Gov cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "gov",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.zpagov.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name:  "Arbitrary cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "https://config.somecloud.net",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.somecloud.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name:  "Successful Client creation with custom config values",
+			cloud: "",
 			args: struct{ config *Config }{config: &Config{
 				BaseURL:      &url.URL{Host: "https://otherhost.com"},
 				ClientID:     "ClientID",
@@ -147,6 +179,7 @@ func TestNewClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			os.Setenv(ZPA_CLOUD, tt.cloud)
 			gotC := NewClient(tt.args.config)
 			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
 			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
