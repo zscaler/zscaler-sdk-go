@@ -13,7 +13,9 @@ import (
 )
 
 type dummyStruct struct {
-	ID int `json:"id"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 var (
@@ -23,7 +25,7 @@ var (
 )
 
 const (
-	getResponse  = `{"id": 1234}`
+	getResponse  = `{"id": 1234,"name":"name with &amp;amp;, &amp;lt; and &amp;gt;","description":"description with &amp;amp;, &amp;lt; and &amp;gt;"}`
 	authResponse = `{
 	"token_type": "token_type",
 	"access_token": "access_token"
@@ -70,7 +72,9 @@ func TestClient_NewRequestDo(t *testing.T) {
 				StatusCode: 200,
 			},
 			wantVal: &dummyStruct{
-				ID: 1234,
+				ID:          1234,
+				Name:        "name with &, < and >",
+				Description: "description with &, < and >",
 			},
 		},
 	}
