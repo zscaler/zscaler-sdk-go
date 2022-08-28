@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
@@ -151,10 +152,38 @@ func (client *Client) do(req *http.Request, v interface{}) (*http.Response, erro
 		}
 	}
 	client.logResponse(resp)
-
+	unescapeHTML(v)
 	return resp, nil
 }
 
 func decodeJSON(res *http.Response, v interface{}) error {
 	return json.NewDecoder(res.Body).Decode(&v)
+}
+
+func unescapeHTML(entity interface{}) {
+	if entity == nil {
+		return
+	}
+	data, err := json.Marshal(entity)
+	if err != nil {
+		return
+	}
+	var mapData map[string]interface{}
+	err = json.Unmarshal(data, &mapData)
+	if err != nil {
+		return
+	}
+	for _, field := range []string{"name", "description"} {
+		if v, ok := mapData[field]; ok && v != nil {
+			str, ok := v.(string)
+			if ok {
+				mapData[field] = html.UnescapeString(html.UnescapeString(str))
+			}
+		}
+	}
+	data, err = json.Marshal(mapData)
+	if err != nil {
+		return
+	}
+	json.Unmarshal(data, entity)
 }
