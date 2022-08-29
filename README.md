@@ -64,7 +64,7 @@ func main() {
 				"zpa_client_id": "",
 				"zpa_client_secret": "",
 				"zpa_customer_id": "",
-				"zpa_cloud": ""
+				"zpa_cloud": "https://config.private.zscaler.com"
 			}
 	*/
 	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
