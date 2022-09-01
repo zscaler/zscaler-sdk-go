@@ -1,3 +1,5 @@
 .idea/*
 /local_test
 vendor/
+go-test
+/go-test
