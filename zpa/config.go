@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -107,6 +107,9 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	} else if cloud != "" {
 		rawUrl = cloud
 	}
+	if strings.EqualFold(cloud, "PRODUCTION") {
+		rawUrl = defaultBaseURL
+	}
 	if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
 	}
@@ -149,7 +152,7 @@ func loadCredentialsFromConfig() (*CredentialsConfig, error) {
 	if err != nil {
 		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zpa_client_id, zpa_client_secret, zpa_customer_id, and zpa_cloud. " + err.Error())
 	}
-	configBytes, err := ioutil.ReadAll(file)
+	configBytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +171,7 @@ func (c *Config) GetHTTPClient() *http.Client {
 			retryableClient.RetryWaitMin = time.Second * time.Duration(c.BackoffConf.RetryWaitMinSeconds)
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
-			retryableClient.HTTPClient.Transport = logging.NewTransport("gozscaler", retryableClient.HTTPClient.Transport)
+			retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
 			retryableClient.CheckRetry = checkRetry
 			retryableClient.HTTPClient.Timeout = defaultTimeout
 			c.httpClient = retryableClient.StandardClient()
