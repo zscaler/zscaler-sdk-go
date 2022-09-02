@@ -133,6 +133,21 @@ func TestNewClient(t *testing.T) {
 			},
 		},
 		{
+			name:  "Production cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "production",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.private.zscaler.com",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
 			name:  "Gov cloud support",
 			args:  struct{ config *Config }{config: nil},
 			cloud: "gov",

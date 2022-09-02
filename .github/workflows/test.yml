@@ -4,8 +4,8 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.17, 1.18]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.17, 1.18, 1.19]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/setup-go@v3
@@ -26,6 +26,7 @@ jobs:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
         run: |
           go vet ./...
           go test -v -race ./...
