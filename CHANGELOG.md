@@ -1,5 +1,23 @@
 # Changelog
 
+# 0.0.8 (September, 2 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #18](https://github.com/zscaler/zscaler-sdk-go/pull/18) Fixed ZPA_CLOUD support for production via environment variables.
+
+# 0.0.7 (August, 30 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancements
+- [PR #11](https://github.com/zscaler/zscaler-sdk-go/pull/11) Added support to getAll method for LSS config ctl & policy ctl
+- [PR #15](https://github.com/zscaler/zscaler-sdk-go/pull/15) Added support for ZPA arbitrary clouds @hfinucane
+- [PR #16](https://github.com/zscaler/zscaler-sdk-go/pull/16) Added support to ZPA API response with html double escaping
+
 ## 0.0.6 (August, 29 2022)
 
 ### Notes
