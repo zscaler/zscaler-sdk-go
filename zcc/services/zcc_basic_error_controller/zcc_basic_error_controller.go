@@ -47,16 +47,17 @@ func (service *Service) Create(basicError BasicErrorController) (*BasicErrorCont
 	return res, nil
 }
 
-func (service *Service) Patch(errorId int, basicError BasicErrorController) (*BasicErrorController, error) {
-	path := fmt.Sprintf("%s/%d", basicErrorEndpoint, errorId)
-	resp, err := service.Client.UpdateWithPatch(path, basicError)
-	if err != nil {
-		return nil, err
+/*
+	func (service *Service) Patch(errorId int, basicError BasicErrorController) (*BasicErrorController, error) {
+		path := fmt.Sprintf("%s/%d", basicErrorEndpoint, errorId)
+		resp, err := service.Client.UpdateWithPatch(path, basicError)
+		if err != nil {
+			return nil, err
+		}
+		res, _ := resp.(BasicErrorController)
+		return &res, err
 	}
-	res, _ := resp.(BasicErrorController)
-	return &res, err
-}
-
+*/
 func (service *Service) Delete(errorId int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", basicErrorEndpoint, errorId))
 	if err != nil {
