@@ -1,4 +1,4 @@
-package basic_error_controller
+package getdevices
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/zcc"

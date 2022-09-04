@@ -1,17 +1,15 @@
 package zcc
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
+	"net/http/cookiejar"
 	"os"
-	"os/user"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -20,149 +18,222 @@ import (
 )
 
 const (
-	defaultBaseURL           = "https://api-mobile.zscaler.net/papi"
-	defaultTimeout           = 240 * time.Second
-	loggerPrefix             = "zcc-logger: "
-	ZCC_CLIENT_ID            = "ZCC_CLIENT_ID"
-	ZCC_CLIENT_SECRET        = "ZCC_CLIENT_SECRET"
-	ZCC_CLOUD                = "ZCC_CLOUD"
-	configPath        string = ".zcc/credentials.json"
+	maxIdleConnections int = 40
+	requestTimeout     int = 60
+	// jSessionIDTimeout         = 30 // minutes
+	jSessionTimeoutOffset = 5 * time.Minute
+	contentTypeJSON       = "application/json"
+	// cookieName            = "JSESSIONID"
+	MaxNumOfRetries     = 100
+	RetryWaitMaxSeconds = 20
+	RetryWaitMinSeconds = 5
+	// API types
+	zccAPIVersion = "/auth/v1"
+	zccAPIAuthURL = "/login"
+	loggerPrefix  = "zcc-logger: "
 )
 
-var defaultBackoffConf = &BackoffConfig{
-	Enabled:             true,
-	MaxNumOfRetries:     100,
-	RetryWaitMaxSeconds: 20,
-	RetryWaitMinSeconds: 5,
+// Client ...
+type Client struct {
+	sync.Mutex
+	clientID         string `json:"client_id"`
+	clientSecret     string `json:"client_secret"`
+	session          *Session
+	sessionRefreshed time.Time     // Also indicates last usage
+	sessionTimeout   time.Duration // in minutes
+	URL              string
+	HTTPClient       *http.Client
+	Logger           *log.Logger
+	UserAgent        string
 }
 
-type BackoffConfig struct {
-	Enabled             bool // Set to true to enable backoff and retry mechanism
-	RetryWaitMinSeconds int  // Minimum time to wait
-	RetryWaitMaxSeconds int  // Maximum time to wait
-	MaxNumOfRetries     int  // Maximum number of retries
+// Session ...
+type Session struct {
+	AuthType string `json:"authType"`
+}
+
+// Credentials ...
+type Credentials struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
 }
 
 type AuthToken struct {
-	JWTToken string `json:"jwtToken"`
+	AuthToken string `json:"auth-token"`
 }
 
-type CredentialsConfig struct {
-	ClientID     string `json:"zcc_client_id"`
-	ClientSecret string `json:"zcc_client_secret"`
-	ZccCloud     string `json:"zcc_cloud"`
-}
-
-// Config contains all the configuration data for the API client
-type Config struct {
-	BaseURL    *url.URL
-	httpClient *http.Client
-	// The logger writer interface to write logging messages to. Defaults to standard out.
-	Logger *log.Logger
-	// Credentials for basic authentication.
-	ClientID, ClientSecret, CustomerID string
-	// Backoff config
-	BackoffConf *BackoffConfig
-	AuthToken   *AuthToken
-	sync.Mutex
-	UserAgent string
-}
-
-/*
-NewConfig returns a default configuration for the client.
-By default it will try to read the access and te secret from the environment variable.
-*/
-// Need to implement exponential back off to comply with the API rate limit. https://help.zscaler.com/zpa/about-rate-limiting
-// 20 times in a 10 second interval for a GET call.
-// 10 times in a 10 second interval for any POST/PUT/DELETE call.
-// TODO Add healthCheck method to NewConfig
-func NewConfig(clientID, clientSecret, cloud, userAgent string) (*Config, error) {
-	// if creds not provided in TF config, try loading from env vars
-	if clientID == "" || clientSecret == "" || cloud == "" || userAgent == "" {
-		clientID = os.Getenv(ZCC_CLIENT_ID)
-		clientSecret = os.Getenv(ZCC_CLIENT_SECRET)
-		cloud = os.Getenv(ZCC_CLOUD)
-	}
-	// last resort to configuration file:
-	if clientID == "" || clientSecret == "" {
-		creds, err := loadCredentialsFromConfig()
-		if err != nil || creds == nil {
-			return nil, err
-		}
-		clientID = creds.ClientID
-		clientSecret = creds.ClientSecret
-		cloud = creds.ZccCloud
-	}
-	rawUrl := defaultBaseURL
-
+// NewClient Returns a Client from credentials passed as parameters
+func NewClient(client_id, client_secret, zccCloud, userAgent string) (*Client, error) {
+	httpClient := getHTTPClient()
 	var logger *log.Logger
 	if loggerEnv := os.Getenv("ZSCALER_SDK_LOG"); loggerEnv == "true" {
 		logger = getDefaultLogger()
 	}
-
-	baseURL, err := url.Parse(rawUrl)
-	if err != nil {
-		log.Printf("[ERROR] error occurred while configuring the client: %v", err)
-	}
-	return &Config{
-		BaseURL:      baseURL,
+	url := fmt.Sprintf("https://mobileadmin.%s.net/papi/%s", zccCloud, zccAPIVersion)
+	cli := Client{
+		clientID:     client_id,
+		clientSecret: client_secret,
+		HTTPClient:   httpClient,
+		URL:          url,
 		Logger:       logger,
-		httpClient:   nil,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		BackoffConf:  defaultBackoffConf,
 		UserAgent:    userAgent,
-	}, err
-}
-
-func (c *Config) SetBackoffConfig(backoffConf BackoffConfig) {
-	c.BackoffConf = &backoffConf
-}
-
-// loadCredentialsFromConfig Returns the credentials found in a config file
-func loadCredentialsFromConfig() (*CredentialsConfig, error) {
-	usr, _ := user.Current()
-	dir := usr.HomeDir
-	path := filepath.Join(dir, configPath)
-	log.Printf("[INFO]Loading configuration file at:%s", path)
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zcc_client_id, zcc_client_secret, and zcc_cloud. " + err.Error())
 	}
-	configBytes, err := ioutil.ReadAll(file)
+	return &cli, nil
+}
+
+// MakeAuthRequestZIA ...
+func MakeAuthRequestZCC(credentials *Credentials, url string, client *http.Client, userAgent string) (*Session, error) {
+	if credentials == nil {
+		return nil, fmt.Errorf("empty credentials")
+	}
+
+	data, err := json.Marshal(credentials)
 	if err != nil {
 		return nil, err
 	}
-	var config CredentialsConfig
-	err = json.Unmarshal(configBytes, &config)
-	if err != nil || config.ClientID == "" || config.ClientSecret == "" || config.ZccCloud == "" {
-		return nil, fmt.Errorf("could not parse credentials file, needs to contain one json object with keys: zcc_client_id, zcc_client_secret,  and zcc_cloud. error: %v", err)
+	req, err := http.NewRequest("POST", url+zccAPIAuthURL, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
 	}
-	return &config, nil
+	req.Header.Set("Content-Type", contentTypeJSON)
+	if userAgent != "" {
+		req.Header.Add("User-Agent", userAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("un-successful request with status code: %v", resp.Status)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var session Session
+	err = json.Unmarshal(body, &session)
+	if err != nil {
+		return nil, err
+	}
+	// We get the whole string match as session ID
+	// session.JSessionID, err = extractJSessionIDFromHeaders(resp.Header)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return &session, nil
 }
 
-func (c *Config) GetHTTPClient() *http.Client {
-	if c.httpClient == nil {
-		if c.BackoffConf != nil && c.BackoffConf.Enabled {
-			retryableClient := retryablehttp.NewClient()
-			retryableClient.RetryWaitMin = time.Second * time.Duration(c.BackoffConf.RetryWaitMinSeconds)
-			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
-			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
-			retryableClient.HTTPClient.Transport = logging.NewTransport("gozscaler", retryableClient.HTTPClient.Transport)
-			retryableClient.CheckRetry = checkRetry
-			retryableClient.HTTPClient.Timeout = defaultTimeout
-			c.httpClient = retryableClient.StandardClient()
-		} else {
-			c.httpClient = &http.Client{
-				Timeout: defaultTimeout,
+/*
+func extractJSessionIDFromHeaders(header http.Header) (string, error) {
+	sessionIdStr := header.Get("Set-Cookie")
+	if sessionIdStr == "" {
+		return "", fmt.Errorf("no Set-Cookie header received")
+	}
+	regex := regexp.MustCompile("JSESSIONID=(.*?);")
+	// look for the first match we find
+	result := regex.FindStringSubmatch(sessionIdStr)
+	if len(result) < 2 {
+		return "", fmt.Errorf("couldn't find JSESSIONID in header value")
+	}
+	return result[1], nil
+}
+
+*/
+
+func getCurrentTimestampMilisecond() string {
+	return fmt.Sprintf("%d", time.Now().UnixNano()/int64(time.Millisecond))
+}
+
+// RefreshSession .. the caller should require lock
+func (c *Client) refreshSession() error {
+	// timeStamp := getCurrentTimestampMilisecond()
+	// obfuscatedKey, err := obfuscateAPIKey(c.apiKey, timeStamp)
+	// if err != nil {
+	// 	return err
+	// }
+	credentialData := Credentials{
+		ClientID:     c.clientID,
+		ClientSecret: c.clientSecret,
+	}
+	session, err := MakeAuthRequestZCC(&credentialData, c.URL, c.HTTPClient, c.UserAgent)
+	if err != nil {
+		return err
+	}
+	c.session = session
+	c.sessionRefreshed = time.Now()
+	return nil
+}
+
+// checkSession synce new session if its over the timeout limit.
+func (c *Client) checkSession() error {
+	// One call to this function is allowed at a time caller must call lock.
+	if c.session == nil {
+		err := c.refreshSession()
+		if err != nil {
+			log.Printf("[ERROR] failed to get session id: %v\n", err)
+			return err
+		}
+		if c.HTTPClient.Jar == nil {
+			c.HTTPClient.Jar, err = cookiejar.New(nil)
+			if err != nil {
+				log.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
+				return err
 			}
 		}
+		return nil
 	}
-	return c.httpClient
+	// } else {
+	// 	now := time.Now()
+	// 	// Refresh if session has expire time (diff than -1)  & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
+	// 	if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).Before(now) {
+	// 		err := c.refreshSession()
+	// 		if err != nil {
+	// 			log.Printf("[ERROR] failed to refresh session id: %v\n", err)
+	// 			return err
+	// 		}
+	// 	}
+	// }
+	// url, err := url.Parse(c.URL)
+	// if err != nil {
+	// 	log.Printf("[ERROR] failed to parse url %s: %v\n", c.URL, err)
+	// 	return err
+	// }
+	// if c.HTTPClient.Jar == nil {
+	// 	c.HTTPClient.Jar, err = cookiejar.New(nil)
+	// 	if err != nil {
+	// 		log.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
+	// 		return err
+	// 	}
+	// }
+	// c.HTTPClient.Jar.SetCookies(url, []*http.Cookie{
+	// 	{
+	// 		Name:  cookieName,
+	// 		Value: c.session.JSessionID,
+	// 	},
+	// })
+	return nil
 }
 
-func getDefaultLogger() *log.Logger {
-	return log.New(os.Stdout, loggerPrefix, log.LstdFlags|log.Lshortfile)
+func (c *Client) GetContentType() string {
+	return contentTypeJSON
+}
+
+func getHTTPClient() *http.Client {
+	retryableClient := retryablehttp.NewClient()
+	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
+	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
+	retryableClient.RetryMax = MaxNumOfRetries
+	retryableClient.CheckRetry = checkRetry
+	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
+	retryableClient.HTTPClient.Transport = &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		MaxIdleConnsPerHost: maxIdleConnections,
+	}
+	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler-zcc", retryableClient.HTTPClient.Transport)
+
+	return retryableClient.StandardClient()
 }
 
 func containsInt(codes []int, code int) bool {
@@ -191,4 +262,16 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return true, nil
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+}
+
+func getDefaultLogger() *log.Logger {
+	return log.New(os.Stdout, loggerPrefix, log.LstdFlags|log.Lshortfile)
+}
+
+func (c *Client) Logout() error {
+	_, err := c.Request(zccAPIAuthURL, "DELETE", nil, "application/json")
+	if err != nil {
+		return err
+	}
+	return nil
 }

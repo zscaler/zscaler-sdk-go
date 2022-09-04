@@ -5,185 +5,137 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
-	"strings"
-
-	"github.com/google/go-querystring/query"
+	"reflect"
 )
 
-type Client struct {
-	Config *Config
-}
-
-// NewClient returns a new client for the specified apiKey.
-func NewClient(config *Config) (c *Client) {
-	if config == nil {
-		config, _ = NewConfig("", "", "", "")
+// Request ... // Needs to review this function
+func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
+	c.Lock()
+	defer c.Unlock()
+	if contentType == "" {
+		contentType = contentTypeJSON
 	}
-	c = &Client{Config: config}
-	return
-}
 
-func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
-	return client.newRequestDoCustom(method, url, options, body, v)
-}
-
-func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
-	client.Config.Lock()
-	defer client.Config.Unlock()
-	if client.Config.AuthToken == nil || client.Config.AuthToken.JWTToken == "" {
-		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
-			log.Printf("[ERROR] No client credentials were provided. Please set %s, and %s environment variables.\n", ZCC_CLIENT_ID, ZCC_CLIENT_SECRET)
-			return nil, errors.New("no client credentials were provided")
-		}
-		log.Printf("[TRACE] Getting access token for %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
-		data := url.Values{}
-		data.Set("client_id", client.Config.ClientID)
-		data.Set("client_secret", client.Config.ClientSecret)
-		req, err := http.NewRequest("POST", client.Config.BaseURL.String()+"/signin", strings.NewReader(data.Encode()))
-		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
-			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
-		}
-
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		if client.Config.UserAgent != "" {
-			req.Header.Add("User-Agent", client.Config.UserAgent)
-		}
-		resp, err := client.Config.GetHTTPClient().Do(req)
-		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
-			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
-		}
-		defer resp.Body.Close()
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
-			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
-		}
-		if resp.StatusCode >= 300 {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
-			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
-		}
-		var a AuthToken
-		err = json.Unmarshal(respBody, &a)
-		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
-			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
-		}
-		// we need keep auth token for future http request
-		client.Config.AuthToken = &a
-	}
-	req, err := client.newRequest(method, urlStr, options, body)
+	var req *http.Request
+	var err error
+	err = c.checkSession()
 	if err != nil {
 		return nil, err
 	}
-	client.logRequest(req)
-	return client.do(req, v)
-}
-
-// Generating the Http request
-func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
-	if client.Config.AuthToken == nil || client.Config.AuthToken.JWTToken == "" {
-		log.Printf("[ERROR] Failed to signin the user %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
-		return nil, fmt.Errorf("failed to signin the user %s=%s", ZCC_CLIENT_ID, client.Config.ClientID)
-	}
-	var buf io.ReadWriter
-	if body != nil {
-		buf = new(bytes.Buffer)
-		err := json.NewEncoder(buf).Encode(body)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Join the path to the base-url
-	u := *client.Config.BaseURL
-	unescaped, err := url.PathUnescape(urlPath)
+	req, err = http.NewRequest(method, c.URL+endpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the encoded path data
-	u.RawPath = u.Path + urlPath
-	u.Path = u.Path + unescaped
-
-	// Set the query parameters
-	if options != nil {
-		q, err := query.Values(options)
-		if err != nil {
-			return nil, err
-		}
-		u.RawQuery = q.Encode()
+	req.Header.Set("Content-Type", contentType)
+	if c.UserAgent != "" {
+		req.Header.Add("User-Agent", c.UserAgent)
 	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 299 {
+		return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+	}
+	defer resp.Body.Close()
 
-	req, err := http.NewRequest(method, u.String(), buf)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.Config.AuthToken.JWTToken))
-	req.Header.Add("Content-Type", "application/json")
-
-	if client.Config.UserAgent != "" {
-		req.Header.Add("User-Agent", client.Config.UserAgent)
-	}
-
-	return req, nil
+	return body, nil
 }
 
-func (client *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
-	resp, err := client.Config.GetHTTPClient().Do(req)
+// Create send HTTP Post request
+func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
+	if o == nil {
+		return nil, errors.New("tried to create with a nil payload not a Struct")
+	}
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
+	}
+	data, err := json.Marshal(o)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkErrorInResponse(resp); err != nil {
-		return resp, err
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
 	}
 
-	if v != nil {
-		if err := decodeJSON(resp, v); err != nil {
-			return resp, err
-		}
+	responseObject := reflect.New(t).Interface()
+	err = json.Unmarshal(resp, &responseObject)
+	if err != nil {
+		return nil, err
 	}
-	client.logResponse(resp)
-	unescapeHTML(v)
-	return resp, nil
+	id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+
+	log.Printf("Created Object with ID %v", id)
+	return responseObject, nil
 }
 
-func decodeJSON(res *http.Response, v interface{}) error {
-	return json.NewDecoder(res.Body).Decode(&v)
+// Read ...
+func (c *Client) Read(endpoint string, o interface{}) error {
+	contentType := c.GetContentType()
+	resp, err := c.Request(endpoint, "GET", nil, contentType)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(resp, o)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func unescapeHTML(entity interface{}) {
-	if entity == nil {
-		return
+// Update ...
+func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(endpoint, o, "PUT", "application/json")
+}
+
+// Update ...
+func (c *Client) Update(endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(endpoint, o, "PATCH", "application/merge-patch+json")
+}
+
+// Update ...
+func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentType string) (interface{}, error) {
+	if o == nil {
+		return nil, errors.New("tried to update with a nil payload not a Struct")
 	}
-	data, err := json.Marshal(entity)
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, errors.New("tried to update with a " + t.Kind().String() + " not a Struct")
+	}
+	data, err := json.Marshal(o)
 	if err != nil {
-		return
+		return nil, err
 	}
-	var mapData map[string]interface{}
-	err = json.Unmarshal(data, &mapData)
+
+	resp, err := c.Request(endpoint, method, data, contentType)
 	if err != nil {
-		return
+		return nil, err
 	}
-	for _, field := range []string{"name", "description"} {
-		if v, ok := mapData[field]; ok && v != nil {
-			str, ok := v.(string)
-			if ok {
-				mapData[field] = html.UnescapeString(html.UnescapeString(str))
-			}
-		}
-	}
-	data, err = json.Marshal(mapData)
+
+	responseObject := reflect.New(t).Interface()
+	err = json.Unmarshal(resp, &responseObject)
+	return responseObject, err
+}
+
+// Delete ...
+func (c *Client) Delete(endpoint string) error {
+	_, err := c.Request(endpoint, "DELETE", nil, "application/json")
 	if err != nil {
-		return
+		return err
 	}
-	json.Unmarshal(data, entity)
+	return nil
 }
