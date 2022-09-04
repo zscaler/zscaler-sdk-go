@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zscaler/zscaler-sdk-go/zpa"
 )
 
 type dummyStruct struct {
@@ -20,7 +21,7 @@ type dummyStruct struct {
 
 var (
 	mux    *http.ServeMux
-	client *Client
+	client *zpa.Client
 	server *httptest.Server
 )
 
@@ -80,7 +81,7 @@ func TestClient_NewRequestDo(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		client = NewClient(setupMuxConfig())
+		client = zpa.NewClient(setupMuxConfig())
 		client.WriteLog("Server URL: %v", client.Config.BaseURL)
 		t.Run(tt.name, func(t *testing.T) {
 			mux.HandleFunc(tt.args.url, tt.muxHandler)
@@ -108,20 +109,20 @@ func TestNewClient(t *testing.T) {
 	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
 	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
 	type args struct {
-		config *Config
+		config *zpa.Config
 	}
 	tests := []struct {
 		name  string
 		args  args
 		cloud string
-		wantC *Config
+		wantC *zpa.Config
 	}{
 		// NewClient test cases
 		{
 			name:  "Successful Client creation with default config values",
-			args:  struct{ config *Config }{config: nil},
+			args:  struct{ config *zpa.Config }{config: nil},
 			cloud: "",
-			wantC: &Config{
+			wantC: &zpa.Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.private.zscaler.com",
@@ -134,9 +135,9 @@ func TestNewClient(t *testing.T) {
 		},
 		{
 			name:  "Production cloud support",
-			args:  struct{ config *Config }{config: nil},
+			args:  struct{ config *zpa.Config }{config: nil},
 			cloud: "production",
-			wantC: &Config{
+			wantC: &zpa.Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.private.zscaler.com",
@@ -149,9 +150,9 @@ func TestNewClient(t *testing.T) {
 		},
 		{
 			name:  "Gov cloud support",
-			args:  struct{ config *Config }{config: nil},
+			args:  struct{ config *zpa.Config }{config: nil},
 			cloud: "gov",
-			wantC: &Config{
+			wantC: &zpa.Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.zpagov.net",
@@ -164,9 +165,9 @@ func TestNewClient(t *testing.T) {
 		},
 		{
 			name:  "Arbitrary cloud support",
-			args:  struct{ config *Config }{config: nil},
+			args:  struct{ config *zpa.Config }{config: nil},
 			cloud: "https://config.somecloud.net",
-			wantC: &Config{
+			wantC: &zpa.Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.somecloud.net",
@@ -180,14 +181,14 @@ func TestNewClient(t *testing.T) {
 		{
 			name:  "Successful Client creation with custom config values",
 			cloud: "",
-			args: struct{ config *Config }{config: &Config{
+			args: struct{ config *zpa.Config }{config: &zpa.Config{
 				BaseURL:      &url.URL{Host: "https://otherhost.com"},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
 				UserAgent:    "userAgent",
 			}},
-			wantC: &Config{
+			wantC: &zpa.Config{
 				BaseURL:      &url.URL{Host: "https://otherhost.com"},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
@@ -199,7 +200,7 @@ func TestNewClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv(ZPA_CLOUD, tt.cloud)
-			gotC := NewClient(tt.args.config)
+			gotC := zpa.NewClient(tt.args.config)
 			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
 			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
 			assert.Equal(t, gotC.Config.ClientID, tt.wantC.ClientID)
@@ -208,7 +209,7 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-func setupMuxConfig() *Config {
+func setupMuxConfig() *zpa.Config {
 	mux = http.NewServeMux()
 	mux.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -219,7 +220,7 @@ func setupMuxConfig() *Config {
 		}
 	})
 	server = httptest.NewServer(mux)
-	config, err := NewConfig("clientID", "clientID", "customerID", "cloud", "userAgent")
+	config, err := zpa.NewConfig("clientID", "clientID", "customerID", "cloud", "userAgent")
 	if err != nil {
 		panic(err)
 	}
