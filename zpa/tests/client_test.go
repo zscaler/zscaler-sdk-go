@@ -105,9 +105,9 @@ func TestClient_NewRequestDo(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	os.Setenv(ZPA_CLIENT_ID, "ClientID")
-	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
-	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
+	os.Setenv(zpa.ZPA_CLIENT_ID, "ClientID")
+	os.Setenv(zpa.ZPA_CLIENT_SECRET, "ClientSecret")
+	os.Setenv(zpa.ZPA_CUSTOMER_ID, "CustomerID")
 	type args struct {
 		config *zpa.Config
 	}
@@ -199,7 +199,7 @@ func TestNewClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv(ZPA_CLOUD, tt.cloud)
+			os.Setenv(zpa.ZPA_CLOUD, tt.cloud)
 			gotC := zpa.NewClient(tt.args.config)
 			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
 			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
