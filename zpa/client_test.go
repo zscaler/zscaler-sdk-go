@@ -148,6 +148,21 @@ func TestNewClient(t *testing.T) {
 			},
 		},
 		{
+			name:  "Beta cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "beta",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.zpabeta.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
 			name:  "Gov cloud support",
 			args:  struct{ config *Config }{config: nil},
 			cloud: "gov",
@@ -155,6 +170,21 @@ func TestNewClient(t *testing.T) {
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.zpagov.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name:  "Preview cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "preview",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.zpapreview.net",
 				},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
