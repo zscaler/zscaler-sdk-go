@@ -1,5 +1,21 @@
 # Changelog
 
+# 0.0.10 (September, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #23](https://github.com/zscaler/zscaler-sdk-go/pull/23) Fix zia_user_management group attribute to hold a list of group IDs as a typeList instead of typeSet.
+
+# 0.0.9 (September, 10 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+- [PR #20](https://github.com/zscaler/zscaler-sdk-go/pull/20) Added Support to ZPA Preview CLOUD.
+
 # 0.0.8 (September, 2 2022)
 
 ## Notes
