@@ -87,3 +87,12 @@ func (service *Service) Delete(userID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
+func (service *Service) GetAllUsers() ([]Users, error) {
+	var users []Users
+	err := service.Client.Read(usersEndpoint, &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
