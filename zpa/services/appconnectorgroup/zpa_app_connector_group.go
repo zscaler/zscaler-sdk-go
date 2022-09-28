@@ -34,6 +34,10 @@ type AppConnectorGroup struct {
 	VersionProfileID              string           `json:"versionProfileId,omitempty"`
 	VersionProfileName            string           `json:"versionProfileName,omitempty"`
 	VersionProfileVisibilityScope string           `json:"versionProfileVisibilityScope,omitempty"`
+	TCPQuickAckApp                bool             `json:"tcpQuickAckApp"`
+	TCPQuickAckAssistant          bool             `json:"tcpQuickAckAssistant"`
+	UseInDrMode                   bool             `json:"useInDrMode"`
+	TCPQuickAckReadAssistant      bool             `json:"tcpQuickAckReadAssistant"`
 	LSSAppConnectorGroup          bool             `json:"lssAppConnectorGroup"`
 	AppServerGroup                []AppServerGroup `json:"serverGroups,omitempty"`
 	Connectors                    []*Connector     `json:"connectors,omitempty"`
