@@ -20,6 +20,7 @@ type GreTunnels struct {
 	WithinCountry        bool              `json:"withinCountry"`
 	Comment              string            `json:"comment,omitempty"`
 	IPUnnumbered         bool              `json:"ipUnnumbered"`
+	SubCloud             string            `json:"subcloud,omitempty"`
 	ManagedBy            *ManagedBy        `json:"managedBy,omitempty"`      // Should probably move this to a common package. Used by multiple resources
 	LastModifiedBy       *LastModifiedBy   `json:"lastModifiedBy,omitempty"` // Should probably move this to a common package. Used by multiple resources
 	PrimaryDestVip       *PrimaryDestVip   `json:"primaryDestVip,omitempty"`
