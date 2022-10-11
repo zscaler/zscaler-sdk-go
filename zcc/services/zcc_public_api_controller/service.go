@@ -1,4 +1,4 @@
-package getdevices
+package publicapi
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/zcc"

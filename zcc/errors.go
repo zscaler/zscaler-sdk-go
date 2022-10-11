@@ -8,22 +8,18 @@ import (
 
 type ErrorResponse struct {
 	Response *http.Response
-	Err      error
 	Message  string
 }
 
 func (r *ErrorResponse) Error() string {
-	if r.Response != nil {
-		return fmt.Sprintf("FAILED: %v, %v, %d, %v, %v, %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Response.Status, r.Message, r.Err)
-	}
-	return fmt.Sprintf("FAILED: %v", r.Err)
+	return fmt.Sprintf("FAILED: %v, %v, %d, %v, %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Response.Status, r.Message)
 }
 
-func checkErrorInResponse(res *http.Response, respErr error) error {
+func checkErrorInResponse(res *http.Response) error {
 	if c := res.StatusCode; c >= 200 && c <= 299 {
-		return respErr
+		return nil
 	}
-	errorResponse := &ErrorResponse{Response: res, Err: respErr}
+	errorResponse := &ErrorResponse{Response: res}
 	errorMessage, err := ioutil.ReadAll(res.Body)
 	if err == nil && len(errorMessage) > 0 {
 		errorResponse.Message = string(errorMessage)

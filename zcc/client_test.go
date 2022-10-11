@@ -1,11 +1,11 @@
 package zcc
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
 	"reflect"
 	"testing"
 
@@ -13,38 +13,36 @@ import (
 )
 
 type dummyStruct struct {
-	ID int `json:"id"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 var (
 	mux    *http.ServeMux
+	client *Client
 	server *httptest.Server
 )
 
 const (
-	getResponse  = `{"id": 1234}`
+	getResponse  = `{"id": 1234,"name":"name with &amp;amp;, &amp;lt; and &amp;gt;","description":"description with &amp;amp;, &amp;lt; and &amp;gt;"}`
 	authResponse = `{
-	"authType": "authType",
-    "obfuscateApiKey": true,
-    "passwordExpiryTime": 10000,
-    "passwordExpiryDays": 10000,
-    "source": "source",
-    "jSessionID": ""
+	"jwtToken": "jwtToken"
 }`
 )
 
-func TestClient_Request(t *testing.T) {
-	defer teardown()
+func TestClient_NewRequestDo(t *testing.T) {
 	type args struct {
 		method string
 		url    string
-		body   []byte
+		body   interface{}
 		v      interface{}
 	}
 	tests := []struct {
 		name       string
 		args       args
 		muxHandler func(w http.ResponseWriter, r *http.Request)
+		wantResp   *http.Response
 		wantErr    bool
 		wantVal    *dummyStruct
 	}{
@@ -54,7 +52,7 @@ func TestClient_Request(t *testing.T) {
 			args: struct {
 				method string
 				url    string
-				body   []byte
+				body   interface{}
 				v      interface{}
 			}{
 				method: "GET",
@@ -63,103 +61,148 @@ func TestClient_Request(t *testing.T) {
 				v:      new(dummyStruct),
 			},
 			muxHandler: func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Add("Content-Type", "application/json")
 				_, err := w.Write([]byte(getResponse))
+				w.Header().Set("Content-Type", "application/json")
 				if err != nil {
 					t.Fatal(err)
 				}
-				// panic(fmt.Sprintf("%v", r.Header))
+			},
+			wantResp: &http.Response{
+				StatusCode: 200,
 			},
 			wantVal: &dummyStruct{
-				ID: 1234,
+				ID:          1234,
+				Name:        "name with &, < and >",
+				Description: "description with &, < and >",
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		client := setupMuxAndClient()
+		client = NewClient(setupMuxConfig())
+		client.WriteLog("Server URL: %v", client.Config.BaseURL)
 		t.Run(tt.name, func(t *testing.T) {
-			mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Add("Content-Type", "application/json")
-				// w.Header().Add("Set-Cookie", "JSESSIONID=JSESSIONID;")
-				_, err := w.Write([]byte(authResponse))
-				if err != nil {
-					log.Fatal(err)
-				}
-			})
 			mux.HandleFunc(tt.args.url, tt.muxHandler)
-			resp, err := client.Request(tt.args.url, tt.args.method, tt.args.body, client.GetContentType())
+			res, err := client.NewRequestDo(tt.args.method, tt.args.url, nil, tt.args.body, tt.args.v)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.NewRequestDo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			json.Unmarshal(resp, &tt.args.v)
+
+			if tt.wantResp.StatusCode != res.StatusCode {
+				t.Errorf("Client.NewRequestDo() = %v, want %v", res, tt.wantResp)
+			}
+
 			if !reflect.DeepEqual(tt.args.v, tt.wantVal) {
 				t.Errorf("returned %#v; want %#v", tt.args.v, tt.wantVal)
 			}
 		})
 	}
+	teardown()
 }
 
 func TestNewClient(t *testing.T) {
+	os.Setenv(ZCC_CLIENT_ID, "ClientID")
+	os.Setenv(ZCC_CLIENT_SECRET, "ClientSecret")
 	type args struct {
-		clientID     string
-		clientSecret string
-		zccCloud     string
-		UserAgent    string
+		config *Config
 	}
 	tests := []struct {
 		name  string
 		args  args
-		wantC *Client
+		wantC *Config
 	}{
+		// NewClient test cases
+		{
+			name: "Successful Client creation with default config values",
+			args: struct{ config *Config }{config: nil},
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "mobileadmin.cloud1.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				Cloud:        "cloud1",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name: "Gov cloud support",
+			args: struct{ config *Config }{config: nil},
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "mobileadmin.cloud2.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				Cloud:        "cloud2",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name: "Arbitrary cloud support",
+			args: struct{ config *Config }{config: nil},
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "mobileadmin.cloud3.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				Cloud:        "cloud3",
+				UserAgent:    "userAgent",
+			},
+		},
 		{
 			name: "Successful Client creation with custom config values",
-			args: struct {
-				clientID     string
-				clientSecret string
-				zccCloud     string
-				UserAgent    string
-			}{
-				zccCloud:     "zccCloud",
-				clientID:     "clientID",
-				clientSecret: "clientSecret",
-				UserAgent:    "UserAgent",
-			},
-			wantC: &Client{
-				URL:          fmt.Sprintf("https://mobileadmin.%s.net/papi/%s", "zccCloud", zccAPIVersion),
-				clientID:     "clientID",
-				clientSecret: "clientSecret",
-				UserAgent:    "UserAgent",
+			args: struct{ config *Config }{config: &Config{
+				BaseURL:      &url.URL{Host: "mobileadmin.cloud5.net"},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				Cloud:        "cloud5",
+				UserAgent:    "userAgent",
+			}},
+			wantC: &Config{
+				BaseURL:      &url.URL{Host: "mobileadmin.cloud5.net"},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				Cloud:        "cloud5",
+				UserAgent:    "userAgent",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotC, err := NewClient(tt.args.clientID, tt.args.clientSecret, tt.args.zccCloud, tt.args.UserAgent)
-			if err != nil {
-				t.Errorf("NewClient error = %v, wantErr nil", err)
-				return
-			}
-			assert.Equal(t, gotC.URL, tt.wantC.URL)
-			assert.NotNil(t, gotC.HTTPClient)
-			assert.Equal(t, gotC.clientSecret, tt.wantC.clientSecret)
-			assert.Equal(t, gotC.clientID, tt.wantC.clientID)
-			assert.Equal(t, gotC.UserAgent, tt.wantC.UserAgent)
+			os.Setenv(ZCC_CLOUD, tt.wantC.Cloud)
+			gotC := NewClient(tt.args.config)
+			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
+			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
+			assert.Equal(t, gotC.Config.ClientID, tt.wantC.ClientID)
+			assert.Equal(t, gotC.Config.ClientSecret, tt.wantC.ClientSecret)
 		})
 	}
 }
 
-func setupMuxAndClient() *Client {
+func setupMuxConfig() *Config {
 	mux = http.NewServeMux()
+	mux.HandleFunc("/auth/v1/login", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		_, err := w.Write([]byte(authResponse))
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 	server = httptest.NewServer(mux)
-	cli, err := NewClient("client_id", "client_secret", "cloud", "")
+	config, err := NewConfig("clientID", "clientID", "cloud", "userAgent")
 	if err != nil {
 		panic(err)
 	}
-	cli.URL = server.URL
-
-	return cli
+	url, _ := url.Parse(server.URL)
+	config.BaseURL = url
+	return config
 }
 
 func teardown() {
