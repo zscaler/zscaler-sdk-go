@@ -131,5 +131,12 @@ func (service *Service) GetAll() ([]BrowserAccess, *http.Response, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	result := []BrowserAccess{}
+	// filter browser access apps
+	for _, item := range v.List {
+		if len(item.ClientlessApps) > 0 {
+			result = append(result, item)
+		}
+	}
+	return result, resp, nil
 }

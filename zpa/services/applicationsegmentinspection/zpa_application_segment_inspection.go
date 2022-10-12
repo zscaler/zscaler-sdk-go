@@ -200,6 +200,12 @@ func (service *Service) GetAll() ([]AppSegmentInspection, *http.Response, error)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v.List, resp, nil
+	result := []AppSegmentInspection{}
+	// filter inspection apps
+	for _, item := range v.List {
+		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT") {
+			result = append(result, item)
+		}
+	}
+	return result, resp, nil
 }

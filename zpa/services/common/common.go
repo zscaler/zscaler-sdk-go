@@ -46,3 +46,12 @@ func RemoveCloudSuffix(str string) string {
 	res := reg.ReplaceAllString(str, "${1}")
 	return strings.Trim(res, " ")
 }
+
+func InList(list []string, item string) bool {
+	for _, i := range list {
+		if i == item {
+			return true
+		}
+	}
+	return false
+}
