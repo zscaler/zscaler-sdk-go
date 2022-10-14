@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 const (
@@ -65,7 +65,7 @@ type Config struct {
 	BaseURL    *url.URL
 	httpClient *http.Client
 	// The logger writer interface to write logging messages to. Defaults to standard out.
-	Logger *log.Logger
+	Logger logger.Logger
 	// Credentials for basic authentication.
 	ClientID, ClientSecret, CustomerID string
 	// Backoff config
@@ -84,6 +84,7 @@ By default it will try to read the access and te secret from the environment var
 // 10 times in a 10 second interval for any POST/PUT/DELETE call.
 // TODO Add healthCheck method to NewConfig
 func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Config, error) {
+	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 	// if creds not provided in TF config, try loading from env vars
 	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
 		clientID = os.Getenv(ZPA_CLIENT_ID)
@@ -93,7 +94,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	// last resort to configuration file:
 	if clientID == "" || clientSecret == "" || customerID == "" {
-		creds, err := loadCredentialsFromConfig()
+		creds, err := loadCredentialsFromConfig(logger)
 		if err != nil || creds == nil {
 			return nil, err
 		}
@@ -121,14 +122,9 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		rawUrl = previewBaseUrl
 	}
 
-	var logger *log.Logger
-	if loggerEnv := os.Getenv("ZSCALER_SDK_LOG"); loggerEnv == "true" {
-		logger = getDefaultLogger()
-	}
-
 	baseURL, err := url.Parse(rawUrl)
 	if err != nil {
-		log.Printf("[ERROR] error occurred while configuring the client: %v", err)
+		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
 	return &Config{
 		BaseURL:      baseURL,
@@ -147,11 +143,11 @@ func (c *Config) SetBackoffConfig(backoffConf BackoffConfig) {
 }
 
 // loadCredentialsFromConfig Returns the credentials found in a config file
-func loadCredentialsFromConfig() (*CredentialsConfig, error) {
+func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error) {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
 	path := filepath.Join(dir, configPath)
-	log.Printf("[INFO]Loading configuration file at:%s", path)
+	logger.Printf("[INFO]Loading configuration file at:%s", path)
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zpa_client_id, zpa_client_secret, zpa_customer_id, and zpa_cloud. " + err.Error())
@@ -172,6 +168,7 @@ func (c *Config) GetHTTPClient() *http.Client {
 	if c.httpClient == nil {
 		if c.BackoffConf != nil && c.BackoffConf.Enabled {
 			retryableClient := retryablehttp.NewClient()
+			retryableClient.Logger = c.Logger
 			retryableClient.RetryWaitMin = time.Second * time.Duration(c.BackoffConf.RetryWaitMinSeconds)
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
@@ -186,10 +183,6 @@ func (c *Config) GetHTTPClient() *http.Client {
 		}
 	}
 	return c.httpClient
-}
-
-func getDefaultLogger() *log.Logger {
-	return log.New(os.Stdout, loggerPrefix, log.LstdFlags|log.Lshortfile)
 }
 
 func containsInt(codes []int, code int) bool {

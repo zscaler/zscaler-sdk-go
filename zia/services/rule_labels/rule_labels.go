@@ -3,7 +3,6 @@ package rule_labels
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -31,7 +30,7 @@ func (service *Service) Get(ruleLabelID int) (*RuleLabels, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning rule label from Get: %d", ruleLabel.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning rule label from Get: %d", ruleLabel.ID)
 	return &ruleLabel, nil
 }
 
@@ -60,7 +59,7 @@ func (service *Service) Create(ruleLabelID *RuleLabels) (*RuleLabels, *http.Resp
 		return nil, nil, errors.New("object returned from api was not a rule label pointer")
 	}
 
-	log.Printf("returning new rule label from create: %d", createdRuleLabel.ID)
+	service.Client.Logger.Printf("[DEBUG]returning new rule label from create: %d", createdRuleLabel.ID)
 	return createdRuleLabel, nil, nil
 }
 
@@ -71,7 +70,7 @@ func (service *Service) Update(ruleLabelID int, ruleLabels *RuleLabels) (*RuleLa
 	}
 	updatedRuleLabel, _ := resp.(*RuleLabels)
 
-	log.Printf("returning updates rule label from update: %d", updatedRuleLabel.ID)
+	service.Client.Logger.Printf("[DEBUG]returning updates rule label from update: %d", updatedRuleLabel.ID)
 	return updatedRuleLabel, nil, nil
 }
 

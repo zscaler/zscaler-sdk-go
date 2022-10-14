@@ -3,7 +3,6 @@ package urlcategories
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -54,7 +53,7 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning custom url category from Get: %s", urlCategory.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning custom url category from Get: %s", urlCategory.ID)
 	return &urlCategory, nil
 }
 
@@ -83,7 +82,7 @@ func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory
 		return nil, errors.New("object returned from API was not a url category Pointer")
 	}
 
-	log.Printf("Returning url category from Create: %v", createdUrlCategory.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning url category from Create: %v", createdUrlCategory.ID)
 	return createdUrlCategory, nil
 }
 
@@ -93,7 +92,7 @@ func (service *Service) UpdateURLCategories(categoryID string, category *URLCate
 		return nil, nil, err
 	}
 	updatedUrlCategory, _ := resp.(*URLCategory)
-	log.Printf("Returning url category from Update: %s", updatedUrlCategory.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning url category from Update: %s", updatedUrlCategory.ID)
 	return updatedUrlCategory, nil, nil
 }
 

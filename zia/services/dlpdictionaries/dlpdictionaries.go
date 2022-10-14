@@ -3,7 +3,6 @@ package dlpdictionaries
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -61,7 +60,7 @@ func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning dictionary from Get: %d", dlpDictionary.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning dictionary from Get: %d", dlpDictionary.ID)
 	return &dlpDictionary, nil
 }
 
@@ -90,7 +89,7 @@ func (service *Service) Create(dlpDictionariesID *DlpDictionary) (*DlpDictionary
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	log.Printf("returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
+	service.Client.Logger.Printf("[DEBUG]returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
 	return createdDlpDictionary, nil, nil
 }
 
@@ -101,7 +100,7 @@ func (service *Service) Update(dlpDictionariesID int, dlpDictionaries *DlpDictio
 	}
 	updatedDlpDictionary, _ := resp.(*DlpDictionary)
 
-	log.Printf("returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
+	service.Client.Logger.Printf("[DEBUG]returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
 	return updatedDlpDictionary, nil, nil
 }
 

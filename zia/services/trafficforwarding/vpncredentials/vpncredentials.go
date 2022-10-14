@@ -3,7 +3,6 @@ package vpncredentials
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,7 +42,7 @@ func (service *Service) Get(vpnCredentialID int) (*VPNCredentials, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning VPN Credentials from Get: %d", vpnCredentials.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning VPN Credentials from Get: %d", vpnCredentials.ID)
 	return &vpnCredentials, nil
 }
 
@@ -87,7 +86,7 @@ func (service *Service) Create(vpnCredentials *VPNCredentials) (*VPNCredentials,
 		return nil, nil, errors.New("object returned from api was not a vpn credential pointer")
 	}
 
-	log.Printf("returning vpn credential from create: %d", createdVpnCredentials.ID)
+	service.Client.Logger.Printf("[DEBUG]returning vpn credential from create: %d", createdVpnCredentials.ID)
 	return createdVpnCredentials, nil, nil
 }
 
@@ -98,7 +97,7 @@ func (service *Service) Update(vpnCredentialID int, vpnCredentials *VPNCredentia
 	}
 	updatedVpnCredentials, _ := resp.(*VPNCredentials)
 
-	log.Printf("returning vpn credential from Update: %d", updatedVpnCredentials.ID)
+	service.Client.Logger.Printf("[DEBUG]returning vpn credential from Update: %d", updatedVpnCredentials.ID)
 	return updatedVpnCredentials, nil, nil
 }
 

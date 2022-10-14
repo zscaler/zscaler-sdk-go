@@ -3,7 +3,6 @@ package usermanagement
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -36,7 +35,7 @@ func (service *Service) Get(userID int) (*Users, error) {
 		return nil, err
 	}
 
-	log.Printf("returning user from Get: %d", user.ID)
+	service.Client.Logger.Printf("[DEBUG]returning user from Get: %d", user.ID)
 	return &user, nil
 }
 
@@ -65,7 +64,7 @@ func (service *Service) Create(userID *Users) (*Users, error) {
 		return nil, errors.New("object returned from api was not a user pointer")
 	}
 
-	log.Printf("returning user from create: %v", createdUsers.ID)
+	service.Client.Logger.Printf("[DEBUG]returning user from create: %v", createdUsers.ID)
 	return createdUsers, nil
 }
 
@@ -75,7 +74,7 @@ func (service *Service) Update(userID int, users *Users) (*Users, *http.Response
 		return nil, nil, err
 	}
 	updatedUser, _ := resp.(*Users)
-	log.Printf("returning user from update: %d", updatedUser.ID)
+	service.Client.Logger.Printf("[DEBUG]returning user from update: %d", updatedUser.ID)
 	return updatedUser, nil, nil
 }
 

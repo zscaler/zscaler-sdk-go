@@ -3,7 +3,6 @@ package gretunnels
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -72,7 +71,7 @@ func (service *Service) GetGreTunnels(greTunnelID int) (*GreTunnels, error) {
 		return nil, err
 	}
 
-	log.Printf("returning gre tunnel from get: %d", greTunnels.ID)
+	service.Client.Logger.Printf("[DEBUG]returning gre tunnel from get: %d", greTunnels.ID)
 	return &greTunnels, nil
 }
 
@@ -88,7 +87,7 @@ func (service *Service) CreateGreTunnels(greTunnelID *GreTunnels) (*GreTunnels, 
 		return nil, nil, errors.New("object returned from api was not a gre tunnel pointer")
 	}
 
-	log.Printf("returning gre tunnels from create: %d", createdGreTunnels.ID)
+	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from create: %d", createdGreTunnels.ID)
 	return createdGreTunnels, nil, nil
 }
 
@@ -99,7 +98,7 @@ func (service *Service) UpdateGreTunnels(greTunnelID int, greTunnels *GreTunnels
 	}
 	updatedGreTunnels, _ := resp.(*GreTunnels)
 
-	log.Printf("returning gre tunnels from update: %d", updatedGreTunnels.ID)
+	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from update: %d", updatedGreTunnels.ID)
 	return updatedGreTunnels, nil, nil
 }
 

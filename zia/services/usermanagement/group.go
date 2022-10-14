@@ -2,7 +2,6 @@ package usermanagement
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ func (service *Service) GetGroups(groupID int) (*Groups, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning Groups from Get: %d", groups.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning Groups from Get: %d", groups.ID)
 	return &groups, nil
 }
 

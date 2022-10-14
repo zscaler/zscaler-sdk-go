@@ -3,7 +3,6 @@ package ipsourcegroups
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -26,7 +25,7 @@ func (service *Service) Get(ipGroupID int) (*IPSourceGroups, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
 	return &ipSourceGroups, nil
 }
 
@@ -55,7 +54,7 @@ func (service *Service) Create(ipGroupID *IPSourceGroups) (*IPSourceGroups, erro
 		return nil, errors.New("object returned from api was not an ip source group pointer")
 	}
 
-	log.Printf("returning ip source group from create: %d", createdIPSourceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
 	return createdIPSourceGroups, nil
 }
 
@@ -66,7 +65,7 @@ func (service *Service) Update(ipGroupID int, ipGroup *IPSourceGroups) (*IPSourc
 	}
 	updatedIPSourceGroups, _ := resp.(*IPSourceGroups)
 
-	log.Printf("returning ip source group from update: %d", updatedIPSourceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
 	return updatedIPSourceGroups, nil
 }
 

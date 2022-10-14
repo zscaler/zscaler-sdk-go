@@ -3,7 +3,6 @@ package urlfilteringpolicies
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -57,7 +56,7 @@ func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
 	return &urlFilteringPolicies, nil
 }
 
@@ -86,7 +85,7 @@ func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, err
 		return nil, errors.New("object returned from api was not a url filtering rule pointer")
 	}
 
-	log.Printf("returning url filtering rule from create: %d", createdURLFilteringRule.ID)
+	service.Client.Logger.Printf("[DEBUG]returning url filtering rule from create: %d", createdURLFilteringRule.ID)
 	return createdURLFilteringRule, nil
 }
 
@@ -97,7 +96,7 @@ func (service *Service) Update(ruleID int, rules *URLFilteringRule) (*URLFilteri
 	}
 	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
 
-	log.Printf("returning url filtering rule from update: %d", updatedURLFilteringRule.ID)
+	service.Client.Logger.Printf("[DEBUG]returning url filtering rule from update: %d", updatedURLFilteringRule.ID)
 	return updatedURLFilteringRule, nil, nil
 }
 

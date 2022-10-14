@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/google/go-querystring/query"
+	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 type Client struct {
@@ -36,21 +36,21 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	defer client.Config.Unlock()
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
 		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
-			log.Printf("[ERROR] No client credentials were provided. Please set %s and %s environment variables.\n", ZCC_CLIENT_ID, ZCC_CLIENT_SECRET)
+			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s and %s environment variables.\n", ZCC_CLIENT_ID, ZCC_CLIENT_SECRET)
 			return nil, errors.New("no client credentials were provided")
 		}
-		log.Printf("[TRACE] Getting access token for %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
+		client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
 		authReq := AuthRequest{}
 		authReq.APIKey = client.Config.ClientID
 		authReq.SecretKey = client.Config.ClientSecret
 		data, err := json.Marshal(authReq)
 		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 		req, err := http.NewRequest("POST", client.Config.BaseURL.String()+"/auth/v1/login", bytes.NewBuffer(data))
 		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 
@@ -60,23 +60,23 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		}
 		resp, err := client.Config.GetHTTPClient().Do(req)
 		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 		defer resp.Body.Close()
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 		if resp.StatusCode >= 300 {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
 		}
 		var a AuthToken
 		err = json.Unmarshal(respBody, &a)
 		if err != nil {
-			log.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return nil, fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 		// we need keep auth token for future http request
@@ -86,14 +86,14 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	if err != nil {
 		return nil, err
 	}
-	client.logRequest(req)
+	logger.LogRequest(client.Config.Logger, req)
 	return client.do(req, v)
 }
 
 // Generating the Http request
 func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
-		log.Printf("[ERROR] Failed to signin the user %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
+		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s\n", ZCC_CLIENT_ID, client.Config.ClientID)
 		return nil, fmt.Errorf("failed to signin the user %s=%s", ZCC_CLIENT_ID, client.Config.ClientID)
 	}
 	var buf io.ReadWriter
@@ -155,7 +155,7 @@ func (client *Client) do(req *http.Request, v interface{}) (*http.Response, erro
 			return resp, err
 		}
 	}
-	client.logResponse(resp)
+	logger.LogResponse(client.Config.Logger, resp)
 	unescapeHTML(v)
 	return resp, nil
 }

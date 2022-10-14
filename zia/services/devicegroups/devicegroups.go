@@ -2,7 +2,6 @@ package devicegroups
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 )
@@ -42,7 +41,7 @@ func (service *Service) GetDeviceGroups(deviceGroupId int) (*DeviceGroups, error
 		return nil, err
 	}
 
-	log.Printf("Returning firewall rule from Get: %d", group.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning firewall rule from Get: %d", group.ID)
 	return &group, nil
 }
 
@@ -67,7 +66,7 @@ func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning device from Get: %d", device.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning device from Get: %d", device.ID)
 	return &device, nil
 }
 

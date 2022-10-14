@@ -2,7 +2,6 @@ package usermanagement
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -25,7 +24,7 @@ func (service *Service) GetDepartments(departmentID int) (*Department, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning departments from Get: %d", departments.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning departments from Get: %d", departments.ID)
 	return &departments, nil
 }
 
