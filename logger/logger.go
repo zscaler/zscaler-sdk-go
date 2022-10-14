@@ -10,19 +10,19 @@ import (
 )
 
 type Logger interface {
-	Printf(format string, v ...any)
+	Printf(format string, v ...interface{})
 }
 
 type nopLogger struct{}
 
-func (l *nopLogger) Printf(format string, v ...any) {}
+func (l *nopLogger) Printf(format string, v ...interface{}) {}
 
 type defaultLogger struct {
 	logger  *log.Logger
 	Verbose bool
 }
 
-func (l *defaultLogger) Printf(format string, v ...any) {
+func (l *defaultLogger) Printf(format string, v ...interface{}) {
 	trimedF := strings.TrimSpace(format)
 	if (strings.HasPrefix(trimedF, "[DEBUG]") || strings.HasPrefix(trimedF, "[TRACE]")) && !l.Verbose {
 		return
