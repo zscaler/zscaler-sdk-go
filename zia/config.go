@@ -7,11 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -19,6 +17,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 const (
@@ -48,7 +47,7 @@ type Client struct {
 	sessionTimeout   time.Duration // in minutes
 	URL              string
 	HTTPClient       *http.Client
-	Logger           *log.Logger
+	Logger           logger.Logger
 	UserAgent        string
 }
 
@@ -97,11 +96,8 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 
 // NewClient Returns a Client from credentials passed as parameters
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
-	httpClient := getHTTPClient()
-	var logger *log.Logger
-	if loggerEnv := os.Getenv("ZSCALER_SDK_LOG"); loggerEnv == "true" {
-		logger = getDefaultLogger()
-	}
+	logger := logger.GetDefaultLogger(loggerPrefix)
+	httpClient := getHTTPClient(logger)
 	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
 	cli := Client{
 		userName:   username,
@@ -205,7 +201,7 @@ func (c *Client) checkSession() error {
 	if c.session == nil {
 		err := c.refreshSession()
 		if err != nil {
-			log.Printf("[ERROR] failed to get session id: %v\n", err)
+			c.Logger.Printf("[ERROR] failed to get session id: %v\n", err)
 			return err
 		}
 	} else {
@@ -214,20 +210,20 @@ func (c *Client) checkSession() error {
 		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).Before(now) {
 			err := c.refreshSession()
 			if err != nil {
-				log.Printf("[ERROR] failed to refresh session id: %v\n", err)
+				c.Logger.Printf("[ERROR] failed to refresh session id: %v\n", err)
 				return err
 			}
 		}
 	}
 	url, err := url.Parse(c.URL)
 	if err != nil {
-		log.Printf("[ERROR] failed to parse url %s: %v\n", c.URL, err)
+		c.Logger.Printf("[ERROR] failed to parse url %s: %v\n", c.URL, err)
 		return err
 	}
 	if c.HTTPClient.Jar == nil {
 		c.HTTPClient.Jar, err = cookiejar.New(nil)
 		if err != nil {
-			log.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
+			c.Logger.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
 			return err
 		}
 	}
@@ -244,18 +240,19 @@ func (c *Client) GetContentType() string {
 	return contentTypeJSON
 }
 
-func getHTTPClient() *http.Client {
+func getHTTPClient(logger logger.Logger) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	retryableClient.RetryMax = MaxNumOfRetries
 	retryableClient.CheckRetry = checkRetry
+	retryableClient.Logger = logger
 	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
 	retryableClient.HTTPClient.Transport = &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
 		MaxIdleConnsPerHost: maxIdleConnections,
 	}
-	retryableClient.HTTPClient.Transport = logging.NewTransport("gozscaler-zia", retryableClient.HTTPClient.Transport)
+	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
 
 	return retryableClient.StandardClient()
 }
@@ -286,10 +283,6 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return true, nil
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-}
-
-func getDefaultLogger() *log.Logger {
-	return log.New(os.Stdout, loggerPrefix, log.LstdFlags|log.Lshortfile)
 }
 
 func (c *Client) Logout() error {

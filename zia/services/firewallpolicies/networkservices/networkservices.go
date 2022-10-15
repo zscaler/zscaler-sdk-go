@@ -3,7 +3,6 @@ package networkservices
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -38,7 +37,7 @@ func (service *Service) Get(serviceID int) (*NetworkServices, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning network services from Get: %d", networkServices.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning network services from Get: %d", networkServices.ID)
 	return &networkServices, nil
 }
 
@@ -67,7 +66,7 @@ func (service *Service) Create(networkService *NetworkServices) (*NetworkService
 		return nil, errors.New("object returned from api was not a network service pointer")
 	}
 
-	log.Printf("returning network service from create: %d", createdNetworkServices.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network service from create: %d", createdNetworkServices.ID)
 	return createdNetworkServices, nil
 }
 
@@ -78,7 +77,7 @@ func (service *Service) Update(serviceID int, networkService *NetworkServices) (
 	}
 	updatedNetworkServices, _ := resp.(*NetworkServices)
 
-	log.Printf("returning network service from Update: %d", updatedNetworkServices.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network service from Update: %d", updatedNetworkServices.ID)
 	return updatedNetworkServices, nil, nil
 }
 

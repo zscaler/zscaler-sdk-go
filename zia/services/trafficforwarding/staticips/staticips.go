@@ -3,7 +3,6 @@ package staticips
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -45,7 +44,7 @@ func (service *Service) Get(staticIpID int) (*StaticIP, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning static ip from Get: %d", staticIP.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning static ip from Get: %d", staticIP.ID)
 	return &staticIP, nil
 }
 
@@ -74,7 +73,7 @@ func (service *Service) Create(staticIpID *StaticIP) (*StaticIP, *http.Response,
 		return nil, nil, errors.New("object returned from api was not a static ip pointer")
 	}
 
-	log.Printf("returning static ip from create: %d", createdStaticIP.ID)
+	service.Client.Logger.Printf("[DEBUG]returning static ip from create: %d", createdStaticIP.ID)
 	return createdStaticIP, nil, nil
 }
 
@@ -85,7 +84,7 @@ func (service *Service) Update(staticIpID int, staticIP *StaticIP) (*StaticIP, *
 	}
 	updatedStaticIP, _ := resp.(*StaticIP)
 
-	log.Printf("returning static ip from update: %d", updatedStaticIP.ID)
+	service.Client.Logger.Printf("[DEBUG]returning static ip from update: %d", updatedStaticIP.ID)
 	return updatedStaticIP, nil, nil
 }
 

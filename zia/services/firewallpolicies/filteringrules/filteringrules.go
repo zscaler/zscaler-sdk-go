@@ -3,7 +3,6 @@ package filteringrules
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -56,7 +55,7 @@ func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning firewall rule from Get: %d", rule.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning firewall rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -85,7 +84,7 @@ func (service *Service) Create(rule *FirewallFilteringRules) (*FirewallFiltering
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	log.Printf("returning rule from create: %d", createdRules.ID)
+	service.Client.Logger.Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
@@ -95,7 +94,7 @@ func (service *Service) Update(ruleID int, rules *FirewallFilteringRules) (*Fire
 		return nil, err
 	}
 	updatedRules, _ := resp.(*FirewallFilteringRules)
-	log.Printf("returning firewall rule from update: %d", updatedRules.ID)
+	service.Client.Logger.Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 

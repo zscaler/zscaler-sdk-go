@@ -3,7 +3,6 @@ package locationgroups
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -75,7 +74,7 @@ func (service *Service) GetLocationGroup(groupID int) (*LocationGroup, error) {
 		return nil, err
 	}
 
-	log.Printf("returning location group from Get: %d", locationGroup.ID)
+	service.Client.Logger.Printf("[DEBUG]returning location group from Get: %d", locationGroup.ID)
 	return &locationGroup, nil
 }
 
@@ -104,7 +103,7 @@ func (service *Service) CreateLocationGroup(locationGroups *LocationGroup) (*Loc
 		return nil, errors.New("object returned from api was not a location group pointer")
 	}
 
-	log.Printf("returning location group from create: %d", createdLocationGroup.ID)
+	service.Client.Logger.Printf("[DEBUG]returning location group from create: %d", createdLocationGroup.ID)
 	return createdLocationGroup, nil
 }
 
@@ -115,7 +114,7 @@ func (service *Service) UpdateLocationGroup(groupID int, locationGroups *Locatio
 	}
 	updatedLocationGroup, _ := resp.(*LocationGroup)
 
-	log.Printf("returning location group from update: %d", updatedLocationGroup.ID)
+	service.Client.Logger.Printf("[DEBUG]returning location group from update: %d", updatedLocationGroup.ID)
 	return updatedLocationGroup, nil, nil
 }
 

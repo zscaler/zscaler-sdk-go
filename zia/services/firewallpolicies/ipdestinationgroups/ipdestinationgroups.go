@@ -3,7 +3,6 @@ package ipdestinationgroups
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -29,7 +28,7 @@ func (service *Service) Get(ipGroupID int) (*IPDestinationGroups, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning ip destination group from Get: %d", ipDestinationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning ip destination group from Get: %d", ipDestinationGroups.ID)
 	return &ipDestinationGroups, nil
 }
 
@@ -58,7 +57,7 @@ func (service *Service) Create(ipGroupID *IPDestinationGroups) (*IPDestinationGr
 		return nil, errors.New("object returned from api was not an ip destination group pointer")
 	}
 
-	log.Printf("returning ip destination group from create: %d", createdIPDestinationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning ip destination group from create: %d", createdIPDestinationGroups.ID)
 	return createdIPDestinationGroups, nil
 }
 
@@ -69,7 +68,7 @@ func (service *Service) Update(ipGroupID int, ipGroup *IPDestinationGroups) (*IP
 	}
 	updatedIPDestinationGroups, _ := resp.(*IPDestinationGroups)
 
-	log.Printf("returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
 	return updatedIPDestinationGroups, nil, nil
 }
 

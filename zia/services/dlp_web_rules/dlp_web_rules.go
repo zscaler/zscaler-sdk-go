@@ -3,7 +3,6 @@ package dlp_web_rules
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -58,7 +57,7 @@ func (service *Service) Get(ruleID int) (*WebDLPRules, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning web dlp rule from Get: %d", webDlpRules.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning web dlp rule from Get: %d", webDlpRules.ID)
 	return &webDlpRules, nil
 }
 
@@ -87,7 +86,7 @@ func (service *Service) Create(ruleID *WebDLPRules) (*WebDLPRules, *http.Respons
 		return nil, nil, errors.New("object returned from api was not a web dlp rule pointer")
 	}
 
-	log.Printf("returning new web dlp rule from create: %d", createdWebDlpRules.ID)
+	service.Client.Logger.Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
 	return createdWebDlpRules, nil, nil
 }
 
@@ -98,7 +97,7 @@ func (service *Service) Update(ruleID int, webDlpRules *WebDLPRules) (*WebDLPRul
 	}
 	updatedWebDlpRules, _ := resp.(*WebDLPRules)
 
-	log.Printf("returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
+	service.Client.Logger.Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
 	return updatedWebDlpRules, nil, nil
 }
 

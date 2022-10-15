@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 type dummyStruct struct {
@@ -80,7 +81,7 @@ func TestClient_NewRequestDo(t *testing.T) {
 
 	for _, tt := range tests {
 		client = NewClient(setupMuxConfig())
-		client.WriteLog("Server URL: %v", client.Config.BaseURL)
+		logger.WriteLog(client.Config.Logger, "Server URL: %v", client.Config.BaseURL)
 		t.Run(tt.name, func(t *testing.T) {
 			mux.HandleFunc(tt.args.url, tt.muxHandler)
 			res, err := client.NewRequestDo(tt.args.method, tt.args.url, nil, tt.args.body, tt.args.v)

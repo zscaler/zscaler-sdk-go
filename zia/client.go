@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
+
+	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 // Request ... // Needs to review this function
@@ -29,7 +30,7 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if err != nil {
 		return nil, err
 	}
-
+	logger.LogRequest(c.Logger, req)
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
@@ -38,6 +39,7 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if err != nil {
 		return nil, err
 	}
+	logger.LogResponse(c.Logger, resp)
 	if resp.StatusCode >= 299 {
 		return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 	}
@@ -77,7 +79,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 	id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
 
-	log.Printf("Created Object with ID %v", id)
+	c.Logger.Printf("Created Object with ID %v", id)
 	return responseObject, nil
 }
 

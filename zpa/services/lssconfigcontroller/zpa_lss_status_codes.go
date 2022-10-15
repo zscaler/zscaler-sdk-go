@@ -2,7 +2,6 @@ package lssconfigcontroller
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -24,6 +23,6 @@ func (service *Service) GetStatusCodes() (*LSSStatusCodes, *http.Response, error
 	if err != nil {
 		return nil, nil, err
 	}
-	log.Printf("[INFO] got LSSStatusCodes:%#v", v)
+	service.Client.Config.Logger.Printf("[INFO] got LSSStatusCodes:%#v", v)
 	return v, resp, nil
 }

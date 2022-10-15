@@ -2,7 +2,6 @@ package dlp_engines
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -28,7 +27,7 @@ func (service *Service) Get(engineID int) (*DLPEngines, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning dlp engine from Get: %d", dlpEngines.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning dlp engine from Get: %d", dlpEngines.ID)
 	return &dlpEngines, nil
 }
 

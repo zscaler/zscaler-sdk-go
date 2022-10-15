@@ -3,7 +3,6 @@ package locationmanagement
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -77,7 +76,7 @@ func (service *Service) GetLocation(locationID int) (*Locations, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning Location from Get: %d", location.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning Location from Get: %d", location.ID)
 	return &location, nil
 }
 
@@ -107,7 +106,7 @@ func (service *Service) Create(locations *Locations) (*Locations, error) {
 		return nil, errors.New("object returned from api was not a location pointer")
 	}
 
-	log.Printf("returning locations from create: %d", createdLocations.ID)
+	service.Client.Logger.Printf("[DEBUG]returning locations from create: %d", createdLocations.ID)
 	return createdLocations, nil
 }
 
@@ -118,7 +117,7 @@ func (service *Service) Update(locationID int, locations *Locations) (*Locations
 	}
 	updatedLocations, _ := resp.(*Locations)
 
-	log.Printf("returning locations from Update: %d", updatedLocations.ID)
+	service.Client.Logger.Printf("[DEBUG]returning locations from Update: %d", updatedLocations.ID)
 	return updatedLocations, nil, nil
 }
 

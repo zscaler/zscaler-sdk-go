@@ -3,7 +3,6 @@ package networkservices
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -39,7 +38,7 @@ func (service *Service) GetNetworkServiceGroups(serviceGroupID int) (*NetworkSer
 		return nil, err
 	}
 
-	log.Printf("Returning network service groups from Get: %d", networkServiceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning network service groups from Get: %d", networkServiceGroups.ID)
 	return &networkServiceGroups, nil
 }
 
@@ -68,7 +67,7 @@ func (service *Service) CreateNetworkServiceGroups(networkServiceGroups *Network
 		return nil, errors.New("object returned from api was not a network service groups pointer")
 	}
 
-	log.Printf("returning network service groups from create: %d", createdNetworkServiceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network service groups from create: %d", createdNetworkServiceGroups.ID)
 	return createdNetworkServiceGroups, nil
 }
 
@@ -79,7 +78,7 @@ func (service *Service) UpdateNetworkServiceGroups(serviceGroupID int, networkSe
 	}
 	updatedNetworkServiceGroups, _ := resp.(*NetworkServiceGroups)
 
-	log.Printf("returning network service groups from Update: %d", updatedNetworkServiceGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network service groups from Update: %d", updatedNetworkServiceGroups.ID)
 	return updatedNetworkServiceGroups, nil, nil
 }
 
