@@ -58,19 +58,19 @@ type AppsConfig struct {
 	AppTypes            []string `json:"appTypes,omitempty"`
 	ApplicationPort     string   `json:"applicationPort,omitempty"`
 	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
-	// CertificateID       string `json:"certificateId,omitempty"`
-	// CertificateName     string `json:"certificateName,omitempty"`
-	Cname              string `json:"cname,omitempty"`
-	ConnectionSecurity string `json:"connectionSecurity,omitempty"`
-	Description        string `json:"description,omitempty"`
-	Domain             string `json:"domain,omitempty"`
-	Enabled            bool   `json:"enabled,omitempty"`
-	Hidden             bool   `json:"hidden,omitempty"`
-	LocalDomain        string `json:"localDomain,omitempty"`
-	Portal             bool   `json:"portal,omitempty"`
+	Cname               string   `json:"cname,omitempty"`
+	ConnectionSecurity  string   `json:"connectionSecurity,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Domain              string   `json:"domain,omitempty"`
+	Enabled             bool     `json:"enabled,omitempty"`
+	Hidden              bool     `json:"hidden,omitempty"`
+	LocalDomain         string   `json:"localDomain,omitempty"`
+	Portal              bool     `json:"portal,omitempty"`
 }
 
 type SRAAppsDto struct {
+	ID                  string `json:"id,omitempty"`
+	Name                string `json:"name,omitempty"`
 	AppID               string `json:"appId,omitempty"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
@@ -82,8 +82,6 @@ type SRAAppsDto struct {
 	Description         string `json:"description,omitempty"`
 	Domain              string `json:"domain,omitempty"`
 	Enabled             bool   `json:"enabled"`
-	ID                  string `json:"id,omitempty"`
-	Name                string `json:"name,omitempty"`
 }
 
 type AppServerGroups struct {
