@@ -1,5 +1,13 @@
 # Changelog
 
+# 0.1.2 (October, 19 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #33](https://github.com/zscaler/zscaler-sdk-go/pull/33) Fix Added ZPA missing parameters
+
 # 0.1.1 (October, 15 2022)
 
 ## Notes
