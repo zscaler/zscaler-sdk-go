@@ -29,6 +29,7 @@ type BrowserAccess struct {
 	IsCnameEnabled       bool                  `json:"isCnameEnabled"`
 	IPAnchored           bool                  `json:"ipAnchored"`
 	HealthReporting      string                `json:"healthReporting,omitempty"`
+	ICMPAccessType       string                `json:"icmpAccessType,omitempty"`
 	CreationTime         string                `json:"creationTime,omitempty"`
 	ModifiedBy           string                `json:"modifiedBy,omitempty"`
 	ModifiedTime         string                `json:"modifiedTime,omitempty"`
