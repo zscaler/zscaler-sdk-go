@@ -111,7 +111,7 @@ func (service *Service) Update(applicationId string, appSegmentRequest Applicati
 
 func (service *Service) Delete(applicationId string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationId)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
