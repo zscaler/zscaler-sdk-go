@@ -94,3 +94,18 @@ func (service *Service) GetAll() ([]AppConnector, error) {
 	}
 	return v.List, nil
 }
+
+type BulkDeleteRequest struct {
+	IDs []string `json:"ids"`
+}
+
+// BulkDelete Bulk deletes the App Connectors.
+func (service *Service) BulkDelete(appConnectorIDs []string) (*http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint + "/bulkDelete"
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, BulkDeleteRequest{IDs: appConnectorIDs}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
