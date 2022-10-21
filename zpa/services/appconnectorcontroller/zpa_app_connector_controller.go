@@ -99,6 +99,27 @@ type BulkDeleteRequest struct {
 	IDs []string `json:"ids"`
 }
 
+//Update Updates the App Connector details for the specified ID.
+func (service *Service) Update(appConnectorID string, appConnector AppConnector) (*AppConnector, *http.Response, error) {
+	v := new(AppConnector)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
+	resp, err := service.Client.NewRequestDo("PUT", path, nil, appConnector, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
+}
+
+// Delete Deletes the App Connector for the specified ID.
+func (service *Service) Delete(appConnectorID string) (*http.Response, error) {
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
+	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
 // BulkDelete Bulk deletes the App Connectors.
 func (service *Service) BulkDelete(appConnectorIDs []string) (*http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint + "/bulkDelete"
