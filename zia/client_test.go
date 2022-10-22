@@ -25,7 +25,7 @@ const (
 	getResponse  = `{"id": 1234}`
 	authResponse = `{
 	"authType": "authType",
-    "obfuscateApiKey": true,  
+    "obfuscateApiKey": true,
     "passwordExpiryTime": 10000,
     "passwordExpiryDays": 10000,
     "source": "source",
