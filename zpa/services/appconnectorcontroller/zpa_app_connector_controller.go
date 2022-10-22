@@ -101,13 +101,16 @@ type BulkDeleteRequest struct {
 
 //Update Updates the App Connector details for the specified ID.
 func (service *Service) Update(appConnectorID string, appConnector AppConnector) (*AppConnector, *http.Response, error) {
-	v := new(AppConnector)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, appConnector, v)
+	_, err := service.Client.NewRequestDo("PUT", path, nil, appConnector, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	resource, resp, err := service.Get(appConnectorID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return resource, resp, nil
 }
 
 // Delete Deletes the App Connector for the specified ID.
