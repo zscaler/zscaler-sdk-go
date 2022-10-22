@@ -1,6 +1,6 @@
 # Changelog
 
-# 0.1.5 (October, 22 2022)
+# 0.1.6 (October, 22 2022)
 
 ## Notes
 - Golang: **v1.18**
