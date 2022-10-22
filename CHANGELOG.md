@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.1.4 (October, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #35](https://github.com/zscaler/zscaler-sdk-go/pull/35) Implement bulk delete of app-connector-controller
+
 # 0.1.3 (October, 20 2022)
 
 ## Notes
