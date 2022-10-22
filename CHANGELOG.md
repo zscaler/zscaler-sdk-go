@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.1.5 (October, 22 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #37](https://github.com/zscaler/zscaler-sdk-go/pull/37) Implement fix on update function for App Connector Controller resource
+
 # 0.1.5 (October, 21 2022)
 
 ## Notes
