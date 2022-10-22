@@ -94,3 +94,39 @@ func (service *Service) GetAll() ([]ServiceEdgeController, *http.Response, error
 	}
 	return v.List, resp, nil
 }
+
+type BulkDeleteRequest struct {
+	IDs []string `json:"ids"`
+}
+
+// Update Updates the Service Edge details for the specified ID.
+func (service *Service) Update(serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
+	v := new(ServiceEdgeController)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
+	resp, err := service.Client.NewRequestDo("PUT", path, nil, serviceEdge, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
+}
+
+// Delete Deletes the Service Edge for the specified ID.
+func (service *Service) Delete(serviceEdgeID string) (*http.Response, error) {
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
+	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+// BulkDelete Bulk deletes the Service Edge.
+func (service *Service) BulkDelete(serviceEdgeIDs []string) (*http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint + "/bulkDelete"
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
