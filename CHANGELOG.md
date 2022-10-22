@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.1.5 (October, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #36](https://github.com/zscaler/zscaler-sdk-go/pull/36) Implement bulk delete of service-edge-controller
+
 # 0.1.4 (October, 21 2022)
 
 ## Notes
