@@ -16,6 +16,9 @@ type Pagination struct {
 	Search2  string `json:"search,omitempty" url:"search,omitempty"`
 }
 
+type DeleteApplicationQueryParams struct {
+	ForceDelete bool `json:"forceDelete,omitempty" url:"forceDelete,omitempty"`
+}
 type NetworkPorts struct {
 	From string `json:"from,omitempty"`
 	To   string `json:"to,omitempty"`
