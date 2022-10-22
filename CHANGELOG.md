@@ -1,5 +1,31 @@
 # Changelog
 
+# 0.1.4 (October, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #35](https://github.com/zscaler/zscaler-sdk-go/pull/35) Implement bulk delete of app-connector-controller
+
+# 0.1.3 (October, 20 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #34](https://github.com/zscaler/zscaler-sdk-go/pull/34) Added new application segment parameter ``forceDelete``. Setting this field to true deletes the mapping between Application Segment and Segment Group
+
+# 0.1.2 (October, 19 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #33](https://github.com/zscaler/zscaler-sdk-go/pull/33) Fix Added ZPA missing parameters
+
 # 0.1.1 (October, 15 2022)
 
 ## Notes
