@@ -2,7 +2,7 @@ package zcc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -20,7 +20,7 @@ func checkErrorInResponse(res *http.Response) error {
 		return nil
 	}
 	errorResponse := &ErrorResponse{Response: res}
-	errorMessage, err := ioutil.ReadAll(res.Body)
+	errorMessage, err := io.ReadAll(res.Body)
 	if err == nil && len(errorMessage) > 0 {
 		errorResponse.Message = string(errorMessage)
 	}

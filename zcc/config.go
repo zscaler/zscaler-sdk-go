@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -130,7 +130,7 @@ func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error)
 	if err != nil {
 		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zpa_client_id, zpa_client_secret, zpa_customer_id, and zpa_cloud. " + err.Error())
 	}
-	configBytes, err := ioutil.ReadAll(file)
+	configBytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}

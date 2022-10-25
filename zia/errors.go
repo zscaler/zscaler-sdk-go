@@ -2,7 +2,7 @@ package zia
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -24,7 +24,7 @@ func checkErrorInResponse(res *http.Response, respErr error) error {
 		return respErr
 	}
 	errorResponse := &ErrorResponse{Response: res, Err: respErr}
-	errorMessage, err := ioutil.ReadAll(res.Body)
+	errorMessage, err := io.ReadAll(res.Body)
 	if err == nil && len(errorMessage) > 0 {
 		errorResponse.Message = string(errorMessage)
 	}

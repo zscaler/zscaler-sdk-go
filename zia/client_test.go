@@ -93,7 +93,7 @@ func TestClient_Request(t *testing.T) {
 				t.Errorf("Client.NewRequestDo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			json.Unmarshal(resp, &tt.args.v)
+			_ = json.Unmarshal(resp, &tt.args.v)
 			if !reflect.DeepEqual(tt.args.v, tt.wantVal) {
 				t.Errorf("returned %#v; want %#v", tt.args.v, tt.wantVal)
 			}
