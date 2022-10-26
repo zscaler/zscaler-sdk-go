@@ -189,5 +189,5 @@ func unescapeHTML(entity interface{}) {
 	if err != nil {
 		return
 	}
-	json.Unmarshal(data, entity)
+	_ = json.Unmarshal(data, entity)
 }
