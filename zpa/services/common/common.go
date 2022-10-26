@@ -16,6 +16,9 @@ type Pagination struct {
 	Search2  string `json:"search,omitempty" url:"search,omitempty"`
 }
 
+type DeleteApplicationQueryParams struct {
+	ForceDelete bool `json:"forceDelete,omitempty" url:"forceDelete,omitempty"`
+}
 type NetworkPorts struct {
 	From string `json:"from,omitempty"`
 	To   string `json:"to,omitempty"`
@@ -45,4 +48,13 @@ func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)
 	res := reg.ReplaceAllString(str, "${1}")
 	return strings.Trim(res, " ")
+}
+
+func InList(list []string, item string) bool {
+	for _, i := range list {
+		if i == item {
+			return true
+		}
+	}
+	return false
 }

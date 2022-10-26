@@ -2,7 +2,6 @@ package timewindow
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -25,7 +24,7 @@ func (service *Service) GetTimeWindow(timeWindowID int) (*TimeWindow, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning time window from Get: %d", timeWindow.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning time window from Get: %d", timeWindow.ID)
 	return &timeWindow, nil
 }
 

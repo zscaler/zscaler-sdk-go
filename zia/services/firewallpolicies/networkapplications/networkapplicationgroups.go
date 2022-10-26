@@ -3,7 +3,6 @@ package networkapplications
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -26,7 +25,7 @@ func (service *Service) GetNetworkApplicationGroups(groupID int) (*NetworkApplic
 		return nil, err
 	}
 
-	log.Printf("Returning network application groups from Get: %d", networkApplicationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning network application groups from Get: %d", networkApplicationGroups.ID)
 	return &networkApplicationGroups, nil
 }
 
@@ -55,7 +54,7 @@ func (service *Service) Create(applicationGroup *NetworkApplicationGroups) (*Net
 		return nil, errors.New("object returned from api was not a network application groups pointer")
 	}
 
-	log.Printf("returning network application groups from create: %d", createdApplicationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network application groups from create: %d", createdApplicationGroups.ID)
 	return createdApplicationGroups, nil
 }
 
@@ -66,7 +65,7 @@ func (service *Service) Update(groupID int, applicationGroup *NetworkApplication
 	}
 	updatedApplicationGroups, _ := resp.(*NetworkApplicationGroups)
 
-	log.Printf("returning network application groups from Update: %d", updatedApplicationGroups.ID)
+	service.Client.Logger.Printf("[DEBUG]returning network application groups from Update: %d", updatedApplicationGroups.ID)
 	return updatedApplicationGroups, nil, nil
 }
 

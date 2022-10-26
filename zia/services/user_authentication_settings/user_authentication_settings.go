@@ -2,7 +2,6 @@ package user_authentication_settings
 
 import (
 	"fmt"
-	"log"
 )
 
 const (
@@ -24,7 +23,7 @@ func (service *Service) Get() (*ExemptedUrls, error) {
 		return nil, err
 	}
 
-	log.Printf("Returning exempted url rules from Get: %v", urls)
+	service.Client.Logger.Printf("[DEBUG]Returning exempted url rules from Get: %v", urls)
 	return &urls, nil
 }
 

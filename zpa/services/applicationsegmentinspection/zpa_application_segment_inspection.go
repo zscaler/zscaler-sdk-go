@@ -183,7 +183,7 @@ func (service *Service) Update(id string, appSegmentInspection *AppSegmentInspec
 
 func (service *Service) Delete(id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -200,6 +200,12 @@ func (service *Service) GetAll() ([]AppSegmentInspection, *http.Response, error)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v.List, resp, nil
+	result := []AppSegmentInspection{}
+	// filter inspection apps
+	for _, item := range v.List {
+		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT") {
+			result = append(result, item)
+		}
+	}
+	return result, resp, nil
 }

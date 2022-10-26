@@ -1,17 +1,16 @@
-package zpa
+package zcc
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,17 +20,12 @@ import (
 )
 
 const (
-	defaultBaseURL           = "https://config.private.zscaler.com"
-	betaBaseURL              = "https://config.zpabeta.net"
-	govBaseURL               = "https://config.zpagov.net"
-	previewBaseUrl           = "https://config.zpapreview.net"
 	defaultTimeout           = 240 * time.Second
-	loggerPrefix             = "zpa-logger: "
-	ZPA_CLIENT_ID            = "ZPA_CLIENT_ID"
-	ZPA_CLIENT_SECRET        = "ZPA_CLIENT_SECRET"
-	ZPA_CUSTOMER_ID          = "ZPA_CUSTOMER_ID"
-	ZPA_CLOUD                = "ZPA_CLOUD"
-	configPath        string = ".zpa/credentials.json"
+	loggerPrefix             = "zcc-logger: "
+	ZCC_CLIENT_ID            = "ZCC_CLIENT_ID"
+	ZCC_CLIENT_SECRET        = "ZCC_CLIENT_SECRET"
+	ZCC_CLOUD                = "ZCC_CLOUD"
+	configPath        string = ".zcc/credentials.json"
 )
 
 var defaultBackoffConf = &BackoffConfig{
@@ -48,9 +42,13 @@ type BackoffConfig struct {
 	MaxNumOfRetries     int  // Maximum number of retries
 }
 
+type AuthRequest struct {
+	APIKey    string `json:"apiKey"`
+	SecretKey string `json:"secretKey"`
+}
+
 type AuthToken struct {
-	TokenType   string `json:"token_type"`
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"jwtToken"`
 }
 
 type CredentialsConfig struct {
@@ -67,7 +65,7 @@ type Config struct {
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
-	ClientID, ClientSecret, CustomerID string
+	ClientID, ClientSecret, Cloud string
 	// Backoff config
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
@@ -83,46 +81,26 @@ By default it will try to read the access and te secret from the environment var
 // 20 times in a 10 second interval for a GET call.
 // 10 times in a 10 second interval for any POST/PUT/DELETE call.
 // TODO Add healthCheck method to NewConfig
-func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Config, error) {
-	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
+func NewConfig(clientID, clientSecret, cloud, userAgent string) (*Config, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
 	// if creds not provided in TF config, try loading from env vars
-	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
-		clientID = os.Getenv(ZPA_CLIENT_ID)
-		clientSecret = os.Getenv(ZPA_CLIENT_SECRET)
-		customerID = os.Getenv(ZPA_CUSTOMER_ID)
-		cloud = os.Getenv(ZPA_CLOUD)
+	if clientID == "" || clientSecret == "" || cloud == "" || userAgent == "" {
+		clientID = os.Getenv(ZCC_CLIENT_ID)
+		clientSecret = os.Getenv(ZCC_CLIENT_SECRET)
+		cloud = os.Getenv(ZCC_CLOUD)
 	}
 	// last resort to configuration file:
-	if clientID == "" || clientSecret == "" || customerID == "" {
+	if clientID == "" || clientSecret == "" {
 		creds, err := loadCredentialsFromConfig(logger)
 		if err != nil || creds == nil {
 			return nil, err
 		}
 		clientID = creds.ClientID
 		clientSecret = creds.ClientSecret
-		customerID = creds.CustomerID
 		cloud = creds.ZpaCloud
 	}
-	rawUrl := defaultBaseURL
-	if cloud == "" {
-		cloud = os.Getenv(ZPA_CLOUD)
-	} else if cloud != "" {
-		rawUrl = cloud
-	}
-	if strings.EqualFold(cloud, "PRODUCTION") {
-		rawUrl = defaultBaseURL
-	}
-	if strings.EqualFold(cloud, "BETA") {
-		rawUrl = betaBaseURL
-	}
-	if strings.EqualFold(cloud, "GOV") {
-		rawUrl = govBaseURL
-	}
-	if strings.EqualFold(cloud, "PREVIEW") {
-		rawUrl = previewBaseUrl
-	}
 
-	baseURL, err := url.Parse(rawUrl)
+	baseURL, err := url.Parse(fmt.Sprintf("https://mobileadmin.%s.net/papi", cloud))
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
@@ -132,7 +110,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		httpClient:   nil,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		CustomerID:   customerID,
+		Cloud:        cloud,
 		BackoffConf:  defaultBackoffConf,
 		UserAgent:    userAgent,
 	}, err
@@ -152,7 +130,7 @@ func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error)
 	if err != nil {
 		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zpa_client_id, zpa_client_secret, zpa_customer_id, and zpa_cloud. " + err.Error())
 	}
-	configBytes, err := io.ReadAll(file)
+	configBytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -168,10 +146,10 @@ func (c *Config) GetHTTPClient() *http.Client {
 	if c.httpClient == nil {
 		if c.BackoffConf != nil && c.BackoffConf.Enabled {
 			retryableClient := retryablehttp.NewClient()
-			retryableClient.Logger = c.Logger
 			retryableClient.RetryWaitMin = time.Second * time.Duration(c.BackoffConf.RetryWaitMinSeconds)
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
+			retryableClient.Logger = c.Logger
 			retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
 			retryableClient.CheckRetry = checkRetry
 			retryableClient.HTTPClient.Timeout = defaultTimeout

@@ -58,19 +58,19 @@ type AppsConfig struct {
 	AppTypes            []string `json:"appTypes,omitempty"`
 	ApplicationPort     string   `json:"applicationPort,omitempty"`
 	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
-	// CertificateID       string `json:"certificateId,omitempty"`
-	// CertificateName     string `json:"certificateName,omitempty"`
-	Cname              string `json:"cname,omitempty"`
-	ConnectionSecurity string `json:"connectionSecurity,omitempty"`
-	Description        string `json:"description,omitempty"`
-	Domain             string `json:"domain,omitempty"`
-	Enabled            bool   `json:"enabled,omitempty"`
-	Hidden             bool   `json:"hidden,omitempty"`
-	LocalDomain        string `json:"localDomain,omitempty"`
-	Portal             bool   `json:"portal,omitempty"`
+	Cname               string   `json:"cname,omitempty"`
+	ConnectionSecurity  string   `json:"connectionSecurity,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Domain              string   `json:"domain,omitempty"`
+	Enabled             bool     `json:"enabled,omitempty"`
+	Hidden              bool     `json:"hidden,omitempty"`
+	LocalDomain         string   `json:"localDomain,omitempty"`
+	Portal              bool     `json:"portal,omitempty"`
 }
 
 type SRAAppsDto struct {
+	ID                  string `json:"id,omitempty"`
+	Name                string `json:"name,omitempty"`
 	AppID               string `json:"appId,omitempty"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
@@ -82,8 +82,6 @@ type SRAAppsDto struct {
 	Description         string `json:"description,omitempty"`
 	Domain              string `json:"domain,omitempty"`
 	Enabled             bool   `json:"enabled"`
-	ID                  string `json:"id,omitempty"`
-	Name                string `json:"name,omitempty"`
 }
 
 type AppServerGroups struct {
@@ -186,7 +184,7 @@ func (service *Service) Update(id string, appSegmentPra *AppSegmentPRA) (*http.R
 
 func (service *Service) Delete(id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -203,5 +201,12 @@ func (service *Service) GetAll() ([]AppSegmentPRA, *http.Response, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	result := []AppSegmentPRA{}
+	// filter pra apps
+	for _, item := range v.List {
+		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") {
+			result = append(result, item)
+		}
+	}
+	return result, resp, nil
 }

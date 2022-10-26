@@ -2,7 +2,6 @@ package greinternalipranges
 
 import (
 	"fmt"
-	"log"
 )
 
 const (
@@ -23,6 +22,6 @@ func (service *Service) GetGREInternalIPRange(count int) (*[]GREInternalIPRange,
 	if len(greInternalIPRanges) < count {
 		return nil, fmt.Errorf("not enough internal IP range available, got %d internal IP range, required: %d", len(greInternalIPRanges), count)
 	}
-	log.Printf("Returning internal IP range: %s", greInternalIPRanges)
+	service.Client.Logger.Printf("[DEBUG]Returning internal IP range: %s", greInternalIPRanges)
 	return &greInternalIPRanges, nil
 }

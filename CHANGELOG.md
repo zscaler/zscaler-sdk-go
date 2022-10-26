@@ -1,5 +1,104 @@
 # Changelog
 
+# 0.1.6 (October, 22 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #37](https://github.com/zscaler/zscaler-sdk-go/pull/37) Implement fix on update function for App Connector Controller resource
+
+# 0.1.5 (October, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #36](https://github.com/zscaler/zscaler-sdk-go/pull/36) Implement bulk delete of service-edge-controller
+
+# 0.1.4 (October, 21 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #35](https://github.com/zscaler/zscaler-sdk-go/pull/35) Implement bulk delete of app-connector-controller
+
+# 0.1.3 (October, 20 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #34](https://github.com/zscaler/zscaler-sdk-go/pull/34) Added new application segment parameter ``forceDelete``. Setting this field to true deletes the mapping between Application Segment and Segment Group
+
+# 0.1.2 (October, 19 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #33](https://github.com/zscaler/zscaler-sdk-go/pull/33) Fix Added ZPA missing parameters
+
+# 0.1.1 (October, 15 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancements
+
+- [PR #30](https://github.com/zscaler/zscaler-sdk-go/pull/30) feat(ZPA Application Segments): Filters application segments apps in GetAll API calls depending on the resource type (SECURE_REMOTE_ACCESS, BROWSER_ACCESS, INSPECTION).
+- [PR #32](https://github.com/zscaler/zscaler-sdk-go/pull/32) feat(Improve Logging): This PR improves logging for the SDK for all clouds (zia, zpa & zcc) and uses common logger, we now can control the logging & it verbosity using the env var:
+ZSCALER_SDK_LOG=true & ZSCALER_SDK_VERBOSE=true
+
+# 0.1.0 (October, 12 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancements
+
+- [PR #29 ](https://github.com/zscaler/zscaler-sdk-go/pull/29) feat(New SDK Package): Added Zscaler Client Connector (ZCC) SDK Schema
+- [PR #30  ](https://github.com/zscaler/zscaler-sdk-go/pull/30) feat(ZPA Application Segments): Filters application segments apps in GetAll API calls depending on the resource type (SECURE_REMOTE_ACCESS, BROWSER_ACCESS, INSPECTION).
+
+# 0.0.13 (September, 28 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancements
+
+- [PR #26](https://github.com/zscaler/zscaler-sdk-go/pull/26) feat(new parameters):App Connector Group TCPQuick*
+- The following new App Connector Group parameters have been added to the SDK:
+  - tcpQuickAckApp - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+  - tcpQuickAckAssistant - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+  - tcpQuickAckReadAssistant - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+
+# 0.0.12 (September, 28 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancements
+
+- [PR #26](https://github.com/zscaler/zscaler-sdk-go/pull/26) feat(new parameters):App Connector Group TCPQuick*
+- The following new App Connector Group parameters have been added to the SDK:
+  - tcpQuickAckApp - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+  - tcpQuickAckAssistant - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+  - tcpQuickAckReadAssistant - Whether TCP Quick Acknowledgement is enabled or disabled for the application.
+
+# 0.0.11 (September, 26 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Bug Fix
+- [PR #25](https://github.com/zscaler/zscaler-sdk-go/pull/25) Fix zia_user_management group attribute to hold a list of group IDs as a typeList instead of typeSet.
+
 # 0.0.10 (September, 21 2022)
 
 ## Notes

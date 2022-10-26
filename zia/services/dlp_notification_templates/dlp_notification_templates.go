@@ -3,7 +3,6 @@ package dlp_notification_templates
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -29,7 +28,7 @@ func (service *Service) Get(dlpTemplateID int) (*DlpNotificationTemplates, error
 		return nil, err
 	}
 
-	log.Printf("Returning dlp notification template from Get: %d", dlpTemplates.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning dlp notification template from Get: %d", dlpTemplates.ID)
 	return &dlpTemplates, nil
 }
 
@@ -58,7 +57,7 @@ func (service *Service) Create(dlpTemplateID *DlpNotificationTemplates) (*DlpNot
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	log.Printf("returning new dlp notification template from create: %d", createdDlpTemplate.ID)
+	service.Client.Logger.Printf("[DEBUG]returning new dlp notification template from create: %d", createdDlpTemplate.ID)
 	return createdDlpTemplate, nil, nil
 }
 
@@ -69,7 +68,7 @@ func (service *Service) Update(dlpTemplateID int, dlpTemplates *DlpNotificationT
 	}
 	updatedDlpTemplate, _ := resp.(*DlpNotificationTemplates)
 
-	log.Printf("returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
+	service.Client.Logger.Printf("[DEBUG]returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
 	return updatedDlpTemplate, nil, nil
 }
 

@@ -29,6 +29,7 @@ type BrowserAccess struct {
 	IsCnameEnabled       bool                  `json:"isCnameEnabled"`
 	IPAnchored           bool                  `json:"ipAnchored"`
 	HealthReporting      string                `json:"healthReporting,omitempty"`
+	ICMPAccessType       string                `json:"icmpAccessType,omitempty"`
 	CreationTime         string                `json:"creationTime,omitempty"`
 	ModifiedBy           string                `json:"modifiedBy,omitempty"`
 	ModifiedTime         string                `json:"modifiedTime,omitempty"`
@@ -114,7 +115,7 @@ func (service *Service) Update(id string, browserAccess *BrowserAccess) (*http.R
 
 func (service *Service) Delete(id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -131,5 +132,12 @@ func (service *Service) GetAll() ([]BrowserAccess, *http.Response, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	result := []BrowserAccess{}
+	// filter browser access apps
+	for _, item := range v.List {
+		if len(item.ClientlessApps) > 0 {
+			result = append(result, item)
+		}
+	}
+	return result, resp, nil
 }

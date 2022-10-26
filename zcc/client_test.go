@@ -1,4 +1,4 @@
-package zpa
+package zcc
 
 import (
 	"log"
@@ -28,8 +28,7 @@ var (
 const (
 	getResponse  = `{"id": 1234,"name":"name with &amp;amp;, &amp;lt; and &amp;gt;","description":"description with &amp;amp;, &amp;lt; and &amp;gt;"}`
 	authResponse = `{
-	"token_type": "token_type",
-	"access_token": "access_token"
+	"jwtToken": "jwtToken"
 }`
 )
 
@@ -64,7 +63,7 @@ func TestClient_NewRequestDo(t *testing.T) {
 			},
 			muxHandler: func(w http.ResponseWriter, r *http.Request) {
 				_, err := w.Write([]byte(getResponse))
-				w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+				w.Header().Set("Content-Type", "application/json")
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -105,131 +104,80 @@ func TestClient_NewRequestDo(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	os.Setenv(ZPA_CLIENT_ID, "ClientID")
-	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
-	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
+	os.Setenv(ZCC_CLIENT_ID, "ClientID")
+	os.Setenv(ZCC_CLIENT_SECRET, "ClientSecret")
 	type args struct {
 		config *Config
 	}
 	tests := []struct {
 		name  string
 		args  args
-		cloud string
 		wantC *Config
 	}{
 		// NewClient test cases
 		{
-			name:  "Successful Client creation with default config values",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "",
+			name: "Successful Client creation with default config values",
+			args: struct{ config *Config }{config: nil},
 			wantC: &Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
-					Host:   "config.private.zscaler.com",
+					Host:   "mobileadmin.cloud1.net",
 				},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
+				Cloud:        "cloud1",
 				UserAgent:    "userAgent",
 			},
 		},
 		{
-			name:  "Production cloud support",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "production",
+			name: "Gov cloud support",
+			args: struct{ config *Config }{config: nil},
 			wantC: &Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
-					Host:   "config.private.zscaler.com",
+					Host:   "mobileadmin.cloud2.net",
 				},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
+				Cloud:        "cloud2",
 				UserAgent:    "userAgent",
 			},
 		},
 		{
-			name:  "Beta cloud support",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "beta",
+			name: "Arbitrary cloud support",
+			args: struct{ config *Config }{config: nil},
 			wantC: &Config{
 				BaseURL: &url.URL{
 					Scheme: "https",
-					Host:   "config.zpabeta.net",
+					Host:   "mobileadmin.cloud3.net",
 				},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
+				Cloud:        "cloud3",
 				UserAgent:    "userAgent",
 			},
 		},
 		{
-			name:  "Gov cloud support",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "gov",
-			wantC: &Config{
-				BaseURL: &url.URL{
-					Scheme: "https",
-					Host:   "config.zpagov.net",
-				},
-				ClientID:     "ClientID",
-				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
-				UserAgent:    "userAgent",
-			},
-		},
-		{
-			name:  "Preview cloud support",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "preview",
-			wantC: &Config{
-				BaseURL: &url.URL{
-					Scheme: "https",
-					Host:   "config.zpapreview.net",
-				},
-				ClientID:     "ClientID",
-				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
-				UserAgent:    "userAgent",
-			},
-		},
-		{
-			name:  "Arbitrary cloud support",
-			args:  struct{ config *Config }{config: nil},
-			cloud: "https://config.somecloud.net",
-			wantC: &Config{
-				BaseURL: &url.URL{
-					Scheme: "https",
-					Host:   "config.somecloud.net",
-				},
-				ClientID:     "ClientID",
-				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
-				UserAgent:    "userAgent",
-			},
-		},
-		{
-			name:  "Successful Client creation with custom config values",
-			cloud: "",
+			name: "Successful Client creation with custom config values",
 			args: struct{ config *Config }{config: &Config{
-				BaseURL:      &url.URL{Host: "https://otherhost.com"},
+				BaseURL:      &url.URL{Host: "mobileadmin.cloud5.net"},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
+				Cloud:        "cloud5",
 				UserAgent:    "userAgent",
 			}},
 			wantC: &Config{
-				BaseURL:      &url.URL{Host: "https://otherhost.com"},
+				BaseURL:      &url.URL{Host: "mobileadmin.cloud5.net"},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
-				CustomerID:   "CustomerID",
+				Cloud:        "cloud5",
 				UserAgent:    "userAgent",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv(ZPA_CLOUD, tt.cloud)
+			os.Setenv(ZCC_CLOUD, tt.wantC.Cloud)
 			gotC := NewClient(tt.args.config)
 			assert.Equal(t, gotC.Config.BaseURL.Host, tt.wantC.BaseURL.Host)
 			assert.Equal(t, gotC.Config.BaseURL.Scheme, tt.wantC.BaseURL.Scheme)
@@ -241,16 +189,15 @@ func TestNewClient(t *testing.T) {
 
 func setupMuxConfig() *Config {
 	mux = http.NewServeMux()
-	mux.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/auth/v1/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Set-Cookie", "JSESSIONID=JSESSIONID;")
 		_, err := w.Write([]byte(authResponse))
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
 	server = httptest.NewServer(mux)
-	config, err := NewConfig("clientID", "clientID", "customerID", "cloud", "userAgent")
+	config, err := NewConfig("clientID", "clientID", "cloud", "userAgent")
 	if err != nil {
 		panic(err)
 	}
