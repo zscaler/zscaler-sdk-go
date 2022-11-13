@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.1.7 (November, 13 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #41](https://github.com/zscaler/zscaler-sdk-go/pull/41) Allow order 0 for firewall filtering rules in ZIA cloud firewall.
+
 # 0.1.6 (October, 22 2022)
 
 ## Notes
