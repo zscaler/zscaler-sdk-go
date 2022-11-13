@@ -16,7 +16,7 @@ const (
 type FirewallFilteringRules struct {
 	ID                  int                       `json:"id,omitempty"`
 	Name                string                    `json:"name,omitempty"`
-	Order               int                       `json:"order,omitempty"`
+	Order               int                       `json:"order"`
 	Rank                int                       `json:"rank"`
 	AccessControl       string                    `json:"accessControl,omitempty"`
 	EnableFullLogging   bool                      `json:"enableFullLogging"`
