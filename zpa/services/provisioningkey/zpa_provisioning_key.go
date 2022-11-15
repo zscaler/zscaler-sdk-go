@@ -37,6 +37,7 @@ type ProvisioningKey struct {
 	UsageCount            string   `json:"usageCount,omitempty"`
 	ZcomponentID          string   `json:"zcomponentId,omitempty"`
 	ZcomponentName        string   `json:"zcomponentName,omitempty"`
+	AssociationType       string   `json:"-"`
 }
 
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
@@ -47,6 +48,7 @@ func (service *Service) Get(associationType, provisioningKeyID string) (*Provisi
 	if err != nil {
 		return nil, nil, err
 	}
+	v.AssociationType = associationType
 	return v, resp, nil
 }
 
@@ -62,6 +64,7 @@ func (service *Service) GetByName(associationType, name string) (*ProvisioningKe
 	}
 	for _, provisioningKey := range v.List {
 		if strings.EqualFold(provisioningKey.Name, name) {
+			provisioningKey.AssociationType = associationType
 			return &provisioningKey, resp, nil
 		}
 	}
@@ -107,6 +110,7 @@ func (service *Service) GetByNameAllAssociations(name string) (p *ProvisioningKe
 			break
 		}
 	}
+	p.AssociationType = assoc_type
 	return p, assoc_type, resp, err
 }
 
@@ -118,6 +122,7 @@ func (service *Service) GetByIDAllAssociations(id string) (p *ProvisioningKey, a
 			break
 		}
 	}
+	p.AssociationType = assoc_type
 	return p, assoc_type, resp, err
 }
 
@@ -130,6 +135,9 @@ func (service *Service) GetAllByAssociationType(associationType string) ([]Provi
 	if err != nil {
 		return nil, err
 	}
+	for i := range v.List {
+		v.List[i].AssociationType = associationType
+	}
 	return v.List, nil
 }
 
@@ -139,7 +147,6 @@ func (service *Service) GetAll() (list []ProvisioningKey, err error) {
 		if len(items) > 0 {
 			list = append(list, items...)
 		}
-
 	}
 	return list, nil
 }
