@@ -37,7 +37,7 @@ type ProvisioningKey struct {
 	UsageCount            string   `json:"usageCount,omitempty"`
 	ZcomponentID          string   `json:"zcomponentId,omitempty"`
 	ZcomponentName        string   `json:"zcomponentName,omitempty"`
-	AssociationType       string   `json:"-"`
+	AssociationType       string   `json:"associationType"`
 }
 
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
