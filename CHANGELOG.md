@@ -1,5 +1,32 @@
 # Changelog
 
+# 0.2.0 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
+# 0.1.9 (November, 15 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- Add associationType json to prov key
+
+# 0.1.8 (November, 15 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #43](https://github.com/zscaler/zscaler-sdk-go/pull/43) Return AssociationType in provisioning key endpoints
+
 # 0.1.7 (November, 13 2022)
 
 ## Notes
