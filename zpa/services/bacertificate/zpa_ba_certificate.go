@@ -9,7 +9,7 @@ import (
 
 const (
 	mgmtConfigV1                = "/mgmtconfig/v1/admin/customers/"
-	baCertificateEndpoint       = "/clientlessCertificate"
+	baCertificateEndpoint       = "/certificate"
 	mgmtConfigV2                = "/mgmtconfig/v2/admin/customers/"
 	baCertificateIssuedEndpoint = "/clientlessCertificate/issued"
 )
@@ -17,6 +17,7 @@ const (
 type BaCertificate struct {
 	CName               string   `json:"cName,omitempty"`
 	CertChain           string   `json:"certChain,omitempty"`
+	CertBlob            string   `json:"certBlob,omitempty"`
 	CreationTime        string   `json:"creationTime,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	ID                  string   `json:"id,omitempty"`
@@ -70,4 +71,34 @@ func (service *Service) GetAll() ([]BaCertificate, *http.Response, error) {
 		return nil, nil, err
 	}
 	return v.List, resp, nil
+}
+
+func (service *Service) Create(baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
+	v := new(BaCertificate)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, nil, baCertificate, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v, resp, nil
+}
+
+func (service *Service) Update(baCertificateID string, baCertificate *BaCertificate) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, baCertificate, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, err
+}
+
+func (service *Service) Delete(baCertificateID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
