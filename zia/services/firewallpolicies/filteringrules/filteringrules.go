@@ -46,6 +46,8 @@ type FirewallFilteringRules struct {
 	NwServices          []common.IDNameExtensions `json:"nwServices,omitempty"`
 	NwServiceGroups     []common.IDNameExtensions `json:"nwServiceGroups,omitempty"` // User-defined network service applications on which the rule is applied. If not set, the rule is not restricted to a specific network service application.
 	SrcIpGroups         []common.IDNameExtensions `json:"srcIpGroups,omitempty"`     // User-defined source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
+	SrcIpv6Groups       []common.IDNameExtensions `json:"srcIpv6Groups,omitempty"`   // User-defined groups for IPv6 addresses are currently not supported.
+	DestIpv6Groups      []common.IDNameExtensions `json:"destIpv6Groups,omitempty"`  //User-defined groups for IPv6 addresses are currently not supported.
 }
 
 func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {
