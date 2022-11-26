@@ -34,12 +34,8 @@ type apiErrorResponse struct {
 
 // isResourceNotFoundError returns true on missing object error (400).
 func (r ErrorResponse) isResourceNotFoundError() bool {
-	errorResponse, err := io.ReadAll(r.Response.Body)
-	if err != nil {
-		return false
-	}
 	resp := apiErrorResponse{}
-	err = json.Unmarshal(errorResponse, &resp)
+	err := json.Unmarshal([]byte(r.Message), &resp)
 	if err != nil {
 		return false
 	}
