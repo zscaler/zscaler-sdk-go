@@ -1,6 +1,7 @@
 package zpa
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,7 +28,26 @@ func checkErrorInResponse(res *http.Response) error {
 	return errorResponse
 }
 
-// IsObjectNotFound returns true on missing object error (404).
+type apiErrorResponse struct {
+	ID string `json:"id"`
+}
+
+// isResourceNotFoundError returns true on missing object error (400).
+func (r ErrorResponse) isResourceNotFoundError() bool {
+	errorResponse, err := io.ReadAll(r.Response.Body)
+	if err != nil {
+		return false
+	}
+	resp := apiErrorResponse{}
+	err = json.Unmarshal(errorResponse, &resp)
+	if err != nil {
+		return false
+	}
+	return resp.ID == "resource.not.found"
+}
+
+// IsObjectNotFound returns true on missing object error (404 & 400 with response  "id": "resource.not.found",).
 func (r ErrorResponse) IsObjectNotFound() bool {
-	return r.Response.StatusCode == 404
+
+	return r.Response.StatusCode == 404 || r.Response.StatusCode == 400 && r.isResourceNotFoundError()
 }
