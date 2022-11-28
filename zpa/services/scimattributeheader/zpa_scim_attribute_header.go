@@ -45,17 +45,36 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 	return v, resp, nil
 }
 
-func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
+func (service *Service) getValuesPaginated(idpId, ScimAttrHeaderID string, page, pageSize int) (int, []string, error) {
 	var v struct {
-		List []string `json:"list"`
+		TotalPages int      `json:"totalPages"`
+		TotalCount int      `json:"totalCount"`
+		List       []string `json:"list"`
 	}
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
-	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: pageSize, Page: page}, nil, &v)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	return v.TotalPages, v.List, nil
+}
+
+func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
+	totalPages, result, err := service.getValuesPaginated(idpId, ScimAttrHeaderID, 1, common.DefaultPageSize)
 	if err != nil {
 		return nil, err
 	}
+	var l []string
+	for page := 1; page < totalPages; page++ {
+		totalPages, l, err = service.getValuesPaginated(idpId, ScimAttrHeaderID, page, common.DefaultPageSize)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, l...)
+	}
 
-	return v.List, nil
+	return result, nil
 }
 
 func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
