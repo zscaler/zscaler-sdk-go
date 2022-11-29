@@ -1,5 +1,33 @@
 # Changelog
 
+# 0.3.0 (November, 29 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #49](https://github.com/zscaler/zscaler-sdk-go/pull/49) Implemented generic function to get all resources
+- [PR #49](https://github.com/zscaler/zscaler-sdk-go/pull/49) Implemented generic function to get all SCIM header attribute values
+
+# 0.2.2 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
+# 0.2.1 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
 # 0.2.0 (November, 24 2022)
 
 ## Notes
