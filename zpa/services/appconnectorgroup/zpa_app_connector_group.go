@@ -105,16 +105,12 @@ func (service *Service) Get(appConnectorGroupID string) (*AppConnectorGroup, *ht
 }
 
 func (service *Service) GetByName(appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
-	var v struct {
-		List []AppConnectorGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: appConnectorGroupName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, appConnectorGroupName) {
 			return &app, resp, nil
 		}
@@ -153,14 +149,10 @@ func (service *Service) Delete(appConnectorGroupID string) (*http.Response, erro
 }
 
 func (service *Service) GetAll() ([]AppConnectorGroup, *http.Response, error) {
-	var v struct {
-		List []AppConnectorGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

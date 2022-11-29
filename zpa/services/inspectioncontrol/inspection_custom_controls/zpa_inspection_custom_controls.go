@@ -71,16 +71,12 @@ func (service *Service) Get(customID string) (*InspectionCustomControl, *http.Re
 }
 
 func (service *Service) GetByName(controlName string) (*InspectionCustomControl, *http.Response, error) {
-	var v struct {
-		List []InspectionCustomControl `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: controlName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, control := range v.List {
+	for _, control := range list {
 		if strings.EqualFold(control.Name, controlName) {
 			rules, err := unmarshalRulesJson(control.ControlRuleJson)
 			control.Rules = rules
@@ -121,14 +117,10 @@ func (service *Service) Delete(customID string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]InspectionCustomControl, *http.Response, error) {
-	var v struct {
-		List []InspectionCustomControl `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

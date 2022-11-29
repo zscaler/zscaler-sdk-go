@@ -51,16 +51,12 @@ func (service *Service) Get(machineGroupID string) (*MachineGroup, *http.Respons
 }
 
 func (service *Service) GetByName(machineGroupName string) (*MachineGroup, *http.Response, error) {
-	var v struct {
-		List []MachineGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: machineGroupName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[MachineGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, machineGroupName) {
 			return &app, resp, nil
 		}
@@ -69,14 +65,10 @@ func (service *Service) GetByName(machineGroupName string) (*MachineGroup, *http
 }
 
 func (service *Service) GetAll() ([]MachineGroup, *http.Response, error) {
-	var v struct {
-		List []MachineGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[MachineGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

@@ -76,16 +76,12 @@ func (service *Service) Get(segmentGroupID string) (*SegmentGroup, *http.Respons
 }
 
 func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Response, error) {
-	var v struct {
-		List []SegmentGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: segmentName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, segmentName) {
 			return &app, resp, nil
 		}
@@ -121,14 +117,10 @@ func (service *Service) Delete(segmentGroupId string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]SegmentGroup, *http.Response, error) {
-	var v struct {
-		List []SegmentGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

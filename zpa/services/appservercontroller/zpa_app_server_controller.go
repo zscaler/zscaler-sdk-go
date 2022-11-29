@@ -37,16 +37,12 @@ func (service *Service) Get(id string) (*ApplicationServer, *http.Response, erro
 }
 
 func (service *Service) GetByName(appServerName string) (*ApplicationServer, *http.Response, error) {
-	var v struct {
-		List []ApplicationServer `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: appServerName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationServer](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, appServerName) {
 			return &app, resp, nil
 		}
@@ -82,14 +78,10 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]ApplicationServer, *http.Response, error) {
-	var v struct {
-		List []ApplicationServer `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationServer](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

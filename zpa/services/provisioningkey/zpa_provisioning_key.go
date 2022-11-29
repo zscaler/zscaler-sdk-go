@@ -54,15 +54,12 @@ func (service *Service) Get(associationType, provisioningKeyID string) (*Provisi
 
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
 func (service *Service) GetByName(associationType, name string) (*ProvisioningKey, *http.Response, error) {
-	var v struct {
-		List []ProvisioningKey `json:"list"`
-	}
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
-	resp, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize, Search: name}, nil, &v)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
+	list, resp, err := common.GetAllPagesGeneric[ProvisioningKey](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, provisioningKey := range v.List {
+	for _, provisioningKey := range list {
 		if strings.EqualFold(provisioningKey.Name, name) {
 			provisioningKey.AssociationType = associationType
 			return &provisioningKey, resp, nil
@@ -127,18 +124,15 @@ func (service *Service) GetByIDAllAssociations(id string) (p *ProvisioningKey, a
 }
 
 func (service *Service) GetAllByAssociationType(associationType string) ([]ProvisioningKey, error) {
-	var v struct {
-		List []ProvisioningKey `json:"list"`
-	}
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
-	_, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
+	list, _, err := common.GetAllPagesGeneric[ProvisioningKey](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, err
 	}
-	for i := range v.List {
-		v.List[i].AssociationType = associationType
+	for i := range list {
+		list[i].AssociationType = associationType
 	}
-	return v.List, nil
+	return list, nil
 }
 
 func (service *Service) GetAll() (list []ProvisioningKey, err error) {

@@ -37,18 +37,12 @@ func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Respo
 }
 
 func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Response, error) {
-	var v struct {
-		List []SamlAttribute `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
-		PageSize: common.DefaultPageSize,
-		Search:   samlAttrName,
-	}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, samlAttribute := range v.List {
+	for _, samlAttribute := range list {
 		if samlAttribute.Name == samlAttrName {
 			return &samlAttribute, resp, nil
 		}
@@ -57,15 +51,10 @@ func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Re
 }
 
 func (service *Service) GetAll() ([]SamlAttribute, *http.Response, error) {
-	var v struct {
-		List []SamlAttribute `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
-		PageSize: common.DefaultPageSize,
-	}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

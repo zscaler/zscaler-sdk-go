@@ -70,18 +70,12 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 }
 
 func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
-	var v struct {
-		List []IdpController `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
-		PageSize: common.DefaultPageSize,
-		Search:   idpName,
-	}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, idpController := range v.List {
+	for _, idpController := range list {
 		if idpController.Name == idpName {
 			return &idpController, resp, nil
 		}
@@ -90,15 +84,10 @@ func (service *Service) GetByName(idpName string) (*IdpController, *http.Respons
 }
 
 func (service *Service) GetAll() ([]IdpController, *http.Response, error) {
-	var v struct {
-		List []IdpController `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{
-		PageSize: common.DefaultPageSize,
-	}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

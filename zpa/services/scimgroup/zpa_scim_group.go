@@ -36,15 +36,12 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 }
 
 func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Response, error) {
-	var v struct {
-		List []ScimGroup `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: scimName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, scim := range v.List {
+	for _, scim := range list {
 		if strings.EqualFold(scim.Name, scimName) {
 			return &scim, resp, nil
 		}
@@ -53,13 +50,10 @@ func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Res
 }
 
 func (service *Service) GetAllByIdpId(IdpId string) ([]ScimGroup, *http.Response, error) {
-	var v struct {
-		List []ScimGroup `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

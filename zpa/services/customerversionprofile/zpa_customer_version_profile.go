@@ -64,16 +64,12 @@ func (service *Service) Get(versionID string) (*CustomerVersionProfile, *http.Re
 }
 
 func (service *Service) GetByName(versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
-	var v struct {
-		List []CustomerVersionProfile `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: versionProfileName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, versionProfileName) {
 			return &app, resp, nil
 		}
@@ -82,14 +78,10 @@ func (service *Service) GetByName(versionProfileName string) (*CustomerVersionPr
 }
 
 func (service *Service) GetAll() ([]CustomerVersionProfile, *http.Response, error) {
-	var v struct {
-		List []CustomerVersionProfile `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

@@ -148,16 +148,12 @@ func (service *Service) Get(lssID string) (*LSSResource, *http.Response, error) 
 }
 
 func (service *Service) GetByName(lssName string) (*LSSResource, *http.Response, error) {
-	var v struct {
-		List []LSSResource `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + lssConfigEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: lssName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, lss := range v.List {
+	for _, lss := range list {
 		if strings.EqualFold(lss.LSSConfig.Name, lssName) {
 			return &lss, resp, nil
 		}
@@ -193,14 +189,10 @@ func (service *Service) Delete(lssID string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]LSSResource, *http.Response, error) {
-	var v struct {
-		List []LSSResource `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + lssConfigEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

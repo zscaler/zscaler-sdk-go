@@ -46,28 +46,18 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 }
 
 func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
-	var v struct {
-		List []string `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
-	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
-	if err != nil {
-		return nil, err
-	}
-
-	return v.List, nil
+	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
+	return l, err
 }
 
 func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
-	var v struct {
-		List []ScimAttributeHeader `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: scimAttributeName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, scimAttribute := range v.List {
+	for _, scimAttribute := range list {
 		if strings.EqualFold(scimAttribute.Name, scimAttributeName) {
 			return &scimAttribute, resp, nil
 		}
@@ -76,13 +66,10 @@ func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttribu
 }
 
 func (service *Service) GetAllByIdpId(IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
-	var v struct {
-		List []ScimAttributeHeader `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

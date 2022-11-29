@@ -115,16 +115,12 @@ func setVersion(inspectionProfile *InspectionProfile) {
 }
 
 func (service *Service) GetByName(profileName string) (*InspectionProfile, *http.Response, error) {
-	var v struct {
-		List []InspectionProfile `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: profileName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, inspection := range v.List {
+	for _, inspection := range list {
 		if strings.EqualFold(inspection.Name, profileName) {
 			return &inspection, resp, nil
 		}
@@ -197,14 +193,10 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]InspectionProfile, *http.Response, error) {
-	var v struct {
-		List []InspectionProfile `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }
