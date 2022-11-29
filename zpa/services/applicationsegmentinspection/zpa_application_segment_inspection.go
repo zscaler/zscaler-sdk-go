@@ -98,16 +98,12 @@ func (service *Service) Get(id string) (*AppSegmentInspection, *http.Response, e
 }
 
 func (service *Service) GetByName(appSegmentName string) (*AppSegmentInspection, *http.Response, error) {
-	var v struct {
-		List []AppSegmentInspection `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: appSegmentName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentInspection](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, appSegmentName) {
 			return &app, resp, nil
 		}
@@ -191,18 +187,14 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]AppSegmentInspection, *http.Response, error) {
-	var v struct {
-		List []AppSegmentInspection `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentInspection](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	result := []AppSegmentInspection{}
 	// filter inspection apps
-	for _, item := range v.List {
+	for _, item := range list {
 		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT") {
 			result = append(result, item)
 		}

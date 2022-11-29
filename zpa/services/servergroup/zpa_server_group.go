@@ -127,16 +127,12 @@ func (service *Service) Get(groupID string) (*ServerGroup, *http.Response, error
 }
 
 func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.Response, error) {
-	var v struct {
-		List []ServerGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: serverGroupName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ServerGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, serverGroupName) {
 			return &app, resp, nil
 		}
@@ -172,14 +168,10 @@ func (service *Service) Delete(groupId string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
-	var v struct {
-		List []ServerGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ServerGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

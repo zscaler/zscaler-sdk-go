@@ -102,16 +102,12 @@ func (service *Service) Get(serviceEdgeGroupID string) (*ServiceEdgeGroup, *http
 }
 
 func (service *Service) GetByName(serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
-	var v struct {
-		List []ServiceEdgeGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: serviceEdgeGroupName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, serviceEdgeGroupName) {
 			return &app, resp, nil
 		}
@@ -147,15 +143,10 @@ func (service *Service) Delete(serviceEdgeGroupID string) (*http.Response, error
 }
 
 func (service *Service) GetAll() ([]ServiceEdgeGroup, *http.Response, error) {
-	var v struct {
-		List []ServiceEdgeGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v.List, resp, nil
+	return list, resp, nil
 }

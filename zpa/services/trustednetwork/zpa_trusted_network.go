@@ -37,15 +37,12 @@ func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, 
 }
 
 func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Response, error) {
-	var v struct {
-		List []TrustedNetwork `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, trustedNetwork := range v.List {
+	for _, trustedNetwork := range list {
 		if trustedNetwork.NetworkID == netID {
 			return &trustedNetwork, resp, nil
 		}
@@ -54,16 +51,13 @@ func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Respons
 }
 
 func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
-	var v struct {
-		List []TrustedNetwork `json:"list"`
-	}
 	adaptedTrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search2: adaptedTrustedNetworkName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, adaptedTrustedNetworkName)
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, trustedNetwork := range v.List {
+	for _, trustedNetwork := range list {
 		if strings.EqualFold(common.RemoveCloudSuffix(trustedNetwork.Name), adaptedTrustedNetworkName) {
 			return &trustedNetwork, resp, nil
 		}
@@ -72,14 +66,10 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 }
 
 func (service *Service) GetAll() ([]TrustedNetwork, *http.Response, error) {
-	var v struct {
-		List []TrustedNetwork `json:"list"`
-	}
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v.List, resp, nil
+	return list, resp, nil
 }

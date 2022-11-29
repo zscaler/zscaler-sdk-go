@@ -45,15 +45,12 @@ func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Respo
 }
 
 func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.Response, error) {
-	var v struct {
-		List []BaCertificate `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: CertName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[BaCertificate](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, baCertificate := range v.List {
+	for _, baCertificate := range list {
 		if baCertificate.Name == CertName {
 			return &baCertificate, resp, nil
 		}
@@ -62,15 +59,12 @@ func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.
 }
 
 func (service *Service) GetAll() ([]BaCertificate, *http.Response, error) {
-	var v struct {
-		List []BaCertificate `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[BaCertificate](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }
 
 func (service *Service) Create(baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {

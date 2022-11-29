@@ -53,16 +53,12 @@ func (service *Service) Get(cloudConnectorGroupID string) (*CloudConnectorGroup,
 }
 
 func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
-	var v struct {
-		List []CloudConnectorGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: cloudConnectorGroupName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, cloudConnectorGroupName) {
 			return &app, resp, nil
 		}
@@ -71,14 +67,10 @@ func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnect
 }
 
 func (service *Service) GetAll() ([]CloudConnectorGroup, *http.Response, error) {
-	var v struct {
-		List []CloudConnectorGroup `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

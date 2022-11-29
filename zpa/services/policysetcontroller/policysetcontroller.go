@@ -144,15 +144,12 @@ func (service *Service) Delete(policySetID, ruleId string) (*http.Response, erro
 }
 
 func (service *Service) GetByNameAndType(policyType, ruleName string) (*PolicyRule, *http.Response, error) {
-	var v struct {
-		List []PolicyRule `json:"list"`
-	}
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
-	resp, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize, Search: ruleName}, nil, &v)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
+	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, p := range v.List {
+	for _, p := range list {
 		if strings.EqualFold(ruleName, p.Name) {
 			return &p, resp, nil
 		}
@@ -194,14 +191,10 @@ func (service *Service) RulesCount() (int, *http.Response, error) {
 }
 
 func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Response, error) {
-	var v struct {
-		List []PolicyRule `json:"list"`
-	}
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
-	resp, err := service.Client.NewRequestDo("GET", url, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
+	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v.List, resp, nil
+	return list, resp, nil
 }

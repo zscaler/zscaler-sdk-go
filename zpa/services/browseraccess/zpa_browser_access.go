@@ -78,16 +78,12 @@ func (service *Service) Get(id string) (*BrowserAccess, *http.Response, error) {
 }
 
 func (service *Service) GetByName(BaName string) (*BrowserAccess, *http.Response, error) {
-	var v struct {
-		List []BrowserAccess `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: BaName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, BaName) {
 			return &app, resp, nil
 		}
@@ -123,18 +119,14 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]BrowserAccess, *http.Response, error) {
-	var v struct {
-		List []BrowserAccess `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	result := []BrowserAccess{}
 	// filter browser access apps
-	for _, item := range v.List {
+	for _, item := range list {
 		if len(item.ClientlessApps) > 0 {
 			result = append(result, item)
 		}

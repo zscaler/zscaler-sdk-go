@@ -45,48 +45,19 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 	return v, resp, nil
 }
 
-func (service *Service) getValuesPaginated(idpId, ScimAttrHeaderID string, page, pageSize int) (int, []string, error) {
-	var v struct {
-		TotalPages int      `json:"totalPages"`
-		TotalCount int      `json:"totalCount"`
-		List       []string `json:"list"`
-	}
-	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
-	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: pageSize, Page: page}, nil, &v)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	return v.TotalPages, v.List, nil
-}
-
 func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
-	totalPages, result, err := service.getValuesPaginated(idpId, ScimAttrHeaderID, 1, common.DefaultPageSize)
-	if err != nil {
-		return nil, err
-	}
-	var l []string
-	for page := 1; page < totalPages; page++ {
-		totalPages, l, err = service.getValuesPaginated(idpId, ScimAttrHeaderID, page, common.DefaultPageSize)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, l...)
-	}
-
-	return result, nil
+	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
+	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
+	return l, err
 }
 
 func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
-	var v struct {
-		List []ScimAttributeHeader `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: scimAttributeName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, scimAttribute := range v.List {
+	for _, scimAttribute := range list {
 		if strings.EqualFold(scimAttribute.Name, scimAttributeName) {
 			return &scimAttribute, resp, nil
 		}
@@ -95,13 +66,10 @@ func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttribu
 }
 
 func (service *Service) GetAllByIdpId(IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
-	var v struct {
-		List []ScimAttributeHeader `json:"list"`
-	}
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

@@ -65,16 +65,12 @@ func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Respons
 
 // This function search the App Connector by Name
 func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http.Response, error) {
-	var v struct {
-		List []AppConnector `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: appConnectorName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, appConnectorName) {
 			return &app, resp, nil
 		}
@@ -83,23 +79,19 @@ func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http
 }
 
 func (service *Service) GetAll() ([]AppConnector, error) {
-	var v struct {
-		List []AppConnector `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	_, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, _, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, err
 	}
-	return v.List, nil
+	return list, nil
 }
 
 type BulkDeleteRequest struct {
 	IDs []string `json:"ids"`
 }
 
-//Update Updates the App Connector details for the specified ID.
+// Update Updates the App Connector details for the specified ID.
 func (service *Service) Update(appConnectorID string, appConnector AppConnector) (*AppConnector, *http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
 	_, err := service.Client.NewRequestDo("PUT", path, nil, appConnector, nil)

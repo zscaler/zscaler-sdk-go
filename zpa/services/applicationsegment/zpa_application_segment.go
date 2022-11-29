@@ -72,16 +72,12 @@ func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, 
 }
 
 func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, *http.Response, error) {
-	var v struct {
-		List []ApplicationSegmentResource `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: appName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationSegmentResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, appName) {
 			return &app, resp, nil
 		}
@@ -120,18 +116,14 @@ func (service *Service) Delete(applicationId string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, error) {
-	var v struct {
-		List []ApplicationSegmentResource `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationSegmentResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	result := []ApplicationSegmentResource{}
 	// filter apps
-	for _, item := range v.List {
+	for _, item := range list {
 		if len(item.ClientlessApps) == 0 && (len(item.CommonAppsDto.AppsConfig) == 0 || !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
 			result = append(result, item)
 		}

@@ -99,16 +99,12 @@ func (service *Service) Get(id string) (*AppSegmentPRA, *http.Response, error) {
 }
 
 func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response, error) {
-	var v struct {
-		List []AppSegmentPRA `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: BaName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, app := range v.List {
+	for _, app := range list {
 		if strings.EqualFold(app.Name, BaName) {
 			return &app, resp, nil
 		}
@@ -192,18 +188,14 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]AppSegmentPRA, *http.Response, error) {
-	var v struct {
-		List []AppSegmentPRA `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	result := []AppSegmentPRA{}
 	// filter pra apps
-	for _, item := range v.List {
+	for _, item := range list {
 		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") {
 			result = append(result, item)
 		}

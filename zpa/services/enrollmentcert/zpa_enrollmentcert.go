@@ -50,16 +50,12 @@ func (service *Service) Get(id string) (*EnrollmentCert, *http.Response, error) 
 }
 
 func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Response, error) {
-	var v struct {
-		List []EnrollmentCert `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search: certName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[EnrollmentCert](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, cert := range v.List {
+	for _, cert := range list {
 		if strings.EqualFold(cert.Name, certName) {
 			return &cert, resp, nil
 		}
@@ -68,14 +64,10 @@ func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Respo
 }
 
 func (service *Service) GetAll() ([]EnrollmentCert, *http.Response, error) {
-	var v struct {
-		List []EnrollmentCert `json:"list"`
-	}
-
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[EnrollmentCert](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	return v.List, resp, nil
+	return list, resp, nil
 }

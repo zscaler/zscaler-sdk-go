@@ -39,15 +39,12 @@ func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) 
 }
 
 func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *http.Response, error) {
-	var v struct {
-		List []PostureProfile `json:"list"`
-	}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, postureProfile := range v.List {
+	for _, postureProfile := range list {
 		if postureProfile.PostureudID == postureUDID {
 			return &postureProfile, resp, nil
 		}
@@ -56,16 +53,13 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 }
 
 func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
-	var v struct {
-		List []PostureProfile `json:"list"`
-	}
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize, Search2: adaptedPostureName}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, postureName)
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, postureProfile := range v.List {
+	for _, postureProfile := range list {
 		if strings.EqualFold(common.RemoveCloudSuffix(postureProfile.Name), adaptedPostureName) {
 			return &postureProfile, resp, nil
 		}
@@ -74,14 +68,11 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 }
 
 func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
-	var v struct {
-		List []PostureProfile `json:"list"`
-	}
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Pagination{PageSize: common.DefaultPageSize}, nil, &v)
+	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return v.List, resp, nil
+	return list, resp, nil
 }
