@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.3.1 (November, 30 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Fix
+
+- [PR #50](https://github.com/zscaler/zscaler-sdk-go/pull/50) Changed common function to allow totalPages string values
+
 # 0.3.0 (November, 29 2022)
 
 ## Notes
