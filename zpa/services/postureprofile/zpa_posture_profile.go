@@ -55,7 +55,7 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, postureName)
+	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, adaptedPostureName)
 	if err != nil {
 		return nil, nil, err
 	}
