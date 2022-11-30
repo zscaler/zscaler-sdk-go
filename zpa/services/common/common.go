@@ -1,8 +1,10 @@
 package common
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zpa"
@@ -64,16 +66,18 @@ func InList(list []string, item string) bool {
 
 func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string) (int, []T, *http.Response, error) {
 	var v struct {
-		TotalPages int `json:"totalPages"`
-		TotalCount int `json:"totalCount"`
-		List       []T `json:"list"`
+		TotalPages interface{} `json:"totalPages"`
+		List       []T         `json:"list"`
 	}
 	resp, err := client.NewRequestDo("GET", relativeURL, Pagination{PageSize: pageSize, Page: page, Search2: searchQuery}, nil, &v)
 	if err != nil {
 		return 0, nil, resp, err
 	}
 
-	return v.TotalPages, v.List, resp, nil
+	pages := fmt.Sprintf("%v", v.TotalPages)
+	totalPages, _ := strconv.Atoi(pages)
+
+	return totalPages, v.List, resp, nil
 }
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
