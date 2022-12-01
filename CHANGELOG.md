@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.4.0 (December, 01 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #52](https://github.com/zscaler/zscaler-sdk-go/pull/52) Added new ZIA intermediate CA cert endpoints
+
 # 0.3.1 (November, 30 2022)
 
 ## Notes
