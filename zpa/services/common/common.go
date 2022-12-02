@@ -87,7 +87,7 @@ func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery stri
 		return nil, resp, err
 	}
 	var l []T
-	for page := 1; page < totalPages; page++ {
+	for page := 2; page <= totalPages; page++ {
 		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, searchQuery)
 		if err != nil {
 			return nil, resp, err
