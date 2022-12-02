@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.4.1 (December, 02 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #53](https://github.com/zscaler/zscaler-sdk-go/pull/53) Fixed pagination issue with ZPA endpoints
+
 # 0.4.0 (December, 01 2022)
 
 ## Notes
