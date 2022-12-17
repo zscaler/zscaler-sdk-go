@@ -71,6 +71,20 @@ func (service *Service) GetCustomURLCategories(customName string) (*URLCategory,
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
+func (service *Service) GetIncludeOnlyUrlKeyWordCounts(customName string) (*URLCategory, error) {
+	var urlCategory []URLCategory
+	err := service.Client.Read(fmt.Sprintf("%s?includeOnlyUrlKeywordCounts=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
+	if err != nil {
+		return nil, err
+	}
+	for _, custom := range urlCategory {
+		if strings.EqualFold(custom.ID, customName) {
+			return &custom, nil
+		}
+	}
+	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
+}
+
 func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory, error) {
 	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
 	if err != nil {
