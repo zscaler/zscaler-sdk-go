@@ -1,5 +1,25 @@
 # Changelog
 
+# 0.5.1 (December, 17 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #57](https://github.com/zscaler/zscaler-sdk-go/pull/57) Added new ZPA application segment paramenter ``select_connector_close_to_app`` to Struct
+
+# 0.5.0 (December, 16 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Intermediate CA Certificate Endpoints for ZIA
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Event Log Entry Report Endpoints for ZIA
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Location Management IPv6 Parameters
+
 # 0.4.1 (December, 02 2022)
 
 ## Notes
