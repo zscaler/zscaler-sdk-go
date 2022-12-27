@@ -15,22 +15,26 @@ const (
 )
 
 type URLCategory struct {
-	ID                               string            `json:"id,omitempty"`
-	ConfiguredName                   string            `json:"configuredName,omitempty"`
-	Keywords                         []string          `json:"keywords"`
-	KeywordsRetainingParentCategory  []string          `json:"keywordsRetainingParentCategory"`
-	Urls                             []string          `json:"urls"`
-	DBCategorizedUrls                []string          `json:"dbCategorizedUrls"`
-	CustomCategory                   bool              `json:"customCategory"`
-	Scopes                           []Scopes          `json:"scopes,omitempty"`
-	Editable                         bool              `json:"editable"`
-	Description                      string            `json:"description,omitempty"`
-	Type                             string            `json:"type,omitempty"`
-	URLKeywordCounts                 *URLKeywordCounts `json:"urlKeywordCounts,omitempty"`
-	Val                              int               `json:"val,omitempty"`
-	CustomUrlsCount                  int               `json:"customUrlsCount,omitempty"`
-	SuperCategory                    string            `json:"superCategory,omitempty"`
-	UrlsRetainingParentCategoryCount int               `json:"urlsRetainingParentCategoryCount"`
+	ID                                   string            `json:"id,omitempty"`
+	ConfiguredName                       string            `json:"configuredName,omitempty"`
+	Keywords                             []string          `json:"keywords"`
+	KeywordsRetainingParentCategory      []string          `json:"keywordsRetainingParentCategory"`
+	Urls                                 []string          `json:"urls"`
+	DBCategorizedUrls                    []string          `json:"dbCategorizedUrls"`
+	CustomCategory                       bool              `json:"customCategory"`
+	Scopes                               []Scopes          `json:"scopes,omitempty"`
+	Editable                             bool              `json:"editable"`
+	Description                          string            `json:"description,omitempty"`
+	Type                                 string            `json:"type,omitempty"`
+	URLKeywordCounts                     *URLKeywordCounts `json:"urlKeywordCounts,omitempty"`
+	Val                                  int               `json:"val,omitempty"`
+	CustomUrlsCount                      int               `json:"customUrlsCount,omitempty"`
+	SuperCategory                        string            `json:"superCategory,omitempty"`
+	UrlsRetainingParentCategoryCount     int               `json:"urlsRetainingParentCategoryCount"`
+	IPRanges                             []string          `json:"ipRanges"`
+	IPRangesRetainingParentCategory      []string          `json:"ipRangesRetainingParentCategory"`
+	CustomIpRangesCount                  int               `json:"customIpRangesCount"`
+	IPRangesRetainingParentCategoryCount int               `json:"ipRangesRetainingParentCategoryCount"`
 }
 
 type Scopes struct {
