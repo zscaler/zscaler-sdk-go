@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.5.2 (December, 27 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #58](https://github.com/zscaler/zscaler-sdk-go/pull/59) Added new ZIA URL Category parameters to Struct
+
 # 0.5.1 (December, 17 2022)
 
 ## Notes
