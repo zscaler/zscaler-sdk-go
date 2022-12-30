@@ -35,7 +35,7 @@ type URLFilteringRule struct {
 	EnforceTimeValidity    bool                      `json:"enforceTimeValidity"`
 	Action                 string                    `json:"action,omitempty"`
 	Ciparule               bool                      `json:"ciparule"`
-	DeviceTrustLevels      []string                  `json:"deviceTrustLevels"`
+	DeviceTrustLevels      []string                  `json:"deviceTrustLevels,omitempty"`
 	DeviceGroups           []common.IDNameExtensions `json:"deviceGroups"`
 	Devices                []common.IDNameExtensions `json:"devices"`
 	LastModifiedBy         *common.IDNameExtensions  `json:"lastModifiedBy,omitempty"`
