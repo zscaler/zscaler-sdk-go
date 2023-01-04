@@ -1,5 +1,32 @@
 # Changelog
 
+# 0.5.6 (January, 4 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #61](https://github.com/zscaler/zscaler-sdk-go/pull/61) Added ``omitempty`` bool parameters in the ZIA URL Filtering Policy resource
+
+# 0.5.5 (December, 30 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #60](https://github.com/zscaler/zscaler-sdk-go/pull/60) Added new ZIA URL Filtering rule URL category parameters to Struct
+
+# 0.5.4 (December, 30 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #60](https://github.com/zscaler/zscaler-sdk-go/pull/60) Added new ZIA URL Filtering rule URL category parameters to Struct
+
 # 0.5.3 (December, 30 2022)
 
 ## Notes
