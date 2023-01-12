@@ -3,6 +3,8 @@ package usermanagement
 import (
 	"fmt"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -29,7 +31,7 @@ func (service *Service) GetGroups(groupID int) (*Groups, error) {
 
 func (service *Service) GetGroupByName(groupName string) (*Groups, error) {
 	var groups []Groups
-	err := service.Client.Read(groupsEndpoint, &groups)
+	err := common.ReadAllPages(service.Client, groupsEndpoint, &groups)
 	if err != nil {
 		return nil, err
 	}
