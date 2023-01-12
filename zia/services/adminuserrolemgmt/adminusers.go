@@ -67,7 +67,7 @@ func (service *Service) GetAdminUsers(adminUserId int) (*AdminUsers, error) {
 
 func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*AdminUsers, error) {
 	var adminUsers []AdminUsers
-	err := service.Client.Read(adminUsersEndpoint, &adminUsers)
+	err := common.ReadAllPages(service.Client, adminUsersEndpoint, &adminUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*A
 
 func (service *Service) GetAdminByUsername(adminUsername string) (*AdminUsers, error) {
 	var adminUsers []AdminUsers
-	err := service.Client.Read(adminUsersEndpoint, &adminUsers)
+	err := common.ReadAllPages(service.Client, adminUsersEndpoint, &adminUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +126,6 @@ func (service *Service) DeleteAdminUser(adminUserID int) (*http.Response, error)
 
 func (service *Service) GetAllAdminUsers() ([]AdminUsers, error) {
 	var adminUsers []AdminUsers
-	err := service.Client.Read(adminUsersEndpoint, &adminUsers)
+	err := common.ReadAllPages(service.Client, adminUsersEndpoint, &adminUsers)
 	return adminUsers, err
 }

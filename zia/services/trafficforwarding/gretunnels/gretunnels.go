@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -113,6 +115,6 @@ func (service *Service) DeleteGreTunnels(greTunnelID int) (*http.Response, error
 
 func (service *Service) GetAll() ([]GreTunnels, error) {
 	var greTunnels []GreTunnels
-	err := service.Client.Read(greTunnelsEndpoint, &greTunnels)
+	err := common.ReadAllPages(service.Client, greTunnelsEndpoint, &greTunnels)
 	return greTunnels, err
 }

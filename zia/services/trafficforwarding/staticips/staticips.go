@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -50,7 +52,7 @@ func (service *Service) Get(staticIpID int) (*StaticIP, error) {
 
 func (service *Service) GetByIPAddress(address string) (*StaticIP, error) {
 	var staticIPs []StaticIP
-	err := service.Client.Read(staticIPEndpoint, &staticIPs)
+	err := common.ReadAllPages(service.Client, staticIPEndpoint, &staticIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +100,6 @@ func (service *Service) Delete(staticIpID int) (*http.Response, error) {
 }
 func (service *Service) GetAll() ([]StaticIP, error) {
 	var staticIPs []StaticIP
-	err := service.Client.Read(staticIPEndpoint, &staticIPs)
+	err := common.ReadAllPages(service.Client, staticIPEndpoint, &staticIPs)
 	return staticIPs, err
 }

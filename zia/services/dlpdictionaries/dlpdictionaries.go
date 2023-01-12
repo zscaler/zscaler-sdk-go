@@ -66,7 +66,7 @@ func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
 
 func (service *Service) GetByName(dictionaryName string) (*DlpDictionary, error) {
 	var dictionaries []DlpDictionary
-	err := service.Client.Read(dlpDictionariesEndpoint, &dictionaries)
+	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +114,6 @@ func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Respon
 }
 func (service *Service) GetAll() ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
-	err := service.Client.Read(dlpDictionariesEndpoint, &dictionaries)
+	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err
 }

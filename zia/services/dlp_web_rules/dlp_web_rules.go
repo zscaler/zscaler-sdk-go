@@ -63,7 +63,7 @@ func (service *Service) Get(ruleID int) (*WebDLPRules, error) {
 
 func (service *Service) GetByName(ruleName string) (*WebDLPRules, error) {
 	var webDlpRules []WebDLPRules
-	err := service.Client.Read(webDlpRulesEndpoint, &webDlpRules)
+	err := common.ReadAllPages(service.Client, webDlpRulesEndpoint, &webDlpRules)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +112,6 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]WebDLPRules, error) {
 	var webDlpRules []WebDLPRules
-	err := service.Client.Read(webDlpRulesEndpoint, &webDlpRules)
+	err := common.ReadAllPages(service.Client, webDlpRulesEndpoint, &webDlpRules)
 	return webDlpRules, err
 }

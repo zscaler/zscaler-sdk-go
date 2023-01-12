@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -34,7 +36,7 @@ func (service *Service) Get(dlpTemplateID int) (*DlpNotificationTemplates, error
 
 func (service *Service) GetByName(templateName string) (*DlpNotificationTemplates, error) {
 	var dlpTemplates []DlpNotificationTemplates
-	err := service.Client.Read(dlpNotificationTemplatesEndpoint, &dlpTemplates)
+	err := common.ReadAllPages(service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +85,6 @@ func (service *Service) Delete(dlpTemplateID int) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]DlpNotificationTemplates, error) {
 	var dlpTemplates []DlpNotificationTemplates
-	err := service.Client.Read(dlpNotificationTemplatesEndpoint, &dlpTemplates)
+	err := common.ReadAllPages(service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
 	return dlpTemplates, err
 }

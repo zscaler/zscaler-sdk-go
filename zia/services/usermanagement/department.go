@@ -3,6 +3,8 @@ package usermanagement
 import (
 	"fmt"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -30,7 +32,7 @@ func (service *Service) GetDepartments(departmentID int) (*Department, error) {
 
 func (service *Service) GetDepartmentsByName(departmentName string) (*Department, error) {
 	var departments []Department
-	err := service.Client.Read(departmentEndpoint, &departments)
+	err := common.ReadAllPages(service.Client, departmentEndpoint, &departments)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +46,6 @@ func (service *Service) GetDepartmentsByName(departmentName string) (*Department
 
 func (service *Service) GetAll() ([]Department, error) {
 	var departments []Department
-	err := service.Client.Read(departmentEndpoint, &departments)
+	err := common.ReadAllPages(service.Client, departmentEndpoint, &departments)
 	return departments, err
 }

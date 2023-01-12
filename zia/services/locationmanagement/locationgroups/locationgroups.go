@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -80,7 +82,7 @@ func (service *Service) GetLocationGroup(groupID int) (*LocationGroup, error) {
 
 func (service *Service) GetLocationGroupByName(locationGroupName string) (*LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := service.Client.Read(fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -129,6 +131,6 @@ func (service *Service) DeleteLocationGroup(groupID int) (*http.Response, error)
 
 func (service *Service) GetAll() ([]LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := service.Client.Read(locationGroupEndpoint, &locationGroups)
+	err := common.ReadAllPages(service.Client, locationGroupEndpoint, &locationGroups)
 	return locationGroups, err
 }

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -83,7 +85,7 @@ func (service *Service) GetLocation(locationID int) (*Locations, error) {
 func (service *Service) GetLocationByName(locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := service.Client.Read(fmt.Sprintf("%s?page=1&pageSize=1000", locationsEndpoint), &locations)
+	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +146,6 @@ func (service *Service) GetSublocations(sublocations string) (*Locations, error)
 func (service *Service) GetAll() ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := service.Client.Read(fmt.Sprintf("%s?page=1&pageSize=1000", locationsEndpoint), &locations)
+	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	return locations, err
 }

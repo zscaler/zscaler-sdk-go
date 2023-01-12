@@ -3,6 +3,8 @@ package dlp_engines
 import (
 	"fmt"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -33,7 +35,7 @@ func (service *Service) Get(engineID int) (*DLPEngines, error) {
 
 func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
 	var dlpEngines []DLPEngines
-	err := service.Client.Read(dlpEnginesEndpoint, &dlpEngines)
+	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +49,6 @@ func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
 
 func (service *Service) GetAll() ([]DLPEngines, error) {
 	var dlpEngines []DLPEngines
-	err := service.Client.Read(dlpEnginesEndpoint, &dlpEngines)
+	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
 	return dlpEngines, err
 }
