@@ -1,5 +1,31 @@
 # Changelog
 
+# 0.5.8 (January, 11 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #64](https://github.com/zscaler/zscaler-sdk-go/pull/64) Added new ZPA Inspection control parameters
+
+  - ZPA Inspection Profile: ``web_socket_controls``
+  - ZPA Custom Inspection Control:
+    - ``control_type``: The following values are supported:
+      - ``WEBSOCKET_PREDEFINED``, ``WEBSOCKET_CUSTOM``, ``ZSCALER``, ``CUSTOM``, ``PREDEFINED``
+
+    - ``protocol_type``: The following values are supported:
+      - ``HTTP``, ``WEBSOCKET_CUSTOM``, ``ZSCALER``, ``CUSTOM``, ``PREDEFINED``
+
+# 0.5.7 (January, 4 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #63](https://github.com/zscaler/zscaler-sdk-go/pull/63) Added ``omitempty`` bool parameters in the ZIA URL Firewall Filtering resource ``enable_full_logging``
+
 # 0.5.6 (January, 4 2022)
 
 ## Notes
