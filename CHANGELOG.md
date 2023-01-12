@@ -1,6 +1,6 @@
 # Changelog
 
-# 0.5.8 (January, 11 2022)
+# 0.5.8 (January, 11 2023)
 
 ## Notes
 - Golang: **v1.19**
@@ -17,7 +17,7 @@
     - ``protocol_type``: The following values are supported:
       - ``HTTP``, ``WEBSOCKET_CUSTOM``, ``ZSCALER``, ``CUSTOM``, ``PREDEFINED``
 
-# 0.5.7 (January, 4 2022)
+# 0.5.7 (January, 4 2023)
 
 ## Notes
 - Golang: **v1.19**
@@ -26,7 +26,7 @@
 
 - [PR #63](https://github.com/zscaler/zscaler-sdk-go/pull/63) Added ``omitempty`` bool parameters in the ZIA URL Firewall Filtering resource ``enable_full_logging``
 
-# 0.5.6 (January, 4 2022)
+# 0.5.6 (January, 4 2023)
 
 ## Notes
 - Golang: **v1.19**
