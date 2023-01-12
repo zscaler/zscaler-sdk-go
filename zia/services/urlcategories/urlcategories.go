@@ -15,22 +15,26 @@ const (
 )
 
 type URLCategory struct {
-	ID                               string            `json:"id,omitempty"`
-	ConfiguredName                   string            `json:"configuredName,omitempty"`
-	Keywords                         []string          `json:"keywords"`
-	KeywordsRetainingParentCategory  []string          `json:"keywordsRetainingParentCategory"`
-	Urls                             []string          `json:"urls"`
-	DBCategorizedUrls                []string          `json:"dbCategorizedUrls"`
-	CustomCategory                   bool              `json:"customCategory"`
-	Scopes                           []Scopes          `json:"scopes,omitempty"`
-	Editable                         bool              `json:"editable"`
-	Description                      string            `json:"description,omitempty"`
-	Type                             string            `json:"type,omitempty"`
-	URLKeywordCounts                 *URLKeywordCounts `json:"urlKeywordCounts,omitempty"`
-	Val                              int               `json:"val,omitempty"`
-	CustomUrlsCount                  int               `json:"customUrlsCount,omitempty"`
-	SuperCategory                    string            `json:"superCategory,omitempty"`
-	UrlsRetainingParentCategoryCount int               `json:"urlsRetainingParentCategoryCount"`
+	ID                                   string            `json:"id,omitempty"`
+	ConfiguredName                       string            `json:"configuredName,omitempty"`
+	Keywords                             []string          `json:"keywords"`
+	KeywordsRetainingParentCategory      []string          `json:"keywordsRetainingParentCategory"`
+	Urls                                 []string          `json:"urls"`
+	DBCategorizedUrls                    []string          `json:"dbCategorizedUrls"`
+	CustomCategory                       bool              `json:"customCategory"`
+	Scopes                               []Scopes          `json:"scopes,omitempty"`
+	Editable                             bool              `json:"editable"`
+	Description                          string            `json:"description,omitempty"`
+	Type                                 string            `json:"type,omitempty"`
+	URLKeywordCounts                     *URLKeywordCounts `json:"urlKeywordCounts,omitempty"`
+	Val                                  int               `json:"val,omitempty"`
+	CustomUrlsCount                      int               `json:"customUrlsCount,omitempty"`
+	SuperCategory                        string            `json:"superCategory,omitempty"`
+	UrlsRetainingParentCategoryCount     int               `json:"urlsRetainingParentCategoryCount"`
+	IPRanges                             []string          `json:"ipRanges"`
+	IPRangesRetainingParentCategory      []string          `json:"ipRangesRetainingParentCategory"`
+	CustomIpRangesCount                  int               `json:"customIpRangesCount"`
+	IPRangesRetainingParentCategoryCount int               `json:"ipRangesRetainingParentCategoryCount"`
 }
 
 type Scopes struct {
@@ -60,6 +64,20 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 func (service *Service) GetCustomURLCategories(customName string) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
+	if err != nil {
+		return nil, err
+	}
+	for _, custom := range urlCategory {
+		if strings.EqualFold(custom.ID, customName) {
+			return &custom, nil
+		}
+	}
+	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
+}
+
+func (service *Service) GetIncludeOnlyUrlKeyWordCounts(customName string) (*URLCategory, error) {
+	var urlCategory []URLCategory
+	err := service.Client.Read(fmt.Sprintf("%s?includeOnlyUrlKeywordCounts=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
 	if err != nil {
 		return nil, err
 	}

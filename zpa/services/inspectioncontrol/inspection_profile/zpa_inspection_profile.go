@@ -32,7 +32,8 @@ type InspectionProfile struct {
 	PredefinedControlsVersion         string                    `json:"predefinedControlsVersion,omitempty"`
 	ControlInfoResource               []ControlInfoResource     `json:"controlsInfo,omitempty"`
 	CustomControls                    []InspectionCustomControl `json:"customControls"`
-	PredefinedControls                []PredefinedControls      `json:"predefinedControls"`
+	PredefinedControls                []CustomCommonControls    `json:"predefinedControls"`
+	WebSocketControls                 []CustomCommonControls    `json:"websocketControls"`
 }
 
 type ControlInfoResource struct {
@@ -61,7 +62,7 @@ type InspectionCustomControl struct {
 	Version                          string                   `json:"version,omitempty"`
 }
 
-type PredefinedControls struct {
+type CustomCommonControls struct {
 	ID                               string                   `json:"id,omitempty"`
 	Name                             string                   `json:"name,omitempty"`
 	Action                           string                   `json:"action,omitempty"`
@@ -70,6 +71,7 @@ type PredefinedControls struct {
 	Attachment                       string                   `json:"attachment,omitempty"`
 	ControlGroup                     string                   `json:"controlGroup,omitempty"`
 	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
 	CreationTime                     string                   `json:"creationTime,omitempty"`
 	DefaultAction                    string                   `json:"defaultAction,omitempty"`
 	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
@@ -77,6 +79,7 @@ type PredefinedControls struct {
 	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
 	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
 	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                   `json:"protocolType,omitempty"`
 	Severity                         string                   `json:"severity,omitempty"`
 	Version                          string                   `json:"version,omitempty"`
 }

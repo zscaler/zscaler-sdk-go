@@ -21,6 +21,7 @@ type InspectionCustomControl struct {
 	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
 	Rules                            []Rules                  `json:"rules,omitempty"`
 	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
 	ControlRuleJson                  string                   `json:"controlRuleJson,omitempty"`
 	CreationTime                     string                   `json:"creationTime,omitempty"`
 	DefaultAction                    string                   `json:"defaultAction,omitempty"`
@@ -30,6 +31,7 @@ type InspectionCustomControl struct {
 	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
 	Name                             string                   `json:"name,omitempty"`
 	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                   `json:"protocolType,omitempty"`
 	Severity                         string                   `json:"severity,omitempty"`
 	Type                             string                   `json:"type,omitempty"`
 	Version                          string                   `json:"version,omitempty"`

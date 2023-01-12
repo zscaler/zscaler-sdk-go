@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	locationsEndpoint = "/locations"
-	// subLocationsEndpoint = "/sublocations"
+	locationsEndpoint               = "/locations"
+	locationIPv6NAT64PrefixEndpoint = "/ipv6config/nat64prefix"
 )
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
@@ -45,6 +45,10 @@ type Locations struct {
 	AUPTimeoutInDays                    int              `json:"aupTimeoutInDays,omitempty"`
 	Profile                             string           `json:"profile,omitempty"`
 	Description                         string           `json:"description,omitempty"`
+	OtherSubLocation                    bool             `json:"otherSubLocation,omitempty"`
+	Other6SubLocation                   bool             `json:"other6SubLocation,omitempty"`
+	IPv6Enabled                         bool             `json:"ipv6Enabled,omitempty"`
+	IPv6Dns64Prefix                     bool             `json:"ipv6Dns64Prefix,omitempty"`
 }
 
 type Location struct {
@@ -132,7 +136,7 @@ func (service *Service) Delete(locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-// Gets a name and ID dictionary of locations.
+// Gets a name and ID of locations.
 func (service *Service) GetSublocations(sublocations string) (*Locations, error) {
 	var subLocations Locations
 	err := service.Client.Read(locationsEndpoint, "/"+"%s"+"/sublocations")

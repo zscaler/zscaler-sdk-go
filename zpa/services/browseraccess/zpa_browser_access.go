@@ -14,31 +14,32 @@ const (
 )
 
 type BrowserAccess struct {
-	ID                   string                `json:"id,omitempty"`
-	SegmentGroupID       string                `json:"segmentGroupId,omitempty"`
-	SegmentGroupName     string                `json:"segmentGroupName,omitempty"`
-	BypassType           string                `json:"bypassType,omitempty"`
-	ConfigSpace          string                `json:"configSpace,omitempty"`
-	DomainNames          []string              `json:"domainNames,omitempty"`
-	Name                 string                `json:"name,omitempty"`
-	Description          string                `json:"description,omitempty"`
-	Enabled              bool                  `json:"enabled"`
-	PassiveHealthEnabled bool                  `json:"passiveHealthEnabled"`
-	DoubleEncrypt        bool                  `json:"doubleEncrypt"`
-	HealthCheckType      string                `json:"healthCheckType,omitempty"`
-	IsCnameEnabled       bool                  `json:"isCnameEnabled"`
-	IPAnchored           bool                  `json:"ipAnchored"`
-	HealthReporting      string                `json:"healthReporting,omitempty"`
-	ICMPAccessType       string                `json:"icmpAccessType,omitempty"`
-	CreationTime         string                `json:"creationTime,omitempty"`
-	ModifiedBy           string                `json:"modifiedBy,omitempty"`
-	ModifiedTime         string                `json:"modifiedTime,omitempty"`
-	TCPPortRanges        []string              `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges        []string              `json:"udpPortRanges,omitempty"`
-	TCPAppPortRange      []common.NetworkPorts `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange      []common.NetworkPorts `json:"udpPortRange,omitempty"`
-	ClientlessApps       []ClientlessApps      `json:"clientlessApps,omitempty"`
-	AppServerGroups      []AppServerGroups     `json:"serverGroups,omitempty"`
+	ID                        string                `json:"id,omitempty"`
+	SegmentGroupID            string                `json:"segmentGroupId,omitempty"`
+	SegmentGroupName          string                `json:"segmentGroupName,omitempty"`
+	BypassType                string                `json:"bypassType,omitempty"`
+	ConfigSpace               string                `json:"configSpace,omitempty"`
+	DomainNames               []string              `json:"domainNames,omitempty"`
+	Name                      string                `json:"name,omitempty"`
+	Description               string                `json:"description,omitempty"`
+	Enabled                   bool                  `json:"enabled"`
+	PassiveHealthEnabled      bool                  `json:"passiveHealthEnabled"`
+	SelectConnectorCloseToApp bool                  `json:"selectConnectorCloseToApp"`
+	DoubleEncrypt             bool                  `json:"doubleEncrypt"`
+	HealthCheckType           string                `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                  `json:"isCnameEnabled"`
+	IPAnchored                bool                  `json:"ipAnchored"`
+	HealthReporting           string                `json:"healthReporting,omitempty"`
+	ICMPAccessType            string                `json:"icmpAccessType,omitempty"`
+	CreationTime              string                `json:"creationTime,omitempty"`
+	ModifiedBy                string                `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                `json:"modifiedTime,omitempty"`
+	TCPPortRanges             []string              `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string              `json:"udpPortRanges,omitempty"`
+	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts `json:"udpPortRange,omitempty"`
+	ClientlessApps            []ClientlessApps      `json:"clientlessApps,omitempty"`
+	AppServerGroups           []AppServerGroups     `json:"serverGroups,omitempty"`
 }
 
 type ClientlessApps struct {

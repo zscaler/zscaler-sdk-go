@@ -24,7 +24,7 @@ type URLFilteringRule struct {
 	Rank                   int                       `json:"rank,omitempty"`
 	RequestMethods         []string                  `json:"requestMethods,omitempty"`
 	EndUserNotificationURL string                    `json:"endUserNotificationUrl,omitempty"`
-	BlockOverride          bool                      `json:"blockOverride"`
+	BlockOverride          bool                      `json:"blockOverride,omitempty"`
 	TimeQuota              int                       `json:"timeQuota,omitempty"`
 	SizeQuota              int                       `json:"sizeQuota,omitempty"`
 	Description            string                    `json:"description,omitempty"`
@@ -32,9 +32,10 @@ type URLFilteringRule struct {
 	ValidityEndTime        int                       `json:"validityEndTime,omitempty"`
 	ValidityTimeZoneID     string                    `json:"validityTimeZoneId,omitempty"`
 	LastModifiedTime       int                       `json:"lastModifiedTime,omitempty"`
-	EnforceTimeValidity    bool                      `json:"enforceTimeValidity"`
+	EnforceTimeValidity    bool                      `json:"enforceTimeValidity,omitempty"`
 	Action                 string                    `json:"action,omitempty"`
-	Ciparule               bool                      `json:"ciparule"`
+	Ciparule               bool                      `json:"ciparule,omitempty"`
+	DeviceTrustLevels      []string                  `json:"deviceTrustLevels,omitempty"`
 	DeviceGroups           []common.IDNameExtensions `json:"deviceGroups"`
 	Devices                []common.IDNameExtensions `json:"devices"`
 	LastModifiedBy         *common.IDNameExtensions  `json:"lastModifiedBy,omitempty"`

@@ -21,6 +21,7 @@ type PredefinedControls struct {
 	AssociatedInspectionProfileNames []common.AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
 	Attachment                       string                          `json:"attachment,omitempty"`
 	ControlGroup                     string                          `json:"controlGroup,omitempty"`
+	ControlType                      string                          `json:"controlType,omitempty"`
 	ControlNumber                    string                          `json:"controlNumber,omitempty"`
 	CreationTime                     string                          `json:"creationTime,omitempty"`
 	DefaultAction                    string                          `json:"defaultAction,omitempty"`
@@ -29,6 +30,7 @@ type PredefinedControls struct {
 	ModifiedBy                       string                          `json:"modifiedBy,omitempty"`
 	ModifiedTime                     string                          `json:"modifiedTime,omitempty"`
 	ParanoiaLevel                    string                          `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                          `json:"protocolType,omitempty"`
 	Severity                         string                          `json:"severity,omitempty"`
 	Version                          string                          `json:"version,omitempty"`
 }

@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	dlpDictionariesEndpoint = "/dlpDictionaries"
+	dlpDictionariesEndpoint    = "/dlpDictionaries"
+	validateDLPPatternEndpoint = "/dlpDictionaries/validateDlpPattern"
 )
 
 type DlpDictionary struct {
@@ -51,6 +52,15 @@ type EDMMatchDetails struct {
 type IDMProfileMatchAccuracy struct {
 	AdpIdmProfile *common.IDNameExtensions `json:"adpIdmProfile,omitempty"`
 	MatchAccuracy string                   `json:"matchAccuracy,omitempty"`
+}
+
+type ValidateDLPPattern struct {
+	Status        string `json:"status,omitempty"`
+	ErrPosition   int    `json:"errPosition,omitempty"`
+	ErrMsg        string `json:"errMsg,omitempty"`
+	ErrParameter  string `json:"errParameter,omitempty"`
+	ErrSuggestion string `json:"errSuggestion,omitempty"`
+	IDList        []int  `json:"idList,omitempty"`
 }
 
 func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
@@ -112,8 +122,24 @@ func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Respon
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err
+}
+
+func (service *Service) ValidateDLPPattern(validatePattern *ValidateDLPPattern) (*ValidateDLPPattern, error) {
+	resp, err := service.Client.Create(validateDLPPatternEndpoint, validatePattern)
+	if err != nil {
+		return nil, err
+	}
+
+	createdDLPPattern, ok := resp.(*ValidateDLPPattern)
+	if !ok {
+		return nil, errors.New("object returned from api was not dlp pattern pointer")
+	}
+
+	service.Client.Logger.Printf("[DEBUG]returning new dlp pattern from create: %d", createdDLPPattern)
+	return createdDLPPattern, nil
 }
