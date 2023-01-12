@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -31,7 +33,7 @@ func (service *Service) GetNetworkApplicationGroups(groupID int) (*NetworkApplic
 
 func (service *Service) GetNetworkApplicationGroupsByName(appGroupsName string) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
-	err := service.Client.Read(networkAppGroupsEndpoint, &networkApplicationGroups)
+	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +81,6 @@ func (service *Service) Delete(groupID int) (*http.Response, error) {
 }
 func (service *Service) GetAllNetworkApplicationGroups() ([]NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
-	err := service.Client.Read(networkAppGroupsEndpoint, &networkApplicationGroups)
+	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	return networkApplicationGroups, err
 }

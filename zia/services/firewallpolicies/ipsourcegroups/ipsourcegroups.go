@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -31,7 +33,7 @@ func (service *Service) Get(ipGroupID int) (*IPSourceGroups, error) {
 
 func (service *Service) GetByName(ipSourceGroupsName string) (*IPSourceGroups, error) {
 	var ipSourceGroups []IPSourceGroups
-	err := service.Client.Read(ipSourceGroupsEndpoint, &ipSourceGroups)
+	err := common.ReadAllPages(service.Client, ipSourceGroupsEndpoint, &ipSourceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +81,6 @@ func (service *Service) Delete(ipGroupID int) (*http.Response, error) {
 }
 func (service *Service) GetAll() ([]IPSourceGroups, error) {
 	var ipSourceGroups []IPSourceGroups
-	err := service.Client.Read(ipSourceGroupsEndpoint, &ipSourceGroups)
+	err := common.ReadAllPages(service.Client, ipSourceGroupsEndpoint, &ipSourceGroups)
 	return ipSourceGroups, err
 }

@@ -63,7 +63,7 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 
 func (service *Service) GetCustomURLCategories(customName string) (*URLCategory, error) {
 	var urlCategory []URLCategory
-	err := service.Client.Read(fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +125,6 @@ func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, 
 
 func (service *Service) GetAll() ([]URLCategory, error) {
 	var urlCategories []URLCategory
-	err := service.Client.Read(urlCategoriesEndpoint, &urlCategories)
+	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err
 }

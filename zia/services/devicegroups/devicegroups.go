@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -74,7 +76,7 @@ func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
 func (service *Service) GetDevicesByName(deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
-	err := service.Client.Read(fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +90,7 @@ func (service *Service) GetDevicesByName(deviceName string) (*Devices, error) {
 
 func (service *Service) GetDevicesByModel(deviceModel string) (*Devices, error) {
 	var models []Devices
-	err := service.Client.Read(fmt.Sprintf("%s?model=%s", devicesEndpoint, url.QueryEscape(deviceModel)), &models)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?model=%s", devicesEndpoint, url.QueryEscape(deviceModel)), &models)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +104,7 @@ func (service *Service) GetDevicesByModel(deviceModel string) (*Devices, error) 
 
 func (service *Service) GetDevicesByOwner(ownerName string) (*Devices, error) {
 	var owners []Devices
-	err := service.Client.Read(fmt.Sprintf("%s?owner=%s", devicesEndpoint, url.QueryEscape(ownerName)), &owners)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?owner=%s", devicesEndpoint, url.QueryEscape(ownerName)), &owners)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +118,7 @@ func (service *Service) GetDevicesByOwner(ownerName string) (*Devices, error) {
 
 func (service *Service) GetDevicesByOSType(osTypeName string) (*Devices, error) {
 	var osTypes []Devices
-	err := service.Client.Read(fmt.Sprintf("%s?osType=%s", devicesEndpoint, url.QueryEscape(osTypeName)), &osTypes)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osType=%s", devicesEndpoint, url.QueryEscape(osTypeName)), &osTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +132,7 @@ func (service *Service) GetDevicesByOSType(osTypeName string) (*Devices, error) 
 
 func (service *Service) GetDevicesByOSVersion(osVersionName string) (*Devices, error) {
 	var osVersions []Devices
-	err := service.Client.Read(fmt.Sprintf("%s?osVersion=%s", devicesEndpoint, url.QueryEscape(osVersionName)), &osVersions)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osVersion=%s", devicesEndpoint, url.QueryEscape(osVersionName)), &osVersions)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +146,6 @@ func (service *Service) GetDevicesByOSVersion(osVersionName string) (*Devices, e
 
 func (service *Service) GetAll() ([]Devices, error) {
 	var owners []Devices
-	err := service.Client.Read(devicesEndpoint, &owners)
+	err := common.ReadAllPages(service.Client, devicesEndpoint, &owners)
 	return owners, err
 }

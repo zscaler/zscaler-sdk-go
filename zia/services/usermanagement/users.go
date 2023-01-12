@@ -89,7 +89,7 @@ func (service *Service) Delete(userID int) (*http.Response, error) {
 
 func (service *Service) GetAllUsers() ([]Users, error) {
 	var users []Users
-	err := service.Client.Read(usersEndpoint, &users)
+	err := common.ReadAllPages(service.Client, usersEndpoint, &users)
 	if err != nil {
 		return nil, err
 	}

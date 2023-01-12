@@ -61,7 +61,7 @@ func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {
 
 func (service *Service) GetByName(ruleName string) (*FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
-	err := service.Client.Read(firewallRulesEndpoint, &rules)
+	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +108,6 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 }
 func (service *Service) GetAll() ([]FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
-	err := service.Client.Read(firewallRulesEndpoint, &rules)
+	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
 	return rules, err
 }

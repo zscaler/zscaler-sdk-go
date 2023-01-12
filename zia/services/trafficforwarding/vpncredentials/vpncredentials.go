@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -48,7 +50,7 @@ func (service *Service) Get(vpnCredentialID int) (*VPNCredentials, error) {
 
 func (service *Service) GetVPNByType(vpnType string) (*VPNCredentials, error) {
 	var vpnTypes []VPNCredentials
-	err := service.Client.Read(fmt.Sprintf("%s?type=%s", vpnCredentialsEndpoint, url.QueryEscape(vpnType)), &vpnTypes)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?type=%s", vpnCredentialsEndpoint, url.QueryEscape(vpnType)), &vpnTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func (service *Service) GetVPNByType(vpnType string) (*VPNCredentials, error) {
 func (service *Service) GetByFQDN(vpnCredentialName string) (*VPNCredentials, error) {
 	var vpnCredentials []VPNCredentials
 
-	err := service.Client.Read(vpnCredentialsEndpoint, &vpnCredentials)
+	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnCredentials)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +114,6 @@ func (service *Service) Delete(vpnCredentialID int) error {
 
 func (service *Service) GetAll() ([]VPNCredentials, error) {
 	var vpnTypes []VPNCredentials
-	err := service.Client.Read(vpnCredentialsEndpoint, &vpnTypes)
+	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnTypes)
 	return vpnTypes, err
 }

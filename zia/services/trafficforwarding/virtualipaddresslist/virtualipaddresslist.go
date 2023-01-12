@@ -3,6 +3,8 @@ package virtualipaddresslist
 import (
 	"fmt"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -36,7 +38,7 @@ type GREVirtualIPList struct {
 func (service *Service) GetZscalerVIPs(datacenter string) (*ZscalerVIPs, error) {
 	var zscalerVips []ZscalerVIPs
 
-	err := service.Client.Read(vipsEndpoint, &zscalerVips)
+	err := common.ReadAllPages(service.Client, vipsEndpoint, &zscalerVips)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +53,7 @@ func (service *Service) GetZscalerVIPs(datacenter string) (*ZscalerVIPs, error) 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP
 func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
-	err := service.Client.Read(fmt.Sprintf("%s?sourceIp=%s", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +66,7 @@ func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GR
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP within country
 func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCode string) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
-	err := service.Client.Read(fmt.Sprintf("%s?sourceIp=%s&withinCountryOnly=true", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s&withinCountryOnly=true", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
 	if err != nil {
 		return nil, err
 	}
@@ -82,6 +84,6 @@ func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCod
 
 func (service *Service) GetAll() ([]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
-	err := service.Client.Read(vipRecommendedListEndpoint, &zscalerVips)
+	err := common.ReadAllPages(service.Client, vipRecommendedListEndpoint, &zscalerVips)
 	return zscalerVips, err
 }

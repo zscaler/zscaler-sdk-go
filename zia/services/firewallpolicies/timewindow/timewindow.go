@@ -3,6 +3,8 @@ package timewindow
 import (
 	"fmt"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -30,7 +32,7 @@ func (service *Service) GetTimeWindow(timeWindowID int) (*TimeWindow, error) {
 
 func (service *Service) GetTimeWindowByName(timeWindowName string) (*TimeWindow, error) {
 	var timeWindow []TimeWindow
-	err := service.Client.Read(timeWindowEndpoint, &timeWindow)
+	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +46,6 @@ func (service *Service) GetTimeWindowByName(timeWindowName string) (*TimeWindow,
 
 func (service *Service) GetAll() ([]TimeWindow, error) {
 	var timeWindow []TimeWindow
-	err := service.Client.Read(timeWindowEndpoint, &timeWindow)
+	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
 	return timeWindow, err
 }

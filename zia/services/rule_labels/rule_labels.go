@@ -36,7 +36,7 @@ func (service *Service) Get(ruleLabelID int) (*RuleLabels, error) {
 
 func (service *Service) GetRuleLabelByName(labelName string) (*RuleLabels, error) {
 	var ruleLabels []RuleLabels
-	err := service.Client.Read(ruleLabelsEndpoint, &ruleLabels)
+	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +85,6 @@ func (service *Service) Delete(ruleLabelID int) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]RuleLabels, error) {
 	var ruleLabels []RuleLabels
-	err := service.Client.Read(ruleLabelsEndpoint, &ruleLabels)
+	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	return ruleLabels, err
 }

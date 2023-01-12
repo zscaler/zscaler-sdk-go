@@ -63,7 +63,7 @@ func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
 
 func (service *Service) GetByName(urlFilteringPolicyName string) (*URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
-	err := service.Client.Read(urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 // GetAll returns the all rules
 func (service *Service) GetAll() ([]URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
-	err := service.Client.Read(urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -69,7 +71,7 @@ func (service *Service) Get(certID int) (*IntermediateCACertificate, error) {
 
 func (service *Service) GetByName(certName string) (*IntermediateCACertificate, error) {
 	var intermediateCACertificate []IntermediateCACertificate
-	err := service.Client.Read(intermediateCaCertificatesEndpoint, &intermediateCACertificate)
+	err := common.ReadAllPages(service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +151,7 @@ func (service *Service) GetShowCSR(certID int) (*CertSigningRequest, error) {
 
 func (service *Service) GetAll() ([]IntermediateCACertificate, error) {
 	var intermediateCACertificate []IntermediateCACertificate
-	err := service.Client.Read(intermediateCaCertificatesEndpoint, &intermediateCACertificate)
+	err := common.ReadAllPages(service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
 	return intermediateCACertificate, err
 }
 
