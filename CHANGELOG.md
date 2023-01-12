@@ -1,5 +1,14 @@
 # Changelog
 
+# 0.6.0 (January, 12 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #65](https://github.com/zscaler/zscaler-sdk-go/pull/65) Fixed pagination issue with ZIA API endpoints
+
 # 0.5.9 (January, 12 2023)
 
 ## Notes
