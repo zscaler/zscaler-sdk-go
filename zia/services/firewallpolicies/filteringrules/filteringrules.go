@@ -19,7 +19,7 @@ type FirewallFilteringRules struct {
 	Order               int                       `json:"order"`
 	Rank                int                       `json:"rank"`
 	AccessControl       string                    `json:"accessControl,omitempty"`
-	EnableFullLogging   bool                      `json:"enableFullLogging,omitempty"`
+	EnableFullLogging   bool                      `json:"enableFullLogging"`
 	Action              string                    `json:"action,omitempty"`
 	State               string                    `json:"state,omitempty"`
 	Description         string                    `json:"description,omitempty"`
