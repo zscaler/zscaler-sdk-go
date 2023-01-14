@@ -1,5 +1,15 @@
 # Changelog
 
+# 0.6.1 (January, 13 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #67](https://github.com/zscaler/zscaler-sdk-go/pull/67) Added ``omitempty`` bool parameters in the ZIA URL Firewall Filtering resource ``enable_full_logging``
+
+
 # 0.6.0 (January, 12 2023)
 
 ## Notes
