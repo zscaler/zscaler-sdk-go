@@ -32,6 +32,9 @@ type DlpNotificationTemplates struct {
 
 	// The template for the HTML message body that must be displayed in the DLP notification email.
 	HtmlMessage string `json:"htmlMessage,omitempty"`
+
+	// The template for the HTML message body that must be displayed in the DLP notification email.
+	TLSEnabled bool `json:"tlsEnabled,omitempty"`
 }
 
 func (service *Service) Get(dlpTemplateID int) (*DlpNotificationTemplates, error) {
