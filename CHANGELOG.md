@@ -1,5 +1,17 @@
 # Changelog
 
+# 0.7.0 (January, 31 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #68](https://github.com/zscaler/zscaler-sdk-go/pull/68) Added the following ZIA DLP endpoint resources:
+  - ``dlp_icap_servers`` - /icapServers
+  - ``dlp_incident_receiver_servers`` - /incidentReceiverServers
+  - ``dlp_idm_profiles`` - /idmprofile
+
 # 0.6.1 (January, 13 2023)
 
 ## Notes
