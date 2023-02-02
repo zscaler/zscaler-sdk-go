@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.0.0 (February, 2 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #69](https://github.com/zscaler/zscaler-sdk-go/pull/69) Added new ZPA Isolation Profile Controller endpoint ``/isolation/profiles``
+
 # 0.7.0 (January, 31 2023)
 
 ## Notes
