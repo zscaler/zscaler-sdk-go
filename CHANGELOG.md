@@ -8,6 +8,7 @@
 ### Enhancements
 
 - [PR #69](https://github.com/zscaler/zscaler-sdk-go/pull/69) Added new ZPA Isolation Profile Controller endpoint ``/isolation/profiles``
+- [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint ``/microtenants``
 
 # 0.7.0 (January, 31 2023)
 
