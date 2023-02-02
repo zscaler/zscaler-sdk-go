@@ -52,7 +52,7 @@ type AppConnector struct {
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
 }
 
-// This function search the App Connector by ID
+// This function search the App Connector by ID.
 func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Response, error) {
 	v := new(AppConnector)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
@@ -63,7 +63,7 @@ func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Respons
 	return v, resp, nil
 }
 
-// This function search the App Connector by Name
+// This function search the App Connector by Name.
 func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
 	list, resp, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, "")

@@ -110,7 +110,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 	return nil, nil
 }
 
-// GetAll returns the all rules
+// GetAll returns the all rules.
 func (service *Service) GetAll() ([]URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
 	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
@@ -120,13 +120,13 @@ func (service *Service) GetAll() ([]URLFilteringRule, error) {
 	return urlFilteringPolicies, nil
 }
 
-// RulesCount returns the number of rules
+// RulesCount returns the number of rules.
 func (service *Service) RulesCount() int {
 	rules, _ := service.GetAll()
 	return len(rules)
 }
 
-// Reorder chanegs the order of the rule
+// Reorder chanegs the order of the rule.
 func (service *Service) Reorder(ruleID, order int) (int, error) {
 	resp, err := service.Get(ruleID)
 	if err != nil {

@@ -35,8 +35,8 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
+func (service *Service) GetByName(scimName, idpID string) (*ScimGroup, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpID, idpID)
 	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -49,8 +49,8 @@ func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Res
 	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimName)
 }
 
-func (service *Service) GetAllByIdpId(IdpId string) ([]ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
+func (service *Service) GetAllByIdpId(idpID string) ([]ScimGroup, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpID, idpID)
 	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

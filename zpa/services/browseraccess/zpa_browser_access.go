@@ -78,18 +78,18 @@ func (service *Service) Get(id string) (*BrowserAccess, *http.Response, error) {
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(BaName string) (*BrowserAccess, *http.Response, error) {
+func (service *Service) GetByName(baName string) (*BrowserAccess, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
 	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, app := range list {
-		if strings.EqualFold(app.Name, BaName) {
+		if strings.EqualFold(app.Name, baName) {
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
+	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", baName)
 }
 
 func (service *Service) Create(browserAccess BrowserAccess) (*BrowserAccess, *http.Response, error) {

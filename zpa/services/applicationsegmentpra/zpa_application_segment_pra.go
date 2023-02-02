@@ -99,18 +99,18 @@ func (service *Service) Get(id string) (*AppSegmentPRA, *http.Response, error) {
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response, error) {
+func (service *Service) GetByName(baName string) (*AppSegmentPRA, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
 	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, app := range list {
-		if strings.EqualFold(app.Name, BaName) {
+		if strings.EqualFold(app.Name, baName) {
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
+	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", baName)
 }
 
 func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
@@ -122,7 +122,7 @@ func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *ht
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1
+// return the new items that were added to slice1.
 func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	var diff []AppsConfig
 	for _, s1 := range slice1 {
@@ -140,9 +140,9 @@ func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	return diff
 }
 
-func mapSraApp(SRAAppsDto []SRAAppsDto) []AppsConfig {
+func mapSraApp(sraAppsDto []SRAAppsDto) []AppsConfig {
 	result := []AppsConfig{}
-	for _, app := range SRAAppsDto {
+	for _, app := range sraAppsDto {
 		result = append(result, AppsConfig{
 			Name:   app.Name,
 			Domain: app.Domain,

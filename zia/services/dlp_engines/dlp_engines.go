@@ -12,7 +12,7 @@ const (
 )
 
 type DLPEngines struct {
-	//The unique identifier for the DLP engine.
+	// The unique identifier for the DLP engine.
 	ID int `json:"id"`
 
 	// The DLP engine name as configured by the admin. This attribute is required in POST and PUT requests for custom DLP engines.

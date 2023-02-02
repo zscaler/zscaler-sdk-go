@@ -50,7 +50,7 @@ func (service *Service) GetZscalerVIPs(datacenter string) (*ZscalerVIPs, error) 
 	return nil, fmt.Errorf("no datacenter found with name: %s", datacenter)
 }
 
-// Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP
+// Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP.
 func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
@@ -63,7 +63,7 @@ func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GR
 	return &zscalerVips, nil
 }
 
-// Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP within country
+// Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP within country.
 func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCode string) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s&withinCountryOnly=true", vipRecommendedListEndpoint, sourceIP), &zscalerVips)

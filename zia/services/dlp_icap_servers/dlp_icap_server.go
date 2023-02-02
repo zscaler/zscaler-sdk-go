@@ -12,7 +12,7 @@ const (
 )
 
 type DLPICAPServers struct {
-	//The unique identifier for a DLP server.
+	// The unique identifier for a DLP server.
 	ID int `json:"id"`
 
 	// The DLP server name.

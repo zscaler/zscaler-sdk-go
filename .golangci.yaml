@@ -1,0 +1,54 @@
+run:
+  go: "1.18"
+  timeout: 5m
+  allow-parallel-runners: true
+
+linters:
+  # disable-all: true
+  enable:
+    - unused
+    - gofmt
+    - staticcheck
+    - revive
+    # - godot
+    - whitespace
+    - goimports
+    - unconvert
+    - gocritic
+    # - errcheck
+    # - gosec
+    - gocyclo
+
+  disable:
+    - errcheck
+    - gosec
+    - godot        # check if comments end in a period.
+    - errname      # checks that sentinel errors are prefixed with the `Err`` and error types are suffixed with the `Error``.
+    - errorlint    # used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
+
+linters-settings:
+  gofmt:
+    simplify: true
+  staticcheck:
+    checks: [ "all" ]
+  godot:
+    scope: declarations
+    capital: true
+  goimports:
+    local-prefixes: "github.com/zscaler/zscaler-sdk-go"
+  revive:
+    rules:
+      - name: package-comments
+        severity: warning
+        disabled: true
+
+issues:
+  exclude-use-default: false
+  exclude:
+    - "Error return value of `response.Body.Close` is not checked"
+    - "Error return value of `w.Write` is not checked"
+  exclude-rules:
+    - path: "(.+)_test.go"
+      linters:
+        - gosec
+  fix: true
