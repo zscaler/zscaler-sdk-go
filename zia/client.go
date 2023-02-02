@@ -12,7 +12,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
-// Request ... // Needs to review this function
+// Request ... // Needs to review this function.
 func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
 	c.Lock()
 	defer c.Unlock()
@@ -53,7 +53,7 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	return body, nil
 }
 
-// Create send HTTP Post request
+// Create send HTTP Post request.
 func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")

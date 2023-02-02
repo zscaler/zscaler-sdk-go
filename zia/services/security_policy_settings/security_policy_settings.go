@@ -5,7 +5,7 @@ const (
 	securityAdvancedEndpoint = "/security/advanced"
 )
 
-// TODO: because there isn't an endpoint to get all Urls, we need to have all action types here
+// TODO: because there isn't an endpoint to get all Urls, we need to have all action types here.
 var AddRemoveURLFromList []string = []string{
 	"ADD_TO_LIST",
 	"REMOVE_FROM_LIST",

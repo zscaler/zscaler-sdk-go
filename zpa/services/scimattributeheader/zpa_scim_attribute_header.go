@@ -45,14 +45,14 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 	return v, resp, nil
 }
 
-func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
-	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
+func (service *Service) GetValues(idpID, scimAttrHeaderID string) ([]string, error) {
+	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpID, scimAttrHeaderID)
 	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
 	return l, err
 }
 
-func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
+func (service *Service) GetByName(scimAttributeName, idpID string) (*ScimAttributeHeader, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpID, idpID, scimAttrEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -65,8 +65,8 @@ func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttribu
 	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimAttributeName)
 }
 
-func (service *Service) GetAllByIdpId(IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
+func (service *Service) GetAllByIdpId(idpID string) ([]ScimAttributeHeader, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpID, idpID, scimAttrEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

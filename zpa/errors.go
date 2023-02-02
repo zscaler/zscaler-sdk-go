@@ -44,6 +44,5 @@ func (r ErrorResponse) isResourceNotFoundError() bool {
 
 // IsObjectNotFound returns true on missing object error (404 & 400 with response  "id": "resource.not.found",).
 func (r ErrorResponse) IsObjectNotFound() bool {
-
 	return r.Response.StatusCode == 404 || r.Response.StatusCode == 400 && r.isResourceNotFoundError()
 }

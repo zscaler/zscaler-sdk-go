@@ -74,7 +74,7 @@ type VPNCredentials struct {
 	ManagedBy    []ManagedBy `json:"managedBy,omitempty"`
 }
 
-// Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations
+// Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
 func (service *Service) GetLocation(locationID int) (*Locations, error) {
 	var location Locations
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)

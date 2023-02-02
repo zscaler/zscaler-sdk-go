@@ -72,7 +72,7 @@ func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
 	return &device, nil
 }
 
-// Get Devices by Name
+// Get Devices by Name.
 func (service *Service) GetDevicesByName(deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts

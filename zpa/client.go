@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
+
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
@@ -86,7 +87,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	return client.do(req, v)
 }
 
-// Generating the Http request
+// Generating the Http request.
 func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
 		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s\n", ZPA_CLIENT_ID, client.Config.ClientID)
@@ -110,7 +111,7 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 
 	// Set the encoded path data
 	u.RawPath = u.Path + urlPath
-	u.Path = u.Path + unescaped
+	u.Path += unescaped
 
 	// Set the query parameters
 	if options != nil {

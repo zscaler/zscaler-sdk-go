@@ -10,7 +10,7 @@ import (
 
 const (
 	greTunnelsEndpoint = "/greTunnels"
-	// ipGreTunnelInfoEndpoint = "/orgProvisioning/ipGreTunnelInfo"
+	// IpGreTunnelInfoEndpoint = "/orgProvisioning/ipGreTunnelInfo".
 )
 
 type GreTunnels struct {

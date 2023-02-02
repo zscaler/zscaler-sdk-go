@@ -12,7 +12,7 @@ const (
 	mgmtConfig = "/mgmtconfig/v1/admin/customers/"
 )
 
-// TODO: because there isn't an endpoint to get all provisionning keys, we need to have all association type here
+// TODO: because there isn't an endpoint to get all provisionning keys, we need to have all association type here.
 var ProvisioningKeyAssociationTypes []string = []string{
 	"CONNECTOR_GRP",
 	"SERVICE_EDGE_GRP",
@@ -40,7 +40,7 @@ type ProvisioningKey struct {
 	AssociationType       string   `json:"associationType"`
 }
 
-// GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
+// GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey.
 func (service *Service) Get(associationType, provisioningKeyID string) (*ProvisioningKey, *http.Response, error) {
 	v := new(ProvisioningKey)
 	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
@@ -52,7 +52,7 @@ func (service *Service) Get(associationType, provisioningKeyID string) (*Provisi
 	return v, resp, nil
 }
 
-// GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
+// GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey.
 func (service *Service) GetByName(associationType, name string) (*ProvisioningKey, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
 	list, resp, err := common.GetAllPagesGeneric[ProvisioningKey](service.Client, relativeURL, "")
@@ -68,7 +68,7 @@ func (service *Service) GetByName(associationType, name string) (*ProvisioningKe
 	return nil, resp, fmt.Errorf("no Provisioning Key named '%s' was found", name)
 }
 
-// POST --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
+// POST --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey.
 func (service *Service) Create(associationType string, provisioningKey *ProvisioningKey) (*ProvisioningKey, *http.Response, error) {
 	v := new(ProvisioningKey)
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
@@ -79,7 +79,7 @@ func (service *Service) Create(associationType string, provisioningKey *Provisio
 	return v, resp, nil
 }
 
-// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}
+// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}.
 func (service *Service) Update(associationType, provisioningKeyID string, provisioningKey *ProvisioningKey) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, provisioningKey, nil)
@@ -89,7 +89,7 @@ func (service *Service) Update(associationType, provisioningKeyID string, provis
 	return resp, err
 }
 
-// DELETE --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}
+// DELETE --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}.
 func (service *Service) Delete(associationType, provisioningKeyID string) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
