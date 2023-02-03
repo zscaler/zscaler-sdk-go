@@ -1,7 +1,7 @@
 package publicapi
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/v1/zcc"
+	"github.com/zscaler/zscaler-sdk-go/zcc"
 )
 
 type Service struct {

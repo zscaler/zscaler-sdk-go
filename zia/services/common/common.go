@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/v1/zia"
+	"github.com/zscaler/zscaler-sdk-go/zia"
 )
 
 const pageSize = 1000

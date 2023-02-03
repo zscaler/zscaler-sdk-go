@@ -1,7 +1,7 @@
 package customerversionprofile
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/v1/zpa"
+	"github.com/zscaler/zscaler-sdk-go/zpa"
 )
 
 type Service struct {

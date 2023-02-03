@@ -1,4 +1,4 @@
-module github.com/zscaler/zscaler-sdk-go/v1
+module github.com/zscaler/zscaler-sdk-go
 
 go 1.19
 

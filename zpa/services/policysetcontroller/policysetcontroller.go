@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/v1/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
