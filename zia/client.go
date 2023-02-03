@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/zscaler/zscaler-sdk-go/logger"
+	"github.com/zscaler/zscaler-sdk-go/v1/logger"
 )
 
 // Request ... // Needs to review this function.

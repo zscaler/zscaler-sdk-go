@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/go-querystring/query"
 
-	"github.com/zscaler/zscaler-sdk-go/logger"
+	"github.com/zscaler/zscaler-sdk-go/v1/logger"
 )
 
 type Client struct {

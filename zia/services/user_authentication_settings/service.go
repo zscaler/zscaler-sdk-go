@@ -1,6 +1,6 @@
 package user_authentication_settings
 
-import "github.com/zscaler/zscaler-sdk-go/zia"
+import "github.com/zscaler/zscaler-sdk-go/v1/zia"
 
 type Service struct {
 	Client *zia.Client

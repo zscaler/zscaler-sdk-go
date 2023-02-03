@@ -1,7 +1,7 @@
 package cloudconnectorgroup
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v1/zpa"
 )
 
 type Service struct {

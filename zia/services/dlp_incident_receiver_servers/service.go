@@ -1,7 +1,7 @@
 package dlp_incident_receiver_servers
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zia"
+	"github.com/zscaler/zscaler-sdk-go/v1/zia"
 )
 
 type Service struct {
