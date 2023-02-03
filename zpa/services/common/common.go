@@ -24,6 +24,12 @@ type Pagination struct {
 type DeleteApplicationQueryParams struct {
 	ForceDelete bool `json:"forceDelete,omitempty" url:"forceDelete,omitempty"`
 }
+
+/*
+	type IncludeRolesQueryParams struct {
+		IncludeRoles bool `json:"includeRoles,omitempty" url:"includeRoles,omitempty"`
+	}
+*/
 type NetworkPorts struct {
 	From string `json:"from,omitempty"`
 	To   string `json:"to,omitempty"`

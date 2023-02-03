@@ -63,7 +63,7 @@ func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnect
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no application named '%s' was found", cloudConnectorGroupName)
+	return nil, resp, fmt.Errorf("no cloud connector group named '%s' was found", cloudConnectorGroupName)
 }
 
 func (service *Service) GetAll() ([]CloudConnectorGroup, *http.Response, error) {

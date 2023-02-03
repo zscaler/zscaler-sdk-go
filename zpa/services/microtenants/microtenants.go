@@ -1,5 +1,6 @@
 package microtenants
 
+/*
 import (
 	"fmt"
 	"net/http"
@@ -86,9 +87,9 @@ type UserResource struct {
 	ModifiedTime string `json:"modifiedTime,omitempty"`
 }
 
-func (service *Service) Get(microTenantID string) (*MicroTenant, *http.Response, error) {
+func (service *Service) Get(id string) (*MicroTenant, *http.Response, error) {
 	v := new(MicroTenant)
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, microTenantID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -98,7 +99,7 @@ func (service *Service) Get(microTenantID string) (*MicroTenant, *http.Response,
 
 func (service *Service) GetByName(microtenantName string) (*MicroTenant, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + microtenantsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[MicroTenant](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[MicroTenant](service.Client, relativeURL, common.IncludeRolesQueryParams{IncludeRoles: true}, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -148,3 +149,4 @@ func (service *Service) GetAll() ([]MicroTenant, *http.Response, error) {
 	}
 	return list, resp, nil
 }
+*/
