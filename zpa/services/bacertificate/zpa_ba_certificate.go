@@ -44,18 +44,18 @@ func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Respo
 	return v, resp, nil
 }
 
-func (service *Service) GetIssuedByName(certName string) (*BaCertificate, *http.Response, error) {
+func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[BaCertificate](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, baCertificate := range list {
-		if baCertificate.Name == certName {
+		if baCertificate.Name == CertName {
 			return &baCertificate, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no issued certificate named '%s' was found", certName)
+	return nil, resp, fmt.Errorf("no issued certificate named '%s' was found", CertName)
 }
 
 func (service *Service) GetAll() ([]BaCertificate, *http.Response, error) {

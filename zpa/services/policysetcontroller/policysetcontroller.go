@@ -49,39 +49,35 @@ type PolicyRule struct {
 	ReauthTimeout            string               `json:"reauthTimeout,omitempty"`
 	RuleOrder                string               `json:"ruleOrder"`
 	LSSDefaultRule           bool                 `json:"lssDefaultRule"`
-	ZpnCbiProfileID          string               `json:"zpnCbiProfileId"`
-	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId"`
-	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId"`
-	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName"`
-	MicrotenantName          string               `json:"microtenantId,omitempty"`
-	MicrotenantID            string               `json:"microtenantName,omitempty"`
+	ZpnCbiProfileID          string               `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId,omitempty"`
+	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId,omitempty"`
+	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName,omitempty"`
 	Conditions               []Conditions         `json:"conditions,omitempty"`
 	AppServerGroups          []AppServerGroups    `json:"appServerGroups,omitempty"`
 	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups,omitempty"`
 }
 
 type Conditions struct {
-	CreationTime  string     `json:"creationTime,omitempty"`
-	ID            string     `json:"id,omitempty"`
-	ModifiedBy    string     `json:"modifiedBy,omitempty"`
-	ModifiedTime  string     `json:"modifiedTime,omitempty"`
-	Negated       bool       `json:"negated"`
-	Operands      []Operands `json:"operands,omitempty"`
-	Operator      string     `json:"operator,omitempty"`
-	MicrotenantID string     `json:"microtenantId,omitempty"`
+	CreationTime string     `json:"creationTime,omitempty"`
+	ID           string     `json:"id,omitempty"`
+	ModifiedBy   string     `json:"modifiedBy,omitempty"`
+	ModifiedTime string     `json:"modifiedTime,omitempty"`
+	Negated      bool       `json:"negated"`
+	Operands     []Operands `json:"operands,omitempty"`
+	Operator     string     `json:"operator,omitempty"`
 }
 
 type Operands struct {
-	CreationTime  string `json:"creationTime,omitempty"`
-	ID            string `json:"id,omitempty"`
-	IdpID         string `json:"idpId,omitempty"`
-	LHS           string `json:"lhs,omitempty"`
-	ModifiedBy    string `json:"modifiedBy,omitempty"`
-	ModifiedTime  string `json:"modifiedTime,omitempty"`
-	Name          string `json:"name,omitempty"`
-	ObjectType    string `json:"objectType,omitempty"`
-	RHS           string `json:"rhs,omitempty"`
-	MicrotenantID string `json:"microtenantId,omitempty"`
+	CreationTime string `json:"creationTime,omitempty"`
+	ID           string `json:"id,omitempty"`
+	IdpID        string `json:"idpId,omitempty"`
+	LHS          string `json:"lhs,omitempty"`
+	ModifiedBy   string `json:"modifiedBy,omitempty"`
+	ModifiedTime string `json:"modifiedTime,omitempty"`
+	Name         string `json:"name,omitempty"`
+	ObjectType   string `json:"objectType,omitempty"`
+	RHS          string `json:"rhs,omitempty"`
 }
 
 type AppServerGroups struct {
@@ -107,7 +103,7 @@ func (service *Service) GetByPolicyType(policyType string) (*PolicySet, *http.Re
 	return v, resp, nil
 }
 
-// GET --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule/{ruleId}.
+// GET --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule/{ruleId}
 func (service *Service) GetPolicyRule(policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
 	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
@@ -118,7 +114,7 @@ func (service *Service) GetPolicyRule(policySetID, ruleId string) (*PolicyRule, 
 	return v, resp, nil
 }
 
-// POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule.
+// POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
 func (service *Service) Create(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
@@ -129,7 +125,7 @@ func (service *Service) Create(rule *PolicyRule) (*PolicyRule, *http.Response, e
 	return v, resp, nil
 }
 
-// PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}.
+// PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func (service *Service) Update(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, policySetRule, nil)
@@ -139,7 +135,7 @@ func (service *Service) Update(policySetID, ruleId string, policySetRule *Policy
 	return resp, err
 }
 
-// DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}.
+// DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func (service *Service) Delete(policySetID, ruleId string) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
@@ -175,7 +171,7 @@ func (service *Service) GetByNameAndTypes(policyTypes []string, ruleName string)
 	return
 }
 
-// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}.
+// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}
 func (service *Service) Reorder(policySetID, ruleId string, order int) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, nil, nil)

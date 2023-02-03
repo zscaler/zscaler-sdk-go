@@ -120,7 +120,7 @@ func (service *Service) Create(appSegmentInspection AppSegmentInspection) (*AppS
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1.
+// return the new items that were added to slice1
 func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	var diff []AppsConfig
 	for _, s1 := range slice1 {
@@ -138,9 +138,9 @@ func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	return diff
 }
 
-func mapInspectionApp(inspectionAppDto []InspectionAppDto) []AppsConfig {
+func mapInspectionApp(InspectionAppDto []InspectionAppDto) []AppsConfig {
 	result := []AppsConfig{}
-	for _, app := range inspectionAppDto {
+	for _, app := range InspectionAppDto {
 		result = append(result, AppsConfig{
 			Name:   app.Name,
 			Domain: app.Domain,

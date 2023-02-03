@@ -29,7 +29,7 @@ type NetworkPorts struct {
 	To   string `json:"to,omitempty"`
 }
 
-// ZPA Inspection Rules.
+// ZPA Inspection Rules
 type Rules struct {
 	Conditions []Conditions `json:"conditions,omitempty"`
 	Names      string       `json:"names,omitempty"`
@@ -48,7 +48,7 @@ type AssociatedProfileNames struct {
 	Name string `json:"name,omitempty"`
 }
 
-// RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)".
+// RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
 func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)
 	res := reg.ReplaceAllString(str, "${1}")
@@ -80,7 +80,7 @@ func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pag
 	return totalPages, v.List, resp, nil
 }
 
-// GetAllPagesGeneric fetches all resources instead of just one single page.
+// GetAllPagesGeneric fetches all resources instead of just one single page
 func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
 	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, searchQuery)
 	if err != nil {
