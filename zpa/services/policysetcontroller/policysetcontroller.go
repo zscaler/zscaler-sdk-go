@@ -49,9 +49,10 @@ type PolicyRule struct {
 	ReauthTimeout            string               `json:"reauthTimeout,omitempty"`
 	RuleOrder                string               `json:"ruleOrder"`
 	LSSDefaultRule           bool                 `json:"lssDefaultRule"`
-	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId,omitempty"`
-	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId,omitempty"`
-	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName,omitempty"`
+	ZpnCbiProfileID          string               `json:"zpnCbiProfileId"`
+	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId"`
+	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId"`
+	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName"`
 	MicrotenantName          string               `json:"microtenantId,omitempty"`
 	MicrotenantID            string               `json:"microtenantName,omitempty"`
 	Conditions               []Conditions         `json:"conditions,omitempty"`
