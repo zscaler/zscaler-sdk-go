@@ -146,30 +146,30 @@ func (service *Service) GetByName(ruleName string) (*WebDLPRules, error) {
 	return nil, fmt.Errorf("no web dlp rule found with name: %s", ruleName)
 }
 
-func (service *Service) Create(ruleID *WebDLPRules) (*WebDLPRules, *http.Response, error) {
+func (service *Service) Create(ruleID *WebDLPRules) (*WebDLPRules, error) {
 	resp, err := service.Client.Create(webDlpRulesEndpoint, *ruleID)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	createdWebDlpRules, ok := resp.(*WebDLPRules)
 	if !ok {
-		return nil, nil, errors.New("object returned from api was not a web dlp rule pointer")
+		return nil, errors.New("object returned from api was not a web dlp rule pointer")
 	}
 
 	service.Client.Logger.Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
-	return createdWebDlpRules, nil, nil
+	return createdWebDlpRules, nil
 }
 
-func (service *Service) Update(ruleID int, webDlpRules *WebDLPRules) (*WebDLPRules, *http.Response, error) {
+func (service *Service) Update(ruleID int, webDlpRules *WebDLPRules) (*WebDLPRules, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), *webDlpRules)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	updatedWebDlpRules, _ := resp.(*WebDLPRules)
 
 	service.Client.Logger.Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
-	return updatedWebDlpRules, nil, nil
+	return updatedWebDlpRules, nil
 }
 
 func (service *Service) Delete(ruleID int) (*http.Response, error) {
