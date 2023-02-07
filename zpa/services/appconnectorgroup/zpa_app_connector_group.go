@@ -29,6 +29,7 @@ type AppConnectorGroup struct {
 	ModifiedTime                  string           `json:"modifiedTime,omitempty"`
 	Name                          string           `json:"name,omitempty"`
 	OverrideVersionProfile        bool             `json:"overrideVersionProfile"`
+	PRAEnabled                    bool             `json:"praEnabled"`
 	UpgradeDay                    string           `json:"upgradeDay,omitempty"`
 	UpgradeTimeInSecs             string           `json:"upgradeTimeInSecs,omitempty"`
 	VersionProfileID              string           `json:"versionProfileId,omitempty"`
