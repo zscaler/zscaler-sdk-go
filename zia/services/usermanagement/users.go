@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	usersEndpoint = "/users"
+	usersEndpoint      = "/users"
+	userEnrollEndpoint = "/enroll"
 )
 
 type Users struct {
@@ -22,6 +23,7 @@ type Users struct {
 	Department    *common.UserDepartment    `json:"department,omitempty"`
 	Comments      string                    `json:"comments,omitempty"`
 	TempAuthEmail string                    `json:"tempAuthEmail,omitempty"`
+	AuthMethods   []string                  `json:"authMethods,omitempty"`
 	Password      string                    `json:"password,omitempty"`
 	AdminUser     bool                      `json:"adminUser"`
 	Type          string                    `json:"type,omitempty"`
