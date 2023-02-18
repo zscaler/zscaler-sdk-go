@@ -36,6 +36,7 @@ type Locations struct {
 	SurrogateIPEnforcedForKnownBrowsers bool             `json:"surrogateIPEnforcedForKnownBrowsers"`
 	SurrogateRefreshTimeInMinutes       int              `json:"surrogateRefreshTimeInMinutes,omitempty"`
 	SurrogateRefreshTimeUnit            string           `json:"surrogateRefreshTimeUnit,omitempty"`
+	BasicAuthEnabled                    bool             `json:"basicAuthEnabled"`
 	OFWEnabled                          bool             `json:"ofwEnabled"`
 	IPSControl                          bool             `json:"ipsControl"`
 	AUPEnabled                          bool             `json:"aupEnabled"`
