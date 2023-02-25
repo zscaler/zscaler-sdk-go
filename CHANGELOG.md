@@ -1,5 +1,15 @@
 # Changelog
 
+# 1.1.0 (February, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServices/lite`` to retrieve supported application services within an firewall filtering rule resource
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServiceGroups/lite`` to retrieve supported application services groups within an firewall filtering rule resource
+
 # 1.0.0 (February, 2 2023)
 
 ## Notes
