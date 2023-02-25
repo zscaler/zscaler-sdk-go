@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	appServicesGroupLiteEndpoint = "appServiceGroups/lite"
+	appServicesGroupLiteEndpoint = "/appServiceGroups/lite"
 )
 
 type ApplicationServicesGroupLite struct {
