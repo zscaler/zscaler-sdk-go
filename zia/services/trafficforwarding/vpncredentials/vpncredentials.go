@@ -15,14 +15,31 @@ const (
 )
 
 type VPNCredentials struct {
-	ID           int        `json:"id"`
-	Type         string     `json:"type,omitempty"`
-	FQDN         string     `json:"fqdn,omitempty"`
-	IPAddress    string     `json:"ipAddress,omitempty"`
-	PreSharedKey string     `json:"preSharedKey,omitempty"`
-	Comments     string     `json:"comments,omitempty"`
-	Location     *Location  `json:"location,omitempty"`
-	ManagedBy    *ManagedBy `json:"managedBy,omitempty"`
+	// VPN credential id
+	ID int `json:"id"`
+
+	// VPN authentication type (i.e., how the VPN credential is sent to the server). It is not modifiable after VpnCredential is created.
+	//Note: Zscaler no longer supports adding a new XAUTH VPN credential, but existing entries can be edited or deleted using the respective endpoints.
+	Type string `json:"type,omitempty"`
+
+	// Fully Qualified Domain Name. Applicable only to UFQDN or XAUTH (or HOSTED_MOBILE_USERS) auth type.
+	FQDN string `json:"fqdn,omitempty"`
+
+	// Static IP address for VPN that is self-provisioned or provisioned by Zscaler. This is a required field for IP auth type and is not applicable to other auth types.
+	// Note: If you want Zscaler to provision static IP addresses for your organization, contact Zscaler Support.
+	IPAddress string `json:"ipAddress,omitempty"`
+
+	// Pre-shared key. This is a required field for UFQDN and IP auth type.
+	PreSharedKey string `json:"preSharedKey,omitempty"`
+
+	// Additional information about this VPN credential.
+	Comments string `json:"comments,omitempty"`
+
+	// Location that is associated to this VPN credential. Non-existence means not associated to any location.
+	Location *Location `json:"location,omitempty"`
+
+	// SD-WAN Partner that manages the location. If a partner does not manage the location, this is set to Self.
+	ManagedBy *ManagedBy `json:"managedBy,omitempty"`
 }
 
 type Location struct {

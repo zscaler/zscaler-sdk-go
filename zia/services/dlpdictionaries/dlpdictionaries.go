@@ -15,43 +15,88 @@ const (
 )
 
 type DlpDictionary struct {
-	ID                      int                       `json:"id"`
-	Name                    string                    `json:"name,omitempty"`
-	Description             string                    `json:"description,omitempty"`
-	ConfidenceThreshold     string                    `json:"confidenceThreshold,omitempty"`
-	CustomPhraseMatchType   string                    `json:"customPhraseMatchType,omitempty"`
-	NameL10nTag             bool                      `json:"nameL10nTag"`
-	Custom                  bool                      `json:"custom"`
-	ThresholdType           string                    `json:"thresholdType,omitempty"`
-	DictionaryType          string                    `json:"dictionaryType,omitempty"`
-	Proximity               int                       `json:"proximity,omitempty"`
-	Phrases                 []Phrases                 `json:"phrases"`
-	Patterns                []Patterns                `json:"patterns"`
-	EDMMatchDetails         []EDMMatchDetails         `json:"exactDataMatchDetails"`
+	// Unique identifier for the DLP dictionary
+	ID int `json:"id"`
+
+	// The DLP dictionary's name
+	Name string `json:"name,omitempty"`
+
+	// The description of the DLP dictionary
+	Description string `json:"description,omitempty"`
+
+	// The DLP confidence threshold
+	ConfidenceThreshold string `json:"confidenceThreshold,omitempty"`
+
+	// The DLP custom phrase match type
+	CustomPhraseMatchType string `json:"customPhraseMatchType,omitempty"`
+
+	// Indicates whether the name is localized or not. This is always set to True for predefined DLP dictionaries.
+	NameL10nTag bool `json:"nameL10nTag"`
+
+	// This value is set to true for custom DLP dictionaries.
+	Custom bool `json:"custom"`
+
+	// DLP threshold type
+	ThresholdType string `json:"thresholdType,omitempty"`
+
+	// The DLP dictionary type
+	DictionaryType string `json:"dictionaryType,omitempty"`
+
+	// The DLP dictionary proximity length.
+	Proximity int `json:"proximity,omitempty"`
+
+	// List containing the phrases used within a custom DLP dictionary. This attribute is not applicable to predefined DLP dictionaries.
+	Phrases []Phrases `json:"phrases"`
+
+	// List containing the patterns used within a custom DLP dictionary. This attribute is not applicable to predefined DLP dictionaries
+	Patterns []Patterns `json:"patterns"`
+
+	// Exact Data Match (EDM) related information for custom DLP dictionaries.
+	EDMMatchDetails []EDMMatchDetails `json:"exactDataMatchDetails"`
+
+	// List of Indexed Document Match (IDM) profiles and their corresponding match accuracy for custom DLP dictionaries.
 	IDMProfileMatchAccuracy []IDMProfileMatchAccuracy `json:"idmProfileMatchAccuracy"`
 }
 
 type Phrases struct {
+	// The action applied to a DLP dictionary using phrases
 	Action string `json:"action,omitempty"`
+
+	// DLP dictionary phrase
 	Phrase string `json:"phrase,omitempty"`
 }
 
 type Patterns struct {
-	Action  string `json:"action,omitempty"`
+	// The action applied to a DLP dictionary using patterns
+	Action string `json:"action,omitempty"`
+
+	// DLP dictionary pattern
 	Pattern string `json:"pattern,omitempty"`
 }
 
 type EDMMatchDetails struct {
-	DictionaryEdmMappingID int    `json:"dictionaryEdmMappingId,omitempty"`
-	SchemaID               int    `json:"schemaId,omitempty"`
-	PrimaryField           int    `json:"primaryField,omitempty"`
-	SecondaryFields        []int  `json:"secondaryFields,omitempty"`
-	SecondaryFieldMatchOn  string `json:"secondaryFieldMatchOn,omitempty"`
+	// The unique identifier for the EDM mapping.
+	DictionaryEdmMappingID int `json:"dictionaryEdmMappingId,omitempty"`
+
+	// The unique identifier for the EDM template (or schema).
+	SchemaID int `json:"schemaId,omitempty"`
+
+	// The EDM template's primary field.
+	PrimaryField int `json:"primaryField,omitempty"`
+
+	// The EDM template's secondary fields.
+	SecondaryFields []int `json:"secondaryFields,omitempty"`
+
+	// The EDM secondary field to match on.
+	SecondaryFieldMatchOn string `json:"secondaryFieldMatchOn,omitempty"`
 }
 
 type IDMProfileMatchAccuracy struct {
+	// The IDM template reference.
 	AdpIdmProfile *common.IDNameExtensions `json:"adpIdmProfile,omitempty"`
-	MatchAccuracy string                   `json:"matchAccuracy,omitempty"`
+
+	// The IDM template match accuracy.
+	MatchAccuracy string `json:"matchAccuracy,omitempty"`
 }
 
 type ValidateDLPPattern struct {

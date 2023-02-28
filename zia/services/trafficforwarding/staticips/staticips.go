@@ -15,26 +15,51 @@ const (
 
 // Gets all provisioned static IP addresses.
 type StaticIP struct {
-	ID                   int             `json:"id,omitempty"`
-	IpAddress            string          `json:"ipAddress"`
-	GeoOverride          bool            `json:"geoOverride"`
-	Latitude             float64         `json:"latitude,omitempty"`
-	Longitude            float64         `json:"longitude,omitempty"`
-	RoutableIP           bool            `json:"routableIP,omitempty"`
-	LastModificationTime int             `json:"lastModificationTime"`
-	Comment              string          `json:"comment,omitempty"`
-	ManagedBy            *ManagedBy      `json:"managedBy,omitempty"`      // Should probably move this to a common package. Used by multiple resources
-	LastModifiedBy       *LastModifiedBy `json:"lastModifiedBy,omitempty"` // Should probably move this to a common package. Used by multiple resources
+	// The unique identifier for the static IP address
+	ID int `json:"id,omitempty"`
+
+	// The static IP address
+	IpAddress string `json:"ipAddress"`
+
+	// If not set, geographic coordinates and city are automatically determined from the IP address. Otherwise, the latitude and longitude coordinates must be provided.
+	GeoOverride bool `json:"geoOverride"`
+
+	// Required only if the geoOverride attribute is set. Latitude with 7 digit precision after decimal point, ranges between -90 and 90 degrees.
+	Latitude float64 `json:"latitude,omitempty"`
+
+	// Required only if the geoOverride attribute is set. Longitude with 7 digit precision after decimal point, ranges between -180 and 180 degrees.
+	Longitude float64 `json:"longitude,omitempty"`
+
+	// Indicates whether a non-RFC 1918 IP address is publicly routable. This attribute is ignored if there is no ZIA Private Service Edge associated to the organization.
+	RoutableIP bool `json:"routableIP,omitempty"`
+
+	// When the static IP address was last modified
+	LastModificationTime int `json:"lastModificationTime"`
+
+	// Additional information about this static IP address
+	Comment string `json:"comment,omitempty"`
+
+	// SD-WAN Partner that manages the location. If a partner does not manage the location, this is set to Self.
+	ManagedBy *ManagedBy `json:"managedBy,omitempty"` // Should probably move this to a common package. Used by multiple resources
+
+	// Who modified the static IP address last
+	LastModifiedBy *LastModifiedBy `json:"lastModifiedBy,omitempty"` // Should probably move this to a common package. Used by multiple resources
 }
 
 type ManagedBy struct {
-	ID         int                    `json:"id,omitempty"`
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
 type LastModifiedBy struct {
-	ID         int                    `json:"id,omitempty"`
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }

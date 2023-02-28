@@ -11,12 +11,12 @@ const (
 )
 
 type GRETunnelInfo struct {
+	TunID             int    `json:"tunID,omitempty"`
 	IPaddress         string `json:"ipAddress,omitempty"`
 	GREEnabled        bool   `json:"greEnabled,omitempty"`
 	GREtunnelIP       string `json:"greTunnelIP,omitempty"`
 	PrimaryGW         string `json:"primaryGW,omitempty"`
 	SecondaryGW       string `json:"secondaryGW,omitempty"`
-	TunID             int    `json:"tunID,omitempty"`
 	GRERangePrimary   string `json:"greRangePrimary,omitempty"`
 	GRERangeSecondary string `json:"greRangeSecondary,omitempty"`
 }

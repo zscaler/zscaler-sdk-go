@@ -9,6 +9,7 @@ const (
 )
 
 type ExemptedUrls struct {
+	// Domains or URLs which are exempted from SSL Inspection
 	URLs []string `json:"urls"`
 }
 

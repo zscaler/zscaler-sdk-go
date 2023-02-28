@@ -27,35 +27,85 @@ const (
 )
 
 type IntermediateCACertificate struct {
-	ID                         int    `json:"id"`
-	Name                       string `json:"name,omitempty"`
-	Description                string `json:"description,omitempty"`
-	Type                       string `json:"type,omitempty"`
-	Region                     string `json:"region,omitempty"`
-	Status                     string `json:"status,omitempty"`
-	DefaultCertificate         bool   `json:"defaultCertificate,omitempty"`
-	CertStartDate              int    `json:"certStartDate,omitempty"`
-	CertExpDate                int    `json:"certExpDate,omitempty"`
-	CurrentState               string `json:"currentState,omitempty"`
-	PublicKey                  string `json:"publicKey,omitempty"`
-	KeyGenerationTime          int    `json:"keyGenerationTime,omitempty"`
-	HSMAttestationVerifiedTime int    `json:"hsmAttestationVerifiedTime,omitempty"`
-	CSRFileName                string `json:"csrFileName,omitempty"`
-	CSRGenerationTime          int    `json:"csrGenerationTime,omitempty"`
+	// Unique identifier for the intermediate CA certificat
+	ID int `json:"id"`
+
+	// Name of the intermediate CA certificate
+	Name string `json:"name,omitempty"`
+
+	// Description for the intermediate CA certificate
+	Description string `json:"description,omitempty"`
+
+	// Type of the intermediate CA certificate. Available types: Zscaler’s intermediate CA certificate (provided by Zscaler), custom intermediate certificate with software protection, and custom intermediate certificate with cloud HSM protection.
+	Type string `json:"type,omitempty"`
+
+	// Location of the HSM resources. Required for custom intermediate CA certificates with cloud HSM protection
+	Region string `json:"region,omitempty"`
+
+	// Determines whether the intermediate CA certificate is enabled or disabled for SSL inspection. Subscription to cloud HSM protection allows a maximum of four active certificates for SSL inspection at a time, whereas software protection subscription allows only one active certificate
+	Status string `json:"status,omitempty"`
+
+	// If set to true, the intermediate CA certificate is the default intermediate certificate. Only one certificate can be marked as the default intermediate certificate at a time
+	DefaultCertificate bool `json:"defaultCertificate,omitempty"`
+
+	// Start date of the intermediate CA certificate’s validity period
+	CertStartDate int `json:"certStartDate,omitempty"`
+
+	// Expiration date of the intermediate CA certificate’s validity period
+	CertExpDate int `json:"certExpDate,omitempty"`
+
+	// Tracks the progress of the intermediate CA certificate in the configuration workflow
+	CurrentState string `json:"currentState,omitempty"`
+
+	// Public key in the HSM key pair generated for the intermediate CA certificate
+	PublicKey string `json:"publicKey,omitempty"`
+
+	// Timestamp when the HSM key was generated
+	KeyGenerationTime int `json:"keyGenerationTime,omitempty"`
+
+	// Timestamp when the attestation for the HSM key was verified
+	HSMAttestationVerifiedTime int `json:"hsmAttestationVerifiedTime,omitempty"`
+
+	// Certificate Signing Request (CSR) file name
+	CSRFileName string `json:"csrFileName,omitempty"`
+
+	// Timestamp when the Certificate Signing Request (CSR) was generated
+	CSRGenerationTime int `json:"csrGenerationTime,omitempty"`
 }
 
 type CertSigningRequest struct {
-	CertID               int    `json:"certId"`
-	CSRFileName          string `json:"csrFileName,omitempty"`
-	CommName             string `json:"commName,omitempty"`
-	ORGName              string `json:"orgName,omitempty"`
-	DeptName             string `json:"deptName,omitempty"`
-	City                 string `json:"city,omitempty"`
-	State                string `json:"state,omitempty"`
-	Country              string `json:"country,omitempty"`
-	KeySize              int    `json:"keySize,omitempty"`
-	SignatureAlgorithm   string `json:"signatureAlgorithm,omitempty"`
-	PathLengthConstraint int    `json:"pathLengthConstraint,omitempty"`
+	// Unique identifier for the intermediate CA certificate
+	CertID int `json:"certId"`
+
+	// Name of the CSR file
+	CSRFileName string `json:"csrFileName,omitempty"`
+
+	// Common Name (CN) of your organization’s domain, such as zscaler.com
+	CommName string `json:"commName,omitempty"`
+
+	// Name of your organization or company
+	ORGName string `json:"orgName,omitempty"`
+
+	// Name of your department or division
+	DeptName string `json:"deptName,omitempty"`
+
+	// Name of the city or town where your organization is located
+	City string `json:"city,omitempty"`
+
+	// State, province, region, or county where your organization is located
+	State string `json:"state,omitempty"`
+
+	// Country where your organization is located
+	Country string `json:"country,omitempty"`
+
+	// Key size to be used in the encryption algorithm in bits. Default size: 2048 bits
+	KeySize int `json:"keySize,omitempty"`
+
+	// Signature algorithm to be used for generating intermediate CA certificate. Default value: SHA256
+	SignatureAlgorithm string `json:"signatureAlgorithm,omitempty"`
+
+	// The path length constraint for the intermediate CA certificate. Default values: 0 for cloud HSM, 1 for software protection
+	PathLengthConstraint int `json:"pathLengthConstraint,omitempty"`
 }
 
 func (service *Service) Get(certID int) (*IntermediateCACertificate, error) {

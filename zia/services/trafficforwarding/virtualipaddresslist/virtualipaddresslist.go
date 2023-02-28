@@ -27,11 +27,20 @@ type ZscalerVIPs struct {
 }
 
 type GREVirtualIPList struct {
-	ID                 int    `json:"id"`
-	VirtualIp          string `json:"virtualIp,omitempty"`
-	PrivateServiceEdge bool   `json:"privateServiceEdge,omitempty"`
-	DataCenter         string `json:"dataCenter,omitempty"`
-	CountryCode        string `json:"countryCode,omitempty"`
+	// Unique identifer of the GRE virtual IP address (VIP)
+	ID int `json:"id"`
+
+	// GRE cluster virtual IP address (VIP)
+	VirtualIp string `json:"virtualIp,omitempty"`
+
+	// Set to true if the virtual IP address (VIP) is a ZIA Private Service Edge
+	PrivateServiceEdge bool `json:"privateServiceEdge,omitempty"`
+
+	// Data center information
+	DataCenter string `json:"dataCenter,omitempty"`
+
+	// Country code information
+	CountryCode string `json:"countryCode,omitempty"`
 }
 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud, including region and data center information. By default, the request gets all public VIPs in the cloud, but you can also include private or all VIPs in the request, if necessary.

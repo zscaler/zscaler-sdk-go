@@ -15,56 +15,91 @@ const (
 )
 
 type LocationGroup struct {
-	ID                           int                           `json:"id,omitempty"`
-	Name                         string                        `json:"name,omitempty"`
-	Deleted                      bool                          `json:"deleted,omitempty"`
-	GroupType                    string                        `json:"groupType,omitempty"`
+	// Unique identifier for the location group
+	ID int `json:"id,omitempty"`
+
+	// Location group name
+	Name string `json:"name,omitempty"`
+
+	// Indicates the location group was deleted
+	Deleted bool `json:"deleted,omitempty"`
+
+	// The location group's type (i.e., Static or Dynamic)
+	GroupType string `json:"groupType,omitempty"`
+
+	// A dynamic location group's criteria. This is ignored if the groupType is Static.
 	DynamicLocationGroupCriteria *DynamicLocationGroupCriteria `json:"dynamicLocationGroupCriteria,omitempty"`
-	Comments                     string                        `json:"comments"`
-	Locations                    []Locations                   `json:"locations"`
-	LastModUser                  *LastModUser                  `json:"lastModUser"`
-	LastModTime                  int                           `json:"lastModTime"`
-	Predefined                   bool                          `json:"predefined"`
+
+	// Additional information about the location group
+	Comments string `json:"comments"`
+
+	// The Name-ID pairs of the locations that are assigned to the static location group. This is ignored if the groupType is Dynamic.
+	Locations []common.IDNameExtensions `json:"locations"`
+
+	// Automatically populated with the current ZIA admin user, after a successful POST or PUT request.
+	LastModUser *LastModUser `json:"lastModUser"`
+
+	// Automatically populated with the current time, after a successful POST or PUT request.
+	LastModTime int  `json:"lastModTime"`
+	Predefined  bool `json:"predefined"`
 }
 
 type DynamicLocationGroupCriteria struct {
-	Name                   *Name       `json:"name,omitempty"`
-	Countries              []string    `json:"countries,omitempty"`
-	City                   *City       `json:"city,omitempty"`
-	ManagedBy              []ManagedBy `json:"managedBy,omitempty"`
-	EnforceAuthentication  bool        `json:"enforceAuthentication"`
-	EnforceAup             bool        `json:"enforceAup"`
-	EnforceFirewallControl bool        `json:"enforceFirewallControl"`
-	EnableXffForwarding    bool        `json:"enableXffForwarding"`
-	EnableCaution          bool        `json:"enableCaution"`
-	EnableBandwidthControl bool        `json:"enableBandwidthControl"`
-	Profiles               []string    `json:"profiles"`
+	// A sub-string to match location name. Valid operators are contains, starts with, and ends with",
+	Name *Name `json:"name,omitempty"`
+
+	// One or more countries from a predefined set
+	Countries []string `json:"countries,omitempty"`
+
+	// A sub-string to match city. Valid operators are starts with, ends with, contains, and exact match operators.
+	City *City `json:"city,omitempty"`
+
+	// One or more values from a predefined set of SD-WAN partner list to display partner names.
+	ManagedBy *common.IDNameExtensions `json:"managedBy,omitempty"`
+
+	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
+	EnforceAuthentication bool `json:"enforceAuthentication"`
+
+	// Enable AUP. When set to true, AUP is enabled for the location.
+	EnforceAup bool `json:"enforceAup"`
+
+	// Enable Firewall. When set to true, Firewall is enabled for the location.
+	EnforceFirewallControl bool `json:"enforceFirewallControl"`
+
+	// Enable XFF Forwarding. When set to true, traffic is passed to Zscaler Cloud via the X-Forwarded-For (XFF) header.
+	EnableXffForwarding bool `json:"enableXffForwarding"`
+
+	// Enable Caution. When set to true, a caution notifcation is enabled for the location.
+	EnableCaution bool `json:"enableCaution"`
+
+	// Enable Bandwidth Control. When set to true, Bandwidth Control is enabled for the location.
+	EnableBandwidthControl bool `json:"enableBandwidthControl"`
+
+	// One or more location profiles from a predefined set
+	Profiles []string `json:"profiles"`
 }
 
 type Name struct {
+	// String value to be matched or partially matched
 	MatchString string `json:"matchString,omitempty"`
-	MatchType   string `json:"matchType,omitempty"`
+
+	// Operator that performs match action
+	MatchType string `json:"matchType,omitempty"`
 }
 
 type City struct {
+	// String value to be matched or partially matched
 	MatchString string `json:"matchString,omitempty"`
-	MatchType   string `json:"matchType,omitempty"`
-}
 
-type ManagedBy struct {
-	ID         int                    `json:"id,omitempty"`
-	Name       string                 `json:"name,omitempty"`
-	Extensions map[string]interface{} `json:"extensions,omitempty"`
-}
-
-type Locations struct {
-	ID         int                    `json:"id,omitempty"`
-	Name       string                 `json:"name,omitempty"`
-	Extensions map[string]interface{} `json:"extensions,omitempty"`
+	// Operator that performs match action
+	MatchType string `json:"matchType,omitempty"`
 }
 
 type LastModUser struct {
-	ID         int                    `json:"id,omitempty"`
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }

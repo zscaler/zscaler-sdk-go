@@ -13,31 +13,74 @@ const (
 )
 
 type AdminUsers struct {
-	ID                            int                       `json:"id,omitempty"`
-	LoginName                     string                    `json:"loginName,omitempty"`
-	UserName                      string                    `json:"userName,omitempty"`
-	Email                         string                    `json:"email,omitempty"`
-	Comments                      string                    `json:"comments,omitempty"`
-	Disabled                      bool                      `json:"disabled,omitempty"`
-	Password                      string                    `json:"password,omitempty"`
-	PasswordLastModifiedTime      int                       `json:"pwdLastModifiedTime,omitempty"`
-	IsNonEditable                 bool                      `json:"isNonEditable,omitempty"`
-	IsPasswordLoginAllowed        bool                      `json:"isPasswordLoginAllowed,omitempty"`
-	IsPasswordExpired             bool                      `json:"isPasswordExpired,omitempty"`
-	IsAuditor                     bool                      `json:"isAuditor,omitempty"`
-	IsSecurityReportCommEnabled   bool                      `json:"isSecurityReportCommEnabled,omitempty"`
-	IsServiceUpdateCommEnabled    bool                      `json:"isServiceUpdateCommEnabled,omitempty"`
-	IsProductUpdateCommEnabled    bool                      `json:"isProductUpdateCommEnabled,omitempty"`
-	IsExecMobileAppEnabled        bool                      `json:"isExecMobileAppEnabled,omitempty"`
+	//Admin or auditor's user ID
+	ID int `json:"id,omitempty"`
+
+	// Admin or auditor's login name. loginName is in email format and uses the domain name associated to the Zscaler account
+	LoginName string `json:"loginName,omitempty"`
+
+	// Admin or auditor's username
+	UserName string `json:"userName,omitempty"`
+
+	// Admin or auditor's email address
+	Email string `json:"email,omitempty"`
+
+	// Additional information about the admin or auditor
+	Comments string `json:"comments,omitempty"`
+
+	// Indicates whether or not the admin account is disabled
+	Disabled bool `json:"disabled,omitempty"`
+
+	// The admin's password. If admin single sign-on (SSO) is disabled, then this field is mandatory for POST requests. This information is not provided in a GET response."
+	Password string `json:"password,omitempty"`
+
+	PasswordLastModifiedTime int `json:"pwdLastModifiedTime,omitempty"`
+
+	// Indicates whether or not the admin can be edited or deleted
+	IsNonEditable bool `json:"isNonEditable,omitempty"`
+
+	// The default is true when SAML Authentication is disabled. When SAML Authentication is enabled, this can be set to false in order to force the admin to login via SSO only.
+	IsPasswordLoginAllowed bool `json:"isPasswordLoginAllowed,omitempty"`
+
+	// Indicates whether or not an admin's password has expired
+	IsPasswordExpired bool `json:"isPasswordExpired,omitempty"`
+
+	// Indicates whether the user is an auditor. This attribute is subject to change.
+	IsAuditor bool `json:"isAuditor,omitempty"`
+
+	// Communication for Security Report is enabled.
+	IsSecurityReportCommEnabled bool `json:"isSecurityReportCommEnabled,omitempty"`
+
+	// Communication setting for Service Update
+	IsServiceUpdateCommEnabled bool `json:"isServiceUpdateCommEnabled,omitempty"`
+
+	// Communication setting for Product Update
+	IsProductUpdateCommEnabled bool `json:"isProductUpdateCommEnabled,omitempty"`
+
+	// Indicates whether or not Executive Insights App access is enabled for the admin
+	IsExecMobileAppEnabled bool `json:"isExecMobileAppEnabled,omitempty"`
+
+	// Only applicable for the LOCATION_GROUP admin scope type, in which case this attribute gives the list of ID/name pairs of locations within the location group. The attribute name is subject to change
 	AdminScopeGroupMemberEntities []common.IDNameExtensions `json:"adminScopescopeGroupMemberEntities,omitempty"`
-	AdminScopeEntities            []common.IDNameExtensions `json:"adminScopeScopeEntities,omitempty"`
-	AdminScopeType                string                    `json:"adminScopeType,omitempty"`
-	Role                          *Role                     `json:"role,omitempty"`
-	ExecMobileAppTokens           []ExecMobileAppTokens     `json:"execMobileAppTokens,omitempty"`
+
+	// Based on the admin scope type, the entities can be the ID/name pair of departments, locations, or location groups. The attribute name is subject to change
+	AdminScopeEntities []common.IDNameExtensions `json:"adminScopeScopeEntities,omitempty"`
+
+	// The admin's scope. A scope is required for admins, but not applicable to auditors. This attribute is subject to change
+	AdminScopeType string `json:"adminScopeType,omitempty"`
+
+	// Role of the admin. This is not required for an auditor
+	Role *Role `json:"role,omitempty"`
+
+	// Read-only information about a Executive Insights App token, if it exists
+	ExecMobileAppTokens []ExecMobileAppTokens `json:"execMobileAppTokens,omitempty"`
 }
 
 type Role struct {
-	ID           int                    `json:"id,omitempty"`
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
 	Name         string                 `json:"name,omitempty"`
 	IsNameL10Tag bool                   `json:"isNameL10nTag,omitempty"`
 	Extensions   map[string]interface{} `json:"extensions,omitempty"`

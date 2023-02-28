@@ -12,9 +12,16 @@ const (
 )
 
 type Groups struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name,omitempty"`
-	IdpID    int    `json:"idpId"`
+	// Unique identfier for the group
+	ID int `json:"id"`
+
+	// Group name
+	Name string `json:"name,omitempty"`
+
+	// Unique identfier for the identity provider (IdP)
+	IdpID int `json:"idpId"`
+
+	// Additional information about the group
 	Comments string `json:"comments,omitempty"`
 }
 

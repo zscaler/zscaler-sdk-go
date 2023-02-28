@@ -9,8 +9,12 @@ const (
 )
 
 type GREInternalIPRange struct {
+
+	// Starting IP address in the range
 	StartIPAddress string `json:"startIPAddress,omitempty"`
-	EndIPAddress   string `json:"endIPAddress,omitempty"`
+
+	// Ending IP address in the range
+	EndIPAddress string `json:"endIPAddress,omitempty"`
 }
 
 func (service *Service) GetGREInternalIPRange(count int) (*[]GREInternalIPRange, error) {
