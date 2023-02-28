@@ -55,7 +55,7 @@ type DynamicLocationGroupCriteria struct {
 	City *City `json:"city,omitempty"`
 
 	// One or more values from a predefined set of SD-WAN partner list to display partner names.
-	ManagedBy *common.IDNameExtensions `json:"managedBy,omitempty"`
+	ManagedBy []ManagedBy `json:"managedBy,omitempty"`
 
 	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
 	EnforceAuthentication bool `json:"enforceAuthentication"`
@@ -100,6 +100,12 @@ type LastModUser struct {
 	ID int `json:"id,omitempty"`
 
 	// The configured name of the entity
+	Name       string                 `json:"name,omitempty"`
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
+}
+
+type ManagedBy struct {
+	ID         int                    `json:"id,omitempty"`
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
