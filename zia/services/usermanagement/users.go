@@ -15,17 +15,37 @@ const (
 )
 
 type Users struct {
-	ID            int                       `json:"id"`
-	Name          string                    `json:"name,omitempty"`
-	Email         string                    `json:"email,omitempty"`
-	Groups        []common.IDNameExtensions `json:"groups,omitempty"`
-	Department    *common.UserDepartment    `json:"department,omitempty"`
-	Comments      string                    `json:"comments,omitempty"`
-	TempAuthEmail string                    `json:"tempAuthEmail,omitempty"`
-	Password      string                    `json:"password,omitempty"`
-	AdminUser     bool                      `json:"adminUser"`
-	Type          string                    `json:"type,omitempty"`
-	Deleted       bool                      `json:"deleted"`
+	// User ID
+	ID int `json:"id"`
+
+	// User name. This appears when choosing users for policies.
+	Name string `json:"name,omitempty"`
+
+	// User email consists of a user name and domain name. It does not have to be a valid email address, but it must be unique and its domain must belong to the organization.
+	Email string `json:"email,omitempty"`
+
+	// List of Groups a user belongs to. Groups are used in policies.
+	Groups []common.IDNameExtensions `json:"groups,omitempty"`
+
+	// Department a user belongs to
+	Department *common.UserDepartment `json:"department,omitempty"`
+
+	// Additional information about this user.
+	Comments string `json:"comments,omitempty"`
+
+	// Temporary Authentication Email. If you enabled one-time tokens or links, enter the email address to which the Zscaler service sends the tokens or links. If this is empty, the service sends the email to the User email.
+	TempAuthEmail string `json:"tempAuthEmail,omitempty"`
+
+	// User's password. Applicable only when authentication type is Hosted DB. Password strength must follow what is defined in the auth settings.
+	Password string `json:"password,omitempty"`
+
+	// True if this user is an Admin user
+	AdminUser bool `json:"adminUser"`
+
+	// User type. Provided only if this user is not an end user.
+	Type string `json:"type,omitempty"`
+
+	Deleted bool `json:"deleted"`
 }
 
 func (service *Service) Get(userID int) (*Users, error) {

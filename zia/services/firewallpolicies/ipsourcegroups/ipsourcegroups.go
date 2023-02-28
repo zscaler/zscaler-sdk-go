@@ -14,10 +14,20 @@ const (
 )
 
 type IPSourceGroups struct {
-	ID          int      `json:"id"`
-	Name        string   `json:"name,omitempty"`
+	// A unique identifier of the source IP address group.
+	ID int `json:"id"`
+
+	// The name of the source IP address group.
+	Name string `json:"name,omitempty"`
+
+	// The description of the source IP address group.
+	Description string `json:"description,omitempty"`
+
+	// Source IP addresses added to the group.
 	IPAddresses []string `json:"ipAddresses,omitempty"`
-	Description string   `json:"description,omitempty"`
+
+	// If set to true, the destination IP address group is non-editable. This field is applicable only to predefined IP address groups, which cannot be modified.
+	IsNonEditable bool `json:"isNonEditable,omitempty"`
 }
 
 func (service *Service) Get(ipGroupID int) (*IPSourceGroups, error) {

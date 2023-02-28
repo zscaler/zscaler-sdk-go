@@ -12,7 +12,10 @@ var AddRemoveURLFromList []string = []string{
 }
 
 type ListUrls struct {
+	// Allowlist URLs whose contents will not be scanned. Allows up to 255 URLs. There may be trusted websites the content of which might be blocked due to anti-virus, anti-spyware, or anti-malware policies. Enter the URLs of sites you do not want scanned. The service allows users to download content from these URLs without inspecting the traffic. The allowlist applies to the Malware Protection, Advanced Threats Protection, and Sandbox policies.
 	White []string `json:"whitelistUrls,omitempty"`
+
+	// URLs on the denylist for your organization. Allow up to 25000 URLs.
 	Black []string `json:"blacklistUrls,omitempty"`
 }
 
