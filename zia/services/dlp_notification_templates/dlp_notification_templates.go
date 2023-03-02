@@ -14,13 +14,27 @@ const (
 )
 
 type DlpNotificationTemplates struct {
-	ID               int    `json:"id"`
-	Name             string `json:"name,omitempty"`
-	Subject          string `json:"subject,omitempty"`
-	AttachContent    bool   `json:"attachContent,omitempty"`
+
+	// The unique identifier for a DLP notification template.
+	ID int `json:"id"`
+
+	// The DLP notification template name.
+	Name string `json:"name,omitempty"`
+
+	// The Subject line that is displayed within the DLP notification email.
+	Subject string `json:"subject,omitempty"`
+
+	// If set to true, the content that is violation is attached to the DLP notification email.
+	AttachContent bool `json:"attachContent,omitempty"`
+
+	// The template for the plain text UTF-8 message body that must be displayed in the DLP notification email.
 	PlainTextMessage string `json:"plainTextMessage,omitempty"`
-	HtmlMessage      string `json:"htmlMessage,omitempty"`
-	TLSEnabled       bool   `json:"tlsEnabled,omitempty"`
+
+	// The template for the HTML message body that must be displayed in the DLP notification email.
+	HtmlMessage string `json:"htmlMessage,omitempty"`
+
+	// The template for the HTML message body that must be displayed in the DLP notification email.
+	TLSEnabled bool `json:"tlsEnabled,omitempty"`
 }
 
 func (service *Service) Get(dlpTemplateID int) (*DlpNotificationTemplates, error) {

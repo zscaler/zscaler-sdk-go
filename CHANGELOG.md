@@ -1,5 +1,56 @@
 # Changelog
 
+# 1.1.2 (February, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added search by Source IP function to ZIA GRE Tunnel
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added description to all struct attributes
+
+# 1.1.1 (February, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServices/lite`` to retrieve supported application services within an firewall filtering rule resource
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServiceGroups/lite`` to retrieve supported application services groups within an firewall filtering rule resource
+
+# 1.1.0 (February, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServices/lite`` to retrieve supported application services within an firewall filtering rule resource
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServiceGroups/lite`` to retrieve supported application services groups within an firewall filtering rule resource
+
+# 1.0.0 (February, 2 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #69](https://github.com/zscaler/zscaler-sdk-go/pull/69) Added new ZPA Isolation Profile Controller endpoint ``/isolation/profiles``
+
+# 0.7.0 (January, 31 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #68](https://github.com/zscaler/zscaler-sdk-go/pull/68) Added the following ZIA DLP endpoint resources:
+  - ``dlp_icap_servers`` - /icapServers
+  - ``dlp_incident_receiver_servers`` - /incidentReceiverServers
+  - ``dlp_idm_profiles`` - /idmprofile
+
 # 0.6.1 (January, 13 2023)
 
 ## Notes

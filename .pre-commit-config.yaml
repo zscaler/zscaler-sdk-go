@@ -16,8 +16,3 @@ repos:
       - id: go-unit-tests
       - id: gofumpt # requires github.com/mvdan/gofumpt
       #- id: go-static-check # install https://staticcheck.io/docs/
-
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v1.50.1
-    hooks:
-      - id: golangci-lint

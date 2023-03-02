@@ -12,14 +12,23 @@ const (
 )
 
 type DLPEngines struct {
-	ID                   int    `json:"id"`
-	Name                 string `json:"name,omitempty"`
-	Description          string `json:"description,omitempty"`
+	// The unique identifier for the DLP engine.
+	ID int `json:"id"`
+
+	// The DLP engine name as configured by the admin. This attribute is required in POST and PUT requests for custom DLP engines.
+	Name string `json:"name,omitempty"`
+
+	// The DLP engine's description.
+	Description string `json:"description,omitempty"`
+
+	// The name of the predefined DLP engine.
 	PredefinedEngineName string `json:"predefinedEngineName,omitempty"`
-	EngineExpression     string `json:"engineExpression,omitempty"`
-	CustomDlpEngine      bool   `json:"customDlpEngine,omitempty"`
-	HtmlMessage          string `json:"htmlMessage,omitempty"`
-	TLSEnabled           bool   `json:"tlsEnabled,omitempty"`
+
+	// The boolean logical operator in which various DLP dictionaries are combined within a DLP engine's expression.
+	EngineExpression string `json:"engineExpression,omitempty"`
+
+	// Indicates whether this is a custom DLP engine. If this value is set to true, the engine is custom.
+	CustomDlpEngine bool `json:"customDlpEngine,omitempty"`
 }
 
 func (service *Service) Get(engineID int) (*DLPEngines, error) {

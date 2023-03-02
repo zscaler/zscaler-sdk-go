@@ -17,20 +17,21 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 const (
 	maxIdleConnections int = 40
 	requestTimeout     int = 60
-	// jSessionIDTimeout         = 30 // minutes
+	// JSessionIDTimeout         = 30 // minutes.
 	jSessionTimeoutOffset = 5 * time.Minute
 	contentTypeJSON       = "application/json"
 	cookieName            = "JSESSIONID"
 	MaxNumOfRetries       = 100
 	RetryWaitMaxSeconds   = 20
 	RetryWaitMinSeconds   = 5
-	// API types
+	// API types.
 	ziaAPIVersion = "api/v1"
 	ziaAPIAuthURL = "/authenticatedSession"
 	loggerPrefix  = "zia-logger: "
@@ -94,7 +95,7 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	return key, nil
 }
 
-// NewClient Returns a Client from credentials passed as parameters
+// NewClient Returns a Client from credentials passed as parameters.
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	httpClient := getHTTPClient(logger)
@@ -173,7 +174,7 @@ func getCurrentTimestampMilisecond() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano()/int64(time.Millisecond))
 }
 
-// RefreshSession .. the caller should require lock
+// RefreshSession .. The caller should require lock.
 func (c *Client) refreshSession() error {
 	timeStamp := getCurrentTimestampMilisecond()
 	obfuscatedKey, err := obfuscateAPIKey(c.apiKey, timeStamp)
@@ -267,13 +268,13 @@ func containsInt(codes []int, code int) bool {
 }
 
 // getRetryOnStatusCodes return a list of http status codes we want to apply retry on.
-// return empty slice to enable retry on all connection & server errors.
-// or return []int{429}  to retry on only TooManyRequests error
+// Return empty slice to enable retry on all connection & server errors.
+// Or return []int{429}  to retry on only TooManyRequests error.
 func getRetryOnStatusCodes() []int {
 	return []int{http.StatusTooManyRequests}
 }
 
-// Used to make http client retry on provided list of response status codes
+// Used to make http client retry on provided list of response status codes.
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	// do not retry on context.Canceled or context.DeadlineExceeded
 	if ctx.Err() != nil {

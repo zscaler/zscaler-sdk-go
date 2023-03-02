@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
+
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 

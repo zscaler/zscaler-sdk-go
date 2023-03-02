@@ -12,9 +12,16 @@ const (
 )
 
 type Department struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name,omitempty"`
-	IdpID    int    `json:"idpId"`
+	// Department ID
+	ID int `json:"id"`
+
+	// Department name
+	Name string `json:"name,omitempty"`
+
+	// Identity provider (IdP) ID
+	IdpID int `json:"idpId"`
+
+	// Additional information about this department
 	Comments string `json:"comments,omitempty"`
 	Deleted  bool   `json:"deleted"`
 }

@@ -11,20 +11,47 @@ const (
 )
 
 type AdminRoles struct {
-	ID              int      `json:"id"`
-	Rank            int      `json:"rank,omitempty"`
-	Name            string   `json:"name,omitempty"`
-	PolicyAccess    string   `json:"policyAccess,omitempty"`
-	DashboardAccess string   `json:"dashboardAccess"`
-	ReportAccess    string   `json:"reportAccess,omitempty"`
-	AnalysisAccess  string   `json:"analysisAccess,omitempty"`
-	UsernameAccess  string   `json:"usernameAccess,omitempty"`
-	AdminAcctAccess string   `json:"adminAcctAccess,omitempty"`
-	IsAuditor       bool     `json:"isAuditor,omitempty"`
-	Permissions     []string `json:"permissions,omitempty"`
-	IsNonEditable   bool     `json:"isNonEditable,omitempty"`
-	LogsLimit       string   `json:"logsLimit,omitempty"`
-	RoleType        string   `json:"roleType,omitempty"`
+	// Admin role Id
+	ID int `json:"id"`
+
+	// Admin rank of this admin role. This is applicable only when admin rank is enabled in the advanced settings. Default value is 7 (the lowest rank). The assigned admin rank determines the roles or admin users this user can manage, and which rule orders this admin can access.
+	Rank int `json:"rank,omitempty"`
+
+	// Name of the admin role
+	Name string `json:"name,omitempty"`
+
+	// Policy access permission
+	PolicyAccess string `json:"policyAccess,omitempty"`
+
+	// Dashboard access permission
+	DashboardAccess string `json:"dashboardAccess"`
+
+	// Report access permission
+	ReportAccess string `json:"reportAccess,omitempty"`
+
+	// Insights logs access permission
+	AnalysisAccess string `json:"analysisAccess,omitempty"`
+
+	// Username access permission. When set to NONE, the username will be obfuscated
+	UsernameAccess string `json:"usernameAccess,omitempty"`
+
+	// Admin and role management access permission
+	AdminAcctAccess string `json:"adminAcctAccess,omitempty"`
+
+	// Indicates whether this is an auditor role
+	IsAuditor bool `json:"isAuditor,omitempty"`
+
+	// List of functional areas to which this role has access. This attribute is subject to change
+	Permissions []string `json:"permissions,omitempty"`
+
+	// Indicates whether or not this admin user is editable/deletable
+	IsNonEditable bool `json:"isNonEditable,omitempty"`
+
+	// Log range limit
+	LogsLimit string `json:"logsLimit,omitempty"`
+
+	// The admin role type. ()This attribute is subject to change.)
+	RoleType string `json:"roleType,omitempty"`
 }
 
 func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {

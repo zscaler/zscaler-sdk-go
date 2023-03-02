@@ -9,6 +9,7 @@ const (
 )
 
 type ExemptedUrls struct {
+	// Domains or URLs which are exempted from SSL Inspection
 	URLs []string `json:"urls"`
 }
 
@@ -27,7 +28,7 @@ func (service *Service) Get() (*ExemptedUrls, error) {
 	return &urls, nil
 }
 
-// return the new items that were added to slice1
+// return the new items that were added to slice1.
 func difference(slice1 []string, slice2 []string) []string {
 	var diff []string
 	for _, s1 := range slice1 {

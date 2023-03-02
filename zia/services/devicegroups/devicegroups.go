@@ -14,26 +14,59 @@ const (
 )
 
 type DeviceGroups struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name,omitempty"`
-	GroupType   string `json:"groupType,omitempty"`
+	// The unique identifer for the device group
+	ID int `json:"id"`
+
+	// The device group name
+	Name string `json:"name,omitempty"`
+
+	// The device group type
+	GroupType string `json:"groupType,omitempty"`
+
+	// The device group's description
 	Description string `json:"description,omitempty"`
-	OSType      string `json:"osType,omitempty"`
+
+	// The operating system (OS)
+	OSType string `json:"osType,omitempty"`
+
+	// Indicates whether this is a predefined device group. If this value is set to true, the group is predefined
 	Predefined  bool   `json:"predefined"`
 	DeviceNames string `json:"deviceNames,omitempty"`
-	DeviceCount int    `json:"deviceCount,omitempty"`
+
+	// The number of devices within the group
+	DeviceCount int `json:"deviceCount,omitempty"`
 }
 
 type Devices struct {
-	ID              int    `json:"id"`
-	Name            string `json:"name,omitempty"`
+	// The unique identifier for the device
+	ID int `json:"id"`
+
+	// The device name
+	Name string `json:"name,omitempty"`
+
+	// The device group type
 	DeviceGroupType string `json:"deviceGroupType,omitempty"`
-	DeviceModel     string `json:"deviceModel,omitempty"`
-	OSType          string `json:"osType,omitempty"`
-	OSVersion       string `json:"osVersion,omitempty"`
-	Description     string `json:"description,omitempty"`
-	OwnerUserId     int    `json:"ownerUserId,omitempty"`
-	OwnerName       string `json:"ownerName,omitempty"`
+
+	// The device model
+	DeviceModel string `json:"deviceModel,omitempty"`
+
+	// The operating system (OS)
+	OSType string `json:"osType,omitempty"`
+
+	// The operating system version
+	OSVersion string `json:"osVersion,omitempty"`
+
+	// The device's description
+	Description string `json:"description,omitempty"`
+
+	// The unique identifier of the device owner (i.e., user)
+	OwnerUserId int `json:"ownerUserId,omitempty"`
+
+	// The device owner's user name
+	OwnerName string `json:"ownerName,omitempty"`
+
+	// The hostname of the device
+	HostName string `json:"hostName,omitempty"`
 }
 
 func (service *Service) GetDeviceGroups(deviceGroupId int) (*DeviceGroups, error) {
@@ -72,7 +105,7 @@ func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
 	return &device, nil
 }
 
-// Get Devices by Name
+// Get Devices by Name.
 func (service *Service) GetDevicesByName(deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
