@@ -14,13 +14,26 @@ const (
 )
 
 type RuleLabels struct {
-	ID                  int                      `json:"id"`
-	Name                string                   `json:"name,omitempty"`
-	Description         string                   `json:"description,omitempty"`
-	LastModifiedTime    int                      `json:"lastModifiedTime,omitempty"`
-	LastModifiedBy      *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
-	CreatedBy           *common.IDNameExtensions `json:"createdBy,omitempty"`
-	ReferencedRuleCount int                      `json:"referencedRuleCount,omitempty"`
+	// The unique identifier for the rule label.
+	ID int `json:"id"`
+
+	// The rule label name.
+	Name string `json:"name,omitempty"`
+
+	// The rule label description.
+	Description string `json:"description,omitempty"`
+
+	// Timestamp when the rule lable was last modified. This is a read-only field. Ignored by PUT and DELETE requests.
+	LastModifiedTime int `json:"lastModifiedTime,omitempty"`
+
+	// The admin that modified the rule label last. This is a read-only field. Ignored by PUT requests.
+	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
+
+	// The admin that created the rule label. This is a read-only field. Ignored by PUT requests.
+	CreatedBy *common.IDNameExtensions `json:"createdBy,omitempty"`
+
+	// The number of rules that reference the label.
+	ReferencedRuleCount int `json:"referencedRuleCount,omitempty"`
 }
 
 func (service *Service) Get(ruleLabelID int) (*RuleLabels, error) {

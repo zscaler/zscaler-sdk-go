@@ -14,13 +14,29 @@ const (
 )
 
 type IPDestinationGroups struct {
-	ID           int      `json:"id"`
-	Name         string   `json:"name,omitempty"`
-	Type         string   `json:"type,omitempty"`
-	Addresses    []string `json:"addresses,omitempty"`
-	Description  string   `json:"description,omitempty"`
+	// Unique identifer for the destination IP group
+	ID int `json:"id"`
+
+	// Destination IP group name
+	Name string `json:"name,omitempty"`
+
+	// Additional information about the destination IP group
+	Description string `json:"description,omitempty"`
+
+	// Destination IP group type (i.e., the group can contain destination IP addresses or FQDNs)
+	Type string `json:"type,omitempty"`
+
+	// Destination IP addresses, FQDNs, or wildcard FQDNs added to the group.
+	Addresses []string `json:"addresses,omitempty"`
+
+	// Destination IP address URL categories. You can identify destinations based on the URL category of the domain.
 	IPCategories []string `json:"ipCategories,omitempty"`
-	Countries    []string `json:"countries,omitempty"`
+
+	// Destination IP address countries. You can identify destinations based on the location of a server.
+	Countries []string `json:"countries,omitempty"`
+
+	// If set to true, the destination IP address group is non-editable. This field is applicable only to predefined IP address groups, which cannot be modified.
+	IsNonEditable bool `json:"isNonEditable,omitempty"`
 }
 
 func (service *Service) Get(ipGroupID int) (*IPDestinationGroups, error) {
