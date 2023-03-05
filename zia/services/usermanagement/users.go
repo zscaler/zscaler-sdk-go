@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	usersEndpoint = "/users"
+	usersEndpoint  = "/users"
+	enrollEndpoint = "/enroll"
 )
 
 type Users struct {
@@ -35,6 +36,9 @@ type Users struct {
 
 	// Temporary Authentication Email. If you enabled one-time tokens or links, enter the email address to which the Zscaler service sends the tokens or links. If this is empty, the service sends the email to the User email.
 	TempAuthEmail string `json:"tempAuthEmail,omitempty"`
+
+	// Accepted Authentication Methods. Support values are "BASIC" and "DIGEST"
+	AuthMethods []string `json:"authMethods,omitempty"`
 
 	// User's password. Applicable only when authentication type is Hosted DB. Password strength must follow what is defined in the auth settings.
 	Password string `json:"password,omitempty"`

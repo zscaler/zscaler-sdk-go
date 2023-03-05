@@ -47,6 +47,9 @@ type Locations struct {
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
 
+	// Enable Basic Authentication at the location
+	BasicAuthEnabled bool `json:"basicAuthEnabled"`
+
 	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
 	AuthRequired bool `json:"authRequired"`
 
