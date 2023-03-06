@@ -1,5 +1,24 @@
 # Changelog
 
+# 1.2.0 (March, 6 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #78](https://github.com/zscaler/zscaler-sdk-go/pull/78) AAdded support to Zscaler Digital Experience (ZDX) API.
+
+# 1.1.3 (February, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added search by Source IP function to ZIA GRE Tunnel
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added description to all struct attributes
+
 # 1.1.2 (February, 28 2023)
 
 ## Notes
