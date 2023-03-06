@@ -1,5 +1,285 @@
 # Changelog
 
+# 1.2.0 (March, 6 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #78](https://github.com/zscaler/zscaler-sdk-go/pull/78) AAdded support to Zscaler Digital Experience (ZDX) API.
+
+# 1.1.3 (February, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added search by Source IP function to ZIA GRE Tunnel
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added description to all struct attributes
+
+# 1.1.2 (February, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added search by Source IP function to ZIA GRE Tunnel
+- [PR #76](https://github.com/zscaler/zscaler-sdk-go/pull/76) Added description to all struct attributes
+
+# 1.1.1 (February, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServices/lite`` to retrieve supported application services within an firewall filtering rule resource
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServiceGroups/lite`` to retrieve supported application services groups within an firewall filtering rule resource
+
+# 1.1.0 (February, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServices/lite`` to retrieve supported application services within an firewall filtering rule resource
+- [PR #74](https://github.com/zscaler/zscaler-sdk-go/pull/74) Added ZIA endpoint ``/appServiceGroups/lite`` to retrieve supported application services groups within an firewall filtering rule resource
+
+# 1.0.0 (February, 2 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #69](https://github.com/zscaler/zscaler-sdk-go/pull/69) Added new ZPA Isolation Profile Controller endpoint ``/isolation/profiles``
+
+# 0.7.0 (January, 31 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #68](https://github.com/zscaler/zscaler-sdk-go/pull/68) Added the following ZIA DLP endpoint resources:
+  - ``dlp_icap_servers`` - /icapServers
+  - ``dlp_incident_receiver_servers`` - /incidentReceiverServers
+  - ``dlp_idm_profiles`` - /idmprofile
+
+# 0.6.1 (January, 13 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #67](https://github.com/zscaler/zscaler-sdk-go/pull/67) Added ``omitempty`` bool parameters in the ZIA URL Firewall Filtering resource ``enable_full_logging``
+
+
+# 0.6.0 (January, 12 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #65](https://github.com/zscaler/zscaler-sdk-go/pull/65) Fixed pagination issue with ZIA API endpoints
+
+# 0.5.9 (January, 12 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #65](https://github.com/zscaler/zscaler-sdk-go/pull/65) Fixed pagination issue with ZIA API endpoints
+
+# 0.5.8 (January, 11 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #64](https://github.com/zscaler/zscaler-sdk-go/pull/64) Added new ZPA Inspection control parameters
+
+  - ZPA Inspection Profile: ``web_socket_controls``
+  - ZPA Custom Inspection Control:
+    - ``control_type``: The following values are supported:
+      - ``WEBSOCKET_PREDEFINED``, ``WEBSOCKET_CUSTOM``, ``ZSCALER``, ``CUSTOM``, ``PREDEFINED``
+
+    - ``protocol_type``: The following values are supported:
+      - ``HTTP``, ``WEBSOCKET_CUSTOM``, ``ZSCALER``, ``CUSTOM``, ``PREDEFINED``
+
+# 0.5.7 (January, 4 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #63](https://github.com/zscaler/zscaler-sdk-go/pull/63) Added ``omitempty`` bool parameters in the ZIA URL Firewall Filtering resource ``enable_full_logging``
+
+# 0.5.6 (January, 4 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #61](https://github.com/zscaler/zscaler-sdk-go/pull/61) Added ``omitempty`` bool parameters in the ZIA URL Filtering Policy resource
+
+# 0.5.5 (December, 30 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #60](https://github.com/zscaler/zscaler-sdk-go/pull/60) Added new ZIA URL Filtering rule URL category parameters to Struct
+
+# 0.5.4 (December, 30 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #60](https://github.com/zscaler/zscaler-sdk-go/pull/60) Added new ZIA URL Filtering rule URL category parameters to Struct
+
+# 0.5.3 (December, 30 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #60](https://github.com/zscaler/zscaler-sdk-go/pull/60) Added new ZIA URL Filtering rule URL category parameters to Struct
+
+# 0.5.2 (December, 27 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #59](https://github.com/zscaler/zscaler-sdk-go/pull/59) Added new ZIA URL Category parameters to Struct
+
+# 0.5.1 (December, 17 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #57](https://github.com/zscaler/zscaler-sdk-go/pull/57) Added new ZPA application segment paramenter ``select_connector_close_to_app`` to Struct
+
+# 0.5.0 (December, 16 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Intermediate CA Certificate Endpoints for ZIA
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Event Log Entry Report Endpoints for ZIA
+- [PR #56](https://github.com/zscaler/zscaler-sdk-go/pull/56) Added new Location Management IPv6 Parameters
+
+# 0.4.1 (December, 02 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #53](https://github.com/zscaler/zscaler-sdk-go/pull/53) Fixed pagination issue with ZPA endpoints
+
+# 0.4.0 (December, 01 2022)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #52](https://github.com/zscaler/zscaler-sdk-go/pull/52) Added new ZIA intermediate CA cert endpoints
+
+# 0.3.1 (November, 30 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Fix
+
+- [PR #50](https://github.com/zscaler/zscaler-sdk-go/pull/50) Changed common function to allow totalPages string values
+
+# 0.3.0 (November, 29 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #49](https://github.com/zscaler/zscaler-sdk-go/pull/49) Implemented generic function to get all resources
+- [PR #49](https://github.com/zscaler/zscaler-sdk-go/pull/49) Implemented generic function to get all SCIM header attribute values
+
+# 0.2.2 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
+# 0.2.1 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
+# 0.2.0 (November, 24 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #44](https://github.com/zscaler/zscaler-sdk-go/pull/44) Added parameter cert_blob for zpa_ba_certificate
+
+# 0.1.9 (November, 15 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- Add associationType json to prov key
+
+# 0.1.8 (November, 15 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #43](https://github.com/zscaler/zscaler-sdk-go/pull/43) Return AssociationType in provisioning key endpoints
+
+# 0.1.7 (November, 13 2022)
+
+## Notes
+- Golang: **v1.18**
+
+### Enhancement
+
+- [PR #41](https://github.com/zscaler/zscaler-sdk-go/pull/41) Allow order 0 for firewall filtering rules in ZIA cloud firewall.
+
 # 0.1.6 (October, 22 2022)
 
 ## Notes
