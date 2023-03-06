@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceAppsEndpoint = "apps"
+	deviceAppsEndpoint = "v1/apps"
 )
 
 type App struct {

@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	defaultBaseURL        = "https://api.zdxcloud.net/v1/"
+	defaultBaseURL        = "https://api.zdxcloud.net"
 	defaultTimeout        = 240 * time.Second
 	loggerPrefix          = "zdx-logger: "
 	ZDX_API_KEY_ID        = "ZDX_API_KEY_ID"

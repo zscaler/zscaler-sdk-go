@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceCloudPathEndpoint = "cloudpath"
+	deviceCloudPathEndpoint = "v1/cloudpath"
 )
 
 type DeviceCloudPath struct {

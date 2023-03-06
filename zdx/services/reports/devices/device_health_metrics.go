@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceHealthMetricsEndpoint = "health-metrics"
+	deviceHealthMetricsEndpoint = "v1/health-metrics"
 )
 
 type HealthMetrics struct {

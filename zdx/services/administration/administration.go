@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	departmentsEndpoint = "/administration/departments"
-	locationsEndpoint   = "/administration/locations"
+	departmentsEndpoint = "v1/administration/departments"
+	locationsEndpoint   = "v1/administration/locations"
 )
 
 type Departments struct {

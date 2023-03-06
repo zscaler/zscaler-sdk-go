@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceQualityMetricsEndpoint = "call-quality-metrics"
+	deviceQualityMetricsEndpoint = "v1/call-quality-metrics"
 )
 
 type CallQualityMetrics struct {

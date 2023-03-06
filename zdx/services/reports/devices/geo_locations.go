@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	geoLocationsEndpoint = "active_geo"
+	geoLocationsEndpoint = "v1/active_geo"
 )
 
 type GeoLocation struct {

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceEventsEndpoint = "events"
+	deviceEventsEndpoint = "v1/events"
 )
 
 type DeviceEvents struct {

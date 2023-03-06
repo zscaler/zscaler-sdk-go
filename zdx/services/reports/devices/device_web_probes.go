@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceWebProbesEndpoint = "web-probes"
+	deviceWebProbesEndpoint = "v1/web-probes"
 )
 
 type DeviceWebProbe struct {

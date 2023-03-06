@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	deviceCloudPathProbesEndpoint = "cloudpath-probes"
+	deviceCloudPathProbesEndpoint = "v1/cloudpath-probes"
 )
 
 type DeviceCloudPathProbe struct {
