@@ -27,6 +27,8 @@ jobs:
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+          ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
         run: |
           go vet ./...
           go test -v -race ./...
