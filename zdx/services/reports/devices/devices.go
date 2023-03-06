@@ -1,18 +1,20 @@
 package devices
 
+import (
+	"fmt"
+	"net/http"
+)
+
 const (
 	devicesEndpoint = "/devices"
 )
 
-/*
-https://help.zscaler.com/zdx/reports#/devices-get
-Gets the list of all active devices and its basic details.
-The JSON must contain the user’s ID and email address to associate the device to the user.
-If the time range is not specified, the endpoint defaults to the last 2 hours.
-*/
 type DeviceDetail struct {
-	ID   int    `json:"id"`
-	Name string `json:"name,omitempty"`
+	ID       int       `json:"id"`
+	Name     string    `json:"name,omitempty"`
+	Hardware *Hardware `json:"hardware,omitempty"`
+	Network  []Network `json:"network,omitempty"`
+	Software *Software `json:"software,omitempty"`
 }
 
 type Hardware struct {
@@ -57,4 +59,30 @@ type Software struct {
 	User          string `json:"user,omitempty"`
 	ClientConnVer string `json:"client_conn_ver,omitempty"`
 	ZDXVer        string `json:"zdx_ver,omitempty"`
+}
+
+// Gets the device details including the device model information, tunnel type, network, and software details. The JSON must contain the user ID and email address to associate the device to a user. If the time range is not specified, the endpoint defaults to the last 2 hours.
+func (service *Service) Get(deviceID string) (*DeviceDetail, *http.Response, error) {
+	v := new(DeviceDetail)
+	path := fmt.Sprintf("%v/%v", devicesEndpoint, deviceID)
+	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
+}
+
+// Gets the list of all active devices and its basic details. The JSON must contain the user's ID and email address to associate the device to the user. If the time range is not specified, the endpoint defaults to the last 2 hours.
+func (service *Service) GetAll(filters GetDevicesFilters) ([]DeviceDetail, *http.Response, error) {
+	var v struct {
+		NextOffSet interface{}    `json:"next_offset"`
+		List       []DeviceDetail `json:"devices"`
+	}
+
+	relativeURL := devicesEndpoint
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v.List, resp, nil
 }

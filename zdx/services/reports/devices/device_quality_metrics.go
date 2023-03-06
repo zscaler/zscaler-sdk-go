@@ -1,27 +1,31 @@
 package devices
 
-import "github.com/zscaler/zscaler-sdk-go/zdx/services/common"
+import (
+	"fmt"
+	"net/http"
 
-const (
-	deviceQualityMetricsEndpoint = "/call-quality-metrics"
+	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
 )
 
-/*
-https://help.zscaler.com/zdx/reports#/devices/{deviceid}/apps/{appid}/cloudpath-probes/{probeid}/cloudpath-get
-Gets the Cloud Path hop data for an application on a specific device.
-Includes the summary data for the entire path like the total number of hops, packet loss, latency, and tunnel type (if available).
-It also includes a similar summary of data for each individual hop. If the time range is not specified, the endpoint defaults to the last 2 hours.
-*/
+const (
+	deviceQualityMetricsEndpoint = "call-quality-metrics"
+)
 
 type CallQualityMetrics struct {
-	MeetID        string    `json:"meet_id,omitempty"`
-	MeetSessionID string    `json:"meet_session_id,omitempty"`
-	MeetSubject   string    `json:"meet_subject,omitempty"`
-	Metrics       []Metrics `json:"metrics,omitempty"`
+	MeetID        string          `json:"meet_id,omitempty"`
+	MeetSessionID string          `json:"meet_session_id,omitempty"`
+	MeetSubject   string          `json:"meet_subject,omitempty"`
+	Metrics       []common.Metric `json:"metrics,omitempty"`
 }
 
-type Metrics struct {
-	Metric     string              `json:"metric,omitempty"`
-	Unit       string              `json:"unit,omitempty"`
-	DataPoints []common.DataPoints `json:"datapoints"`
+// Gets the Call Quality metric trend for a device for a CQM application.
+// If the time range is not specified, the endpoint defaults to the last 2 hours.
+func (service *Service) GetQualityMetrics(deviceID, appID string, filters common.GetFromToFilters) (*CallQualityMetrics, *http.Response, error) {
+	v := new(CallQualityMetrics)
+	path := fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceQualityMetricsEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
 }

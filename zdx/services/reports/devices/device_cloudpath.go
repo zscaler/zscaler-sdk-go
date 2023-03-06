@@ -1,15 +1,15 @@
 package devices
 
-const (
-	deviceCloudPathEndpoint = "/cloudpath"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
 )
 
-/*
-https://help.zscaler.com/zdx/reports#/devices/{deviceid}/apps/{appid}/cloudpath-probes/{probeid}/cloudpath-get
-Gets the Cloud Path hop data for an application on a specific device.
-Includes the summary data for the entire path like the total number of hops, packet loss, latency, and tunnel type (if available).
-It also includes a similar summary of data for each individual hop. If the time range is not specified, the endpoint defaults to the last 2 hours.
-*/
+const (
+	deviceCloudPathEndpoint = "cloudpath"
+)
 
 type DeviceCloudPath struct {
 	TimeStamp int         `json:"timestamp,omitempty"`
@@ -37,4 +37,18 @@ type Hops struct {
 	LatencyMax  int    `json:"latency_max,omitempty"`
 	LatencyAvg  int    `json:"latency_avg,omitempty"`
 	LatencyDiff int    `json:"latency_diff,omitempty"`
+}
+
+// Gets the Cloud Path hop data for an application on a specific device.
+// Includes the summary data for the entire path like the total number of hops, packet loss, latency, and tunnel type (if available).
+// It also includes a similar summary of data for each individual hop.
+// If the time range is not specified, the endpoint defaults to the last 2 hours.
+func (service *Service) GetDeviceCloudPath(deviceID, appID, probeID string, filters common.GetFromToFilters) (*DeviceCloudPath, *http.Response, error) {
+	v := new(DeviceCloudPath)
+	path := fmt.Sprintf("%v/%v/%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathEndpoint, probeID, deviceCloudPathEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
 }

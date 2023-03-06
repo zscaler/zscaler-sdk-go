@@ -1,16 +1,15 @@
 package devices
 
-import "github.com/zscaler/zscaler-sdk-go/zdx/services/common"
+import (
+	"fmt"
+	"net/http"
 
-const (
-	deviceHealthMetricsEndpoint = "/health-metrics"
+	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
 )
 
-/*
-https://help.zscaler.com/zdx/reports#/devices/{deviceid}/health-metrics-get
-Gets the health metrics trend for a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
-The health metrics include CPU, Memory, Disk I/O, Network I/O, Wi-Fi, Network Bandwidth, etc.
-*/
+const (
+	deviceHealthMetricsEndpoint = "health-metrics"
+)
 
 type HealthMetrics struct {
 	Category  string      `json:"category,omitempty"`
@@ -18,12 +17,18 @@ type HealthMetrics struct {
 }
 
 type Instances struct {
-	Name    string    `json:"metric,omitempty"`
-	Metrics []Metrics `json:"metrics,omitempty"`
+	Name    string          `json:"metric,omitempty"`
+	Metrics []common.Metric `json:"metrics,omitempty"`
 }
 
-type MetricSeries struct {
-	Metric     string              `json:"metric,omitempty"`
-	Unit       string              `json:"unit,omitempty"`
-	DataPoints []common.DataPoints `json:"datapoints"`
+// Gets the health metrics trend for a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
+// The health metrics include CPU, Memory, Disk I/O, Network I/O, Wi-Fi, Network Bandwidth, etc.
+func (service *Service) GetHealthMetrics(deviceID string, filters common.GetFromToFilters) (*HealthMetrics, *http.Response, error) {
+	v := new(HealthMetrics)
+	path := fmt.Sprintf("%v/%v/%v", devicesEndpoint, deviceID, deviceHealthMetricsEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
 }
