@@ -19,8 +19,9 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
+// Reference: https://help.zscaler.com/zdx/understanding-rate-limiting
 const (
-	defaultBaseURL        = "https://api.zdxcloud.net"
+	defaultBaseURL        = "https://api.zdxcloud.net/v1/"
 	defaultTimeout        = 240 * time.Second
 	loggerPrefix          = "zdx-logger: "
 	ZDX_API_KEY_ID        = "ZDX_API_KEY_ID"

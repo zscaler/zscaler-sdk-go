@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	usersEndpoint = "v1/users"
+	usersEndpoint = "users"
 )
 
 type User struct {

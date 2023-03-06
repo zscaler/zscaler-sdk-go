@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	devicesEndpoint = "/devices"
+	devicesEndpoint = "devices"
 )
 
 type DeviceDetail struct {
