@@ -58,7 +58,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 			APIKeySecret: generateHash(client.Config.APISecret, currTimestamp),
 		}
 		data, _ := json.Marshal(authReq)
-		url := client.Config.BaseURL.String() + "oauth/token"
+		url := client.Config.BaseURL.String() + "/v1/oauth/token"
 		req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
 		if err != nil {
 			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
