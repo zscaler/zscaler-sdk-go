@@ -65,10 +65,34 @@ type AppServerGroup struct {
 	Name             string `json:"name"`
 }
 
-func (service *Service) Get(segmentGroupID string) (*SegmentGroup, *http.Response, error) {
+type GetSegmentGroupFilters struct {
+	// Indicates whether to include complete application details or not.
+	SkipDetailedAppInfo bool `url:"skipDetailedAppInfo,omitempty"`
+	// The unique identifier of the microtenant of ZPA tenant.
+	MicroTenantID int `url:"microtenantId,omitempty"`
+}
+
+type GetAllSegmentGroupsFilters struct {
+	// Indicates whether to include complete application details or not.
+	SkipDetailedAppInfo bool `url:"skipDetailedAppInfo,omitempty"`
+	// The unique identifier of the microtenant of ZPA tenant.
+	MicroTenantID int `url:"microtenantId,omitempty"`
+}
+
+type getAllSegmentGroupsFilters struct {
+	PageSize int    `json:"pagesize,omitempty" url:"pagesize,omitempty"`
+	Page     int    `json:"page,omitempty" url:"page,omitempty"`
+	Search   string `json:"search,omitempty" url:"search,omitempty"`
+	// Indicates whether to include complete application details or not.
+	SkipDetailedAppInfo bool `url:"skipDetailedAppInfo,omitempty"`
+	// The unique identifier of the microtenant of ZPA tenant.
+	MicroTenantID int `url:"microtenantId,omitempty"`
+}
+
+func (service *Service) Get(segmentGroupID string, filters GetSegmentGroupFilters) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -116,9 +140,17 @@ func (service *Service) Delete(segmentGroupId string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]SegmentGroup, *http.Response, error) {
+func (service *Service) GetAll(filters GetAllSegmentGroupsFilters) ([]SegmentGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, "", func(pageSize, page int, searchQuery string) interface{} {
+		return getAllSegmentGroupsFilters{
+			SkipDetailedAppInfo: filters.SkipDetailedAppInfo,
+			Page:                page,
+			PageSize:            pageSize,
+			Search:              searchQuery,
+			MicroTenantID:       filters.MicroTenantID,
+		}
+	})
 	if err != nil {
 		return nil, nil, err
 	}
