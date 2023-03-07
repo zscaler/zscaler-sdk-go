@@ -32,11 +32,15 @@ type ApplicationSegmentResource struct {
 	HealthReporting           string                              `json:"healthReporting,omitempty"`
 	SelectConnectorCloseToApp bool                                `json:"selectConnectorCloseToApp"`
 	IcmpAccessType            string                              `json:"icmpAccessType,omitempty"`
+	AppRecommendationId       string                              `json:"appRecommendationId,omitempty"`
 	SegmentGroupID            string                              `json:"segmentGroupId"`
 	SegmentGroupName          string                              `json:"segmentGroupName,omitempty"`
 	CreationTime              string                              `json:"creationTime,omitempty"`
 	ModifiedBy                string                              `json:"modifiedBy,omitempty"`
 	ModifiedTime              string                              `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                              `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig,omitempty"`
+	UseInDrMode               bool                                `json:"useInDrMode"`
 	TCPPortRanges             []string                            `json:"tcpPortRanges"`
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
