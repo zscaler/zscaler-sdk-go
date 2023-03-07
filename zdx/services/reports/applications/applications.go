@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	appsEndpoint = "apps"
+	appsEndpoint = "v1/apps"
 )
 
 type Apps struct {

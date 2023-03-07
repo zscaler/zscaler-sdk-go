@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	scoreEndpoint   = "score"
-	metricsEndpoint = "metrics"
+	scoreEndpoint   = "v1/score"
+	metricsEndpoint = "v1/metrics"
 )
 
 // Gets the application's ZDX score trend. If the time range is not specified, the endpoint defaults to the last 2 hours.
