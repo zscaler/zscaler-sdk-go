@@ -110,7 +110,7 @@ func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Resp
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no application named '%s' was found", segmentName)
+	return nil, resp, fmt.Errorf("no segment group named '%s' was found", segmentName)
 }
 
 func (service *Service) Create(segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
