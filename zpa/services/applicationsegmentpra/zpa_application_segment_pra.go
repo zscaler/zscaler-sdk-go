@@ -35,6 +35,9 @@ type AppSegmentPRA struct {
 	CreationTime              string                `json:"creationTime,omitempty"`
 	ModifiedBy                string                `json:"modifiedBy,omitempty"`
 	ModifiedTime              string                `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                  `json:"useInDrMode"`
 	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts `json:"udpPortRange,omitempty"`
 	ServerGroups              []AppServerGroups     `json:"serverGroups,omitempty"`

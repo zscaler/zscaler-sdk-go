@@ -29,6 +29,9 @@ type BrowserAccess struct {
 	HealthCheckType           string                `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                  `json:"isCnameEnabled"`
 	IPAnchored                bool                  `json:"ipAnchored"`
+	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                  `json:"useInDrMode"`
 	HealthReporting           string                `json:"healthReporting,omitempty"`
 	ICMPAccessType            string                `json:"icmpAccessType,omitempty"`
 	CreationTime              string                `json:"creationTime,omitempty"`

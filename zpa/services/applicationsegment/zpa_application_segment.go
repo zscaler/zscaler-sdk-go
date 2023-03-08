@@ -39,7 +39,7 @@ type ApplicationSegmentResource struct {
 	ModifiedBy                string                              `json:"modifiedBy,omitempty"`
 	ModifiedTime              string                              `json:"modifiedTime,omitempty"`
 	TCPKeepAlive              string                              `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig,omitempty"`
+	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                                `json:"useInDrMode"`
 	TCPPortRanges             []string                            `json:"tcpPortRanges"`
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
