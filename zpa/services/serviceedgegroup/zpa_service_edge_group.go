@@ -28,7 +28,6 @@ type ServiceEdgeGroup struct {
 	ModifiedBy                    string            `json:"modifiedBy,omitempty"`
 	ModifiedTime                  string            `json:"modifiedTime,omitempty"`
 	Name                          string            `json:"name,omitempty"`
-	UseInDrMode                   bool              `json:"useInDrMode"`
 	OverrideVersionProfile        bool              `json:"overrideVersionProfile"`
 	ServiceEdges                  []ServiceEdges    `json:"serviceEdges,omitempty"`
 	TrustedNetworks               []TrustedNetworks `json:"trustedNetworks,omitempty"`

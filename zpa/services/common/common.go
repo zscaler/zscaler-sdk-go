@@ -64,12 +64,12 @@ func InList(list []string, item string) bool {
 	return false
 }
 
-func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string, buildFilters func(pageSize, page int, searchQuery string) interface{}) (int, []T, *http.Response, error) {
+func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string) (int, []T, *http.Response, error) {
 	var v struct {
 		TotalPages interface{} `json:"totalPages"`
 		List       []T         `json:"list"`
 	}
-	resp, err := client.NewRequestDo("GET", relativeURL, buildFilters(pageSize, page, searchQuery), nil, &v)
+	resp, err := client.NewRequestDo("GET", relativeURL, Pagination{PageSize: pageSize, Page: page, Search2: searchQuery}, nil, &v)
 	if err != nil {
 		return 0, nil, resp, err
 	}
@@ -78,19 +78,6 @@ func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 	totalPages, _ := strconv.Atoi(pages)
 
 	return totalPages, v.List, resp, nil
-}
-
-func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string) (int, []T, *http.Response, error) {
-	return getAllPagesGenericWithCustomFilters[T](
-		client,
-		relativeURL,
-		page,
-		pageSize,
-		searchQuery,
-		func(pageSize, page int, searchQuery string) interface{} {
-			return Pagination{PageSize: pageSize, Page: page, Search2: searchQuery}
-		},
-	)
 }
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
@@ -102,24 +89,6 @@ func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery stri
 	var l []T
 	for page := 2; page <= totalPages; page++ {
 		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, searchQuery)
-		if err != nil {
-			return nil, resp, err
-		}
-		result = append(result, l...)
-	}
-
-	return result, resp, nil
-}
-
-// GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
-func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL, searchQuery string, buildFilters func(pageSize, page int, searchQuery string) interface{}) ([]T, *http.Response, error) {
-	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, searchQuery, buildFilters)
-	if err != nil {
-		return nil, resp, err
-	}
-	var l []T
-	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](client, relativeURL, page, DefaultPageSize, searchQuery, buildFilters)
 		if err != nil {
 			return nil, resp, err
 		}
