@@ -1,5 +1,22 @@
 # Changelog
 
+# 1.2.1 (March, 7 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #82](https://github.com/zscaler/zscaler-sdk-go/pull/82) Added the new ZPA API attributes below:
+  - Application Segments
+    - ``tcpKeepAlive``
+    - ``isIncompleteDRConfig``
+    - ``useInDrMode``
+    - ``selectConnectorCloseToApp``
+
+  - App Connector Group
+    - ``useInDrMode``
+
 # 1.2.0 (March, 6 2023)
 
 ## Notes
