@@ -15,6 +15,7 @@ For more information about ZIA/ZPA APIs visit:
 
 - [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api).
 - [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide).
+- [ZDX API](https://help.zscaler.com/zdx/about-zdx-api).
 
 ## Prerequisites
 
@@ -32,6 +33,7 @@ environment variables.
 
   - [Getting Started ZIA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide).
   - [Getting Started ZPA API](https://help.zscaler.com/zpa/getting-started-zpa-api)
+  - [Getting Started ZDX API](https://help.zscaler.com/zdx/about-zdx-api)
 
 ## Installation
 
