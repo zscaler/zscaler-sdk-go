@@ -71,16 +71,20 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(resp) > 0 {
+		responseObject := reflect.New(t).Interface()
+		err = json.Unmarshal(resp, &responseObject)
+		if err != nil {
+			return nil, err
+		}
+		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
 
-	responseObject := reflect.New(t).Interface()
-	err = json.Unmarshal(resp, &responseObject)
-	if err != nil {
-		return nil, err
+		c.Logger.Printf("Created Object with ID %v", id)
+		return responseObject, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
 	}
-	id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-
-	c.Logger.Printf("Created Object with ID %v", id)
-	return responseObject, nil
 }
 
 // Read ...

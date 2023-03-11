@@ -52,6 +52,15 @@ type Users struct {
 	Deleted bool `json:"deleted"`
 }
 
+type EnrollResult struct {
+	UserID int `json:"userId"`
+}
+
+type EnrollUserRequest struct {
+	AuthMethods []string `json:"authMethods"`
+	Password    string   `json:"password"`
+}
+
 func (service *Service) Get(userID int) (*Users, error) {
 	var user Users
 	err := service.Client.Read(fmt.Sprintf("%s/%d", usersEndpoint, userID), &user)
@@ -77,8 +86,28 @@ func (service *Service) GetUserByName(userName string) (*Users, error) {
 	return nil, fmt.Errorf("no user found with name: %s", userName)
 }
 
-func (service *Service) Create(userID *Users) (*Users, error) {
-	resp, err := service.Client.Create(usersEndpoint, *userID)
+func (service *Service) EnrollUser(userID int, request EnrollUserRequest) (*EnrollResult, error) {
+	if len(request.AuthMethods) == 0 {
+		err := errors.New("authMethods is required")
+		service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+	}
+	for _, method := range request.AuthMethods {
+		// method most be one of the following: BASIC, DIGEST
+		if method != "BASIC" && method != "DIGEST" {
+			err := fmt.Errorf("authMethods must be one of the following: BASIC, DIGEST. Found: %s", method)
+			service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+			return nil, err
+		}
+	}
+	_, err := service.Client.Create(fmt.Sprintf("%s/%d%s", usersEndpoint, userID, enrollEndpoint), request)
+	if err != nil {
+		return nil, err
+	}
+	return &EnrollResult{UserID: userID}, nil
+}
+
+func (service *Service) Create(user *Users) (*Users, error) {
+	resp, err := service.Client.Create(usersEndpoint, *user)
 	if err != nil {
 		return nil, err
 	}
