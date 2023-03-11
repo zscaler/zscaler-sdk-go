@@ -1,5 +1,20 @@
 # Changelog
 
+# 1.2.2 (March, 11 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #73](https://github.com/zscaler/zscaler-sdk-go/pull/73) Added support to ZIA Basic Authentication method to the following resources:
+  - Location Management
+    - ``basicAuthEnabled`` - (Optional) - ``Bool``
+
+  - User Management
+    - Added new endpoint ``/enroll`` which is called when the ``authMethods`` attribute is set.
+    - ``authMethods`` - (Optional) - ``String``. Supported values are: ["BASIC", "DIGEST"]
+
 # 1.2.1 (March, 7 2023)
 
 ## Notes
