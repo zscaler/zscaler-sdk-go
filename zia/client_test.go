@@ -137,6 +137,29 @@ func TestNewClient(t *testing.T) {
 				UserAgent: "UserAgent",
 			},
 		},
+		{
+			name: "Successful Client creation with custom config values",
+			args: struct {
+				userName  string
+				password  string
+				apiKey    string
+				ziaCloud  string
+				UserAgent string
+			}{
+				ziaCloud:  "zspreview",
+				userName:  "userName",
+				password:  "password",
+				apiKey:    "apiKey",
+				UserAgent: "UserAgent",
+			},
+			wantC: &Client{
+				URL:       fmt.Sprintf("https://admin.%s.net/%s", "zspreview", ziaAPIVersion),
+				userName:  "userName",
+				password:  "password",
+				apiKey:    "apiKey",
+				UserAgent: "UserAgent",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

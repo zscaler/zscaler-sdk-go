@@ -100,6 +100,9 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	httpClient := getHTTPClient(logger)
 	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
+	if ziaCloud == "zspreview" {
+		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+	}
 	cli := Client{
 		userName:   username,
 		password:   password,
