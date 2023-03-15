@@ -1,10 +1,11 @@
-package policysetcontroller
+package clienttypes
 
 import (
 	"net/http"
 )
 
 const (
+	mgmtConfig          = "/mgmtconfig/v1/admin/customers/"
 	clientTypesEndpoint = "/clientTypes"
 )
 
@@ -20,9 +21,9 @@ type ClientTypes struct {
 	ZPNClientTypeBranchConnector  string `json:"zpn_client_type_branch_connector"`
 }
 
-func (service *Service) GetClientTypes() (*ClientTypes, *http.Response, error) {
+func (service *Service) GetAllClientTypes() (*ClientTypes, *http.Response, error) {
 	v := new(ClientTypes)
-	relativeURL := mgmtConfig + clientTypesEndpoint
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + clientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
