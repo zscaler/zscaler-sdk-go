@@ -1,5 +1,16 @@
 # Changelog
 
+# 1.2.3 (March, 16 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #83](https://github.com/zscaler/zscaler-sdk-go/pull/83) Added new ZPA platform and clienttype endpoints:
+  - ``/platform``
+  - ``/clientTypes``
+
 # 1.2.2 (March, 11 2023)
 
 ## Notes
