@@ -1,5 +1,18 @@
 # Changelog
 
+# 1.2.4 (March, 18 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #85](https://github.com/zscaler/zscaler-sdk-go/pull/85) Added new ZIA Location Management attributes. The following new attributes have been added:
+  - ``basicAuthEnabled``: Enable Basic Authentication at the location
+  - ``digestAuthEnabled``: Enable Digest Authentication at the location
+  - ``kerberosAuth``: Enable Kerberos Authentication at the location
+  - ``iotDiscoveryEnabled``: Enable IOT Discovery at the location
+
 # 1.2.3 (March, 16 2023)
 
 ## Notes

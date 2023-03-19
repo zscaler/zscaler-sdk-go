@@ -34,8 +34,14 @@ type Locations struct {
 	// Country
 	Country string `json:"country,omitempty"`
 
+	// Language
+	Language string `json:"language,omitempty"`
+
 	// Timezone of the location. If not specified, it defaults to GMT.
 	TZ string `json:"tz,omitempty"`
+
+	//
+	GeoOverride bool `json:"geoOverride,omitempty"`
 
 	// For locations: IP addresses of the egress points that are provisioned in the Zscaler Cloud. Each entry is a single IP address (e.g., 238.10.33.9).
 	// For sub-locations: Egress, internal, or GRE tunnel IP addresses. Each entry is either a single IP address, CIDR (e.g., 10.10.33.0/24), or range (e.g., 10.10.33.1-10.10.33.10)).
@@ -47,11 +53,20 @@ type Locations struct {
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
 
+	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
+	AuthRequired bool `json:"authRequired"`
+
 	// Enable Basic Authentication at the location
 	BasicAuthEnabled bool `json:"basicAuthEnabled"`
 
-	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
-	AuthRequired bool `json:"authRequired"`
+	// Enable Digest Authentication at the location
+	DigestAuthEnabled bool `json:"digestAuthEnabled"`
+
+	// Enable Kerberos Authentication at the location
+	KerberosAuth bool `json:"kerberosAuth"`
+
+	// Enable IOT Discovery at the location
+	IOTDiscoveryEnabled bool `json:"iotDiscoveryEnabled"`
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
 	// Enable SSL Inspection. Set to true in order to apply your SSL Inspection policy to HTTPS traffic in the location and inspect HTTPS transactions for data leakage, malicious content, and viruses.
