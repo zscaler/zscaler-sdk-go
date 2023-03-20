@@ -21,9 +21,12 @@ type IdpController struct {
 	DisableSamlBasedPolicy      bool           `json:"disableSamlBasedPolicy"`
 	Domainlist                  []string       `json:"domainList,omitempty"`
 	EnableScimBasedPolicy       bool           `json:"enableScimBasedPolicy"`
+	EnableArbitraryAuthDomains  string         `json:"enableArbitraryAuthDomains"`
 	Enabled                     bool           `json:"enabled"`
+	ForceAuth                   bool           `json:"forceAuth"`
 	ID                          string         `json:"id,omitempty"`
 	IdpEntityID                 string         `json:"idpEntityId,omitempty"`
+	LoginHint                   bool           `json:"loginHint,omitempty"`
 	LoginNameAttribute          string         `json:"loginNameAttribute,omitempty"`
 	LoginURL                    string         `json:"loginUrl,omitempty"`
 	ModifiedBy                  string         `json:"modifiedBy,omitempty"`
