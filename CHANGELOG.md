@@ -1,5 +1,17 @@
 # Changelog
 
+# 1.2.5 (March, 20 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #86](https://github.com/zscaler/zscaler-sdk-go/pull/86) Added new ZPA IDP Controller attributes. The following new attributes have been added:
+  - ``enableArbitraryAuthDomains``
+  - ``forceAuth``
+  - ``loginHint``
+
 # 1.2.4 (March, 18 2023)
 
 ## Notes
