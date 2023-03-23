@@ -67,51 +67,6 @@ func (client *Client) isTokenExpired(tokenString string) bool {
 	return false
 }
 
-func (client *Client) signin() error {
-	if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
-		client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s and %s environment variables.\n", ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID)
-		return errors.New("no client credentials were provided")
-	}
-	client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZPA_CLIENT_ID, client.Config.ClientID)
-	data := url.Values{}
-	data.Set("client_id", client.Config.ClientID)
-	data.Set("client_secret", client.Config.ClientSecret)
-	req, err := http.NewRequest("POST", client.Config.BaseURL.String()+"/signin", strings.NewReader(data.Encode()))
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-	}
-
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	if client.Config.UserAgent != "" {
-		req.Header.Add("User-Agent", client.Config.UserAgent)
-	}
-	resp, err := client.Config.GetHTTPClient().Do(req)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-	}
-	defer resp.Body.Close()
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-	}
-	if resp.StatusCode >= 300 {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
-	}
-	var a AuthToken
-	err = json.Unmarshal(respBody, &a)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
-	}
-	// we need keep auth token for future http request
-	client.Config.AuthToken = &a
-	return nil
-}
-
 func (client *Client) authenticate() error {
 	if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
 		client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s and %s environment variables.\n", ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID)
@@ -165,7 +120,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	client.Config.Lock()
 	defer client.Config.Unlock()
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || client.isTokenExpired(client.Config.AuthToken.AccessToken) {
-		err := client.signin()
+		err := client.authenticate()
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +132,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	logger.LogRequest(client.Config.Logger, req)
 	resp, err := client.do(req, v)
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		err := client.signin()
+		err := client.authenticate()
 		if err != nil {
 			return nil, err
 		}
