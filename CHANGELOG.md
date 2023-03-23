@@ -11,6 +11,7 @@
 
 - [PR #92](https://github.com/zscaler/zscaler-sdk-go/pull/92) Added ZIA Location Management Lite endpoint.
 
+
 # 1.2.5 (March, 20 2023)
 
 ## Notes
