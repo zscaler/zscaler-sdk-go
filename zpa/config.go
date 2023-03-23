@@ -26,6 +26,8 @@ const (
 	betaBaseURL              = "https://config.zpabeta.net"
 	govBaseURL               = "https://config.zpagov.net"
 	previewBaseUrl           = "https://config.zpapreview.net"
+	devBaseUrl               = "https://public-api.dev.zpath.net"
+	devAuthUrl               = "https://authn1.dev.zpath.net/authn/v1/oauth/token?grant_type=CLIENT_CREDENTIALS"
 	defaultTimeout           = 240 * time.Second
 	loggerPrefix             = "zpa-logger: "
 	ZPA_CLIENT_ID            = "ZPA_CLIENT_ID"
@@ -68,7 +70,7 @@ type Config struct {
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
-	ClientID, ClientSecret, CustomerID string
+	ClientID, ClientSecret, CustomerID, Cloud string
 	// Backoff config
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
@@ -112,15 +114,14 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = defaultBaseURL
-	}
-	if strings.EqualFold(cloud, "BETA") {
+	} else if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
-	}
-	if strings.EqualFold(cloud, "GOV") {
+	} else if strings.EqualFold(cloud, "GOV") {
 		rawUrl = govBaseURL
-	}
-	if strings.EqualFold(cloud, "PREVIEW") {
+	} else if strings.EqualFold(cloud, "PREVIEW") {
 		rawUrl = previewBaseUrl
+	} else if strings.EqualFold(cloud, "DEV") {
+		rawUrl = devBaseUrl
 	}
 
 	baseURL, err := url.Parse(rawUrl)
@@ -134,6 +135,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		CustomerID:   customerID,
+		Cloud:        cloud,
 		BackoffConf:  defaultBackoffConf,
 		UserAgent:    userAgent,
 	}, err
