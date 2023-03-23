@@ -1,5 +1,7 @@
 .idea/*
 /local_test
+/local_dev
+local_dev/*
 vendor/
 go-test
 /go-test
