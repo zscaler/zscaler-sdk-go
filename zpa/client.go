@@ -2,6 +2,7 @@ package zpa
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/google/go-querystring/query"
 
@@ -31,6 +33,38 @@ func NewClient(config *Config) (c *Client) {
 
 func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
 	return client.newRequestDoCustom(method, url, options, body, v)
+}
+
+func (client *Client) isTokenExpired(tokenString string) bool {
+	// Split the token into three parts: header, payload, and signature
+	parts := strings.Split(tokenString, ".")
+	if len(parts) != 3 {
+		return true
+	}
+
+	// Decode the payload
+	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return true
+	}
+
+	// Parse the payload as JSON
+	var payload map[string]interface{}
+	err = json.Unmarshal(payloadBytes, &payload)
+	if err != nil {
+		return true
+	}
+
+	// Check the expiration time
+	if exp, ok := payload["exp"].(float64); ok {
+		// minus 10 seconds to avoid token expired
+		exp = exp - 10
+		if time.Now().Unix() > int64(exp) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (client *Client) authenticate() error {
@@ -85,7 +119,7 @@ func (client *Client) authenticate() error {
 func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
 	client.Config.Lock()
 	defer client.Config.Unlock()
-	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
+	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || client.isTokenExpired(client.Config.AuthToken.AccessToken) {
 		err := client.authenticate()
 		if err != nil {
 			return nil, err
@@ -96,7 +130,15 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		return nil, err
 	}
 	logger.LogRequest(client.Config.Logger, req)
-	return client.do(req, v)
+	resp, err := client.do(req, v)
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		err := client.authenticate()
+		if err != nil {
+			return nil, err
+		}
+		return client.do(req, v)
+	}
+	return resp, err
 }
 
 // Generating the Http request
