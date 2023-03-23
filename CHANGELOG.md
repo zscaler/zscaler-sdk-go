@@ -9,6 +9,7 @@
 
 - [PR #89](https://github.com/zscaler/terraform-provider-zpa/pull/89) The ZPA Terraform Provider API Client, will now support long runs, that exceeds the 3600 seconds token validity. Terraform will automatically request a new API bearer token at that time in order to continue the resource provisioning. This enhacement will prevent long pipeline runs from being interrupted.
 
+
 # 1.2.5 (March, 20 2023)
 
 ## Notes
