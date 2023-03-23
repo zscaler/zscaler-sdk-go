@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DefaultPageSize = 100
+	DefaultPageSize = 500
 )
 
 type Pagination struct {
