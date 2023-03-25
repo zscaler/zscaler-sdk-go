@@ -1,6 +1,15 @@
 # Changelog
 
-# 1.3.0 (March, 23 2023)
+# 1.3.1 (March, 25 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #93](https://github.com/zscaler/zscaler-sdk-go/pull/93) The ZIA SDK now supports search of Sublocations by Name and ID.
+
+# 1.3.0 (March, 22 2023)
 
 ## Notes
 - Golang: **v1.19**
@@ -8,8 +17,6 @@
 ### Enhancements
 
 - [PR #89](https://github.com/zscaler/zscaler-sdk-go/pull/89) The ZPA Terraform Provider API Client, will now support long runs, that exceeds the 3600 seconds token validity. Terraform will automatically request a new API bearer token at that time in order to continue the resource provisioning. This enhacement will prevent long pipeline runs from being interrupted.
-
-- [PR #91](https://github.com/zscaler/zscaler-sdk-go/pull/91) The SDK now supports authentication to ZPA DEV environment.
 
 - [PR #92](https://github.com/zscaler/zscaler-sdk-go/pull/92) Added ZIA Location Management Lite endpoint.
 
