@@ -325,3 +325,21 @@ func (service *Service) GetAll() ([]Locations, error) {
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	return locations, err
 }
+
+// GetLocationOrSublocationByID gets a location or sub-location by its ID.
+func (service *Service) GetLocationOrSublocationByID(id int) (*Locations, error) {
+	location, err := service.GetLocation(id)
+	if err == nil && location != nil {
+		return location, nil
+	}
+	return service.GetSubLocationBySubID(id)
+}
+
+// GetLocationOrSublocationByName gets a location or sub-location by its name.
+func (service *Service) GetLocationOrSublocationByName(name string) (*Locations, error) {
+	location, err := service.GetLocationByName(name)
+	if err == nil && location != nil {
+		return location, nil
+	}
+	return service.GetSubLocationByName(name)
+}
