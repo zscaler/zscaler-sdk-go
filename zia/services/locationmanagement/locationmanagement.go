@@ -197,20 +197,43 @@ func (service *Service) GetLocation(locationID int) (*Locations, error) {
 	return &location, nil
 }
 
-/*
-// Need to be able to search by Sublocation ID
-func (service *Service) GetSubLocation(locationID int) (*Locations, error) {
-	var location Locations
-	err := service.Client.Read(fmt.Sprintf("%s/%d/%s", locationsEndpoint, locationID, subLocationEndpoint), &location)
+// GetSubLocationBySubID gets a sub-location by its ID (fetches all locations's sub-location to find a match).
+func (service *Service) GetSubLocationBySubID(subLocationID int) (*Locations, error) {
+	locations, err := service.GetAll()
 	if err != nil {
 		return nil, err
 	}
-
-	service.Client.Logger.Printf("[DEBUG]Returning Location from Get: %d", location.ID)
-	return &location, nil
+	for _, location := range locations {
+		subLoc, err := service.GetSubLocation(location.ID, subLocationID)
+		if err == nil && subLoc != nil {
+			return subLoc, nil
+		}
+	}
+	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
 }
-*/
 
+// GetSublocations gets all sub-locations for a given location ID.
+func (service *Service) GetSublocations(locationID int) ([]Locations, error) {
+	var locations []Locations
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, locationID, subLocationEndpoint), &locations)
+	return locations, err
+}
+
+// GetSubLocation gets a sub-location by its ID and parent ID.
+func (service *Service) GetSubLocation(locationID, subLocationID int) (*Locations, error) {
+	locations, err := service.GetSublocations(locationID)
+	if err != nil {
+		return nil, err
+	}
+	for _, location := range locations {
+		if location.ID == subLocationID {
+			return &location, nil
+		}
+	}
+	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
+}
+
+// GetLocationByName gets a location by its name.
 func (service *Service) GetLocationByName(locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
@@ -226,24 +249,41 @@ func (service *Service) GetLocationByName(locationName string) (*Locations, erro
 	return nil, fmt.Errorf("no location found with name: %s", locationName)
 }
 
-/*
-// Need to be able to search by Sublocation Name
-
-	func (service *Service) GetSubLocationByName(locationName, subLocatioName string) (*Locations, error) {
-		var locations []Locations
-		// We are assuming this location name will be in the firsy 1000 obejcts
-		err := common.ReadAllPages(service.Client, locationsEndpoint, &locations, subLocationEndpoint)
-		if err != nil {
-			return nil, err
+// GetSubLocationByNames gets a sub-location by its name and parent location name
+func (service *Service) GetSubLocationByNames(locationName, subLocatioName string) (*Locations, error) {
+	location, err := service.GetLocationByName(locationName)
+	if err != nil {
+		return nil, err
+	}
+	subLocations, err := service.GetSublocations(location.ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, subLocation := range subLocations {
+		if strings.EqualFold(subLocation.Name, subLocatioName) {
+			return &subLocation, nil
 		}
-		for _, location := range locations {
-			if strings.EqualFold(location.Name, locationName) {
-				return &location, nil
+	}
+	return nil, fmt.Errorf("no sublocation found with name: %s in location:%s", locationName, locationName)
+}
+
+// GetSubLocationByName gets a sub-location by its name (fetches all locations's sub-location to find a match).
+func (service *Service) GetSubLocationByName(subLocatioName string) (*Locations, error) {
+	locations, err := service.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, location := range locations {
+		subLocs, _ := service.GetSublocations(location.ID)
+		for _, subLoc := range subLocs {
+			if strings.EqualFold(subLoc.Name, subLocatioName) {
+				return &subLoc, nil
 			}
 		}
-		return nil, fmt.Errorf("no location found with name: %s", locationName)
 	}
-*/
+	return nil, fmt.Errorf("no sublocation found with name: %s", subLocatioName)
+}
+
 func (service *Service) Create(locations *Locations) (*Locations, error) {
 	resp, err := service.Client.Create(locationsEndpoint, *locations)
 	if err != nil {
@@ -277,17 +317,6 @@ func (service *Service) Delete(locationID int) (*http.Response, error) {
 	}
 
 	return nil, nil
-}
-
-// Gets a name and ID of locations.
-func (service *Service) GetSublocations(sublocations string) (*Locations, error) {
-	var subLocations Locations
-	err := service.Client.Read(locationsEndpoint, "/"+"%s"+"/sublocations")
-	if err != nil {
-		return nil, err
-	}
-
-	return &subLocations, nil
 }
 
 func (service *Service) GetAll() ([]Locations, error) {
