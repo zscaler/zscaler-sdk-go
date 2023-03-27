@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
 )
 
 const (
@@ -41,6 +42,11 @@ type GREVirtualIPList struct {
 
 	// Country code information
 	CountryCode string `json:"countryCode,omitempty"`
+
+	City      string  `json:"city,omitempty"`
+	Region    string  `json:"region,omitempty"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud, including region and data center information. By default, the request gets all public VIPs in the cloud, but you can also include private or all VIPs in the request, if necessary.
@@ -91,8 +97,31 @@ func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCod
 	return &pairVips, nil
 }
 
-func (service *Service) GetAll() ([]GREVirtualIPList, error) {
+func (service *Service) GetAll(sourceIP string) ([]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
-	err := common.ReadAllPages(service.Client, vipRecommendedListEndpoint, &zscalerVips)
+	err := common.ReadAllPages(service.Client, vipRecommendedListEndpoint+"?sourceIp="+sourceIP, &zscalerVips)
 	return zscalerVips, err
+}
+
+func (service *Service) getAllStaticIPs() ([]staticips.StaticIP, error) {
+	var staticIPs []staticips.StaticIP
+	err := common.ReadAllPages(service.Client, "/staticIP", &staticIPs)
+	return staticIPs, err
+}
+
+// GetAllSourceIPs  gets all vips for all static ips
+func (service *Service) GetAllSourceIPs() ([]GREVirtualIPList, error) {
+	var zscalerVips []GREVirtualIPList
+	ips, err := service.getAllStaticIPs()
+	if err != nil {
+		return nil, err
+	}
+	for _, ip := range ips {
+		list, err := service.GetAll(ip.IpAddress)
+		if err != nil {
+			continue
+		}
+		zscalerVips = append(zscalerVips, list...)
+	}
+	return zscalerVips, nil
 }
