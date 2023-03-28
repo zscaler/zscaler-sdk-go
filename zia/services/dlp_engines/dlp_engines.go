@@ -43,8 +43,7 @@ func (service *Service) Get(engineID int) (*DLPEngines, error) {
 }
 
 func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
-	var dlpEngines []DLPEngines
-	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
+	dlpEngines, err := service.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -59,5 +58,10 @@ func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
 func (service *Service) GetAll() ([]DLPEngines, error) {
 	var dlpEngines []DLPEngines
 	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
+	for i := range dlpEngines {
+		if dlpEngines[i].Name == "" && dlpEngines[i].PredefinedEngineName != "" {
+			dlpEngines[i].Name = dlpEngines[i].PredefinedEngineName
+		}
+	}
 	return dlpEngines, err
 }
