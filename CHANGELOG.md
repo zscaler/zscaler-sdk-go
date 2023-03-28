@@ -1,5 +1,26 @@
 # Changelog
 
+# 1.3.3 (March, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #98](https://github.com/zscaler/zscaler-sdk-go/pull/98) Added support to Get predefined DLP engines by name and set name to ``predefinedEngineName``
+
+# 1.3.2 (March, 27 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #97](https://github.com/zscaler/zscaler-sdk-go/pull/97) Fixed ZIA GRE Tunnel attributes.
+  - Make WithinCountry a pointer for GRE Tunnel response
+  - City, Region, Latitude & Longitude to VIP response
+  - Implement get all by source IP & get all VIPs by all existing source IPs
+
 # 1.3.1 (March, 25 2023)
 
 ## Notes
