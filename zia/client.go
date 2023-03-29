@@ -30,11 +30,11 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if err != nil {
 		return nil, err
 	}
-	logger.LogRequest(c.Logger, req)
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
+	logger.LogRequest(c.Logger, req)
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
