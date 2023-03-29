@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.3.4 (March, 29 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #99](https://github.com/zscaler/zscaler-sdk-go/pull/99): Fixed ZIA API Client to log the user-agent information during debug
+
 # 1.3.3 (March, 28 2023)
 
 ## Notes
