@@ -7,7 +7,7 @@
 
 ### Enhancements
 
-- [PR #99](https://github.com/zscaler/zscaler-sdk-go/pull/99): Fixed ZIA API Client to log the user-agent information during debug
+- [PR #99](https://github.com/zscaler/zscaler-sdk-go/pull/99): Fixed ZIA API Client to log the user-agent information during debug.
 
 # 1.3.3 (March, 28 2023)
 
