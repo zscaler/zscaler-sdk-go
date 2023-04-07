@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
@@ -34,12 +36,14 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
-	logger.LogRequest(c.Logger, req)
+	reqID := uuid.New().String()
+	logger.LogRequest(c.Logger, req, reqID)
+	start := time.Now()
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	logger.LogResponse(c.Logger, resp)
+	logger.LogResponse(c.Logger, resp, start, reqID)
 	if resp.StatusCode >= 299 {
 		return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 	}
