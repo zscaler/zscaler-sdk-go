@@ -9,8 +9,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
 
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
@@ -87,8 +89,10 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	if err != nil {
 		return nil, err
 	}
-	logger.LogRequest(client.Config.Logger, req)
-	return client.do(req, v)
+	start := time.Now()
+	reqID := uuid.NewString()
+	logger.LogRequest(client.Config.Logger, req, reqID)
+	return client.do(req, v, start, reqID)
 }
 
 // Generating the Http request.
@@ -141,7 +145,7 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	return req, nil
 }
 
-func (client *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
+func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqID string) (*http.Response, error) {
 	resp, err := client.Config.GetHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
@@ -156,7 +160,7 @@ func (client *Client) do(req *http.Request, v interface{}) (*http.Response, erro
 			return resp, err
 		}
 	}
-	logger.LogResponse(client.Config.Logger, resp)
+	logger.LogResponse(client.Config.Logger, resp, start, reqID)
 	unescapeHTML(v)
 	return resp, nil
 }
