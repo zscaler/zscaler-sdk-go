@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
 	"github.com/zscaler/zscaler-sdk-go/logger"
+	"golang.org/x/time/rate"
 )
 
 const (
@@ -167,6 +168,27 @@ func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error)
 	return &config, nil
 }
 
+// ThrottledTransport Rate Limited HTTP Client
+type ThrottledTransport struct {
+	roundTripperWrap http.RoundTripper
+	ratelimiter      *rate.Limiter
+}
+
+func (c *ThrottledTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	err := c.ratelimiter.Wait(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	return c.roundTripperWrap.RoundTrip(r)
+}
+
+func NewRateLimitedTransport(transportWrap http.RoundTripper) http.RoundTripper {
+	return &ThrottledTransport{
+		roundTripperWrap: transportWrap,
+		ratelimiter:      rate.NewLimiter(rate.Every(time.Second), 10),
+	}
+}
+
 func (c *Config) GetHTTPClient() *http.Client {
 	if c.httpClient == nil {
 		if c.BackoffConf != nil && c.BackoffConf.Enabled {
@@ -185,6 +207,7 @@ func (c *Config) GetHTTPClient() *http.Client {
 			}
 		}
 	}
+	c.httpClient.Transport = NewRateLimitedTransport(c.httpClient.Transport)
 	return c.httpClient
 }
 
