@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -212,6 +213,16 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
+	}
+	if resp != nil && resp.StatusCode == http.StatusBadRequest {
+		respMap := map[string]string{}
+		data, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "non.restricted.entity.authorization.failed" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
