@@ -119,13 +119,14 @@ func (client *Client) authenticate() error {
 
 func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
 	client.Config.Lock()
-	defer client.Config.Unlock()
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || client.isTokenExpired(client.Config.AuthToken.AccessToken) {
 		err := client.authenticate()
 		if err != nil {
+			client.Config.Unlock()
 			return nil, err
 		}
 	}
+	client.Config.Unlock()
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {
 		return nil, err
@@ -135,7 +136,9 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	logger.LogRequest(client.Config.Logger, req, reqID)
 	resp, err := client.do(req, v, start, reqID)
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		client.Config.Lock()
 		err := client.authenticate()
+		client.Config.Unlock()
 		if err != nil {
 			return nil, err
 		}
