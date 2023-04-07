@@ -185,7 +185,7 @@ func (c *ThrottledTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 func NewRateLimitedTransport(transportWrap http.RoundTripper) http.RoundTripper {
 	return &ThrottledTransport{
 		roundTripperWrap: transportWrap,
-		ratelimiter:      rate.NewLimiter(rate.Every(time.Second), 10),
+		ratelimiter:      rate.NewLimiter(rate.Every(10*time.Second), 10),
 	}
 }
 
