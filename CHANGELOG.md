@@ -1,5 +1,19 @@
 # Changelog
 
+# 1.3.5 (April, 7 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #102](https://github.com/zscaler/zscaler-sdk-go/pull/102): Log request ID and API call duration for each request
+- [PR #104](https://github.com/zscaler/zscaler-sdk-go/pull/104): Removed lock client function on ZPA client package
+
+### Bug Fixes
+
+- [PR #105](https://github.com/zscaler/zscaler-sdk-go/pull/105): Added function to temporarily handle ZPA upstream bad request errors.
+
 # 1.3.4 (March, 29 2023)
 
 ## Notes
