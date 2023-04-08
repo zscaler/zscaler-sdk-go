@@ -201,6 +201,8 @@ func (c *Client) refreshSession() error {
 
 // checkSession synce new session if its over the timeout limit.
 func (c *Client) checkSession() error {
+	c.Lock()
+	defer c.Unlock()
 	// One call to this function is allowed at a time caller must call lock.
 	if c.session == nil {
 		err := c.refreshSession()

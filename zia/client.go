@@ -16,8 +16,6 @@ import (
 
 // Request ... // Needs to review this function.
 func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
-	c.Lock()
-	defer c.Unlock()
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
