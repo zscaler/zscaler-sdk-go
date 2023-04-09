@@ -53,9 +53,9 @@ type PolicyRule struct {
 	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName,omitempty"`
-	Conditions               []Conditions         `json:"conditions,omitempty"`
-	AppServerGroups          []AppServerGroups    `json:"appServerGroups,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups,omitempty"`
+	Conditions               []Conditions         `json:"conditions"`
+	AppServerGroups          []AppServerGroups    `json:"appServerGroups"`
+	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups"`
 }
 
 type Conditions struct {
