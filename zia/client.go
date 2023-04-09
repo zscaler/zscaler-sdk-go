@@ -37,16 +37,35 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	reqID := uuid.New().String()
 	logger.LogRequest(c.Logger, req, reqID)
 	start := time.Now()
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	logger.LogResponse(c.Logger, resp, start, reqID)
-	if resp.StatusCode >= 299 {
-		return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
-	}
+
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 299 {
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			err = c.checkSession()
+			if err != nil {
+				return nil, err
+			}
+
+			resp, err = c.HTTPClient.Do(req)
+			if err != nil {
+				return nil, err
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode >= 299 {
+				return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			}
+		} else {
+			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+		}
+	}
+
+	logger.LogResponse(c.Logger, resp, start, reqID)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
