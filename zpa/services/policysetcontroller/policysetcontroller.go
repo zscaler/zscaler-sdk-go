@@ -64,7 +64,7 @@ type Conditions struct {
 	ModifiedBy   string     `json:"modifiedBy,omitempty"`
 	ModifiedTime string     `json:"modifiedTime,omitempty"`
 	Negated      bool       `json:"negated"`
-	Operands     []Operands `json:"operands,omitempty"`
+	Operands     []Operands `json:"operands"`
 	Operator     string     `json:"operator,omitempty"`
 }
 
