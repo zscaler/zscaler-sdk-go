@@ -18,6 +18,7 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 	"github.com/zscaler/zscaler-sdk-go/logger"
+	"github.com/zscaler/zscaler-sdk-go/utils"
 )
 
 type Client struct {
@@ -44,65 +45,65 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 }
 
 func (client *Client) authenticate() error {
-	if client.Config.APIKeyID == "" || client.Config.APISecret == "" {
-		client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s environment variables.\n", ZDX_API_KEY_ID, ZDX_API_SECRET)
-		return errors.New("no client credentials were provided")
-	}
-	client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID)
-	currTimestamp := time.Now().Unix()
-	authReq := AuthRequest{
-		Timestamp:    currTimestamp,
-		APIKeyID:     client.Config.APIKeyID,
-		APIKeySecret: generateHash(client.Config.APISecret, currTimestamp),
-	}
-	data, _ := json.Marshal(authReq)
-	url := client.Config.BaseURL.String() + "/v1/oauth/token"
-	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-	}
+	client.Config.Lock()
+	defer client.Config.Unlock()
+	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
+		if client.Config.APIKeyID == "" || client.Config.APISecret == "" {
+			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s environment variables.\n", ZDX_API_KEY_ID, ZDX_API_SECRET)
+			return errors.New("no client credentials were provided")
+		}
+		client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID)
+		currTimestamp := time.Now().Unix()
+		authReq := AuthRequest{
+			Timestamp:    currTimestamp,
+			APIKeyID:     client.Config.APIKeyID,
+			APIKeySecret: generateHash(client.Config.APISecret, currTimestamp),
+		}
+		data, _ := json.Marshal(authReq)
+		url := client.Config.BaseURL.String() + "/v1/oauth/token"
+		req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+		}
 
-	req.Header.Add("Content-Type", "application/json")
-	if client.Config.UserAgent != "" {
-		req.Header.Add("User-Agent", client.Config.UserAgent)
+		req.Header.Add("Content-Type", "application/json")
+		if client.Config.UserAgent != "" {
+			req.Header.Add("User-Agent", client.Config.UserAgent)
+		}
+		resp, err := client.Config.GetHTTPClient().Do(req)
+		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+		}
+		defer resp.Body.Close()
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+		}
+		if resp.StatusCode >= 300 {
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
+			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
+		}
+		var a AuthToken
+		err = json.Unmarshal(respBody, &a)
+		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+		}
+		// we need keep auth token for future http request
+		client.Config.AuthToken = &a
 	}
-	resp, err := client.Config.GetHTTPClient().Do(req)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-	}
-	defer resp.Body.Close()
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-	}
-	if resp.StatusCode >= 300 {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
-	}
-	var a AuthToken
-	err = json.Unmarshal(respBody, &a)
-	if err != nil {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-		return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-	}
-	// we need keep auth token for future http request
-	client.Config.AuthToken = &a
 	return nil
 }
 
 func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
-	client.Config.Lock()
-	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
-		err := client.authenticate()
-		if err != nil {
-			client.Config.Unlock()
-			return nil, err
-		}
+	err := client.authenticate()
+	if err != nil {
+		return nil, err
 	}
-	client.Config.Unlock()
+
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {
 		return nil, err
@@ -110,7 +111,28 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	reqID := uuid.NewString()
 	start := time.Now()
 	logger.LogRequest(client.Config.Logger, req, reqID)
-	return client.do(req, v, start, reqID)
+
+	resp, err := client.do(req, v, start, reqID)
+	if err != nil || resp == nil {
+		return resp, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		err := client.authenticate()
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.do(req, v, start, reqID)
+		if err != nil || resp == nil {
+			return nil, err
+		}
+		resp.Body.Close()
+		return resp, nil
+	}
+
+	return resp, err
 }
 
 func generateHash(apiSecret string, currTimestamp int64) string {
