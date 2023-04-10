@@ -45,7 +45,7 @@ type ApplicationSegmentResource struct {
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts               `json:"udpPortRange,omitempty"`
-	ServerGroups              []AppServerGroups                   `json:"serverGroups,omitempty"`
+	ServerGroups              []AppServerGroups                   `json:"serverGroups"`
 	DefaultIdleTimeout        string                              `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
 	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`
