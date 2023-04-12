@@ -1,5 +1,6 @@
 package zcbc
 
+/*
 import (
 	"bytes"
 	"encoding/json"
@@ -140,3 +141,4 @@ func (c *Client) Delete(endpoint string) error {
 	}
 	return nil
 }
+*/

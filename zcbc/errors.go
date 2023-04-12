@@ -1,5 +1,6 @@
 package zcbc
 
+/*
 import (
 	"fmt"
 	"io/ioutil"
@@ -35,3 +36,4 @@ func checkErrorInResponse(res *http.Response, respErr error) error {
 func (r ErrorResponse) IsObjectNotFound() bool {
 	return r.Response.StatusCode == 404
 }
+*/

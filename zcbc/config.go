@@ -1,5 +1,6 @@
 package zcbc
 
+/*
 import (
 	"bytes"
 	"context"
@@ -299,3 +300,4 @@ func (c *Client) Logout() error {
 	}
 	return nil
 }
+*/
