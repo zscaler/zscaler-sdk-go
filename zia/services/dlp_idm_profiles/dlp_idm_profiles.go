@@ -13,7 +13,7 @@ const (
 
 type DLPIDMProfile struct {
 	// The identifier (1-64) for the IDM template (i.e., IDM profile) that is unique within the organization.
-	ProfileID int `json:"profileId"`
+	ProfileID int `json:"profileId,omitempty"`
 
 	// The IDM template name, which is unique per Index Tool.
 	ProfileName string `json:"profileName,omitempty"`
@@ -37,7 +37,7 @@ type DLPIDMProfile struct {
 	ScheduleType string `json:"scheduleType,omitempty"`
 
 	// The day the IDM template is scheduled for. This attribute is required by PUT and POST requests.
-	ScheduleDay []string `json:"scheduleDay,omitempty"`
+	ScheduleDay int `json:"scheduleDay,omitempty"`
 
 	// The day of the month that the IDM template is scheduled for. This attribute is required by PUT and POST requests, and when scheduleType is set to MONTHLY.
 	ScheduleDayOfMonth []string `json:"scheduleDayOfMonth,omitempty"`
@@ -61,7 +61,7 @@ type DLPIDMProfile struct {
 	Version int `json:"version,omitempty"`
 
 	// The unique identifer for the Index Tool that was used to create the IDM template. This attribute is required by POST requests, but ignored if provided in PUT requests.
-	IDMClient int `json:"idmClient,omitempty"`
+	IDMClient *common.IDNameExtensions `json:"idmClient,omitempty"`
 
 	// The total volume of all the documents associated to the IDM template.
 	VolumeOfDocuments int `json:"volumeOfDocuments,omitempty"`

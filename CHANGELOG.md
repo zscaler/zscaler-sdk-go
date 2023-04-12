@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.4.1 (April, 12 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #109](https://github.com/zscaler/zscaler-sdk-go/pull/109) Added ZIA DLP IDM Lite endpoints to obtain summarized information about existing IDM profiles.
+
 # 1.4.0 (April, 10 2023)
 
 ## Notes
