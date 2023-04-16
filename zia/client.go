@@ -21,11 +21,9 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	}
 
 	var req *http.Request
+	var resp *http.Response
 	var err error
-	err = c.checkSession()
-	if err != nil {
-		return nil, err
-	}
+
 	req, err = http.NewRequest(method, c.URL+endpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -37,35 +35,30 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	reqID := uuid.New().String()
 	logger.LogRequest(c.Logger, req, reqID)
 	start := time.Now()
+	for retry := 1; retry <= 5; retry++ {
+		err = c.checkSession()
+		if err != nil {
+			return nil, err
+		}
 
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
+		resp, err = c.HTTPClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 299 {
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-			err = c.checkSession()
-			if err != nil {
-				return nil, err
-			}
-
-			resp, err = c.HTTPClient.Do(req)
-			if err != nil {
-				return nil, err
-			}
+		if resp.StatusCode <= 299 {
 			defer resp.Body.Close()
-			if resp.StatusCode >= 299 {
-				return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
-			}
-		} else {
+			break
+		}
+
+		resp.Body.Close()
+		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
 			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		}
 	}
 
 	logger.LogResponse(c.Logger, resp, start, reqID)
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
