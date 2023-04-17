@@ -1,6 +1,6 @@
 # Changelog
 
-# 1.4.1 (April, 12 2023)
+# 1.4.1 (April, 17 2023)
 
 ## Notes
 - Golang: **v1.19**
@@ -8,6 +8,7 @@
 ### Enhancements
 
 - [PR #109](https://github.com/zscaler/zscaler-sdk-go/pull/109) Added ZIA DLP IDM Lite endpoints to obtain summarized information about existing IDM profiles.
+- [PR #110](https://github.com/zscaler/zscaler-sdk-go/pull/110) Added extra fix for ZIA API Client to prevent SESSION_INVALID error during session timeout. The client will re-authenticate automaticallyu to renew the session.
 
 # 1.4.0 (April, 10 2023)
 
