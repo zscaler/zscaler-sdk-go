@@ -1,5 +1,12 @@
 # Changelog
 
+# 1.4.2 (April, xx 2023)
+
+## Notes
+- Golang: **v1.19**
+
+- [PR #112](https://github.com/zscaler/zscaler-sdk-go/pull/112)
+
 # 1.4.1 (April, 17 2023)
 
 ## Notes
