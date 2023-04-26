@@ -127,6 +127,21 @@ func (service *Service) Create(rule *PolicyRule) (*PolicyRule, *http.Response, e
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func (service *Service) Update(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
+		policySetRule.Conditions = []Conditions{}
+	} else {
+		for i, condtion := range policySetRule.Conditions {
+			if len(condtion.Operands) == 0 {
+				policySetRule.Conditions[i].Operands = []Operands{}
+			} else {
+				for i, operand := range condtion.Operands {
+					if operand.Name != "" {
+						condtion.Operands[i].Name = ""
+					}
+				}
+			}
+		}
+	}
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, policySetRule, nil)
 	if err != nil {
