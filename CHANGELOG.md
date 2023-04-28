@@ -1,6 +1,17 @@
 # Changelog
 
-# 1.4.2 (April, 28 2023)
+# 1.4.3 (April, 28 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #114](https://github.com/zscaler/zscaler-sdk-go/pull/114) Expanded ZIA search criteria to include auditor users.
+- [PR #115](https://github.com/zscaler/zscaler-sdk-go/pull/115) Fixed empty ZPA body response in case of 400 Errors
+- [PR #116](https://github.com/zscaler/zscaler-sdk-go/pull/116) Fixed typo in ZIA DLP Web Rule for the attribute ``zscalerIncidentReceiver``
+
+# 1.4.2 (April, 27 2023)
 
 ## Notes
 - Golang: **v1.19**
@@ -8,9 +19,6 @@
 ### Enhancements
 
 - [PR #113](https://github.com/zscaler/zscaler-sdk-go/pull/113) Fixed ZPA Empty policy conditions or operands on update due to 500 errors
-- [PR #114](https://github.com/zscaler/zscaler-sdk-go/pull/114) Expanded ZIA search criteria to include auditor users.
-- [PR #115](https://github.com/zscaler/zscaler-sdk-go/pull/115) Fixed empty ZPA body response in case of 400 Errors
-- [PR #116](https://github.com/zscaler/zscaler-sdk-go/pull/116) Fixed typo in ZIA DLP Web Rule for the attribute ``zscalerIncidentReceiver``
 
 # 1.4.1 (April, 17 2023)
 
