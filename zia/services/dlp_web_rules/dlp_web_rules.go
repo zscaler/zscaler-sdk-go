@@ -66,8 +66,7 @@ type WebDLPRules struct {
 	ZCCNotificationsEnabled bool `json:"zccNotificationsEnabled,omitempty"`
 
 	// Indicates whether a Zscaler Incident Receiver is associated to the DLP policy rule.
-	// https://jira.corp.zscaler.com/browse/BUG-135519. Attribute is misspelled upstream
-	ZscalerIncidentReciever bool `json:"zscalerIncidentReciever,omitempty"`
+	ZscalerIncidentReceiver bool `json:"zscalerIncidentReceiver,omitempty"`
 
 	// The email address of an external auditor to whom DLP email notifications are sent.
 	ExternalAuditorEmail string `json:"externalAuditorEmail,omitempty"`
