@@ -1,6 +1,7 @@
 package zpa
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -223,6 +224,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }

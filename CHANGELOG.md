@@ -1,13 +1,13 @@
 # Changelog
 
-# 1.4.2 (April, xx 2023)
+# 1.4.2 (April, xx 2023) - Unreleased
 
 ## Notes
 - Golang: **v1.19**
 
 ### Enhancements
 
-- [PR #111](https://github.com/zscaler/zscaler-sdk-go/pull/111) ZIA: Added ability to search for auditor users ``/adminUsers`` by setting the bool attribute includeAuditorUsers.
+- [PR #111](https://github.com/zscaler/zscaler-sdk-go/pull/111) Fixed Policy Conditions or Operands on Update operations due to upstream 500 Error
 
 # 1.4.1 (April, 17 2023)
 
