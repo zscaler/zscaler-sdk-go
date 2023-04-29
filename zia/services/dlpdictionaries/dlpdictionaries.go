@@ -55,7 +55,7 @@ type DlpDictionary struct {
 	EDMMatchDetails []EDMMatchDetails `json:"exactDataMatchDetails"`
 
 	// List of Indexed Document Match (IDM) profiles and their corresponding match accuracy for custom DLP dictionaries.
-	IDMProfileMatchAccuracy []IDMProfileMatchAccuracy `json:"idmProfileMatchAccuracy"`
+	IDMProfileMatchAccuracy []IDMProfileMatchAccuracy `json:"idmProfileMatchAccuracyDetails"`
 }
 
 type Phrases struct {
