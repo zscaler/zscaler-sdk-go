@@ -1,5 +1,20 @@
 # Changelog
 
+# 1.4.5 (April, 29 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #118](https://github.com/zscaler/zscaler-sdk-go/pull/118) Added new ZIA DLP Dictionary attributes. The following new attributes have been added:
+  - ``ignoreExactMatchIdmDict`` - Bool: Indicates whether to exclude documents that are a 100% match to already-indexed documents from triggering an Indexed Document Match (IDM) Dictionary.
+  - ``includeBinNumbers`` - Bool: A true value denotes that the specified Bank Identification Number (BIN) values are included in the Credit Cards dictionary. A false value denotes that the specified BIN values are excluded from the Credit Cards dictionary. Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
+  - ``binNumbers`` - []int: The list of Bank Identification Number (BIN) values that are included or excluded from the Credit Cards dictionary. BIN values can be specified only for Diners Club, Mastercard, RuPay, and Visa cards. Up to 512 BIN values can be configured in a dictionary. Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
+  - ``dictTemplateId`` - int: ID of the predefined dictionary (original source dictionary) that is used for cloning. This field is applicable only to cloned dictionaries. Only a limited set of identification-based predefined dictionaries (e.g., Credit Cards, Social Security Numbers, National Identification Numbers, etc.) can be cloned. Up to 4 clones can be created from a predefined dictionary.
+  - ``predefinedClone`` - bool: This field is set to true if the dictionary is cloned from a predefined dictionary. Otherwise, it is set to false.
+  - ``proximityLengthEnabled`` - bool: This value is set to true if proximity length and high confidence phrases are enabled for the DLP dictionary.
+
 # 1.4.4 (April, 29 2023)
 
 ## Notes
