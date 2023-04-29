@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.4.4 (April, 29 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #117](https://github.com/zscaler/zscaler-sdk-go/pull/117) Fix ZIA DLP dictionary attribute ``idmProfileMatchAccuracyDetails``
+
 # 1.4.3 (April, 28 2023)
 
 ## Notes
