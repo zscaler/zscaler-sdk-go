@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.4.6 (May, xx 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #121](https://github.com/zscaler/zscaler-sdk-go/pull/121) Added new ZPA Client Type ``zpn_client_type_zapp_partner``
+
 # 1.4.5 (April, 29 2023)
 
 ## Notes
