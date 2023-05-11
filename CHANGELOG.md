@@ -7,7 +7,16 @@
 
 ### Enhancements
 
+- [PR #120](https://github.com/zscaler/zscaler-sdk-go/pull/120) Added new ZPA App Inspection Security Profiles attributes. The following new attributes have been added:
+  - ``checkControlDeploymentStatus`` - Bool
+  - ``controlsInfo`` - String. Support values: ``WEBSOCKET_PREDEFINED``, ``WEBSOCKET_CUSTOM``, ``THREATLABZ``, ``CUSTOM``, ``PREDEFINED``
+  - ``threatlabzControls`` - List
+  - ``zsDefinedControlChoice`` - String. Support values: ``ALL`` and ``SPECIFIC``
 - [PR #121](https://github.com/zscaler/zscaler-sdk-go/pull/121) Added new ZPA Client Type ``zpn_client_type_zapp_partner``
+
+### Bug Fixes
+
+- [PR #122](https://github.com/zscaler/zscaler-sdk-go/pull/122) Fixed issue with empty IDs in the resource ``zpa_service_edge_groups``
 
 # 1.4.5 (April, 29 2023)
 
