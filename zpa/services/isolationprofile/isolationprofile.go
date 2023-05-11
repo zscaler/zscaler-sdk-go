@@ -14,7 +14,7 @@ const (
 )
 
 type IsolationProfile struct {
-	ID                 string `json:"id"`
+	ID                 string `json:"id,omitempty"`
 	Name               string `json:"name,omitempty"`
 	Description        string `json:"description,omitempty"`
 	Enabled            bool   `json:"enabled"`

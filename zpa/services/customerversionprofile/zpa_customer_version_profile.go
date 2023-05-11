@@ -14,12 +14,12 @@ const (
 )
 
 type CustomerVersionProfile struct {
-	CreationTime                  string                        `json:"creationTime"`
+	CreationTime                  string                        `json:"creationTime,omitempty"`
 	CustomScopeCustomerIDs        []CustomScopeCustomerIDs      `json:"customScopeCustomerIds"`
 	CustomScopeRequestCustomerIDs CustomScopeRequestCustomerIDs `json:"customScopeRequestCustomerIds"`
 	CustomerID                    string                        `json:"customerId"`
 	Description                   string                        `json:"description"`
-	ID                            string                        `json:"id"`
+	ID                            string                        `json:"id,omitempty"`
 	ModifiedBy                    string                        `json:"modifiedBy"`
 	ModifiedTime                  string                        `json:"modifiedTime"`
 	Name                          string                        `json:"name"`
@@ -40,9 +40,9 @@ type CustomScopeRequestCustomerIDs struct {
 }
 
 type Versions struct {
-	CreationTime             string `json:"creationTime"`
+	CreationTime             string `json:"creationTime,omitempty"`
 	CustomerID               string `json:"customerId"`
-	ID                       string `json:"id"`
+	ID                       string `json:"id,omitempty"`
 	ModifiedBy               string `json:"modifiedBy"`
 	ModifiedTime             string `json:"modifiedTime"`
 	Platform                 string `json:"platform"`

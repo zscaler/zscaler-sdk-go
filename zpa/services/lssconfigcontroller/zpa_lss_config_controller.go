@@ -16,7 +16,7 @@ const (
 
 type LSSResource struct {
 	LSSConfig          *LSSConfig          `json:"config"`
-	ID                 string              `json:"id"`
+	ID                 string              `json:"id,omitempty"`
 	ConnectorGroups    []ConnectorGroups   `json:"connectorGroups,omitempty"`
 	PolicyRule         *PolicyRule         `json:"policyRule,omitempty"`
 	PolicyRuleResource *PolicyRuleResource `json:"policyRuleResource,omitempty"`

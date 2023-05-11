@@ -16,11 +16,11 @@ const (
 type ServiceEdgeGroup struct {
 	CityCountry                   string            `json:"cityCountry,omitempty"`
 	CountryCode                   string            `json:"countryCode,omitempty"`
-	CreationTime                  string            `json:"creationTime"`
+	CreationTime                  string            `json:"creationTime,omitempty"`
 	Description                   string            `json:"description,omitempty"`
 	Enabled                       bool              `json:"enabled"`
 	GeoLocationID                 string            `json:"geoLocationId,omitempty"`
-	ID                            string            `json:"id"`
+	ID                            string            `json:"id,omitempty"`
 	IsPublic                      string            `json:"isPublic,omitempty"`
 	Latitude                      string            `json:"latitude,omitempty"`
 	Location                      string            `json:"location,omitempty"`
@@ -42,7 +42,7 @@ type ServiceEdgeGroup struct {
 type ServiceEdges struct {
 	ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
 	ControlChannelStatus             string                 `json:"controlChannelStatus,omitempty"`
-	CreationTime                     string                 `json:"creationTime"`
+	CreationTime                     string                 `json:"creationTime,omitempty"`
 	CtrlBrokerName                   string                 `json:"ctrlBrokerName,omitempty"`
 	CurrentVersion                   string                 `json:"currentVersion,omitempty"`
 	Description                      string                 `json:"description,omitempty"`
@@ -83,7 +83,7 @@ type ServiceEdges struct {
 type TrustedNetworks struct {
 	CreationTime     string `json:"creationTime,omitempty"`
 	Domain           string `json:"domain,omitempty"`
-	ID               string `json:"id"`
+	ID               string `json:"id,omitempty"`
 	MasterCustomerID string `json:"masterCustomerId"`
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
