@@ -21,7 +21,7 @@ type EnrollmentCert struct {
 	CreationTime            string `json:"creationTime,omitempty"`
 	CSR                     string `json:"csr,omitempty"`
 	Description             string `json:"description,omitempty"`
-	ID                      string `json:"id"`
+	ID                      string `json:"id,omitempty"`
 	IssuedBy                string `json:"issuedBy,omitempty"`
 	IssuedTo                string `json:"issuedTo,omitempty"`
 	ModifiedBy              string `json:"modifiedBy,omitempty"`
