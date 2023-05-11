@@ -19,6 +19,7 @@ type ClientTypes struct {
 	ZPNClientTypeZAPP             string `json:"zpn_client_type_zapp"`
 	ZPNClientTypeSlogger          string `json:"zpn_client_type_slogger"`
 	ZPNClientTypeBranchConnector  string `json:"zpn_client_type_branch_connector"`
+	ZPNClientTypePartner          string `json:"zpn_client_type_zapp_partner"`
 }
 
 func (service *Service) GetAllClientTypes() (*ClientTypes, *http.Response, error) {
