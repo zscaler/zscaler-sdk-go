@@ -1,6 +1,6 @@
 # Changelog
 
-# 1.4.6 (May, xx 2023)
+# 1.4.6 (May, 11 2023)
 
 ## Notes
 - Golang: **v1.19**
