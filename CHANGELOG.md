@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.4.7 (May, 13 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #123](https://github.com/zscaler/zscaler-sdk-go/pull/123) Improve SCIM Attribute Header search function
+
 # 1.4.6 (May, 11 2023)
 
 ## Notes
