@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.5.0 (May, 15 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #124](https://github.com/zscaler/zscaler-sdk-go/pull/124) Added ZIA DLP Exact Data Match Schema endpoints
+
 # 1.4.7 (May, 13 2023)
 
 ## Notes
