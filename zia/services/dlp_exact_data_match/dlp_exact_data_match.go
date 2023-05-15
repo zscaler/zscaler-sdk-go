@@ -61,7 +61,7 @@ type DLPEDMSchema struct {
 	TokenList []TokenList `json:"tokenList,omitempty"`
 
 	// The schedule details, if present for the EDM schema (i.e., EDM template). Ignored if the request is PUT, POST, or DELETE.
-	Schedule []Schedule `json:"schedule,omitempty"`
+	Schedule Schedule `json:"schedule,omitempty"`
 }
 
 type TokenList struct {
