@@ -20,7 +20,7 @@ type ApplicationServer struct {
 	CreationTime      string   `json:"creationTime,"`
 	Description       string   `json:"description"`
 	Enabled           bool     `json:"enabled"`
-	ID                string   `json:"id,"`
+	ID                string   `json:"id,omitempty"`
 	ModifiedBy        string   `json:"modifiedBy,"`
 	ModifiedTime      string   `json:"modifiedTime,"`
 	Name              string   `json:"name"`
