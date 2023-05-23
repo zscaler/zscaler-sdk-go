@@ -1,5 +1,17 @@
 # Changelog
 
+# 1.5.2 (May, 23 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #125](https://github.com/zscaler/zscaler-sdk-go/pull/125) - Added exception handling within the ZPA API Client to deal with simultaneous DB requests, which were affecting the ZPA Policy Access rule order creation.
+  - Internal References:
+    - [ET-53585](https://jira.corp.zscaler.com/browse/ET-53585)
+    - [ET-48860](https://confluence.corp.zscaler.com/display/ET/ET-48860+incorrect+rules+order)
+
 # 1.5.0 (May, 15 2023)
 
 ## Notes

@@ -224,6 +224,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
+		// Implemented to handle upstream restrictions on simultaneous requests when dealing with CRUD operations, related to ZPA Access policy rule order
+		// ET-53585: https://jira.corp.zscaler.com/browse/ET-53585
+		// ET-48860: https://confluence.corp.zscaler.com/display/ET/ET-48860+incorrect+rules+order
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "db.simultaneous.request" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
