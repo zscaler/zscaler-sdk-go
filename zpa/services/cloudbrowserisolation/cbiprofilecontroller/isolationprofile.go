@@ -1,4 +1,4 @@
-package isolationprofile
+package cbiprofilecontroller
 
 import (
 	"fmt"

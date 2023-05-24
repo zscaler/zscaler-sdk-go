@@ -1,4 +1,4 @@
-package isolationprofile
+package cbiprofilecontroller
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/zpa"
