@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.5.3 (May, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Fixed ZPA resource ``Service Edge Group`` and ``Service Edge Controller`` Struct to support attribute ``publish_ips``.
+
 # 1.5.2 (May, 23 2023)
 
 ## Notes
