@@ -62,6 +62,18 @@ func WriteLog(logger Logger, format string, args ...interface{}) {
 	}
 }
 
+func LogRequestSensitive(logger Logger, req *http.Request, reqID string, sensitiveContent []string) {
+	if logger != nil && req != nil {
+		out, err := httputil.DumpRequestOut(req, true)
+		for _, s := range sensitiveContent {
+			out = []byte(strings.ReplaceAll(string(out), s, "********"))
+		}
+		if err == nil {
+			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
+		}
+	}
+}
+
 func LogRequest(logger Logger, req *http.Request, reqID string) {
 	if logger != nil && req != nil {
 		out, err := httputil.DumpRequestOut(req, true)
