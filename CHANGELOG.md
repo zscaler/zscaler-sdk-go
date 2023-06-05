@@ -1,11 +1,20 @@
 # Changelog
 
-# 1.5.3 (May, 24 2023)
+# 1.5.4 (June, 5 2023)
 
 ## Notes
 - Golang: **v1.19**
 
 ### Fixes
+
+- [PR #129](https://github.com/zscaler/zscaler-sdk-go/pull/129) - Added additional log information for ZIA API Client. The SDK now returns the exact authentication error message, as well as includes the ``JSESSIONID`` cookie ID information.
+
+# 1.5.3 (May, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
 
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Fixed ZPA resource ``Service Edge Group`` and ``Service Edge Controller`` Struct to support attribute ``publish_ips``.
 
