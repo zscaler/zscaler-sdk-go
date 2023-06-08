@@ -30,7 +30,7 @@ func (service *Service) Get(serviceID int) (*ApplicationServicesLite, error) {
 
 func (service *Service) GetByName(serviceName string) (*ApplicationServicesLite, error) {
 	var appServicesLite []ApplicationServicesLite
-	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServicesLite)
+	err := common.ReadAllPagesWithFilters(service.Client, appServicesLiteEndpoint, map[string]string{"search": serviceName}, &appServicesLite)
 	if err != nil {
 		return nil, err
 	}

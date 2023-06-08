@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
@@ -123,7 +122,7 @@ func (service *Service) GetLocationGroup(groupID int) (*LocationGroup, error) {
 
 func (service *Service) GetLocationGroupByName(locationGroupName string) (*LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
+	err := common.ReadAllPagesWithFilters(service.Client, locationGroupEndpoint, map[string]string{"search": locationGroupName}, &locationGroups)
 	if err != nil {
 		return nil, err
 	}

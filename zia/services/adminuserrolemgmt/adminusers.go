@@ -109,7 +109,7 @@ func (service *Service) GetAdminUsers(adminUserId int) (*AdminUsers, error) {
 }
 
 func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*AdminUsers, error) {
-	adminUsers, err := service.GetAllAdminUsers()
+	adminUsers, err := service.getAllAdminUsersWithSearch(adminUsersLoginName)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*A
 }
 
 func (service *Service) GetAdminByUsername(adminUsername string) (*AdminUsers, error) {
-	adminUsers, err := service.GetAllAdminUsers()
+	adminUsers, err := service.getAllAdminUsersWithSearch(adminUsername)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +165,16 @@ func (service *Service) DeleteAdminUser(adminUserID int) (*http.Response, error)
 	return nil, nil
 }
 
-func (service *Service) GetAllAdminUsers() ([]AdminUsers, error) {
+func (service *Service) getAllAdminUsersWithSearch(search string) ([]AdminUsers, error) {
 	var adminUsers []AdminUsers
-	err := common.ReadAllPages(service.Client, adminUsersEndpoint+"?includeAuditorUsers=true&includeAdminUsers=true", &adminUsers)
+	endpoint := adminUsersEndpoint + "?includeAuditorUsers=true&includeAdminUsers=true"
+	if search != "" {
+		endpoint = fmt.Sprintf("%s&search=%s", endpoint, search)
+	}
+	err := common.ReadAllPages(service.Client, endpoint, &adminUsers)
 	return adminUsers, err
+}
+
+func (service *Service) GetAllAdminUsers() ([]AdminUsers, error) {
+	return service.getAllAdminUsersWithSearch("")
 }

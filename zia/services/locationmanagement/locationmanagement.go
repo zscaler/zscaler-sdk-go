@@ -237,7 +237,7 @@ func (service *Service) GetSubLocation(locationID, subLocationID int) (*Location
 func (service *Service) GetLocationByName(locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
+	err := common.ReadAllPagesWithFilters(service.Client, locationsEndpoint, map[string]string{"search": locationName}, &locations)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,8 @@ func (service *Service) GetSubLocationByNames(locationName, subLocatioName strin
 	if err != nil {
 		return nil, err
 	}
-	subLocations, err := service.GetSublocations(location.ID)
+	var subLocations []Locations
+	err = common.ReadAllPagesWithFilters(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, location.ID, subLocationEndpoint), map[string]string{"search": subLocatioName}, &subLocations)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +275,8 @@ func (service *Service) GetSubLocationByName(subLocatioName string) (*Locations,
 		return nil, err
 	}
 	for _, location := range locations {
-		subLocs, _ := service.GetSublocations(location.ID)
+		var subLocs []Locations
+		_ = common.ReadAllPagesWithFilters(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, location.ID, subLocationEndpoint), map[string]string{"search": subLocatioName}, &subLocs)
 		for _, subLoc := range subLocs {
 			if strings.EqualFold(subLoc.Name, subLocatioName) {
 				return &subLoc, nil

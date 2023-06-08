@@ -119,7 +119,7 @@ func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {
 
 func (service *Service) GetByName(ruleName string) (*FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
+	err := common.ReadAllPagesWithFilters(service.Client, firewallRulesEndpoint, map[string]string{"search": ruleName}, &rules)
 	if err != nil {
 		return nil, err
 	}
