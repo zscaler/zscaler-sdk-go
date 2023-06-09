@@ -38,7 +38,7 @@ func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Respo
 
 func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, samlAttrName)
 	if err != nil {
 		return nil, nil, err
 	}

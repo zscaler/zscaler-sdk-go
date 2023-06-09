@@ -119,7 +119,7 @@ func (service *Service) Get(serviceEdgeGroupID string) (*ServiceEdgeGroup, *http
 
 func (service *Service) GetByName(serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, serviceEdgeGroupName)
 	if err != nil {
 		return nil, nil, err
 	}

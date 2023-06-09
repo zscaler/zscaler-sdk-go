@@ -65,7 +65,7 @@ func (service *Service) Get(versionID string) (*CustomerVersionProfile, *http.Re
 
 func (service *Service) GetByName(versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, versionProfileName)
 	if err != nil {
 		return nil, nil, err
 	}

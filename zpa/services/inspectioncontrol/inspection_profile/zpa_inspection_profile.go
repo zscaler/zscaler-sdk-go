@@ -163,7 +163,7 @@ func setVersion(inspectionProfile *InspectionProfile) {
 
 func (service *Service) GetByName(profileName string) (*InspectionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, profileName)
 	if err != nil {
 		return nil, nil, err
 	}

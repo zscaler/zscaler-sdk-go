@@ -37,7 +37,7 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 
 func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, scimName)
 	if err != nil {
 		return nil, nil, err
 	}
