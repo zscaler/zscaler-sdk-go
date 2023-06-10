@@ -60,7 +60,7 @@ func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, err
 
 func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, scimAttributeName)
 	if err != nil {
 		return nil, nil, err
 	}

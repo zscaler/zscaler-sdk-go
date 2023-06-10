@@ -66,7 +66,7 @@ func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Respons
 // This function search the App Connector by Name
 func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, appConnectorName)
 	if err != nil {
 		return nil, nil, err
 	}

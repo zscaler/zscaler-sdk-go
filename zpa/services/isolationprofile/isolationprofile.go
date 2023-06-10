@@ -39,7 +39,7 @@ func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response
 
 func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, profileName)
 	if err != nil {
 		return nil, nil, err
 	}

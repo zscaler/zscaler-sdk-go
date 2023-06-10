@@ -52,7 +52,7 @@ func (service *Service) Get(machineGroupID string) (*MachineGroup, *http.Respons
 
 func (service *Service) GetByName(machineGroupName string) (*MachineGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[MachineGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[MachineGroup](service.Client, relativeURL, machineGroupName)
 	if err != nil {
 		return nil, nil, err
 	}

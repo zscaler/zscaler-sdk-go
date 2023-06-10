@@ -77,7 +77,7 @@ func (service *Service) Get(segmentGroupID string) (*SegmentGroup, *http.Respons
 
 func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, segmentName)
 	if err != nil {
 		return nil, nil, err
 	}

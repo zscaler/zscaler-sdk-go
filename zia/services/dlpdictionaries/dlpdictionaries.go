@@ -141,7 +141,7 @@ func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
 
 func (service *Service) GetByName(dictionaryName string) (*DlpDictionary, error) {
 	var dictionaries []DlpDictionary
-	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
+	err := common.ReadAllPagesWithFilters(service.Client, dlpDictionariesEndpoint, map[string]string{"search": dictionaryName}, &dictionaries)
 	if err != nil {
 		return nil, err
 	}

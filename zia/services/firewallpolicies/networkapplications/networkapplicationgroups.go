@@ -33,7 +33,7 @@ func (service *Service) GetNetworkApplicationGroups(groupID int) (*NetworkApplic
 
 func (service *Service) GetNetworkApplicationGroupsByName(appGroupsName string) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
-	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
+	err := common.ReadAllPagesWithFilters(service.Client, networkAppGroupsEndpoint, map[string]string{"search": appGroupsName}, &networkApplicationGroups)
 	if err != nil {
 		return nil, err
 	}

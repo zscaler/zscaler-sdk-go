@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.5.5 (June, 10 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #131](https://github.com/zscaler/zscaler-sdk-go/pull/131) - Improved search mechanisms for both ZIA and ZPA resources, to ensure streamline upstream GET API requests and responses using ``search`` parameter. Notice that not all current API endpoints support the search parameter, in which case, all resources will be returned.
+
 # 1.5.4 (June, 5 2023)
 
 ## Notes

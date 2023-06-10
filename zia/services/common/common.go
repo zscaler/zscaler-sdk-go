@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zia"
@@ -45,7 +46,7 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
-func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
+func ReadAllPagesWithFilters[T any](client *zia.Client, endpoint string, filters map[string]string, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -53,7 +54,9 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	if !strings.Contains(endpoint, "?") {
 		endpoint += "?"
 	}
-
+	for k, v := range filters {
+		endpoint += fmt.Sprintf("&%s=%s", k, url.QueryEscape(v))
+	}
 	for {
 		pageItems := []T{}
 		err := client.Read(fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
@@ -67,4 +70,8 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 		page++
 	}
 	return nil
+}
+
+func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
+	return ReadAllPagesWithFilters(client, endpoint, map[string]string{}, list)
 }

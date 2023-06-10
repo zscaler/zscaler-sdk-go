@@ -38,7 +38,7 @@ func (service *Service) GetGroups(groupID int) (*Groups, error) {
 
 func (service *Service) GetGroupByName(groupName string) (*Groups, error) {
 	var groups []Groups
-	err := common.ReadAllPages(service.Client, groupsEndpoint, &groups)
+	err := common.ReadAllPagesWithFilters(service.Client, groupsEndpoint, map[string]string{"search": groupName}, &groups)
 	if err != nil {
 		return nil, err
 	}

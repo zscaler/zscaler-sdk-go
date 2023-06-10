@@ -41,6 +41,13 @@ type ControlGroupItem struct {
 	DefaultGroup                 bool                 `json:"defaultGroup,omitempty"`
 }
 
+type ControlsRequestFilters struct {
+	Version  string `url:"version,omitempty"`
+	Search   string `url:"search,omitempty"`
+	PageSize int    `url:"pagesize,omitempty"`
+	Page     int    `url:"page,omitempty"`
+}
+
 // Get Predefined Controls by ID
 // https://help.zscaler.com/zpa/api-reference#/inspection-control-controller/getPredefinedControlById
 func (service *Service) Get(controlID string) (*PredefinedControls, *http.Response, error) {
@@ -71,11 +78,15 @@ func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
 }
 
 func (service *Service) GetByName(name, version string) (*PredefinedControls, *http.Response, error) {
-	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		Version string `url:"version"`
-	}{Version: version}, nil, &v)
+	v, resp, err := common.GetAllPagesGenericWithCustomFilters[ControlGroupItem](service.Client, relativeURL, name, func(pageSize, page int, searchQuery string) interface{} {
+		return ControlsRequestFilters{
+			Version:  version,
+			Search:   searchQuery,
+			PageSize: pageSize,
+			Page:     page,
+		}
+	})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -92,11 +103,15 @@ func (service *Service) GetByName(name, version string) (*PredefinedControls, *h
 }
 
 func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedControls, error) {
-	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	_, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		Version string `url:"version"`
-	}{Version: version}, nil, &v)
+	v, _, err := common.GetAllPagesGenericWithCustomFilters[ControlGroupItem](service.Client, relativeURL, groupName, func(pageSize, page int, searchQuery string) interface{} {
+		return ControlsRequestFilters{
+			Version:  version,
+			Search:   searchQuery,
+			PageSize: pageSize,
+			Page:     page,
+		}
+	})
 	if err != nil {
 		return nil, err
 	}

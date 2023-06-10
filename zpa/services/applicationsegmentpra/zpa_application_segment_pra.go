@@ -104,7 +104,7 @@ func (service *Service) Get(id string) (*AppSegmentPRA, *http.Response, error) {
 
 func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, BaName)
 	if err != nil {
 		return nil, nil, err
 	}

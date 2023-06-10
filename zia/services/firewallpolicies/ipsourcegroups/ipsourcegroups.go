@@ -43,7 +43,7 @@ func (service *Service) Get(ipGroupID int) (*IPSourceGroups, error) {
 
 func (service *Service) GetByName(ipSourceGroupsName string) (*IPSourceGroups, error) {
 	var ipSourceGroups []IPSourceGroups
-	err := common.ReadAllPages(service.Client, ipSourceGroupsEndpoint, &ipSourceGroups)
+	err := common.ReadAllPagesWithFilters(service.Client, ipSourceGroupsEndpoint, map[string]string{"search": ipSourceGroupsName}, &ipSourceGroups)
 	if err != nil {
 		return nil, err
 	}
