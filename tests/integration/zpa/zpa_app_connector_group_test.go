@@ -1,207 +1,112 @@
 package integration
 
 import (
-	"net/http"
 	"testing"
 
-	tests "github.com/zscaler/zscaler-sdk-go/tests/integration"
+	"github.com/zscaler/zscaler-sdk-go/tests"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/appconnectorgroup"
 )
 
-func TestAppConnectorGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
-		// Write a JSON response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"id": "123", "name": "Group 1"}`))
-	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
-
-	// Make the GET request
-	group, _, err := service.Get("123")
-
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making GET request: %v", err)
-	}
-
-	// Check if the group ID and name match the expected values
-	if group.ID != "123" {
-		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
-	}
-	if group.Name != "Group 1" {
-		t.Errorf("Expected group name 'Group 1', but got '%s'", group.Name)
-	}
-}
-
 func TestAppConnectorGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
-		// Write a JSON response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"id": "123", "name": "Group 1"}`))
-	})
-
-	service := &appconnectorgroup.Service{
-		Client: client,
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
+
+	service := appconnectorgroup.New(client)
+
 	// Create a sample group
 	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
+		Name:      "Group1",
+		Latitude:  "37.3861",
+		Longitude: "-122.0839",
+		Location:  "Mountain View, CA",
 	}
 
-	// Make the POST request
-	createdGroup, _, err := service.Create(group)
+	// Test resource creation
+	createdResource, _, err := service.Create(group)
 
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
 	}
 
-	// Check if the created group ID and name match the expected values
-	if createdGroup.ID != "123" {
-		t.Errorf("Expected created group ID '123', but got '%s'", createdGroup.ID)
+	if createdResource.ID == "" {
+		t.Error("Expected created group ID to be non-empty, but got ''")
 	}
-	if createdGroup.Name != "Group 1" {
-		t.Errorf("Expected created group name 'Group 1', but got '%s'", createdGroup.Name)
-	}
-}
-
-// You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
-
-func TestAppConnectorGroup_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
-		// Get the query parameter "name" from the request
-		query := r.URL.Query()
-		name := query.Get("search")
-
-		// Check if the name matches the expected value
-		if name == "Group1" {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"list":[
-					{"id": "123", "name": "Group1"}
-				],
-				"totalPages":1
-				}`))
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"error": "Group not found"}`))
-		}
-	})
-	service := &appconnectorgroup.Service{
-		Client: client,
+	if createdResource.Name != "Group1" {
+		t.Errorf("Expected created group name 'Group1', but got '%s'", createdResource.Name)
 	}
 
-	// Make the GetByName request
-	group, _, err := service.GetByName("Group1")
-
-	// Check if the request was successful
+	// Test resource retrieval
+	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error making GetByName request: %v", err)
+		t.Errorf("Error retrieving group: %v", err)
 	}
-
-	// Check if the group ID and name match the expected values
-	if group.ID != "123" {
-		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved group ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
-	if group.Name != "Group1" {
-		t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
+	if retrievedResource.Name != "Group1" {
+		t.Errorf("Expected retrieved group name 'Group1', but got '%s'", createdResource.Name)
 	}
-}
-
-func TestAppConnectorGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
-		// Write a JSON response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
-	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
-	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
-	}
-
-	// Make the Update request
-	_, err := service.Update("123", &group)
-
-	// Check if the request was successful
+	// Test resource update
+	retrievedResource.Name = "Group1-Updated"
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
-		t.Errorf("Error making Update request: %v", err)
+		t.Errorf("Error updating group: %v", err)
 	}
-}
-
-func TestAppConnectorGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
-	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
-
-	// Make the Delete request
-	_, err := service.Delete("123")
-
-	// Check if the request was successful
+	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error making Delete request: %v", err)
+		t.Errorf("Error retrieving group: %v", err)
 	}
-}
-
-func TestAppConnectorGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClient()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
-			"list":[
-				{"id": "123", "name": "Group 1"},
-				{"id": "456", "name": "Group 2"}
-			],
-			"totalPages":1
-			}`))
-	})
-	service := &appconnectorgroup.Service{
-		Client: client,
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated group ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
 	}
-
-	// Make the GetAll request
-	groups, _, err := service.GetAll()
-
-	// Check if the request was successful
+	if updatedResource.Name != "Group1-Updated" {
+		t.Errorf("Expected retrieved updated group name 'Group1', but got '%s'", updatedResource.Name)
+	}
+	// Test resource retrieval by name
+	retrievedResource, _, err = service.GetByName("Group1-Updated")
 	if err != nil {
-		t.Errorf("Error making GetAll request: %v", err)
+		t.Errorf("Error retrieving group by name: %v", err)
 	}
-
-	// Check the returned groups
-	expectedGroups := []*appconnectorgroup.AppConnectorGroup{
-		{ID: "123", Name: "Group 1"},
-		{ID: "456", Name: "Group 2"},
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved group ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
-	if len(groups) != len(expectedGroups) {
-		t.Errorf("Expected %d groups, but got %d", len(expectedGroups), len(groups))
+	if retrievedResource.Name != "Group1-Updated" {
+		t.Errorf("Expected retrieved group name 'Group1', but got '%s'", createdResource.Name)
 	}
-	for i, expectedGroup := range expectedGroups {
-		group := groups[i]
-		if group.ID != expectedGroup.ID {
-			t.Errorf("Expected group ID '%s', but got '%s'", expectedGroup.ID, group.ID)
-		}
-		if group.Name != expectedGroup.Name {
-			t.Errorf("Expected group name '%s', but got '%s'", expectedGroup.Name, group.Name)
+	// Test resources retrieval
+	resources, _, err := service.GetAll()
+	if err != nil {
+		t.Errorf("Error retrieving groups: %v", err)
+	}
+	if len(resources) == 0 {
+		t.Error("Expected retrieved groups to be non-empty, but got empty slice")
+	}
+	// check if the created resource is in the list
+	found := false
+	for _, resource := range resources {
+		if resource.ID == createdResource.ID {
+			found = true
+			break
 		}
 	}
+	if !found {
+		t.Errorf("Expected retrieved groups to contain created group '%s', but it didn't", createdResource.ID)
+	}
+	// Test resource removal
+	_, err = service.Delete(createdResource.ID)
+	if err != nil {
+		t.Errorf("Error deleting group: %v", err)
+		return
+	}
+
+	// Test resource retrieval after deletion
+	_, _, err = service.Get(createdResource.ID)
+	if err == nil {
+		t.Errorf("Expected error retrieving deleted group, but got nil")
+	}
+
 }
