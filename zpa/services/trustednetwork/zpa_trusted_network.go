@@ -52,13 +52,19 @@ func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Respons
 
 func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
 	adaptedTrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
+	// to avoid such errors:
+	// - {"params" : [ "-" ], "id" : "filtering.input.invalid.operand", "reason" : "Invalid operand:- in Filtering criteria."}
+	// - search=Corp++Trusted++Networks {"params" : [ "" ],"id" : "filtering.input.invalid.operand","reason" : "Invalid operand: in Filtering criteria."}
+	adaptedTrustedNetworkName = strings.ReplaceAll(adaptedTrustedNetworkName, "-", "")
+	adaptedTrustedNetworkName = strings.TrimSpace(adaptedTrustedNetworkName)
+	adaptedTrustedNetworkName = strings.Split(adaptedTrustedNetworkName, " ")[0]
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, adaptedTrustedNetworkName)
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, trustedNetwork := range list {
-		if strings.EqualFold(common.RemoveCloudSuffix(trustedNetwork.Name), adaptedTrustedNetworkName) {
+		if strings.EqualFold(common.RemoveCloudSuffix(trustedNetwork.Name), common.RemoveCloudSuffix(trustedNetworkName)) {
 			return &trustedNetwork, resp, nil
 		}
 	}

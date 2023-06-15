@@ -5,10 +5,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/serviceedgegroup"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/policysetcontroller"
 )
 
-func TestServiceEdgeGroup_Create(t *testing.T) {
+func TestAccessPolicy(t *testing.T) {
+	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -17,26 +18,21 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		return
 	}
 
-	service := serviceedgegroup.New(client)
-
-	group := serviceedgegroup.ServiceEdgeGroup{
-		Name:                   name,
-		Description:            name,
-		Enabled:                true,
-		Latitude:               "37.3861",
-		Longitude:              "-122.0839",
-		Location:               "Mountain View, CA",
-		IsPublic:               "TRUE",
-		UpgradeDay:             "SUNDAY",
-		UpgradeTimeInSecs:      "66600",
-		OverrideVersionProfile: true,
-		VersionProfileName:     "New Release",
-		VersionProfileID:       "2",
+	service := policysetcontroller.New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	if err != nil {
+		t.Errorf("Error getting access policy set: %v", err)
+		return
 	}
-
+	accessPolicyRule := policysetcontroller.PolicyRule{
+		Name:        name,
+		Description: "New application segment",
+		PolicySetID: accessPolicySet.ID,
+		Action:      "ALLOW",
+		Conditions:  []policysetcontroller.Conditions{},
+	}
 	// Test resource creation
-	createdResource, _, err := service.Create(group)
-
+	createdResource, _, err := service.Create(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -48,9 +44,8 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
-
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -62,11 +57,11 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -77,7 +72,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -88,7 +83,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := service.GetAllByType(policyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -107,14 +102,14 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = service.Delete(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
+	_, _, err = service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
