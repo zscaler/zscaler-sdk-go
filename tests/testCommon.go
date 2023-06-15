@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/zscaler/zscaler-sdk-go/logger"
 	"github.com/zscaler/zscaler-sdk-go/zpa"
 )
 
@@ -47,8 +48,8 @@ func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
 			ClientID:     "clientid",
 			ClientSecret: "clientsecret",
 			CustomerID:   "customerid",
-			// Logger:       logger.NewNopLogger(),
-			BaseURL: serverURL,
+			Logger:       logger.NewNopLogger(),
+			BaseURL:      serverURL,
 		},
 	}
 	return client, mux, server

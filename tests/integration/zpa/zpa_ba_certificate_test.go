@@ -27,13 +27,13 @@ func TestBACertificates(t *testing.T) {
 	}
 	name := certificates[0].Name
 	t.Log("Getting browser access certificate by name:" + name)
-	net, _, err := service.GetIssuedByName(name)
+	certificate, _, err := service.GetIssuedByName(name)
 	if err != nil {
 		t.Errorf("Error getting browser access certificate by name: %v", err)
 		return
 	}
-	if net.Name != name {
-		t.Errorf("browser access certificate name does not match: expected %s, got %s", name, net.Name)
+	if certificate.Name != name {
+		t.Errorf("browser access certificate name does not match: expected %s, got %s", name, certificate.Name)
 		return
 	}
 }
