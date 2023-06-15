@@ -1,1 +1,83 @@
 package cbicertificatecontroller
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
+)
+
+const (
+	cbiConfig              = "/cbiconfig/cbi/api/customers/"
+	cbiCertificateEndpoint = "/certificate"
+)
+
+type CBICertificate struct {
+	ID        string `json:"id,omitempty"`
+	Name      string `json:"name,omitempty"`
+	PEM       string `json:"pem,omitempty"`
+	Enabled   bool   `json:"enabled"`
+	IsDefault bool   `json:"isDefault"`
+}
+
+func (service *Service) Get(certificateID string) (*CBICertificate, *http.Response, error) {
+	v := new(CBICertificate)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, certificateID)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v, resp, nil
+}
+
+func (service *Service) GetByName(certificateName string) (*CBICertificate, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificateEndpoint
+	list, resp, err := common.GetAllPagesGeneric[CBICertificate](service.Client, relativeURL, "")
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, profile := range list {
+		if strings.EqualFold(profile.Name, certificateName) {
+			return &profile, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no certificate named '%s' was found", certificateName)
+}
+
+func (service *Service) Create(cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
+	v := new(CBICertificate)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, nil, cbiProfile, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
+}
+
+func (service *Service) Update(certificateID string, certificateRequest *CBICertificate) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, certificateID)
+	resp, err := service.Client.NewRequestDo("PUT", path, nil, certificateRequest, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func (service *Service) Delete(certificateID string) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, certificateID)
+	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func (service *Service) GetAll() ([]CBICertificate, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificateEndpoint
+	list, resp, err := common.GetAllPagesGeneric[CBICertificate](service.Client, relativeURL, "")
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}

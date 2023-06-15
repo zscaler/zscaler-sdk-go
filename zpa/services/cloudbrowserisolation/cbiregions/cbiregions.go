@@ -18,6 +18,7 @@ type CBIRegions struct {
 	Name string `json:"name,omitempty"`
 }
 
+// The current API does not seem to support search by ID
 func (service *Service) Get(RegionID string) (*CBIRegions, *http.Response, error) {
 	v := new(CBIRegions)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiRegionsEndpoint, RegionID)
@@ -29,6 +30,7 @@ func (service *Service) Get(RegionID string) (*CBIRegions, *http.Response, error
 	return v, resp, nil
 }
 
+// The current API does not seem to support search by Name
 func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CBIRegions](service.Client, relativeURL, "")
