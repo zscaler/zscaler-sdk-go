@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.18, 1.19, 1.20]
+        go-version: [1.18, 1.19]
 
     steps:
 
@@ -23,9 +23,9 @@ jobs:
 
     - name: Get dependencies
       run: |
-        go get -v -t -d ./zpa/
-        go get -v -t -d ./zia/
-        go get -v -t -d ./zdx/
+        go get -v -t -d ./zpa
+        go get -v -t -d ./zia
+        go get -v -t -d ./zdx
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
