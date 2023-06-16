@@ -1,5 +1,6 @@
 package cloudiacalerts
 
+/*
 const (
 	cloudAlertsEndpoint = "/v1/alerts/iac"
 )
@@ -86,3 +87,4 @@ type Kubernetes struct {
 	ClusteType  string `json:"cluster_type,omitempty"`
 	ClusterName string `json:"cluster_name,omitempty"`
 }
+*/

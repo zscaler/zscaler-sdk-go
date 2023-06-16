@@ -1,13 +1,15 @@
 package cloudalerts
 
+/*
 import (
-	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/zpc"
 )
 
 type Service struct {
-	Client *zpa.Client
+	Client *zpc.Client
 }
 
-func New(c *zpa.Client) *Service {
+func New(c *zpc.Client) *Service {
 	return &Service{Client: c}
 }
+*/
