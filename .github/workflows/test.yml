@@ -1,5 +1,15 @@
-on: [pull_request]
 name: Test
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - beta
+      - alpha
+      - '[0-9]+.x'
+      - '[0-9]+.[0-9]+.x'
+  pull_request:
+
 jobs:
   test:
     strategy:
