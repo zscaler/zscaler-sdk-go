@@ -1,5 +1,15 @@
 # Changelog
 
+# 1.6.0 (June, 18 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #133](https://github.com/zscaler/zscaler-sdk-go/pull/133) - Included initial ZPA and ZIA integration and unit tests
+- [PR #134](https://github.com/zscaler/zscaler-sdk-go/pull/134) - Included additional ZPA and ZIA integration and unit tests
+
 # 1.5.5 (June, 10 2023)
 
 ## Notes
