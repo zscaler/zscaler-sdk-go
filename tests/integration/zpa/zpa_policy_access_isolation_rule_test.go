@@ -1,13 +1,14 @@
 package integration
 
-/*
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/isolationprofile"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/policysetcontroller"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
 func TestAccessIsolationPolicy(t *testing.T) {
@@ -20,7 +21,24 @@ func TestAccessIsolationPolicy(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting idps: %v", err)
+		return
+	}
+	if len(idpList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+	samlService := samlattribute.New(client)
+	samlsList, _, err := samlService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
+	if len(samlsList) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	}
 	service := policysetcontroller.New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
@@ -40,7 +58,23 @@ func TestAccessIsolationPolicy(t *testing.T) {
 		PolicySetID:           accessPolicySet.ID,
 		ZpnIsolationProfileID: profileID.ID,
 		Action:                "ISOLATE",
-		Conditions:            []policysetcontroller.Conditions{
+		Conditions: []policysetcontroller.Conditions{
+			{
+				Operator: "OR",
+				Operands: []policysetcontroller.Operands{
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_exporter",
+					},
+					{
+						ObjectType: "SAML",
+						LHS:        samlsList[0].ID,
+						RHS:        "user1@acme.com",
+						IdpID:      idpList[0].ID,
+					},
+				},
+			},
 		},
 	}
 	// Test resource creation
@@ -127,4 +161,3 @@ func TestAccessIsolationPolicy(t *testing.T) {
 	}
 
 }
-*/

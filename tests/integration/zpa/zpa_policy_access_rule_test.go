@@ -5,7 +5,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/policysetcontroller"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/postureprofile"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
 func TestAccessPolicy(t *testing.T) {
@@ -17,7 +20,33 @@ func TestAccessPolicy(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting idps: %v", err)
+		return
+	}
+	if len(idpList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+	samlService := samlattribute.New(client)
+	samlsList, _, err := samlService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
+	if len(samlsList) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	}
+	postureService := postureprofile.New(client)
+	postureList, _, err := postureService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting posture profiles: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
+	}
 	service := policysetcontroller.New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
@@ -29,7 +58,24 @@ func TestAccessPolicy(t *testing.T) {
 		Description: "New application segment",
 		PolicySetID: accessPolicySet.ID,
 		Action:      "ALLOW",
-		Conditions:  []policysetcontroller.Conditions{},
+		Conditions: []policysetcontroller.Conditions{
+			{
+				Operator: "OR",
+				Operands: []policysetcontroller.Operands{
+					{
+						ObjectType: "POSTURE",
+						LHS:        postureList[0].PostureudID,
+						RHS:        "false",
+					},
+					{
+						ObjectType: "SAML",
+						LHS:        samlsList[0].ID,
+						RHS:        "user1@acme.com",
+						IdpID:      idpList[0].ID,
+					},
+				},
+			},
+		},
 	}
 	// Test resource creation
 	createdResource, _, err := service.Create(&accessPolicyRule)

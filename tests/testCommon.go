@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/logger"
+	"github.com/zscaler/zscaler-sdk-go/zia"
 	"github.com/zscaler/zscaler-sdk-go/zpa"
 )
 
@@ -26,6 +27,20 @@ func NewZpaClient() (*zpa.Client, error) {
 	}
 	zpaClient := zpa.NewClient(config)
 	return zpaClient, nil
+}
+
+func NewZiaClient() (*zia.Client, error) {
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
+
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "testing")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
 
 func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
