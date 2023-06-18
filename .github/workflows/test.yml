@@ -30,5 +30,10 @@ jobs:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
         run: |
-          go vet ./...
-          go test -v -race ./...
+          go test -v ./zpa
+          go test -v ./zia
+          go test -v ./zdx
+          go test -v ./zcc
+          go test -v -cover ./tests -v -parallel 30  -timeout 120m
+          go test -v -cover ./tests/integration/zpa -v -parallel 30  -timeout 120m
+          go test -v -cover ./tests/integration/zia -v -parallel 30  -timeout 120m
