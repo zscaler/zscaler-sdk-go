@@ -11,7 +11,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
-func TestAccessPolicy(t *testing.T) {
+func TestPolicyAccessRule(t *testing.T) {
 	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
