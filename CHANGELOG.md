@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.6.1 (June, 21 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #135](https://github.com/zscaler/zscaler-sdk-go/pull/133) - Fixed ZPA Inspection Predefined Control and inspection profile resources
+
 # 1.6.0 (June, 18 2023)
 
 ## Notes
