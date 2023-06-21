@@ -3,6 +3,7 @@ package inspection_predefined_controls
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
@@ -79,14 +80,15 @@ func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
 
 func (service *Service) GetByName(name, version string) (*PredefinedControls, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	v, resp, err := common.GetAllPagesGenericWithCustomFilters[ControlGroupItem](service.Client, relativeURL, name, func(pageSize, page int, searchQuery string) interface{} {
-		return ControlsRequestFilters{
-			Version:  version,
-			Search:   searchQuery,
-			PageSize: pageSize,
-			Page:     page,
-		}
-	})
+	searchQuery := strings.TrimSpace(name)
+	searchQuery = strings.Split(searchQuery, " ")[0]
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = url.QueryEscape(searchQuery)
+	var v []ControlGroupItem
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
+		Version: version,
+		Search:  searchQuery,
+	}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -104,14 +106,11 @@ func (service *Service) GetByName(name, version string) (*PredefinedControls, *h
 
 func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedControls, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	v, _, err := common.GetAllPagesGenericWithCustomFilters[ControlGroupItem](service.Client, relativeURL, groupName, func(pageSize, page int, searchQuery string) interface{} {
-		return ControlsRequestFilters{
-			Version:  version,
-			Search:   searchQuery,
-			PageSize: pageSize,
-			Page:     page,
-		}
-	})
+	var v []ControlGroupItem
+	_, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
+		Version: version,
+	}, nil, &v)
+
 	if err != nil {
 		return nil, err
 	}
