@@ -1,7 +1,9 @@
 package dlp_engines
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
@@ -53,6 +55,41 @@ func (service *Service) GetByName(engineName string) (*DLPEngines, error) {
 		}
 	}
 	return nil, fmt.Errorf("no dlp engine found with name: %s", engineName)
+}
+
+func (service *Service) Create(engineID *DLPEngines) (*DLPEngines, *http.Response, error) {
+	resp, err := service.Client.Create(dlpEnginesEndpoint, *engineID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	createdDlpEngine, ok := resp.(*DLPEngines)
+	if !ok {
+		return nil, nil, errors.New("object returned from api was not a dlp engine pointer")
+	}
+
+	service.Client.Logger.Printf("[DEBUG]returning new dlp engine from create: %d", createdDlpEngine.ID)
+	return createdDlpEngine, nil, nil
+}
+
+func (service *Service) Update(engineID int, engines *DLPEngines) (*DLPEngines, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), *engines)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedDlpEngine, _ := resp.(*DLPEngines)
+
+	service.Client.Logger.Printf("[DEBUG]returning updates dlp engine from update: %d", updatedDlpEngine.ID)
+	return updatedDlpEngine, nil, nil
+}
+
+func (service *Service) Delete(engineID int) (*http.Response, error) {
+	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (service *Service) GetAll() ([]DLPEngines, error) {
