@@ -14,14 +14,13 @@ const (
 )
 
 type IsolationProfile struct {
-	ID               string           `json:"id,omitempty"`
-	Name             string           `json:"name,omitempty"`
-	Description      string           `json:"description,omitempty"`
-	Enabled          bool             `json:"enabled"`
-	IsDefault        bool             `json:"isDefault"`
-	HREF             string           `json:"href,omitempty"`
-	SecurityControls SecurityControls `json:"securityControls,omitempty"`
-	Regions          []Regions        `json:"regions,omitempty"`
+	ID               string            `json:"id,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	Enabled          bool              `json:"enabled"`
+	IsDefault        bool              `json:"isDefault"`
+	HREF             string            `json:"href,omitempty"`
+	SecurityControls *SecurityControls `json:"securityControls,omitempty"`
+	Regions          []Regions         `json:"regions,omitempty"`
 }
 
 type Regions struct {
@@ -30,10 +29,12 @@ type Regions struct {
 }
 
 type SecurityControls struct {
-	DocumentViewer bool   `json:"documentViewer,omitempty"`
-	UploadDownload string `json:"uploadDownload,omitempty"`
-	CopyPaste      string `json:"copyPaste,omitempty"`
-	LocalRender    bool   `json:"localRender,omitempty"`
+	DocumentViewer     bool   `json:"documentViewer,omitempty"`
+	UploadDownload     string `json:"uploadDownload,omitempty"`
+	CopyPaste          string `json:"copyPaste,omitempty"`
+	LocalRender        bool   `json:"localRender,omitempty"`
+	AllowPrinting      bool   `json:"allowPrinting,omitempty"`
+	RestrictKeystrokes bool   `json:"restrictKeystrokes,omitempty"`
 }
 
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
