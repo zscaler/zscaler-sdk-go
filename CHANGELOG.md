@@ -8,6 +8,7 @@
 ### Enhancements
 
 - [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
 
 # 1.6.1 (June, 21 2023)
 
