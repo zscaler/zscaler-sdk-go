@@ -14,6 +14,10 @@
 ## Notes
 - Golang: **v1.19**
 
+### Enhancements
+
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
 ### Fixes
 
 - [PR #135](https://github.com/zscaler/zscaler-sdk-go/pull/133) - Fixed ZPA Inspection Predefined Control and inspection profile resources
