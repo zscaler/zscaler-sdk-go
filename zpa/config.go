@@ -19,7 +19,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 

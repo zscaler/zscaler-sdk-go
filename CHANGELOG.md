@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.6.2 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+
 # 1.6.1 (June, 21 2023)
 
 ## Notes
