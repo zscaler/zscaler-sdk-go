@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -40,8 +38,7 @@ func (service *Service) Get(profileID string) (*ZPAProfiles, *http.Response, err
 
 // The current API does not seem to support search by Name
 func (service *Service) GetByName(profileName string) (*ZPAProfiles, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ZPAProfiles](service.Client, relativeURL, "")
+	list, resp, err := service.GetAll()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,7 +52,8 @@ func (service *Service) GetByName(profileName string) (*ZPAProfiles, *http.Respo
 
 func (service *Service) GetAll() ([]ZPAProfiles, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ZPAProfiles](service.Client, relativeURL, "")
+	var list []ZPAProfiles
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

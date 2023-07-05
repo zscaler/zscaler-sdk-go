@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
-	cbiConfig                 = "/cbiconfig/cbi/api/customers/"
-	cbiRegionsEndpoint string = "/regions"
+	cbiConfig          = "/cbiconfig/cbi/api/customers/"
+	cbiRegionsEndpoint = "/regions"
 )
 
 type CBIRegions struct {
@@ -32,8 +30,7 @@ func (service *Service) Get(RegionID string) (*CBIRegions, *http.Response, error
 
 // The current API does not seem to support search by Name
 func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBIRegions](service.Client, relativeURL, "")
+	list, resp, err := service.GetAll()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -47,7 +44,8 @@ func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Resp
 
 func (service *Service) GetAll() ([]CBIRegions, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBIRegions](service.Client, relativeURL, "")
+	var list []CBIRegions
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}
