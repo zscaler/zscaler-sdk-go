@@ -195,6 +195,21 @@ func TestNewClient(t *testing.T) {
 			},
 		},
 		{
+			name:  "QA cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "qa",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.qa.zpath.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
 			name:  "Arbitrary cloud support",
 			args:  struct{ config *Config }{config: nil},
 			cloud: "https://config.somecloud.net",
