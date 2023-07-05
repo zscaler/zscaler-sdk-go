@@ -30,7 +30,7 @@ const (
 	previewBaseUrl           = "https://config.zpapreview.net"
 	devBaseUrl               = "https://public-api.dev.zpath.net"
 	devAuthUrl               = "https://authn1.dev.zpath.net/authn/v1/oauth/token?grant_type=CLIENT_CREDENTIALS"
-	qaBaseUrl                = "https://config.qa.zpath.net/login"
+	qaBaseUrl                = "https://config.qa.zpath.net"
 	defaultTimeout           = 240 * time.Second
 	loggerPrefix             = "zpa-logger: "
 	ZPA_CLIENT_ID            = "ZPA_CLIENT_ID"
