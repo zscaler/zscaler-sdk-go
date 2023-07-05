@@ -1,5 +1,15 @@
 # Changelog
 
+# 1.6.3 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
 # 1.6.2 (July, 5 2023)
 
 ## Notes
