@@ -58,7 +58,7 @@ func TestPolicyAccessRule3(t *testing.T) {
 		Description: "New application segment",
 		PolicySetID: accessPolicySet.ID,
 		Action:      "ALLOW",
-		RuleOrder:   "2",
+		RuleOrder:   "3",
 		Conditions: []policysetcontroller.Conditions{
 			{
 				Operator: "OR",
