@@ -11,7 +11,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
-func TestPolicyAccessRule(t *testing.T) {
+func TestPolicyAccessRule3(t *testing.T) {
 	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -58,6 +58,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		Description: "New application segment",
 		PolicySetID: accessPolicySet.ID,
 		Action:      "ALLOW",
+		RuleOrder:   "2",
 		Conditions: []policysetcontroller.Conditions{
 			{
 				Operator: "OR",
@@ -159,5 +160,4 @@ func TestPolicyAccessRule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
