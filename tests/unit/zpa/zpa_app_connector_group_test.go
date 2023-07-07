@@ -22,7 +22,6 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 
 	// Make the GET request
 	group, _, err := service.Get("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -51,13 +50,29 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	}
 	// Create a sample group
 	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
+		ID:                       "123",
+		Name:                     "Group 1",
+		Description:              "Group 1",
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 
 	// Make the POST request
 	createdGroup, _, err := service.Create(group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -102,7 +117,6 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 
 	// Make the GetByName request
 	group, _, err := service.GetByName("Group1")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -129,13 +143,29 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 		Client: client,
 	}
 	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
+		ID:                       "123",
+		Name:                     "Group 1",
+		Description:              "Group 1",
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "New Release",
+		VersionProfileID:         "2",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 
 	// Make the Update request
 	_, err := service.Update("123", &group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -155,7 +185,6 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 
 	// Make the Delete request
 	_, err := service.Delete("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -181,7 +210,6 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 
 	// Make the GetAll request
 	groups, _, err := service.GetAll()
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

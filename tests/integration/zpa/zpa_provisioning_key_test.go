@@ -23,10 +23,24 @@ func TestProvisiongKey(t *testing.T) {
 	// create application connector group for testing
 	appConnectorGroupService := appconnectorgroup.New(client)
 	appGroup := appconnectorgroup.AppConnectorGroup{
-		Name:      appConnGroupName,
-		Latitude:  "37.3861",
-		Longitude: "-122.0839",
-		Location:  "Mountain View, CA",
+		Name:                     appConnGroupName,
+		Description:              appConnGroupName,
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
 	if err != nil {
@@ -60,7 +74,6 @@ func TestProvisiongKey(t *testing.T) {
 	}
 	// Test resource creation
 	createdResource, _, err := service.Create(associationType, &resource)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -141,5 +154,4 @@ func TestProvisiongKey(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

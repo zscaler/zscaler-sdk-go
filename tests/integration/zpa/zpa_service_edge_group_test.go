@@ -30,13 +30,12 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		UpgradeDay:             "SUNDAY",
 		UpgradeTimeInSecs:      "66600",
 		OverrideVersionProfile: true,
-		VersionProfileName:     "New Release",
-		VersionProfileID:       "2",
+		VersionProfileName:     "Default",
+		VersionProfileID:       "0",
 	}
 
 	// Test resource creation
 	createdResource, _, err := service.Create(group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -118,5 +117,4 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
