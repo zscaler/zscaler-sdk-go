@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.6.4 (July, 8 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+
 # 1.6.3 (July, 5 2023)
 
 ## Notes
