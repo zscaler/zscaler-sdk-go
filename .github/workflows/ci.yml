@@ -10,7 +10,7 @@ on:
       - '[0-9]+.[0-9]+.x'
   pull_request:
   schedule:
-    - cron: '* 5 * * *'
+    - cron: '0 6 * * 1-5'
 
 jobs:
   ZPA-QA-Tenant01-Test:
@@ -36,8 +36,8 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
         run: |
-          go test -v -cover ./tests -v -parallel 30 -timeout 120m
-          go test -v -cover ./tests/integration/zpa -v -parallel 30  -timeout 120m
+          go test -v -cover ./zpa -v -parallel 30 -timeout 120m
+          go test -v -cover ./tests/integration/zpa -v -parallel 30 -timeout 120m
           go test -v -cover ./tests/unit/zpa -v -parallel 30 -timeout 120m
   ZPA-QA-Tenant02-Test:
     strategy:
@@ -62,6 +62,6 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
         run: |
-          go test -v -cover ./tests -v -parallel 30 -timeout 120m
+          go test -v -cover ./zpa -v -parallel 30 -timeout 120m
           go test -v -cover ./tests/integration/zpa -v -parallel 30 -timeout 120m
           go test -v -cover ./tests/unit/zpa -v -parallel 30 -timeout 120m

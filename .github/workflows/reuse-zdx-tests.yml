@@ -34,4 +34,4 @@ jobs:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
         run: |
-          echo "script yet to be written "
+          go test -v -cover ./zdx -v -parallel 30 -timeout 120m
