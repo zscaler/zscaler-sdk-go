@@ -47,6 +47,7 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 
 // SearchValues searchs by features and fields for the API.
 func (service *Service) SearchValues(idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
+	searchQuery = strings.Split(searchQuery, "@")[0]
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
 	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, searchQuery)
 	return l, err
