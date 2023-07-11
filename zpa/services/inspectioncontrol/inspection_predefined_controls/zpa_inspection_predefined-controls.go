@@ -3,6 +3,7 @@ package inspection_predefined_controls
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
@@ -41,6 +42,13 @@ type ControlGroupItem struct {
 	DefaultGroup                 bool                 `json:"defaultGroup,omitempty"`
 }
 
+type ControlsRequestFilters struct {
+	Version  string `url:"version,omitempty"`
+	Search   string `url:"search,omitempty"`
+	PageSize int    `url:"pagesize,omitempty"`
+	Page     int    `url:"page,omitempty"`
+}
+
 // Get Predefined Controls by ID
 // https://help.zscaler.com/zpa/api-reference#/inspection-control-controller/getPredefinedControlById
 func (service *Service) Get(controlID string) (*PredefinedControls, *http.Response, error) {
@@ -71,11 +79,16 @@ func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
 }
 
 func (service *Service) GetByName(name, version string) (*PredefinedControls, *http.Response, error) {
-	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		Version string `url:"version"`
-	}{Version: version}, nil, &v)
+	searchQuery := strings.TrimSpace(name)
+	searchQuery = strings.Split(searchQuery, " ")[0]
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = url.QueryEscape(searchQuery)
+	var v []ControlGroupItem
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
+		Version: version,
+		Search:  searchQuery,
+	}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -92,11 +105,12 @@ func (service *Service) GetByName(name, version string) (*PredefinedControls, *h
 }
 
 func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedControls, error) {
-	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-	_, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		Version string `url:"version"`
-	}{Version: version}, nil, &v)
+	var v []ControlGroupItem
+	_, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
+		Version: version,
+	}, nil, &v)
+
 	if err != nil {
 		return nil, err
 	}

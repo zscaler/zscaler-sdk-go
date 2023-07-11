@@ -109,6 +109,7 @@ func TestNewClient(t *testing.T) {
 	os.Setenv(ZPA_CLIENT_ID, "ClientID")
 	os.Setenv(ZPA_CLIENT_SECRET, "ClientSecret")
 	os.Setenv(ZPA_CUSTOMER_ID, "CustomerID")
+	os.Setenv(ZPA_CLOUD, "Cloud")
 	type args struct {
 		config *Config
 	}
@@ -161,6 +162,7 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			},
 		},
@@ -176,6 +178,7 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			},
 		},
@@ -191,6 +194,23 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name:  "QA cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "qa",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.qa.zpath.net",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			},
 		},
@@ -206,6 +226,7 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			},
 		},
@@ -217,6 +238,7 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			}},
 			wantC: &Config{
@@ -224,6 +246,7 @@ func TestNewClient(t *testing.T) {
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
 				CustomerID:   "CustomerID",
+				Cloud:        "Cloud",
 				UserAgent:    "userAgent",
 			},
 		},

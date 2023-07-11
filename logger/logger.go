@@ -18,6 +18,10 @@ type nopLogger struct{}
 
 func (l *nopLogger) Printf(format string, v ...interface{}) {}
 
+func NewNopLogger() Logger {
+	return &nopLogger{}
+}
+
 type defaultLogger struct {
 	logger  *log.Logger
 	Verbose bool
