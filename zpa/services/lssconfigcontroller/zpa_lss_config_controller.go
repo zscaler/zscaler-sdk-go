@@ -23,20 +23,22 @@ type LSSResource struct {
 }
 
 type LSSConfig struct {
-	AuditMessage  string   `json:"auditMessage,omitempty"`
-	CreationTime  string   `json:"creationTime,omitempty"`
-	Description   string   `json:"description,omitempty"`
-	Enabled       bool     `json:"enabled,omitempty"`
-	Filter        []string `json:"filter,omitempty"`
-	Format        string   `json:"format,omitempty"`
-	ID            string   `json:"id,omitempty"`
-	ModifiedBy    string   `json:"modifiedBy,omitempty"`
-	ModifiedTime  string   `json:"modifiedTime,omitempty"`
-	Name          string   `json:"name,omitempty"`
-	LSSHost       string   `json:"lssHost,omitempty"`
-	LSSPort       string   `json:"lssPort,omitempty"`
-	SourceLogType string   `json:"sourceLogType,omitempty"`
-	UseTLS        bool     `json:"useTls,omitempty"`
+	AuditMessage    string   `json:"auditMessage,omitempty"`
+	CreationTime    string   `json:"creationTime,omitempty"`
+	Description     string   `json:"description,omitempty"`
+	Enabled         bool     `json:"enabled,omitempty"`
+	Filter          []string `json:"filter,omitempty"`
+	Format          string   `json:"format,omitempty"`
+	ID              string   `json:"id,omitempty"`
+	ModifiedBy      string   `json:"modifiedBy,omitempty"`
+	ModifiedTime    string   `json:"modifiedTime,omitempty"`
+	Name            string   `json:"name,omitempty"`
+	LSSHost         string   `json:"lssHost,omitempty"`
+	LSSPort         string   `json:"lssPort,omitempty"`
+	SourceLogType   string   `json:"sourceLogType,omitempty"`
+	MicroTenantID   string   `json:"microtenantId,omitempty"`
+	MicroTenantName string   `json:"microtenantName,omitempty"`
+	UseTLS          bool     `json:"useTls,omitempty"`
 }
 
 type ConnectorGroups struct {
@@ -69,6 +71,8 @@ type PolicyRuleResource struct {
 	ZpnCbiProfileID          string                         `json:"zpnCbiProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID            string                         `json:"microtenantId,omitempty"`
+	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
 }
 
@@ -97,6 +101,8 @@ type PolicyRule struct {
 	ZpnCbiProfileID          string       `json:"zpnCbiProfileId,omitempty"`
 	ZpnInspectionProfileID   string       `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string       `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID            string       `json:"microtenantId,omitempty"`
+	MicroTenantName          string       `json:"microtenantName,omitempty"`
 	Conditions               []Conditions `json:"conditions,omitempty"`
 }
 

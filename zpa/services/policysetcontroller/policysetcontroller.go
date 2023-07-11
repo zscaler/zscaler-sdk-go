@@ -53,6 +53,8 @@ type PolicyRule struct {
 	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID            string               `json:"microtenantId,omitempty"`
+	MicroTenantName          string               `json:"microtenantName,omitempty"`
 	Conditions               []Conditions         `json:"conditions"`
 	AppServerGroups          []AppServerGroups    `json:"appServerGroups"`
 	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups"`

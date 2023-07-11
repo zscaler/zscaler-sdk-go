@@ -38,6 +38,8 @@ type ProvisioningKey struct {
 	ZcomponentID          string   `json:"zcomponentId,omitempty"`
 	ZcomponentName        string   `json:"zcomponentName,omitempty"`
 	AssociationType       string   `json:"associationType"`
+	MicroTenantID         string   `json:"microtenantId,omitempty"`
+	MicroTenantName       string   `json:"microtenantName,omitempty"`
 }
 
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
