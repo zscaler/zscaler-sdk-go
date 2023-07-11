@@ -41,6 +41,8 @@ type AppConnectorGroup struct {
 	UseInDrMode                   bool             `json:"useInDrMode"`
 	TCPQuickAckReadAssistant      bool             `json:"tcpQuickAckReadAssistant"`
 	LSSAppConnectorGroup          bool             `json:"lssAppConnectorGroup"`
+	MicroTenantID                 string           `json:"microtenantId,omitempty"`
+	MicroTenantName               string           `json:"microtenantName,omitempty"`
 	AppServerGroup                []AppServerGroup `json:"serverGroups,omitempty"`
 	Connectors                    []Connector      `json:"connectors,omitempty"`
 }

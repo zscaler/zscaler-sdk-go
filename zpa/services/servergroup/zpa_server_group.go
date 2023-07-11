@@ -24,6 +24,8 @@ type ServerGroup struct {
 	CreationTime       string               `json:"creationTime,omitempty"`
 	ModifiedBy         string               `json:"modifiedBy,omitempty"`
 	ModifiedTime       string               `json:"modifiedTime,omitempty"`
+	MicroTenantID      string               `json:"microtenantId,omitempty"`
+	MicroTenantName    string               `json:"microtenantName,omitempty"`
 	AppConnectorGroups []AppConnectorGroups `json:"appConnectorGroups"`
 	Servers            []ApplicationServer  `json:"servers"`
 	Applications       []Applications       `json:"applications"`

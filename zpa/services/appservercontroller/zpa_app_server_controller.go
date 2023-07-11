@@ -24,6 +24,8 @@ type ApplicationServer struct {
 	ModifiedBy        string   `json:"modifiedBy,"`
 	ModifiedTime      string   `json:"modifiedTime,"`
 	Name              string   `json:"name"`
+	MicroTenantID     string   `json:"microtenantId,omitempty"`
+	MicroTenantName   string   `json:"microtenantName,omitempty"`
 }
 
 func (service *Service) Get(id string) (*ApplicationServer, *http.Response, error) {

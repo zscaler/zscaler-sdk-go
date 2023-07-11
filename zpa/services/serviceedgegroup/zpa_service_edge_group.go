@@ -37,6 +37,8 @@ type ServiceEdgeGroup struct {
 	VersionProfileID              string            `json:"versionProfileId,omitempty"`
 	VersionProfileName            string            `json:"versionProfileName,omitempty"`
 	VersionProfileVisibilityScope string            `json:"versionProfileVisibilityScope,omitempty"`
+	MicroTenantID                 string            `json:"microtenantId,omitempty"`
+	MicroTenantName               string            `json:"microtenantName,omitempty"`
 }
 
 type ServiceEdges struct {
