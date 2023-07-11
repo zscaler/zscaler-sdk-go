@@ -1,5 +1,23 @@
 # Changelog
 
+# 1.7.0 (July, xx 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
+  - Cloud Browser Isolation Banner Controller
+  - Cloud Browser Isolation Certificate Controller
+  - Cloud Browser Isolation Profile Controller
+  - Cloud Browser Isolation Regions
+  - Cloud Browser Isolation ZPA Profile
+
+### Fixes
+
+- [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+
 # 1.6.4 (July, 8 2023)
 
 ## Notes
