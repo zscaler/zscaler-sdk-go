@@ -74,7 +74,7 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 
 func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, idpName)
+	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

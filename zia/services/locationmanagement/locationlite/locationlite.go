@@ -2,6 +2,7 @@ package locationlite
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
@@ -88,7 +89,7 @@ func (service *Service) GetLocationLiteID(locationID int) (*LocationLite, error)
 
 func (service *Service) GetLocationLiteByName(locationLiteName string) (*LocationLite, error) {
 	var locationsLite []LocationLite
-	err := common.ReadAllPagesWithFilters(service.Client, locationLiteEndpoint, map[string]string{"search": locationLiteName}, &locationsLite)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationLiteEndpoint, url.QueryEscape(locationLiteName)), &locationsLite)
 	if err != nil {
 		return nil, err
 	}

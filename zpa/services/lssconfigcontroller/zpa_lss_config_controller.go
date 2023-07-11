@@ -149,7 +149,7 @@ func (service *Service) Get(lssID string) (*LSSResource, *http.Response, error) 
 
 func (service *Service) GetByName(lssName string) (*LSSResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + lssConfigEndpoint
-	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, lssName)
+	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -162,7 +162,7 @@ func (service *Service) Delete(policySetID, ruleId string) (*http.Response, erro
 
 func (service *Service) GetByNameAndType(policyType, ruleName string) (*PolicyRule, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
-	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, ruleName)
+	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

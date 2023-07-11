@@ -39,7 +39,7 @@ func (service *Service) GetDepartments(departmentID int) (*Department, error) {
 
 func (service *Service) GetDepartmentsByName(departmentName string) (*Department, error) {
 	var departments []Department
-	err := common.ReadAllPagesWithFilters(service.Client, departmentEndpoint, map[string]string{"search": departmentName}, &departments)
+	err := common.ReadAllPages(service.Client, departmentEndpoint, &departments)
 	if err != nil {
 		return nil, err
 	}

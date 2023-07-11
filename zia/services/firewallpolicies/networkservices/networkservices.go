@@ -45,7 +45,7 @@ func (service *Service) Get(serviceID int) (*NetworkServices, error) {
 
 func (service *Service) GetByName(networkServiceName string) (*NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPagesWithFilters(service.Client, networkServicesEndpoint, map[string]string{"search": networkServiceName}, &networkServices)
+	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
 	if err != nil {
 		return nil, err
 	}

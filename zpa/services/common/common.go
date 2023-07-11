@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -96,7 +95,6 @@ func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pag
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
 func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
-	searchQuery = url.QueryEscape(searchQuery)
 	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, searchQuery)
 	if err != nil {
 		return nil, resp, err
@@ -115,7 +113,6 @@ func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery stri
 
 // GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
 func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL, searchQuery string, buildFilters func(pageSize, page int, searchQuery string) interface{}) ([]T, *http.Response, error) {
-	searchQuery = url.QueryEscape(searchQuery)
 	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, searchQuery, buildFilters)
 	if err != nil {
 		return nil, resp, err

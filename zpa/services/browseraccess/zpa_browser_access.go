@@ -83,7 +83,7 @@ func (service *Service) Get(id string) (*BrowserAccess, *http.Response, error) {
 
 func (service *Service) GetByName(BaName string) (*BrowserAccess, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
-	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, BaName)
+	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

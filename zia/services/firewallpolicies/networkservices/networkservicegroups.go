@@ -46,7 +46,7 @@ func (service *Service) GetNetworkServiceGroups(serviceGroupID int) (*NetworkSer
 
 func (service *Service) GetNetworkServiceGroupsByName(serviceGroupsName string) (*NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
-	err := common.ReadAllPagesWithFilters(service.Client, networkServiceGroupsEndpoint, map[string]string{"search": serviceGroupsName}, &networkServiceGroups)
+	err := common.ReadAllPages(service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
 	if err != nil {
 		return nil, err
 	}

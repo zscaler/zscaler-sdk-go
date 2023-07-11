@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/isolationprofile"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
 )
 
 func TestIsolationProfile(t *testing.T) {

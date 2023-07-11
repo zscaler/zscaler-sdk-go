@@ -38,7 +38,7 @@ func (service *Service) Get(id string) (*ApplicationServer, *http.Response, erro
 
 func (service *Service) GetByName(appServerName string) (*ApplicationServer, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ApplicationServer](service.Client, relativeURL, appServerName)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationServer](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

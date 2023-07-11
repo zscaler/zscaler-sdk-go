@@ -109,7 +109,7 @@ func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
 func (service *Service) GetDevicesByName(deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
-	err := common.ReadAllPagesWithFilters(service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), map[string]string{"name": deviceName}, &devices)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
 	if err != nil {
 		return nil, err
 	}

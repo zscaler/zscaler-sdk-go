@@ -40,61 +40,46 @@ type ServiceEdgeGroup struct {
 }
 
 type ServiceEdges struct {
-	ApplicationStartTime             string                    `json:"applicationStartTime,omitempty"`
-	ControlChannelStatus             string                    `json:"controlChannelStatus,omitempty"`
-	CreationTime                     string                    `json:"creationTime,omitempty"`
-	CtrlBrokerName                   string                    `json:"ctrlBrokerName,omitempty"`
-	CurrentVersion                   string                    `json:"currentVersion,omitempty"`
-	Description                      string                    `json:"description,omitempty"`
-	Enabled                          bool                      `json:"enabled"`
-	ExpectedUpgradeTime              string                    `json:"expectedUpgradeTime,omitempty"`
-	ExpectedVersion                  string                    `json:"expectedVersion,omitempty"`
-	Fingerprint                      string                    `json:"fingerprint,omitempty"`
-	ID                               string                    `json:"id,omitempty"`
-	IPACL                            []string                  `json:"ipAcl,omitempty"`
-	IssuedCertID                     string                    `json:"issuedCertId,omitempty"`
-	LastBrokerConnectTime            string                    `json:"lastBrokerConnectTime,omitempty"`
-	LastBrokerConnectTimeDuration    string                    `json:"lastBrokerConnectTimeDuration,omitempty"`
-	LastBrokerDisconnectTime         string                    `json:"lastBrokerDisconnectTime,omitempty"`
-	LastBrokerDisconnectTimeDuration string                    `json:"lastBrokerDisconnectTimeDuration,omitempty"`
-	LastUpgradeTime                  string                    `json:"lastUpgradeTime,omitempty"`
-	Latitude                         string                    `json:"latitude,omitempty"`
-	ListenIPs                        []string                  `json:"listenIps,omitempty"`
-	Location                         string                    `json:"location,omitempty"`
-	Longitude                        string                    `json:"longitude,omitempty"`
-	ModifiedBy                       string                    `json:"modifiedBy,omitempty"`
-	ModifiedTime                     string                    `json:"modifiedTime,omitempty"`
-	Name                             string                    `json:"name,omitempty"`
-	ProvisioningKeyID                string                    `json:"provisioningKeyId,omitempty"`
-	ProvisioningKeyName              string                    `json:"provisioningKeyName,omitempty"`
-	Platform                         string                    `json:"platform,omitempty"`
-	PreviousVersion                  string                    `json:"previousVersion,omitempty"`
-	ServiceEdgeGroupID               string                    `json:"serviceEdgeGroupId,omitempty"`
-	ServiceEdgeGroupName             string                    `json:"serviceEdgeGroupName,omitempty"`
-	PrivateIP                        string                    `json:"privateIp,omitempty"`
-	PublicIP                         string                    `json:"publicIp,omitempty"`
-	PublishIPs                       []string                  `json:"publishIps,omitempty"`
-	SargeVersion                     string                    `json:"sargeVersion,omitempty"`
-	EnrollmentCert                   map[string]interface{}    `json:"enrollmentCert"`
-	UpgradeAttempt                   string                    `json:"upgradeAttempt,omitempty"`
-	UpgradeStatus                    string                    `json:"upgradeStatus,omitempty"`
-	ZPNSubModuleUpgradeList          []ZPNSubModuleUpgradeList `json:"zpnSubModuleUpgradeList,omitempty"`
+	ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
+	ControlChannelStatus             string                 `json:"controlChannelStatus,omitempty"`
+	CreationTime                     string                 `json:"creationTime,omitempty"`
+	CtrlBrokerName                   string                 `json:"ctrlBrokerName,omitempty"`
+	CurrentVersion                   string                 `json:"currentVersion,omitempty"`
+	Description                      string                 `json:"description,omitempty"`
+	Enabled                          bool                   `json:"enabled"`
+	ExpectedUpgradeTime              string                 `json:"expectedUpgradeTime,omitempty"`
+	ExpectedVersion                  string                 `json:"expectedVersion,omitempty"`
+	Fingerprint                      string                 `json:"fingerprint,omitempty"`
+	ID                               string                 `json:"id,omitempty"`
+	IPACL                            []string               `json:"ipAcl,omitempty"`
+	IssuedCertID                     string                 `json:"issuedCertId,omitempty"`
+	LastBrokerConnectTime            string                 `json:"lastBrokerConnectTime,omitempty"`
+	LastBrokerConnectTimeDuration    string                 `json:"lastBrokerConnectTimeDuration,omitempty"`
+	LastBrokerDisconnectTime         string                 `json:"lastBrokerDisconnectTime,omitempty"`
+	LastBrokerDisconnectTimeDuration string                 `json:"lastBrokerDisconnectTimeDuration,omitempty"`
+	LastUpgradeTime                  string                 `json:"lastUpgradeTime,omitempty"`
+	Latitude                         string                 `json:"latitude,omitempty"`
+	ListenIPs                        []string               `json:"listenIps,omitempty"`
+	Location                         string                 `json:"location,omitempty"`
+	Longitude                        string                 `json:"longitude,omitempty"`
+	ModifiedBy                       string                 `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                 `json:"modifiedTime,omitempty"`
+	Name                             string                 `json:"name,omitempty"`
+	ProvisioningKeyID                string                 `json:"provisioningKeyId,omitempty"`
+	ProvisioningKeyName              string                 `json:"provisioningKeyName,omitempty"`
+	Platform                         string                 `json:"platform,omitempty"`
+	PreviousVersion                  string                 `json:"previousVersion,omitempty"`
+	ServiceEdgeGroupID               string                 `json:"serviceEdgeGroupId,omitempty"`
+	ServiceEdgeGroupName             string                 `json:"serviceEdgeGroupName,omitempty"`
+	PrivateIP                        string                 `json:"privateIp,omitempty"`
+	PublicIP                         string                 `json:"publicIp,omitempty"`
+	PublishIPs                       []string               `json:"publishIps,omitempty"`
+	SargeVersion                     string                 `json:"sargeVersion,omitempty"`
+	EnrollmentCert                   map[string]interface{} `json:"enrollmentCert"`
+	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
+	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
 }
 
-type ZPNSubModuleUpgradeList struct {
-	ID              string `json:"id,omitempty"`
-	CreationTime    string `json:"creationTime,omitempty"`
-	CurrentVersion  string `json:"currentVersion,omitempty"`
-	EntityGid       string `json:"entityGid,omitempty"`
-	EntityType      string `json:"entityType,omitempty"`
-	ExpectedVersion string `json:"expectedVersion,omitempty"`
-	ModifiedBy      string `json:"modifiedBy,omitempty"`
-	ModifiedTime    string `json:"modifiedTime,omitempty"`
-	PreviousVersion string `json:"previousVersion,omitempty"`
-	Role            string `json:"role,omitempty"`
-	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
-	UpgradeTime     string `json:"upgradeTime,omitempty"`
-}
 type TrustedNetworks struct {
 	CreationTime     string `json:"creationTime,omitempty"`
 	Domain           string `json:"domain,omitempty"`
@@ -119,7 +104,7 @@ func (service *Service) Get(serviceEdgeGroupID string) (*ServiceEdgeGroup, *http
 
 func (service *Service) GetByName(serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, serviceEdgeGroupName)
+	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

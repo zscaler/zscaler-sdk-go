@@ -55,7 +55,7 @@ func (service *Service) Get(associationType, provisioningKeyID string) (*Provisi
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
 func (service *Service) GetByName(associationType, name string) (*ProvisioningKey, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
-	list, resp, err := common.GetAllPagesGeneric[ProvisioningKey](service.Client, relativeURL, name)
+	list, resp, err := common.GetAllPagesGeneric[ProvisioningKey](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

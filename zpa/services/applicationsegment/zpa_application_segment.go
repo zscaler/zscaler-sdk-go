@@ -77,7 +77,7 @@ func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, 
 
 func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ApplicationSegmentResource](service.Client, relativeURL, appName)
+	list, resp, err := common.GetAllPagesGeneric[ApplicationSegmentResource](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

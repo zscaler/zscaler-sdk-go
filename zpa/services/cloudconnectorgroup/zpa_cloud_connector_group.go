@@ -54,7 +54,7 @@ func (service *Service) Get(cloudConnectorGroupID string) (*CloudConnectorGroup,
 
 func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, cloudConnectorGroupName)
+	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

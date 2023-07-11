@@ -74,7 +74,7 @@ func (service *Service) Get(customID string) (*InspectionCustomControl, *http.Re
 
 func (service *Service) GetByName(controlName string) (*InspectionCustomControl, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, controlName)
+	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

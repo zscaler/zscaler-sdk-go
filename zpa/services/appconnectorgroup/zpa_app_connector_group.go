@@ -108,7 +108,7 @@ func (service *Service) Get(appConnectorGroupID string) (*AppConnectorGroup, *ht
 
 func (service *Service) GetByName(appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppConnectorGroup](service.Client, relativeURL, appConnectorGroupName)
+	list, resp, err := common.GetAllPagesGeneric[AppConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

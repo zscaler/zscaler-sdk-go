@@ -82,7 +82,7 @@ func (service *Service) GetVPNByType(vpnType string) (*VPNCredentials, error) {
 func (service *Service) GetByFQDN(vpnCredentialName string) (*VPNCredentials, error) {
 	var vpnCredentials []VPNCredentials
 
-	err := common.ReadAllPagesWithFilters(service.Client, vpnCredentialsEndpoint, map[string]string{"search": vpnCredentialName}, &vpnCredentials)
+	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnCredentials)
 	if err != nil {
 		return nil, err
 	}

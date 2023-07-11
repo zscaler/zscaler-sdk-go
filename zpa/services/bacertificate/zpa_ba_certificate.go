@@ -46,7 +46,7 @@ func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Respo
 
 func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[BaCertificate](service.Client, relativeURL, CertName)
+	list, resp, err := common.GetAllPagesGeneric[BaCertificate](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
