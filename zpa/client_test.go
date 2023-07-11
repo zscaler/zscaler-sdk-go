@@ -180,6 +180,21 @@ func TestNewClient(t *testing.T) {
 			},
 		},
 		{
+			name:  "GovUS cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "govus",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.zpagov.us",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
 			name:  "Preview cloud support",
 			args:  struct{ config *Config }{config: nil},
 			cloud: "preview",

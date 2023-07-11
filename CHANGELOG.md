@@ -14,6 +14,8 @@
   - Cloud Browser Isolation Regions
   - Cloud Browser Isolation ZPA Profile
 
+- [PR #145](https://github.com/zscaler/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
+
 ### Fixes
 
 - [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values

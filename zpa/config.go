@@ -26,6 +26,7 @@ const (
 	defaultBaseURL           = "https://config.private.zscaler.com"
 	betaBaseURL              = "https://config.zpabeta.net"
 	govBaseURL               = "https://config.zpagov.net"
+	govUsBaseURL             = "https://config.zpagov.us"
 	previewBaseUrl           = "https://config.zpapreview.net"
 	devBaseUrl               = "https://public-api.dev.zpath.net"
 	devAuthUrl               = "https://authn1.dev.zpath.net/authn/v1/oauth/token?grant_type=CLIENT_CREDENTIALS"
@@ -120,6 +121,8 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		rawUrl = betaBaseURL
 	} else if strings.EqualFold(cloud, "GOV") {
 		rawUrl = govBaseURL
+	} else if strings.EqualFold(cloud, "GOVUS") {
+		rawUrl = govUsBaseURL
 	} else if strings.EqualFold(cloud, "PREVIEW") {
 		rawUrl = previewBaseUrl
 	} else if strings.EqualFold(cloud, "DEV") {
