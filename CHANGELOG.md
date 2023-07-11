@@ -1,5 +1,84 @@
 # Changelog
 
+# 1.6.4 (July, 8 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+
+# 1.6.3 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
+# 1.6.2 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
+# 1.6.1 (June, 21 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
+### Fixes
+
+- [PR #135](https://github.com/zscaler/zscaler-sdk-go/pull/133) - Fixed ZPA Inspection Predefined Control and inspection profile resources
+
+# 1.6.0 (June, 18 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #133](https://github.com/zscaler/zscaler-sdk-go/pull/133) - Included initial ZPA and ZIA integration and unit tests
+- [PR #134](https://github.com/zscaler/zscaler-sdk-go/pull/134) - Included additional ZPA and ZIA integration and unit tests
+
+# 1.5.5 (June, 10 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #131](https://github.com/zscaler/zscaler-sdk-go/pull/131) - Improved search mechanisms for both ZIA and ZPA resources, to ensure streamline upstream GET API requests and responses using ``search`` parameter. Notice that not all current API endpoints support the search parameter, in which case, all resources will be returned.
+
+# 1.5.4 (June, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #129](https://github.com/zscaler/zscaler-sdk-go/pull/129) - Added additional log information for ZIA API Client. The SDK now returns the exact authentication error message, as well as includes the ``JSESSIONID`` cookie ID information.
+
+# 1.5.3 (May, 24 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Fixed ZPA resource ``Service Edge Group`` and ``Service Edge Controller`` Struct to support attribute ``publish_ips``.
+
 # 1.5.2 (May, 23 2023)
 
 ## Notes

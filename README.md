@@ -1,4 +1,5 @@
-[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
+[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
+[![Test](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/test.yml)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/zscaler/zscaler-sdk-go/blob/master/.go-version)
 [![Go Report Card](https://goreportcard.com/badge/github.com/zscaler/zscaler-sdk-go)](https://goreportcard.com/report/github.com/zscaler/zscaler-sdk-go)
 [![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go/blob/master/LICENSE)
