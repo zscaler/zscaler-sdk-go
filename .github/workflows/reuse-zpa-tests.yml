@@ -40,7 +40,5 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
         run: |
-          go test -v ./zpa
-          go test -v -cover ./tests -v -parallel 30 -timeout 120m
-          go test -v -cover ./tests/integration/zpa -v -parallel 30 -timeout 120m
-          go test -v -cover ./tests/unit/zpa -v -parallel 30 -timeout 120m
+          go test ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
+          go tool cover -func zpacoverage.txt | grep total:
