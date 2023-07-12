@@ -128,7 +128,6 @@ func TestService_Get(t *testing.T) {
 	// Call the Get method
 	groupID := "groupID"
 	serverGroup, resp, err := service.Get(groupID)
-
 	// Check the error
 	if err != nil {
 		t.Errorf("Error calling Get: %s", err)
@@ -289,7 +288,6 @@ func TestServerGroup_GetByName(t *testing.T) {
 
 	// Make the GetByName request
 	group, _, err := service.GetByName("Group1")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -337,7 +335,6 @@ func TestServerGroup_Create(t *testing.T) {
 
 	// Make the Create request
 	createdGroup, _, err := service.Create(group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Create request: %v", err)
@@ -387,12 +384,10 @@ func TestServerGroup_Update(t *testing.T) {
 
 	// Make the Update request
 	_, err := service.Update("123", group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
 	}
-
 }
 
 func TestServerGroup_Delete(t *testing.T) {
@@ -409,7 +404,6 @@ func TestServerGroup_Delete(t *testing.T) {
 
 	// Make the Delete request
 	_, err := service.Delete("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -461,7 +455,6 @@ func TestServerGroup_GetAll(t *testing.T) {
 
 	// Make the GetAll request
 	groups, _, err := service.GetAll()
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
