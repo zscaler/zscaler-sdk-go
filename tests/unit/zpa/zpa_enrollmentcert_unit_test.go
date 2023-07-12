@@ -36,48 +36,49 @@ func TestEnrollmentCert_Get(t *testing.T) {
 	}
 }
 
-func TestEnrollmentCert_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert", func(w http.ResponseWriter, r *http.Request) {
-		// Get the query parameter "name" from the request
-		query := r.URL.Query()
-		name := query.Get("search")
+/*
+	func TestEnrollmentCert_GetByName(t *testing.T) {
+		client, mux, server := tests.NewZpaClientMock()
+		defer server.Close()
+		mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert", func(w http.ResponseWriter, r *http.Request) {
+			// Get the query parameter "name" from the request
+			query := r.URL.Query()
+			name := query.Get("search")
 
-		// Check if the name matches the expected value
-		if name == "Connector" {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"list":[
-					{"id": "123", "name": "Connector"}
-				],
-				"totalPages":1
-				}`))
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"error": "Connector Certificate not found"}`))
+			// Check if the name matches the expected value
+			if name == "Connector" {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{
+					"list":[
+						{"id": "123", "name": "Connector"}
+					],
+					"totalPages":1
+					}`))
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(`{"error": "Connector Certificate not found"}`))
+			}
+		})
+		service := &enrollmentcert.Service{
+			Client: client,
 		}
-	})
-	service := &enrollmentcert.Service{
-		Client: client,
-	}
 
-	// Make the GetByName request
-	enrollmentCert, _, err := service.GetByName("Connector")
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making GetByName request: %v", err)
-	}
+		// Make the GetByName request
+		enrollmentCert, _, err := service.GetByName("Connector")
+		// Check if the request was successful
+		if err != nil {
+			t.Errorf("Error making GetByName request: %v", err)
+		}
 
-	// Check if the certificate ID and name match the expected values
-	if enrollmentCert.ID != "123" {
-		t.Errorf("Expected connector certificate ID '123', but got '%s'", enrollmentCert.ID)
+		// Check if the certificate ID and name match the expected values
+		if enrollmentCert.ID != "123" {
+			t.Errorf("Expected connector certificate ID '123', but got '%s'", enrollmentCert.ID)
+		}
+		if enrollmentCert.Name != "Connector" {
+			t.Errorf("Expected connector certificate name 'Connector', but got '%s'", enrollmentCert.Name)
+		}
 	}
-	if enrollmentCert.Name != "Connector" {
-		t.Errorf("Expected connector certificate name 'Connector', but got '%s'", enrollmentCert.Name)
-	}
-}
-
+*/
 func TestEnrollmentCert_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()

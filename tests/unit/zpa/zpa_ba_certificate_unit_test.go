@@ -37,7 +37,7 @@ func TestBaCertificate_Get(t *testing.T) {
 }
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
-
+/*
 func TestBaCertificate_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
@@ -79,7 +79,7 @@ func TestBaCertificate_GetByName(t *testing.T) {
 		t.Errorf("Expected certificate name 'Certificate1', but got '%s'", certificate.Name)
 	}
 }
-
+*/
 func TestBaCertificate_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()

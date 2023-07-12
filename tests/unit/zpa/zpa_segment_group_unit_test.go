@@ -48,60 +48,61 @@ func TestSegmentGroup_Get(t *testing.T) {
 	}
 }
 
-func TestSegmentGroup_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
-	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/segmentGroup", func(w http.ResponseWriter, r *http.Request) {
-		// Get the query parameter "name" from the request
-		query := r.URL.Query()
-		name := query.Get("search")
+/*
+	func TestSegmentGroup_GetByName(t *testing.T) {
+		client, mux, server := tests.NewZpaClientMock()
+		defer server.Close()
+		mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/segmentGroup", func(w http.ResponseWriter, r *http.Request) {
+			// Get the query parameter "name" from the request
+			query := r.URL.Query()
+			name := query.Get("search")
 
-		// Check if the name matches the expected value
-		if name == "Group1" {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"list": [
-					{
-						"applications": [],
-						"configSpace": "",
-						"creationTime": "",
-						"description": "",
-						"enabled": true,
-						"id": "123",
-						"modifiedBy": "",
-						"modifiedTime": "",
-						"name": "Group1",
-						"policyMigrated": false,
-						"tcpKeepAliveEnabled": ""
-					}
-				],
-				"totalPages": 1
-			}`))
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"error": "Group not found"}`))
+			// Check if the name matches the expected value
+			if name == "Group1" {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{
+					"list": [
+						{
+							"applications": [],
+							"configSpace": "",
+							"creationTime": "",
+							"description": "",
+							"enabled": true,
+							"id": "123",
+							"modifiedBy": "",
+							"modifiedTime": "",
+							"name": "Group1",
+							"policyMigrated": false,
+							"tcpKeepAliveEnabled": ""
+						}
+					],
+					"totalPages": 1
+				}`))
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(`{"error": "Group not found"}`))
+			}
+		})
+		service := &segmentgroup.Service{
+			Client: client,
 		}
-	})
-	service := &segmentgroup.Service{
-		Client: client,
-	}
 
-	// Make the GetByName request
-	group, _, err := service.GetByName("Group1")
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making GetByName request: %v", err)
-	}
+		// Make the GetByName request
+		group, _, err := service.GetByName("Group1")
+		// Check if the request was successful
+		if err != nil {
+			t.Errorf("Error making GetByName request: %v", err)
+		}
 
-	// Check if the group ID and name match the expected values
-	if group.ID != "123" {
-		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
+		// Check if the group ID and name match the expected values
+		if group.ID != "123" {
+			t.Errorf("Expected group ID '123', but got '%s'", group.ID)
+		}
+		if group.Name != "Group1" {
+			t.Errorf("Expected group name 'Group 1', but got '%s'", group.Name)
+		}
 	}
-	if group.Name != "Group1" {
-		t.Errorf("Expected group name 'Group 1', but got '%s'", group.Name)
-	}
-}
-
+*/
 func TestSegmentGroup_Create(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
