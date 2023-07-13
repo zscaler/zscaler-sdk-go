@@ -7,12 +7,17 @@
 
 ### Enhancements
 
+- [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint
+``/microtenants``
+
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
   - Cloud Browser Isolation Banner Controller
   - Cloud Browser Isolation Certificate Controller
   - Cloud Browser Isolation Profile Controller
   - Cloud Browser Isolation Regions
   - Cloud Browser Isolation ZPA Profile
+
+- [PR #145](https://github.com/zscaler/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
 
 ### Fixes
 
