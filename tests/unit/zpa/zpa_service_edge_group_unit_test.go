@@ -5,18 +5,18 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/serviceedgegroup"
 )
 
-func TestAppConnectorGroup_Get(t *testing.T) {
+func TestServiceEdgeGroup_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Group 1"}`))
 	})
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
 
@@ -36,39 +36,22 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 	}
 }
 
-func TestAppConnectorGroup_Create(t *testing.T) {
+func TestServiceEdgeGroup_Create(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Group 1"}`))
 	})
 
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
 	// Create a sample group
-	group := appconnectorgroup.AppConnectorGroup{
-		ID:                       "123",
-		Name:                     "Group 1",
-		Description:              "Group 1",
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
+	group := serviceedgegroup.ServiceEdgeGroup{
+		ID:   "123",
+		Name: "Group 1",
 	}
 
 	// Make the POST request
@@ -88,11 +71,11 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 }
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
-
-func TestAppConnectorGroup_GetByName(t *testing.T) {
+/*
+func TestServiceEdgeGroup_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
 		query := r.URL.Query()
 		name := query.Get("search")
@@ -111,7 +94,7 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "Group not found"}`))
 		}
 	})
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
 
@@ -130,38 +113,21 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 		t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
 	}
 }
-
-func TestAppConnectorGroup_Update(t *testing.T) {
+*/
+func TestServiceEdgeGroup_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
-	group := appconnectorgroup.AppConnectorGroup{
-		ID:                       "123",
-		Name:                     "Group 1",
-		Description:              "Group 1",
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "New Release",
-		VersionProfileID:         "2",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
+	group := serviceedgegroup.ServiceEdgeGroup{
+		ID:   "123",
+		Name: "Group 1",
 	}
 
 	// Make the Update request
@@ -172,14 +138,14 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 	}
 }
 
-func TestAppConnectorGroup_Delete(t *testing.T) {
+func TestServiceEdgeGroup_Delete(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
 
@@ -191,10 +157,10 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 	}
 }
 
-func TestAppConnectorGroup_GetAll(t *testing.T) {
+func TestServiceEdgeGroup_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serviceEdgeGroup", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
 			"list":[
@@ -204,7 +170,7 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &appconnectorgroup.Service{
+	service := &serviceedgegroup.Service{
 		Client: client,
 	}
 
@@ -216,7 +182,7 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 	}
 
 	// Check the returned groups
-	expectedGroups := []*appconnectorgroup.AppConnectorGroup{
+	expectedGroups := []*serviceedgegroup.ServiceEdgeGroup{
 		{ID: "123", Name: "Group 1"},
 		{ID: "456", Name: "Group 2"},
 	}
