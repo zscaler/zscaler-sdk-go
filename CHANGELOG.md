@@ -10,6 +10,8 @@
 - [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint
 ``/microtenants``
 
+- [PR #126](https://github.com/zscaler/zscaler-sdk-go/pull/126) - Added New Public ZIA DLP Engine Endpoints (POST/PUT/DELETE)
+
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
   - Cloud Browser Isolation Banner Controller
   - Cloud Browser Isolation Certificate Controller
