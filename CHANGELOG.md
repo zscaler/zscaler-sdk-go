@@ -1,9 +1,67 @@
 # Changelog
 
+# 1.7.0 (July, xx 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint
+``/microtenants``
+
+- [PR #126](https://github.com/zscaler/zscaler-sdk-go/pull/126) - Added New Public ZIA DLP Engine Endpoints (POST/PUT/DELETE)
+
+- [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
+  - Cloud Browser Isolation Banner Controller
+  - Cloud Browser Isolation Certificate Controller
+  - Cloud Browser Isolation Profile Controller
+  - Cloud Browser Isolation Regions
+  - Cloud Browser Isolation ZPA Profile
+
+- [PR #145](https://github.com/zscaler/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
+
+### Fixes
+
+- [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+
+# 1.6.4 (July, 8 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+
+# 1.6.3 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
+# 1.6.2 (July, 5 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #138](https://github.com/zscaler/zscaler-sdk-go/pull/138) - Added support to ZPA QA environment
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
+
 # 1.6.1 (June, 21 2023)
 
 ## Notes
 - Golang: **v1.19**
+
+### Enhancements
+
+- [PR #140](https://github.com/zscaler/zscaler-sdk-go/pull/140) - Added new attribute ``waf_disabled`` to resource ``zpa_app_connector_group``
 
 ### Fixes
 
