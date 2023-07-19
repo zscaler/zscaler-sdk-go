@@ -29,16 +29,28 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
 
-  # zpa-beta-tenant01:
-  #   uses: ./.github/workflows/reuse-zpa-tests.yml
-  #   with:
-  #     environment: ZPA_BETA_TENANT01
-  #   secrets:
-  #     ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-  #     ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-  #     ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-  #     ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-  #   needs: zpa-qa-tenant01
+  zpa-qa-tenant02:
+    uses: ./.github/workflows/reuse-zpa-tests.yml
+    with:
+      environment: ZPA_QA_TENANT02
+    secrets:
+      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+
+  zpa-beta-tenant01:
+    uses: ./.github/workflows/reuse-zpa-tests.yml
+    with:
+      environment: ZPA_BETA_TENANT01
+    secrets:
+      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+    needs:
+      - zpa-qa-tenant01
+      - zpa-qa-tenant02
 
   zpa-prod-tenant01:
     uses: ./.github/workflows/reuse-zpa-tests.yml
@@ -49,17 +61,10 @@ jobs:
       ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-    needs: zpa-qa-tenant01
-
-  zpa-qa-tenant02:
-    uses: ./.github/workflows/reuse-zpa-tests.yml
-    with:
-      environment: ZPA_QA_TENANT02
-    secrets:
-      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+    needs:
+      - zpa-qa-tenant01
+      - zpa-qa-tenant02
+      - zpa-beta-tenant01
 
   zia-tests:
     uses: ./.github/workflows/reuse-zia-tests.yml
