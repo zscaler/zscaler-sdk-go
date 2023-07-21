@@ -59,6 +59,22 @@ test\:unit\all:
 	go test -race ./tests/unit/zpa -test.v
 	go test -race ./tests/unit/zia -test.v
 
+ziaActivator: GOOS=$(shell go env GOOS)
+ziaActivator: GOARCH=$(shell go env GOARCH)
+ifeq ($(OS),Windows_NT)  # is Windows_NT on XP, 2000, 7, Vista, 10...
+ziaActivator: DESTINATION=C:\Windows\System32
+else
+ziaActivator: DESTINATION=/usr/local/bin
+endif
+ziaActivator:
+	@echo "==> Installing ziaActivator cli $(DESTINATION)"
+	cd ./zia/cli
+	go mod vendor && go mod tidy
+	@mkdir -p $(DESTINATION)
+	@rm -f $(DESTINATION)/ziaActivator
+	@go build -o $(DESTINATION)/ziaActivator ./zia/cli/ziaActivator.go
+	ziaActivator
+
 .PHONY: fmt
 fmt: check-fmt # Format the code
 	@$(GOFMT) -l -w $$(find . -name '*.go' |grep -v vendor) > /dev/null
