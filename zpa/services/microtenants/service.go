@@ -1,6 +1,5 @@
 package microtenants
 
-/*
 import (
 	"github.com/zscaler/zscaler-sdk-go/zpa"
 )
@@ -12,4 +11,3 @@ type Service struct {
 func New(c *zpa.Client) *Service {
 	return &Service{Client: c}
 }
-*/

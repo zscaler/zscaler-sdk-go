@@ -1,11 +1,13 @@
 package zpa
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,7 +19,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
@@ -25,7 +26,11 @@ const (
 	defaultBaseURL           = "https://config.private.zscaler.com"
 	betaBaseURL              = "https://config.zpabeta.net"
 	govBaseURL               = "https://config.zpagov.net"
+	govUsBaseURL             = "https://config.zpagov.us"
 	previewBaseUrl           = "https://config.zpapreview.net"
+	devBaseUrl               = "https://public-api.dev.zpath.net"
+	devAuthUrl               = "https://authn1.dev.zpath.net/authn/v1/oauth/token?grant_type=CLIENT_CREDENTIALS"
+	qaBaseUrl                = "https://config.qa.zpath.net"
 	defaultTimeout           = 240 * time.Second
 	loggerPrefix             = "zpa-logger: "
 	ZPA_CLIENT_ID            = "ZPA_CLIENT_ID"
@@ -61,14 +66,14 @@ type CredentialsConfig struct {
 	ZpaCloud     string `json:"zpa_cloud"`
 }
 
-// Config contains all the configuration data for the API client.
+// Config contains all the configuration data for the API client
 type Config struct {
 	BaseURL    *url.URL
 	httpClient *http.Client
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
-	ClientID, ClientSecret, CustomerID string
+	ClientID, ClientSecret, CustomerID, Cloud string
 	// Backoff config
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
@@ -83,7 +88,7 @@ By default it will try to read the access and te secret from the environment var
 // Need to implement exponential back off to comply with the API rate limit. https://help.zscaler.com/zpa/about-rate-limiting
 // 20 times in a 10 second interval for a GET call.
 // 10 times in a 10 second interval for any POST/PUT/DELETE call.
-// TODO Add healthCheck method to NewConfig.
+// TODO Add healthCheck method to NewConfig
 func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 	// if creds not provided in TF config, try loading from env vars
@@ -112,15 +117,18 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = defaultBaseURL
-	}
-	if strings.EqualFold(cloud, "BETA") {
+	} else if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
-	}
-	if strings.EqualFold(cloud, "GOV") {
+	} else if strings.EqualFold(cloud, "GOV") {
 		rawUrl = govBaseURL
-	}
-	if strings.EqualFold(cloud, "PREVIEW") {
+	} else if strings.EqualFold(cloud, "GOVUS") {
+		rawUrl = govUsBaseURL
+	} else if strings.EqualFold(cloud, "PREVIEW") {
 		rawUrl = previewBaseUrl
+	} else if strings.EqualFold(cloud, "DEV") {
+		rawUrl = devBaseUrl
+	} else if strings.EqualFold(cloud, "QA") {
+		rawUrl = qaBaseUrl
 	}
 
 	baseURL, err := url.Parse(rawUrl)
@@ -134,6 +142,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		CustomerID:   customerID,
+		Cloud:        cloud,
 		BackoffConf:  defaultBackoffConf,
 		UserAgent:    userAgent,
 	}, err
@@ -143,7 +152,7 @@ func (c *Config) SetBackoffConfig(backoffConf BackoffConfig) {
 	c.BackoffConf = &backoffConf
 }
 
-// loadCredentialsFromConfig Returns the credentials found in a config file.
+// loadCredentialsFromConfig Returns the credentials found in a config file
 func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error) {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
@@ -196,13 +205,13 @@ func containsInt(codes []int, code int) bool {
 }
 
 // getRetryOnStatusCodes return a list of http status codes we want to apply retry on.
-// Return empty slice to enable retry on all connection & server errors.
-// Or return []int{429}  to retry on only TooManyRequests error.
+// return empty slice to enable retry on all connection & server errors.
+// or return []int{429}  to retry on only TooManyRequests error
 func getRetryOnStatusCodes() []int {
 	return []int{http.StatusTooManyRequests}
 }
 
-// Used to make http client retry on provided list of response status codes.
+// Used to make http client retry on provided list of response status codes
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	// do not retry on context.Canceled or context.DeadlineExceeded
 	if ctx.Err() != nil {
@@ -210,6 +219,26 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
+	}
+	if resp != nil && resp.StatusCode == http.StatusBadRequest {
+		respMap := map[string]string{}
+		data, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "non.restricted.entity.authorization.failed" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
+		// Implemented to handle upstream restrictions on simultaneous requests when dealing with CRUD operations, related to ZPA Access policy rule order
+		// ET-53585: https://jira.corp.zscaler.com/browse/ET-53585
+		// ET-48860: https://confluence.corp.zscaler.com/display/ET/ET-48860+incorrect+rules+order
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "db.simultaneous.request" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }

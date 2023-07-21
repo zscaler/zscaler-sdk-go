@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Logger interface {
@@ -16,6 +17,10 @@ type Logger interface {
 type nopLogger struct{}
 
 func (l *nopLogger) Printf(format string, v ...interface{}) {}
+
+func NewNopLogger() Logger {
+	return &nopLogger{}
+}
 
 type defaultLogger struct {
 	logger  *log.Logger
@@ -45,12 +50,12 @@ func GetDefaultLogger(loggerPrefix string) Logger {
 
 const (
 	logReqMsg = `[DEBUG] Request "%s %s" details:
----[ ZSCALER SDK REQUEST ]-------------------------------
+---[ ZSCALER SDK REQUEST | ID:%s ]-------------------------------
 %s
 ---------------------------------------------------------`
 
 	logRespMsg = `[DEBUG] Response "%s %s" details:
----[ ZSCALER SDK RESPONSE ]--------------------------------
+---[ ZSCALER SDK RESPONSE | ID:%s | Duration:%s ]--------------------------------
 %s
 -------------------------------------------------------`
 )
@@ -61,20 +66,32 @@ func WriteLog(logger Logger, format string, args ...interface{}) {
 	}
 }
 
-func LogRequest(logger Logger, req *http.Request) {
+func LogRequestSensitive(logger Logger, req *http.Request, reqID string, sensitiveContent []string) {
 	if logger != nil && req != nil {
 		out, err := httputil.DumpRequestOut(req, true)
+		for _, s := range sensitiveContent {
+			out = []byte(strings.ReplaceAll(string(out), s, "********"))
+		}
 		if err == nil {
-			WriteLog(logger, logReqMsg, req.Method, req.URL, string(out))
+			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
 		}
 	}
 }
 
-func LogResponse(logger Logger, resp *http.Response) {
+func LogRequest(logger Logger, req *http.Request, reqID string) {
+	if logger != nil && req != nil {
+		out, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
+		}
+	}
+}
+
+func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID string) {
 	if logger != nil && resp != nil {
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			WriteLog(logger, logRespMsg, resp.Request.Method, resp.Request.URL, string(out))
+			WriteLog(logger, logRespMsg, resp.Request.Method, resp.Request.URL, reqID, time.Since(start).String(), string(out))
 		}
 	}
 }

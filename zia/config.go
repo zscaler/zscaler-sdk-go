@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
@@ -100,6 +101,9 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	httpClient := getHTTPClient(logger)
 	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
+	if ziaCloud == "zspreview" {
+		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+	}
 	cli := Client{
 		userName:   username,
 		password:   password,
@@ -113,7 +117,7 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 }
 
 // MakeAuthRequestZIA ...
-func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Client, userAgent string) (*Session, error) {
+func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Client, userAgent string, l logger.Logger) (*Session, error) {
 	if credentials == nil {
 		return nil, fmt.Errorf("empty credentials")
 	}
@@ -130,19 +134,23 @@ func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Clien
 	if userAgent != "" {
 		req.Header.Add("User-Agent", userAgent)
 	}
+	reqID := uuid.New().String()
+	logger.LogRequestSensitive(l, req, reqID, []string{credentials.Password, credentials.APIKey})
+	start := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("un-successful request with status code: %v", resp.Status)
-	}
-
+	logger.LogResponse(l, resp, start, reqID)
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("un-successful request with status code: %v, response: %s", resp.Status, string(body))
+	}
+
 	var session Session
 	err = json.Unmarshal(body, &session)
 	if err != nil {
@@ -187,7 +195,7 @@ func (c *Client) refreshSession() error {
 		APIKey:    obfuscatedKey,
 		TimeStamp: timeStamp,
 	}
-	session, err := MakeAuthRequestZIA(&credentialData, c.URL, c.HTTPClient, c.UserAgent)
+	session, err := MakeAuthRequestZIA(&credentialData, c.URL, c.HTTPClient, c.UserAgent, c.Logger)
 	if err != nil {
 		return err
 	}
@@ -198,6 +206,8 @@ func (c *Client) refreshSession() error {
 
 // checkSession synce new session if its over the timeout limit.
 func (c *Client) checkSession() error {
+	c.Lock()
+	defer c.Unlock()
 	// One call to this function is allowed at a time caller must call lock.
 	if c.session == nil {
 		err := c.refreshSession()

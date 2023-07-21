@@ -8,42 +8,56 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/zscaler/zscaler-sdk-go/logger"
 )
 
 // Request ... // Needs to review this function.
 func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
-	c.Lock()
-	defer c.Unlock()
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
 
 	var req *http.Request
+	var resp *http.Response
 	var err error
-	err = c.checkSession()
-	if err != nil {
-		return nil, err
-	}
+
 	req, err = http.NewRequest(method, c.URL+endpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
-	logger.LogRequest(c.Logger, req)
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
+	reqID := uuid.New().String()
+	logger.LogRequest(c.Logger, req, reqID)
+	start := time.Now()
+	for retry := 1; retry <= 5; retry++ {
+		err = c.checkSession()
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err = c.HTTPClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode <= 299 {
+			defer resp.Body.Close()
+			break
+		}
+
+		resp.Body.Close()
+		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
+			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+		}
 	}
-	logger.LogResponse(c.Logger, resp)
-	if resp.StatusCode >= 299 {
-		return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
-	}
-	defer resp.Body.Close()
+
+	logger.LogResponse(c.Logger, resp, start, reqID)
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -71,16 +85,20 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(resp) > 0 {
+		responseObject := reflect.New(t).Interface()
+		err = json.Unmarshal(resp, &responseObject)
+		if err != nil {
+			return nil, err
+		}
+		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
 
-	responseObject := reflect.New(t).Interface()
-	err = json.Unmarshal(resp, &responseObject)
-	if err != nil {
-		return nil, err
+		c.Logger.Printf("Created Object with ID %v", id)
+		return responseObject, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
 	}
-	id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-
-	c.Logger.Printf("Created Object with ID %v", id)
-	return responseObject, nil
 }
 
 // Read ...
