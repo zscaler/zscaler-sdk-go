@@ -101,9 +101,9 @@ func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile,
 	return v, resp, nil
 }
 
-func (service *Service) Update(segmentGroupId string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, segmentGroupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, segmentGroupRequest, nil)
+func (service *Service) Update(profileID string, cbiProfile *IsolationProfile) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
+	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiProfile, nil)
 	if err != nil {
 		return nil, err
 	}

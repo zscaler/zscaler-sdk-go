@@ -11,6 +11,7 @@
 ``/microtenants``
 
 - [PR #126](https://github.com/zscaler/zscaler-sdk-go/pull/126) - Added New Public ZIA DLP Engine Endpoints (POST/PUT/DELETE)
+!> **NOTE:** : To enable /dlpEngines endpoints that use POST, PUT, and DELETE methods for your organization, contact Zscaler Support.
 
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
   - Cloud Browser Isolation Banner Controller

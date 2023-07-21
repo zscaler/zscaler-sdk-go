@@ -135,7 +135,7 @@ func TestApplicationServer_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := service.Update("123", appServer)
+	_, err := service.Update("123", &appServer)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
