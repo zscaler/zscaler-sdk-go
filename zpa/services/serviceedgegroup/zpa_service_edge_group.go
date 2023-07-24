@@ -80,6 +80,8 @@ type ServiceEdges struct {
 	EnrollmentCert                   map[string]interface{} `json:"enrollmentCert"`
 	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
+	MicroTenantID                    string                 `json:"microtenantId,omitempty"`
+	MicroTenantName                  string                 `json:"microtenantName,omitempty"`
 }
 
 type TrustedNetworks struct {
@@ -96,8 +98,8 @@ type TrustedNetworks struct {
 
 func (service *Service) Get(serviceEdgeGroupID string) (*ServiceEdgeGroup, *http.Response, error) {
 	v := new(ServiceEdgeGroup)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -106,7 +108,7 @@ func (service *Service) Get(serviceEdgeGroupID string) (*ServiceEdgeGroup, *http
 
 func (service *Service) GetByName(serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeGroup](service.Client, relativeURL, common.Filter{Search: serviceEdgeGroupName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -120,34 +122,37 @@ func (service *Service) GetByName(serviceEdgeGroupName string) (*ServiceEdgeGrou
 
 func (service *Service) Create(serviceEdge ServiceEdgeGroup) (*ServiceEdgeGroup, *http.Response, error) {
 	v := new(ServiceEdgeGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, nil, serviceEdge, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, common.Filter{MicroTenantID: service.microTenantID}, serviceEdge, &v)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return v, resp, nil
 }
 
 func (service *Service) Update(serviceEdgeGroupID string, serviceEdge *ServiceEdgeGroup) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, serviceEdge, nil)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, serviceEdge, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	return resp, err
 }
 
 func (service *Service) Delete(serviceEdgeGroupID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+
+	return resp, nil
 }
 
 func (service *Service) GetAll() ([]ServiceEdgeGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

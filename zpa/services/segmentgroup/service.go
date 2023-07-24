@@ -13,7 +13,7 @@ func New(c *zpa.Client) *Service {
 	return &Service{Client: c}
 }
 
-func (service *Service) WithMircoTenant(microTenantID string) *Service {
+func (service *Service) WithMicroTenant(microTenantID string) *Service {
 	var mid *string
 	if microTenantID != "" {
 		mid_ := microTenantID
