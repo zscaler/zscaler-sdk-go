@@ -13,7 +13,7 @@ help:
 	@echo "$(COLOR_OK)  make [command]$(COLOR_NONE)"
 	@echo ""
 	@echo "$(COLOR_WARNING)Available commands:$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  build                   Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  build                 Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
@@ -36,11 +36,13 @@ test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
 	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
 	go tool cover -func zpacoverage.txt | grep total:
+	rm -rf zpacoverage.txt
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
 	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
 	go tool cover -func ziacoverage.txt | grep total:
+	rm -rf zpacoverage.txt
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
@@ -58,6 +60,22 @@ test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -race ./tests/unit/zpa -test.v
 	go test -race ./tests/unit/zia -test.v
+
+ziaActivator: GOOS=$(shell go env GOOS)
+ziaActivator: GOARCH=$(shell go env GOARCH)
+ifeq ($(OS),Windows_NT)  # is Windows_NT on XP, 2000, 7, Vista, 10...
+ziaActivator: DESTINATION=C:\Windows\System32
+else
+ziaActivator: DESTINATION=/usr/local/bin
+endif
+ziaActivator:
+	@echo "==> Installing ziaActivator cli $(DESTINATION)"
+	cd ./zia/cli
+	go mod vendor && go mod tidy
+	@mkdir -p $(DESTINATION)
+	@rm -f $(DESTINATION)/ziaActivator
+	@go build -o $(DESTINATION)/ziaActivator ./zia/cli/ziaActivator.go
+	ziaActivator
 
 .PHONY: fmt
 fmt: check-fmt # Format the code
