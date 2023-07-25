@@ -14,16 +14,18 @@ const (
 )
 
 type PolicySet struct {
-	CreationTime string       `json:"creationTime,omitempty"`
-	Description  string       `json:"description,omitempty"`
-	Enabled      bool         `json:"enabled"`
-	ID           string       `json:"id,omitempty"`
-	ModifiedBy   string       `json:"modifiedBy,omitempty"`
-	ModifiedTime string       `json:"modifiedTime,omitempty"`
-	Name         string       `json:"name,omitempty"`
-	Sorted       bool         `json:"sorted"`
-	PolicyType   string       `json:"policyType,omitempty"`
-	Rules        []PolicyRule `json:"rules"`
+	CreationTime    string       `json:"creationTime,omitempty"`
+	Description     string       `json:"description,omitempty"`
+	Enabled         bool         `json:"enabled"`
+	ID              string       `json:"id,omitempty"`
+	ModifiedBy      string       `json:"modifiedBy,omitempty"`
+	ModifiedTime    string       `json:"modifiedTime,omitempty"`
+	Name            string       `json:"name,omitempty"`
+	Sorted          bool         `json:"sorted"`
+	PolicyType      string       `json:"policyType,omitempty"`
+	MicroTenantID   string       `json:"microtenantId,omitempty"`
+	MicroTenantName string       `json:"microtenantName,omitempty"`
+	Rules           []PolicyRule `json:"rules"`
 }
 
 type PolicyRule struct {
@@ -61,25 +63,27 @@ type PolicyRule struct {
 }
 
 type Conditions struct {
-	CreationTime string     `json:"creationTime,omitempty"`
-	ID           string     `json:"id,omitempty"`
-	ModifiedBy   string     `json:"modifiedBy,omitempty"`
-	ModifiedTime string     `json:"modifiedTime,omitempty"`
-	Negated      bool       `json:"negated"`
-	Operands     []Operands `json:"operands"`
-	Operator     string     `json:"operator,omitempty"`
+	CreationTime  string     `json:"creationTime,omitempty"`
+	ID            string     `json:"id,omitempty"`
+	ModifiedBy    string     `json:"modifiedBy,omitempty"`
+	ModifiedTime  string     `json:"modifiedTime,omitempty"`
+	Negated       bool       `json:"negated"`
+	Operands      []Operands `json:"operands"`
+	Operator      string     `json:"operator,omitempty"`
+	MicroTenantID string     `json:"microtenantId,omitempty"`
 }
 
 type Operands struct {
-	CreationTime string `json:"creationTime,omitempty"`
-	ID           string `json:"id,omitempty"`
-	IdpID        string `json:"idpId,omitempty"`
-	LHS          string `json:"lhs,omitempty"`
-	ModifiedBy   string `json:"modifiedBy,omitempty"`
-	ModifiedTime string `json:"modifiedTime,omitempty"`
-	Name         string `json:"name,omitempty"`
-	ObjectType   string `json:"objectType,omitempty"`
-	RHS          string `json:"rhs,omitempty"`
+	CreationTime  string `json:"creationTime,omitempty"`
+	ID            string `json:"id,omitempty"`
+	IdpID         string `json:"idpId,omitempty"`
+	LHS           string `json:"lhs,omitempty"`
+	ModifiedBy    string `json:"modifiedBy,omitempty"`
+	ModifiedTime  string `json:"modifiedTime,omitempty"`
+	Name          string `json:"name,omitempty"`
+	ObjectType    string `json:"objectType,omitempty"`
+	RHS           string `json:"rhs,omitempty"`
+	MicroTenantID string `json:"microtenantId,omitempty"`
 }
 
 type AppServerGroups struct {

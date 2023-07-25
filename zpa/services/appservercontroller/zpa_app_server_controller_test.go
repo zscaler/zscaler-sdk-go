@@ -52,7 +52,7 @@ func TestAppConnectorGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = service.Update(createdResource.ID, *retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}

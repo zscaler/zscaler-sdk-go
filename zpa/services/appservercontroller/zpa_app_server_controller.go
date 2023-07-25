@@ -61,7 +61,7 @@ func (service *Service) Create(server ApplicationServer) (*ApplicationServer, *h
 	return v, resp, nil
 }
 
-func (service *Service) Update(id string, appServer *ApplicationServer) (*http.Response, error) {
+func (service *Service) Update(id string, appServer ApplicationServer) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, appServer, nil)
 	if err != nil {
