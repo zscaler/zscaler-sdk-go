@@ -1,16 +1,17 @@
 # Changelog
 
-# 1.7.0 (July, xx 2023)
+# 2.0.0 (August, xx 2023)
 
 ## Notes
 - Golang: **v1.19**
 
 ### Enhancements
 
-- [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint
-``/microtenants``
-
 - [PR #126](https://github.com/zscaler/zscaler-sdk-go/pull/126) - Added New Public ZIA DLP Engine Endpoints (POST/PUT/DELETE)
+⚠️ **WARNING:** "Before using the new ``zia_dlp_engines`` resource contact [Zscaler Support](https://help.zscaler.com/login-tickets)." and request the following API methods ``POST``, ``PUT``, and ``DELETE`` to be enabled for your organization.
+
+- [PR #148](https://github.com/zscaler/zscaler-sdk-go/pull/148) Added new ZPA Microtenant Controller endpoint
+``/microtenants``
 
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
   - Cloud Browser Isolation Banner Controller
@@ -24,6 +25,7 @@
 ### Fixes
 
 - [PR #142](https://github.com/zscaler/zscaler-sdk-go/pull/142) - Fixed filtering by email on search scim attribute values
+- [PR #150](https://github.com/zscaler/zscaler-sdk-go/pull/150) - Fix IdP Controller name escape
 
 # 1.6.4 (July, 8 2023)
 
