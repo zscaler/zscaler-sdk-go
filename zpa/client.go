@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -93,7 +94,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	err := client.authenticate()
 	if err != nil {
 		return nil, err
-
 	}
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {
@@ -124,6 +124,49 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	return resp, err
 }
 
+func getMicrotenantIDFromBody(body interface{}) string {
+	if body == nil {
+		return ""
+	}
+
+	d, err := json.Marshal(body)
+	if err != nil {
+		return ""
+	}
+	dataMap := map[string]interface{}{}
+	err = json.Unmarshal(d, &dataMap)
+	if err != nil {
+		return ""
+	}
+	if microTenantID, ok := dataMap["microtenantId"]; ok && microTenantID != nil && microTenantID != "" {
+		return fmt.Sprintf("%v", microTenantID)
+	}
+	return ""
+}
+
+func getMicrotenantIDFromEnvVar(body interface{}) string {
+	return os.Getenv("ZPA_MICROTENANT_ID")
+}
+
+func (client *Client) injectMicrotentantID(body interface{}, q url.Values) url.Values {
+	if q.Has("microtenantId") && q.Get("microtenantId") != "" {
+		return q
+	}
+
+	microTenantID := getMicrotenantIDFromBody(body)
+	if microTenantID != "" {
+		q.Add("microtenantId", microTenantID)
+		return q
+	}
+
+	microTenantID = getMicrotenantIDFromEnvVar(body)
+	if microTenantID != "" {
+		q.Add("microtenantId", microTenantID)
+		return q
+	}
+	return q
+}
+
 // Generating the Http request
 func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
@@ -149,15 +192,17 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	// Set the encoded path data
 	u.RawPath = u.Path + urlPath
 	u.Path = u.Path + unescaped
-
-	// Set the query parameters
-	if options != nil {
-		q, err := query.Values(options)
-		if err != nil {
-			return nil, err
-		}
-		u.RawQuery = q.Encode()
+	if options == nil {
+		options = struct{}{}
 	}
+	// Set the query parameters
+
+	q, err := query.Values(options)
+	if err != nil {
+		return nil, err
+	}
+	q = client.injectMicrotentantID(body, q)
+	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {

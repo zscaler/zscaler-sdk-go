@@ -50,6 +50,8 @@ type AppConnector struct {
 	EnrollmentCert                   map[string]interface{} `json:"enrollmentCert,omitempty"`
 	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
+	MicroTenantID                    string                 `json:"microtenantId,omitempty"`
+	MicroTenantName                  string                 `json:"microtenantName,omitempty"`
 }
 
 // This function search the App Connector by ID

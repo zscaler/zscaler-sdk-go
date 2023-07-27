@@ -32,6 +32,8 @@ type BrowserAccess struct {
 	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                  `json:"useInDrMode"`
+	MicroTenantID             string                `json:"microtenantId,omitempty"`
+	MicroTenantName           string                `json:"microtenantName,omitempty"`
 	HealthReporting           string                `json:"healthReporting,omitempty"`
 	ICMPAccessType            string                `json:"icmpAccessType,omitempty"`
 	CreationTime              string                `json:"creationTime,omitempty"`
