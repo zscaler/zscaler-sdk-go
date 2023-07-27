@@ -1,17 +1,14 @@
 # Changelog
 
-# 1.7.0 (July, xx 2023)
+# 2.0.0 (August, xx 2023)
 
 ## Notes
 - Golang: **v1.19**
 
 ### Enhancements
 
-- [PR #70](https://github.com/zscaler/zscaler-sdk-go/pull/70) Added new ZPA Microtenant Controller endpoint
-``/microtenants``
-
 - [PR #126](https://github.com/zscaler/zscaler-sdk-go/pull/126) - Added New Public ZIA DLP Engine Endpoints (POST/PUT/DELETE)
-!> **NOTE:** : To enable /dlpEngines endpoints that use POST, PUT, and DELETE methods for your organization, contact Zscaler Support.
+⚠️ **WARNING:** "Before using the new ``zia_dlp_engines`` resource contact [Zscaler Support](https://help.zscaler.com/login-tickets)." and request the following API methods ``POST``, ``PUT``, and ``DELETE`` to be enabled for your organization.
 
 - [PR #127](https://github.com/zscaler/zscaler-sdk-go/pull/127) - Added support to the following new ZPA Cloud Browser Isolation resources:
   - Cloud Browser Isolation Banner Controller
@@ -20,7 +17,11 @@
   - Cloud Browser Isolation Regions
   - Cloud Browser Isolation ZPA Profile
 
+- [PR #148](https://github.com/zscaler/zscaler-sdk-go/pull/148) Added new ZPA Microtenant Controller endpoint
+``/microtenants``. The following ZPA resources support microtenant feature configuration:
+
 - [PR #145](https://github.com/zscaler/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
+- [PR #149](https://github.com/zscaler/zscaler-sdk-go/pull/149) - Added support to ZPA QA2 environment
 
 ### Fixes
 
