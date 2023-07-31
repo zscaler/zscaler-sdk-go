@@ -64,7 +64,7 @@ type UserMetadata struct {
 func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error) {
 	v := new(IdpController)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+idpControllerEndpoint, IdpID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,7 +74,7 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 
 func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IdpController](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,7 +88,7 @@ func (service *Service) GetByName(idpName string) (*IdpController, *http.Respons
 
 func (service *Service) GetAll() ([]IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IdpController](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

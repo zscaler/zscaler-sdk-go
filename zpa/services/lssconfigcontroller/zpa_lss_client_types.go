@@ -2,6 +2,8 @@ package lssconfigcontroller
 
 import (
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -21,7 +23,7 @@ type LSSClientTypes struct {
 func (service *Service) GetClientTypes() (*LSSClientTypes, *http.Response, error) {
 	v := new(LSSClientTypes)
 	relativeURL := mgmtConfigTypesAndFormats + lssClientTypesEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

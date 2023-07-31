@@ -3,6 +3,8 @@ package lssconfigcontroller
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -19,7 +21,7 @@ type LSSStatusCodes struct {
 func (service *Service) GetStatusCodes() (*LSSStatusCodes, *http.Response, error) {
 	v := new(LSSStatusCodes)
 	relativeURL := fmt.Sprintf(mgmtConfigTypesAndFormats + lssStatusCodesEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

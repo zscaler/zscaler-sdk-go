@@ -27,7 +27,7 @@ type ScimGroup struct {
 func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {
 	v := new(ScimGroup)
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint, scimGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -37,7 +37,7 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 
 func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,7 +51,7 @@ func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Res
 
 func (service *Service) GetAllByIdpId(IdpId string) ([]ScimGroup, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -49,7 +49,7 @@ func (service *Service) GetByName(appServerName string) (*ApplicationServer, *ht
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no application named '%s' was found", appServerName)
+	return nil, resp, fmt.Errorf("no application server named '%s' was found", appServerName)
 }
 
 func (service *Service) Create(server ApplicationServer) (*ApplicationServer, *http.Response, error) {

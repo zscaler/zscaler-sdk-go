@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -22,7 +24,7 @@ type CBICertificate struct {
 func (service *Service) Get(certificateID string) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +47,7 @@ func (service *Service) GetByName(certificateName string) (*CBICertificate, *htt
 
 func (service *Service) Create(cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, nil, cbiProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, common.Filter{MicroTenantID: service.microTenantID}, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +56,7 @@ func (service *Service) Create(cbiProfile *CBICertificate) (*CBICertificate, *ht
 
 func (service *Service) Update(certificateID string, certificateRequest *CBICertificate) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, certificateRequest, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, certificateRequest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func (service *Service) Update(certificateID string, certificateRequest *CBICert
 
 func (service *Service) Delete(certificateID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +75,7 @@ func (service *Service) Delete(certificateID string) (*http.Response, error) {
 func (service *Service) GetAll() ([]CBICertificate, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificatesEndpoint
 	var list []CBICertificate
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &list)
 	if err != nil {
 		return nil, resp, err
 	}

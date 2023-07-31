@@ -14,38 +14,54 @@ const (
 )
 
 type AppSegmentInspection struct {
-	ID                        string                `json:"id,omitempty"`
-	SegmentGroupID            string                `json:"segmentGroupId,omitempty"`
-	SegmentGroupName          string                `json:"segmentGroupName,omitempty"`
-	BypassType                string                `json:"bypassType,omitempty"`
-	ConfigSpace               string                `json:"configSpace,omitempty"`
-	DomainNames               []string              `json:"domainNames,omitempty"`
-	Name                      string                `json:"name,omitempty"`
-	Description               string                `json:"description,omitempty"`
-	Enabled                   bool                  `json:"enabled"`
-	ICMPAccessType            string                `json:"icmpAccessType,omitempty"`
-	PassiveHealthEnabled      bool                  `json:"passiveHealthEnabled"`
-	SelectConnectorCloseToApp bool                  `json:"selectConnectorCloseToApp"`
-	DoubleEncrypt             bool                  `json:"doubleEncrypt"`
-	HealthCheckType           string                `json:"healthCheckType,omitempty"`
-	IsCnameEnabled            bool                  `json:"isCnameEnabled"`
-	IPAnchored                bool                  `json:"ipAnchored"`
-	HealthReporting           string                `json:"healthReporting,omitempty"`
-	CreationTime              string                `json:"creationTime,omitempty"`
-	ModifiedBy                string                `json:"modifiedBy,omitempty"`
-	ModifiedTime              string                `json:"modifiedTime,omitempty"`
-	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                  `json:"useInDrMode"`
-	MicroTenantID             string                `json:"microtenantId,omitempty"`
-	MicroTenantName           string                `json:"microtenantName,omitempty"`
-	TCPPortRanges             []string              `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges             []string              `json:"udpPortRanges,omitempty"`
-	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange           []common.NetworkPorts `json:"udpPortRange,omitempty"`
-	InspectionAppDto          []InspectionAppDto    `json:"inspectionApps,omitempty"`
-	CommonAppsDto             CommonAppsDto         `json:"commonAppsDto,omitempty"`
-	AppServerGroups           []AppServerGroups     `json:"serverGroups,omitempty"`
+	ID                        string                   `json:"id,omitempty"`
+	SegmentGroupID            string                   `json:"segmentGroupId,omitempty"`
+	SegmentGroupName          string                   `json:"segmentGroupName,omitempty"`
+	BypassType                string                   `json:"bypassType,omitempty"`
+	ConfigSpace               string                   `json:"configSpace,omitempty"`
+	DomainNames               []string                 `json:"domainNames,omitempty"`
+	Name                      string                   `json:"name,omitempty"`
+	Description               string                   `json:"description,omitempty"`
+	Enabled                   bool                     `json:"enabled"`
+	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
+	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
+	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
+	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
+	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
+	IPAnchored                bool                     `json:"ipAnchored"`
+	HealthReporting           string                   `json:"healthReporting,omitempty"`
+	CreationTime              string                   `json:"creationTime,omitempty"`
+	ModifiedBy                string                   `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                   `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                   `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                     `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                     `json:"useInDrMode"`
+	MicroTenantID             string                   `json:"microtenantId,omitempty"`
+	MicroTenantName           string                   `json:"microtenantName,omitempty"`
+	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
+	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
+	InspectionAppDto          []InspectionAppDto       `json:"inspectionApps,omitempty"`
+	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
+	AppServerGroups           []AppServerGroups        `json:"serverGroups,omitempty"`
+	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
+}
+
+type SharedMicrotenantDetails struct {
+	SharedFromMicrotenant SharedFromMicrotenant `json:"sharedFromMicrotenant,omitempty"`
+	SharedToMicrotenants  []SharedToMicrotenant `json:"sharedToMicrotenants,omitempty"`
+}
+
+type SharedFromMicrotenant struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type SharedToMicrotenant struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type CommonAppsDto struct {
@@ -86,6 +102,8 @@ type InspectionAppDto struct {
 	Name                string `json:"name,omitempty"`
 	Hidden              bool   `json:"hidden"`
 	Portal              bool   `json:"portal"`
+	MicroTenantID       string `json:"microtenantId,omitempty"`
+	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
 
 type AppServerGroups struct {
@@ -95,7 +113,7 @@ type AppServerGroups struct {
 func (service *Service) Get(id string) (*AppSegmentInspection, *http.Response, error) {
 	v := new(AppSegmentInspection)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -104,7 +122,7 @@ func (service *Service) Get(id string) (*AppSegmentInspection, *http.Response, e
 
 func (service *Service) GetByName(appSegmentName string) (*AppSegmentInspection, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppSegmentInspection](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentInspection](service.Client, relativeURL, common.Filter{Search: appSegmentName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,7 +136,7 @@ func (service *Service) GetByName(appSegmentName string) (*AppSegmentInspection,
 
 func (service *Service) Create(appSegmentInspection AppSegmentInspection) (*AppSegmentInspection, *http.Response, error) {
 	v := new(AppSegmentInspection)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, nil, appSegmentInspection, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, common.Filter{MicroTenantID: service.microTenantID}, appSegmentInspection, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -175,7 +193,7 @@ func (service *Service) Update(id string, appSegmentInspection *AppSegmentInspec
 	appSegmentInspection.CommonAppsDto.AppsConfig = newApps
 	appSegmentInspection.CommonAppsDto.DeletedInspectApps = appToListStringIDs(removedApps)
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, appSegmentInspection, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, appSegmentInspection, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +202,7 @@ func (service *Service) Update(id string, appSegmentInspection *AppSegmentInspec
 
 func (service *Service) Delete(id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +211,7 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]AppSegmentInspection, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppSegmentInspection](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentInspection](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

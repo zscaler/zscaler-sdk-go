@@ -29,7 +29,7 @@ type IsolationProfile struct {
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+isolationProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,7 +39,7 @@ func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response
 
 func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, profileName)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IsolationProfile](service.Client, relativeURL, common.Filter{Search: profileName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,7 +53,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.
 
 func (service *Service) GetAll() ([]IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IsolationProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

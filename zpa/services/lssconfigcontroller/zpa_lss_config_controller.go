@@ -146,7 +146,7 @@ type Operands struct {
 func (service *Service) Get(lssID string) (*LSSResource, *http.Response, error) {
 	v := new(LSSResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -155,7 +155,7 @@ func (service *Service) Get(lssID string) (*LSSResource, *http.Response, error) 
 
 func (service *Service) GetByName(lssName string) (*LSSResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + lssConfigEndpoint
-	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[LSSResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -169,7 +169,7 @@ func (service *Service) GetByName(lssName string) (*LSSResource, *http.Response,
 
 func (service *Service) Create(lssConfig *LSSResource) (*LSSResource, *http.Response, error) {
 	v := new(LSSResource)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+lssConfigEndpoint, nil, lssConfig, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+lssConfigEndpoint, common.Filter{MicroTenantID: service.microTenantID}, lssConfig, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -178,7 +178,7 @@ func (service *Service) Create(lssConfig *LSSResource) (*LSSResource, *http.Resp
 
 func (service *Service) Update(lssID string, lssConfig *LSSResource) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, lssConfig, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, lssConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (service *Service) Update(lssID string, lssConfig *LSSResource) (*http.Resp
 
 func (service *Service) Delete(lssID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (service *Service) Delete(lssID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]LSSResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + lssConfigEndpoint
-	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[LSSResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -71,7 +73,7 @@ type Regions struct {
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,7 +96,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.
 
 func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, nil, cbiProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, common.Filter{MicroTenantID: service.microTenantID}, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -103,7 +105,7 @@ func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile,
 
 func (service *Service) Update(profileID string, cbiProfile *IsolationProfile) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiProfile, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, cbiProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +114,7 @@ func (service *Service) Update(profileID string, cbiProfile *IsolationProfile) (
 
 func (service *Service) Delete(profileID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +124,7 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 func (service *Service) GetAll() ([]IsolationProfile, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiProfileEndpoint
 	var list []IsolationProfile
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

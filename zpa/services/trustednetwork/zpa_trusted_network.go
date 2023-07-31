@@ -28,7 +28,7 @@ type TrustedNetwork struct {
 func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, error) {
 	v := new(TrustedNetwork)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+trustedNetworkEndpoint, networkID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +38,7 @@ func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, 
 
 func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[TrustedNetwork](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,7 +59,7 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 	adaptedTrustedNetworkName = strings.TrimSpace(adaptedTrustedNetworkName)
 	adaptedTrustedNetworkName = strings.Split(adaptedTrustedNetworkName, " ")[0]
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
-	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, adaptedTrustedNetworkName)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[TrustedNetwork](service.Client, relativeURL, common.Filter{Search: adaptedTrustedNetworkName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,7 +73,7 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 
 func (service *Service) GetAll() ([]TrustedNetwork, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
-	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[TrustedNetwork](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

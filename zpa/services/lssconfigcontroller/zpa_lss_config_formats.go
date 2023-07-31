@@ -15,9 +15,11 @@ func (service *Service) GetFormats(logType string) (*LSSFormats, *http.Response,
 	v := new(LSSFormats)
 	relativeURL := fmt.Sprintf("%slssConfig/logType/formats", mgmtConfigTypesAndFormats)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		LogType string `url:"logType"`
+		LogType       string  `url:"logType"`
+		MicroTenantID *string `url:"microtenantId,omitempty"`
 	}{
-		LogType: logType,
+		LogType:       logType,
+		MicroTenantID: service.microTenantID,
 	}, nil, &v)
 	if err != nil {
 		return nil, nil, err

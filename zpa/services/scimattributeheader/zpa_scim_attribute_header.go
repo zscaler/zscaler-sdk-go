@@ -49,19 +49,19 @@ func (service *Service) Get(idpId, scimAttrHeaderID string) (*ScimAttributeHeade
 func (service *Service) SearchValues(idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
 	searchQuery = strings.Split(searchQuery, "@")[0]
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
-	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, searchQuery)
+	l, _, err := common.GetAllPagesGenericWithCustomFilters[string](service.Client, relativeURL, common.Filter{Search: searchQuery, MicroTenantID: service.microTenantID})
 	return l, err
 }
 
 func (service *Service) GetValues(idpId, ScimAttrHeaderID string) ([]string, error) {
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
-	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
+	l, _, err := common.GetAllPagesGenericWithCustomFilters[string](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	return l, err
 }
 
 func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimAttributeHeader](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +75,7 @@ func (service *Service) GetByName(scimAttributeName, IdpId string) (*ScimAttribu
 
 func (service *Service) GetAllByIdpId(IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimAttributeHeader](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -55,7 +55,7 @@ type Versions struct {
 func (service *Service) Get(versionID string) (*CustomerVersionProfile, *http.Response, error) {
 	v := new(CustomerVersionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customerVersionProfileEndpoint, versionID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -65,7 +65,7 @@ func (service *Service) Get(versionID string) (*CustomerVersionProfile, *http.Re
 
 func (service *Service) GetByName(versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[CustomerVersionProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -79,7 +79,7 @@ func (service *Service) GetByName(versionProfileName string) (*CustomerVersionPr
 
 func (service *Service) GetAll() ([]CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[CustomerVersionProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

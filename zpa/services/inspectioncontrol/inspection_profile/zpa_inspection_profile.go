@@ -15,7 +15,8 @@ const (
 )
 
 type PatchQuery struct {
-	Version string `json:"version,omitempty" url:"version,omitempty"`
+	Version       string  `json:"version,omitempty" url:"version,omitempty"`
+	MicroTenantID *string `url:"microtenantId,omitempty"`
 }
 
 type InspectionProfile struct {
@@ -136,7 +137,7 @@ type ThreatLabzControls struct {
 func (service *Service) Get(profileID string) (*InspectionProfile, *http.Response, error) {
 	v := new(InspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -163,7 +164,7 @@ func setVersion(inspectionProfile *InspectionProfile) {
 
 func (service *Service) GetByName(profileName string) (*InspectionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[InspectionProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -178,7 +179,7 @@ func (service *Service) GetByName(profileName string) (*InspectionProfile, *http
 func (service *Service) Create(inspectionProfile InspectionProfile) (*InspectionProfile, *http.Response, error) {
 	setVersion(&inspectionProfile)
 	v := new(InspectionProfile)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, nil, inspectionProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, common.Filter{MicroTenantID: service.microTenantID}, inspectionProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -189,7 +190,7 @@ func (service *Service) Create(inspectionProfile InspectionProfile) (*Inspection
 func (service *Service) Update(profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +201,7 @@ func (service *Service) Update(profileID string, inspectionProfile *InspectionPr
 func (service *Service) PutAssociate(profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID+"/associateAllPredefinedControls")
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion, MicroTenantID: service.microTenantID}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +212,7 @@ func (service *Service) PutAssociate(profileID string, inspectionProfile *Inspec
 func (service *Service) PutDeassociate(profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID+"/deAssociateAllPredefinedControls")
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion, MicroTenantID: service.microTenantID}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func (service *Service) PutDeassociate(profileID string, inspectionProfile *Insp
 func (service *Service) Patch(profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s/patch", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PATCH", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo("PATCH", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion, MicroTenantID: service.microTenantID}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +232,7 @@ func (service *Service) Patch(profileID string, inspectionProfile *InspectionPro
 
 func (service *Service) Delete(profileID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +242,7 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]InspectionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[InspectionProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

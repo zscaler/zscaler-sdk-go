@@ -63,7 +63,7 @@ func unmarshalRulesJson(rulesJsonStr string) ([]Rules, error) {
 func (service *Service) Get(customID string) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,7 +74,7 @@ func (service *Service) Get(customID string) (*InspectionCustomControl, *http.Re
 
 func (service *Service) GetByName(controlName string) (*InspectionCustomControl, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[InspectionCustomControl](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -90,7 +90,7 @@ func (service *Service) GetByName(controlName string) (*InspectionCustomControl,
 
 func (service *Service) Create(customControls InspectionCustomControl) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, nil, customControls, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, common.Filter{MicroTenantID: service.microTenantID}, customControls, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -100,7 +100,7 @@ func (service *Service) Create(customControls InspectionCustomControl) (*Inspect
 
 func (service *Service) Update(customID string, customControls *InspectionCustomControl) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, customControls, nil)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, customControls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (service *Service) Update(customID string, customControls *InspectionCustom
 
 func (service *Service) Delete(customID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (service *Service) Delete(customID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]InspectionCustomControl, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[InspectionCustomControl](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

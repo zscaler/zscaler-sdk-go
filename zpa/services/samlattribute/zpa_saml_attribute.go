@@ -28,7 +28,7 @@ type SamlAttribute struct {
 func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+samlAttributeEndpoint, samlAttributeID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +38,7 @@ func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Respo
 
 func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SamlAttribute](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,7 +52,7 @@ func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Re
 
 func (service *Service) GetAll() ([]SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SamlAttribute](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -43,10 +43,11 @@ type ControlGroupItem struct {
 }
 
 type ControlsRequestFilters struct {
-	Version  string `url:"version,omitempty"`
-	Search   string `url:"search,omitempty"`
-	PageSize int    `url:"pagesize,omitempty"`
-	Page     int    `url:"page,omitempty"`
+	Version       string  `url:"version,omitempty"`
+	Search        string  `url:"search,omitempty"`
+	PageSize      int     `url:"pagesize,omitempty"`
+	Page          int     `url:"page,omitempty"`
+	MicroTenantID *string `url:"microtenantId,omitempty"`
 }
 
 // Get Predefined Controls by ID
@@ -54,7 +55,7 @@ type ControlsRequestFilters struct {
 func (service *Service) Get(controlID string) (*PredefinedControls, *http.Response, error) {
 	v := new(PredefinedControls)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+predControlsEndpoint, controlID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,8 +67,9 @@ func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
 	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
 	_, err := service.Client.NewRequestDo("GET", relativeURL, struct {
-		Version string `url:"version"`
-	}{Version: version}, nil, &v)
+		Version       string  `url:"version"`
+		MicroTenantID *string `url:"microtenantId,omitempty"`
+	}{Version: version, MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +88,9 @@ func (service *Service) GetByName(name, version string) (*PredefinedControls, *h
 	searchQuery = url.QueryEscape(searchQuery)
 	var v []ControlGroupItem
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
-		Version: version,
-		Search:  searchQuery,
+		Version:       version,
+		Search:        searchQuery,
+		MicroTenantID: service.microTenantID,
 	}, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -108,9 +111,9 @@ func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedCo
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
 	var v []ControlGroupItem
 	_, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
-		Version: version,
+		Version:       version,
+		MicroTenantID: service.microTenantID,
 	}, nil, &v)
-
 	if err != nil {
 		return nil, err
 	}

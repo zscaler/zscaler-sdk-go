@@ -2,6 +2,8 @@ package clienttypes
 
 import (
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -25,7 +27,7 @@ type ClientTypes struct {
 func (service *Service) GetAllClientTypes() (*ClientTypes, *http.Response, error) {
 	v := new(ClientTypes)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + clientTypesEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

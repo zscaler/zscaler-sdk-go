@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -20,7 +22,7 @@ type CBIRegions struct {
 func (service *Service) Get(RegionID string) (*CBIRegions, *http.Response, error) {
 	v := new(CBIRegions)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiRegionsEndpoint, RegionID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +47,7 @@ func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Resp
 func (service *Service) GetAll() ([]CBIRegions, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
 	var list []CBIRegions
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

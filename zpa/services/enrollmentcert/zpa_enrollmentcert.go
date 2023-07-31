@@ -41,7 +41,7 @@ type EnrollmentCert struct {
 func (service *Service) Get(id string) (*EnrollmentCert, *http.Response, error) {
 	v := new(EnrollmentCert)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+enrollmentCertEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,7 +51,7 @@ func (service *Service) Get(id string) (*EnrollmentCert, *http.Response, error) 
 
 func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	list, resp, err := common.GetAllPagesGeneric[EnrollmentCert](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -65,7 +65,7 @@ func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Respo
 
 func (service *Service) GetAll() ([]EnrollmentCert, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	list, resp, err := common.GetAllPagesGeneric[EnrollmentCert](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

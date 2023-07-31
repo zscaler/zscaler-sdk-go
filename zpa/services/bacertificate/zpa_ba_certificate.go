@@ -31,23 +31,22 @@ type BaCertificate struct {
 	Status              string   `json:"status,omitempty"`
 	ValidFromInEpochSec string   `json:"validFromInEpochSec,omitempty"`
 	ValidToInEpochSec   string   `json:"validToInEpochSec,omitempty"`
-	MicroTenantID       string   `json:"microtenantId,omitempty"`
-	MicroTenantName     string   `json:"microtenantName,omitempty"`
 }
 
 func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return v, resp, nil
 }
 
 func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -79,19 +78,21 @@ func (service *Service) Create(baCertificate BaCertificate) (*BaCertificate, *ht
 }
 
 func (service *Service) Update(baCertificateID string, baCertificate *BaCertificate) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, baCertificate, nil)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, baCertificate, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	return resp, err
 }
 
 func (service *Service) Delete(baCertificateID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+
+	return resp, nil
 }

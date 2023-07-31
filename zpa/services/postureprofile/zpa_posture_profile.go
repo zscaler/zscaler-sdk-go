@@ -30,7 +30,7 @@ type PostureProfile struct {
 func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) {
 	v := new(PostureProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+postureProfileEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,7 +40,7 @@ func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) 
 
 func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PostureProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,7 +55,7 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, adaptedPostureName)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PostureProfile](service.Client, relativeURL, common.Filter{Search: adaptedPostureName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,7 +69,7 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 
 func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PostureProfile](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
