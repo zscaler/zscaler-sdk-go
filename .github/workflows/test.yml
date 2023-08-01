@@ -71,6 +71,7 @@ jobs:
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
+      - zpa-qa2-tenant01
 
   zpa-prod-tenant01:
     uses: ./.github/workflows/reuse-zpa-tests.yml
@@ -84,6 +85,7 @@ jobs:
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
+      - zpa-qa2-tenant01
       - zpa-beta-tenant01
 
   zia-tests:
