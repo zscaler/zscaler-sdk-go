@@ -39,6 +39,26 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
 
+  zpa-qa2-tenant01:
+    uses: ./.github/workflows/reuse-zpa-tests.yml
+    with:
+      environment: ZPA_QA2_TENANT01
+    secrets:
+      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+
+  # zpa-qa2-tenant02:
+  #   uses: ./.github/workflows/reuse-zpa-tests.yml
+  #   with:
+  #     environment: ZPA_QA2_TENANT02
+  #   secrets:
+  #     ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+  #     ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+  #     ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+  #     ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+
   zpa-beta-tenant01:
     uses: ./.github/workflows/reuse-zpa-tests.yml
     with:
@@ -51,6 +71,7 @@ jobs:
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
+      - zpa-qa2-tenant01
 
   zpa-prod-tenant01:
     uses: ./.github/workflows/reuse-zpa-tests.yml
@@ -64,6 +85,7 @@ jobs:
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
+      - zpa-qa2-tenant01
       - zpa-beta-tenant01
 
   zia-tests:
