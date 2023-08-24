@@ -1,6 +1,18 @@
 # Changelog
 
-# 1.7.0 (July, xx 2023)
+# 1.8.0 (August 25, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #153](https://github.com/zscaler/zscaler-sdk-go/pull/153)
+  1. Added additional rate limit optimization
+  2. Improved backoff mechnism retry strategy
+  3. Updated `zpa/config.go` to use `github.com/zscaler/zscaler-sdk-go/cache` new cache mechanism to decrease number of API calls being made to the ZPA API.
+
+# 1.7.0 (August 1, 2023)
 
 ## Notes
 - Golang: **v1.19**
