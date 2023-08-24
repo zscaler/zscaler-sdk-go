@@ -3,7 +3,6 @@ module github.com/zscaler/zscaler-sdk-go
 go 1.19
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go v1.7.1
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.3.1
