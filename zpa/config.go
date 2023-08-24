@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -44,8 +44,8 @@ const (
 var defaultBackoffConf = &BackoffConfig{
 	Enabled:             true,
 	MaxNumOfRetries:     100,
-	RetryWaitMaxSeconds: 20,
-	RetryWaitMinSeconds: 5,
+	RetryWaitMaxSeconds: 10,
+	RetryWaitMinSeconds: 2,
 }
 
 type BackoffConfig struct {
@@ -69,8 +69,9 @@ type CredentialsConfig struct {
 
 // Config contains all the configuration data for the API client
 type Config struct {
-	BaseURL    *url.URL
-	httpClient *http.Client
+	BaseURL     *url.URL
+	httpClient  *http.Client
+	rateLimiter *RateLimiter
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
@@ -148,6 +149,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		Cloud:        cloud,
 		BackoffConf:  defaultBackoffConf,
 		UserAgent:    userAgent,
+		rateLimiter:  NewRateLimiter(),
 	}, err
 }
 
@@ -183,6 +185,29 @@ func (c *Config) GetHTTPClient() *http.Client {
 			retryableClient := retryablehttp.NewClient()
 			retryableClient.Logger = c.Logger
 			retryableClient.RetryWaitMin = time.Second * time.Duration(c.BackoffConf.RetryWaitMinSeconds)
+			retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+				if resp != nil {
+					if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+						// TODO: ask backend to implement such header, instead of using the logic below
+						if s, ok := resp.Header["Retry-After"]; ok {
+							if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+								return time.Second * time.Duration(sleep)
+							}
+						}
+					}
+				}
+				wait, duration := c.rateLimiter.Wait(resp.Request.Method)
+				if wait {
+					c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
+				}
+				/*
+					sleep := time.Duration(float64(min) * float64(attemptNum+1))
+					if sleep > max {
+						sleep = max
+					}
+				*/
+				return duration
+			}
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
 			retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
@@ -225,7 +250,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 	if resp != nil && resp.StatusCode == http.StatusBadRequest {
 		respMap := map[string]string{}
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err == nil {
 			_ = json.Unmarshal(data, &respMap)
 			if errorID, ok := respMap["id"]; ok && (errorID == "non.restricted.entity.authorization.failed" || errorID == "bad.request") {
@@ -241,7 +266,57 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+}
+
+type RateLimiter struct {
+	mu                    sync.Mutex
+	getRequests           []time.Time
+	postPutDeleteRequests []time.Time
+	getLimit              int
+	postPutDeleteLimit    int
+}
+
+func NewRateLimiter() *RateLimiter {
+	return &RateLimiter{
+		getRequests:           []time.Time{},
+		postPutDeleteRequests: []time.Time{},
+		getLimit:              20,
+		postPutDeleteLimit:    10,
+	}
+}
+
+func (rl *RateLimiter) Wait(method string) (bool, time.Duration) {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	now := time.Now()
+
+	switch method {
+	case http.MethodGet:
+		if len(rl.getRequests) >= rl.getLimit {
+			oldestRequest := rl.getRequests[0]
+			if now.Sub(oldestRequest) < 10*time.Second {
+				d := 10*time.Second - now.Sub(oldestRequest)
+				return true, d
+			}
+			rl.getRequests = rl.getRequests[1:]
+		}
+		rl.getRequests = append(rl.getRequests, now)
+
+	case http.MethodPost, http.MethodPut, http.MethodDelete:
+		if len(rl.postPutDeleteRequests) >= rl.postPutDeleteLimit {
+			oldestRequest := rl.postPutDeleteRequests[0]
+			if now.Sub(oldestRequest) < 10*time.Second {
+				d := 10*time.Second - now.Sub(oldestRequest)
+				return true, d
+			}
+			rl.postPutDeleteRequests = rl.postPutDeleteRequests[1:]
+		}
+		rl.postPutDeleteRequests = append(rl.postPutDeleteRequests, now)
+	}
+
+	return false, 0
 }
