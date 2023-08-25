@@ -1,6 +1,11 @@
 package provisioningkey
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -9,8 +14,31 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/enrollmentcert"
 )
 
+// Add a new test for Service Edge Group type
+const connGrpAssociationType = "CONNECTOR_GRP"
+
+// clean all resources
+func init() {
+	log.Printf("init cleaning test")
+	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
+	if !shouldCleanAllResources {
+		return
+	}
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		panic(fmt.Sprintf("Error creating client: %v", err))
+	}
+	service := New(client)
+	resources, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(connGrpAssociationType, r.ID)
+	}
+}
+
 func TestProvisiongKey(t *testing.T) {
-	associationType := "CONNECTOR_GRP"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -63,7 +91,7 @@ func TestProvisiongKey(t *testing.T) {
 	service := New(client)
 
 	resource := ProvisioningKey{
-		AssociationType:       associationType,
+		AssociationType:       connGrpAssociationType,
 		Name:                  name,
 		AppConnectorGroupID:   createdAppConnGroup.ID,
 		AppConnectorGroupName: createdAppConnGroup.Name,
@@ -72,7 +100,7 @@ func TestProvisiongKey(t *testing.T) {
 		MaxUsage:              "10",
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(associationType, &resource)
+	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -85,7 +113,7 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(associationType, createdResource.ID)
+	retrievedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -97,11 +125,11 @@ func TestProvisiongKey(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(associationType, createdResource.ID, retrievedResource)
+	_, err = service.Update(connGrpAssociationType, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(associationType, createdResource.ID)
+	updatedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -112,7 +140,7 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(associationType, updateName)
+	retrievedResource, _, err = service.GetByName(connGrpAssociationType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -142,14 +170,14 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(associationType, createdResource.ID)
+	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(associationType, createdResource.ID)
+	_, _, err = service.Get(connGrpAssociationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

@@ -1,7 +1,11 @@
 package applicationsegment
 
 import (
+	"fmt"
+	"log"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -9,6 +13,27 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/segmentgroup"
 )
+
+// clean all resources
+func init() {
+	log.Printf("init cleaning test")
+	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
+	if !shouldCleanAllResources {
+		return
+	}
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		panic(fmt.Sprintf("Error creating client: %v", err))
+	}
+	service := New(client)
+	resources, _, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(r.ID)
+	}
+}
 
 func TestApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -42,18 +67,19 @@ func TestApplicationSegment(t *testing.T) {
 	service := New(client)
 
 	appSegment := ApplicationSegmentResource{
-		Name:             name,
-		Description:      "New application segment",
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.example.com"},
+		Name:                  name,
+		Description:           "New application segment",
+		Enabled:               true,
+		SegmentGroupID:        createdAppGroup.ID,
+		SegmentGroupName:      createdAppGroup.Name,
+		IsCnameEnabled:        true,
+		BypassType:            "NEVER",
+		IcmpAccessType:        "PING_TRACEROUTING",
+		HealthReporting:       "ON_ACCESS",
+		HealthCheckType:       "DEFAULT",
+		TCPKeepAlive:          "1",
+		InspectTrafficWithZia: false,
+		DomainNames:           []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
 				From: rPort,
