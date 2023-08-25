@@ -4,7 +4,8 @@ import (
 	"net/http"
 )
 
-type nopCache struct{}
+type nopCache struct {
+}
 
 func NewNopCache() Cache {
 	return &nopCache{}
@@ -21,4 +22,7 @@ func (c nopCache) Delete(key string) {
 }
 
 func (c nopCache) Clear() {
+}
+
+func (c nopCache) ClearAllKeysWithPrefix(prefix string) {
 }

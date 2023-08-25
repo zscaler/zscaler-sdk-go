@@ -53,6 +53,9 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 		if req.Method != http.MethodGet {
 			// this will allow to remove resource from cache when PUT/DELETE/PATCH requests are called, which modifies the resource
 			client.cache.Delete(key)
+			// to avoid resources that GET url is not the same as DELETE/PUT/PATCH url, because of different query params.
+			// example delete app segment has key url/<id>?forceDelete=true but GET has url/<id>, in this case we clean the whole cache entries with key prefix url/<id>
+			client.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 		}
 		resp := client.cache.Get(key)
 		inCache := resp != nil
@@ -150,6 +153,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	err := client.authenticate()
 	if err != nil {
 		return nil, err
+
 	}
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {

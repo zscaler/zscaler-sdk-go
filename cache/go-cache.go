@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"time"
 
 	"github.com/allegro/bigcache/v3"
@@ -53,4 +54,17 @@ func (c cache) Delete(key string) {
 
 func (c cache) Clear() {
 	c.bcache.Reset()
+}
+
+func (c cache) ClearAllKeysWithPrefix(prefix string) {
+	it := c.bcache.Iterator()
+	for it.SetNext() {
+		e, err := it.Value()
+		if err != nil {
+			continue
+		}
+		if strings.HasPrefix(e.Key(), prefix) {
+			c.bcache.Delete(e.Key())
+		}
+	}
 }
