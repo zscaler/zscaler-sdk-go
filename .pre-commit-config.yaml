@@ -14,5 +14,5 @@ repos:
       - id: go-vet
       - id: go-lint
       # - id: go-unit-tests
-      - id: gofumpt # requires github.com/mvdan/gofumpt
+      # - id: gofumpt # requires github.com/mvdan/gofumpt
       #- id: go-static-check # install https://staticcheck.io/docs/
