@@ -14,7 +14,8 @@ on:
         required: true
       ZIA_CLOUD:
         required: true
-
+      ZSCALER_SDK_TEST_SWEEP:
+        required: true
 jobs:
   zia-test:
     environment: ${{ inputs.environment }}
@@ -39,6 +40,7 @@ jobs:
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
         run: |
           make test:integration:zia
           make ziaActivator

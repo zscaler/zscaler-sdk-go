@@ -1,11 +1,37 @@
 package ipsourcegroups
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
+
+// clean all resources
+func init() {
+	log.Printf("init cleaning test")
+	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
+	if !shouldCleanAllResources {
+		return
+	}
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		panic(fmt.Sprintf("Error creating client: %v", err))
+	}
+	service := New(client)
+	resources, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(r.ID)
+	}
+}
 
 func TestFWFileringIPSourceGroups(t *testing.T) {
 	ipAddress1, _ := acctest.RandIpAddress("192.168.1.0/24")
