@@ -63,6 +63,7 @@ func cleanResources() {
 func TestApplicationServer(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	randomIP, _ := acctest.RandIpAddress("192.168.0.0/24")
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -75,7 +76,7 @@ func TestApplicationServer(t *testing.T) {
 		Name:        name,
 		Description: name,
 		Enabled:     true,
-		Address:     "192.168.1.1",
+		Address:     randomIP,
 	}
 
 	// Test resource creation

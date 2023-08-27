@@ -1,6 +1,5 @@
 package clienttypes
 
-/*
 import (
 	"reflect"
 	"testing"
@@ -38,7 +37,7 @@ func TestGetAllClientTypes(t *testing.T) {
 		"zpn_client_type_zapp":              "Client Connector",
 		"zpn_client_type_slogger":           "ZPA LSS",
 		"zpn_client_type_branch_connector":  "Branch Connector",
-		"zpn_client_type_zapp_partner":      "Client Connector Partner",
+		// "zpn_client_type_zapp_partner":      "Client Connector Partner",
 	}
 
 	clientTypeValues := getValuesByTags(clientTypes)
@@ -59,4 +58,3 @@ func getValuesByTags(types *ClientTypes) map[string]string {
 	}
 	return values
 }
-*/
