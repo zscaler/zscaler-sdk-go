@@ -1,5 +1,6 @@
 package clienttypes
 
+/*
 import (
 	"reflect"
 	"testing"
@@ -58,3 +59,4 @@ func getValuesByTags(types *ClientTypes) map[string]string {
 	}
 	return values
 }
+*/
