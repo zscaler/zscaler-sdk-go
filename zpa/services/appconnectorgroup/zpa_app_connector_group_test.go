@@ -30,12 +30,10 @@ func teardown() {
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
 	if !present {
-		log.Println("ZSCALER_SDK_TEST_SWEEP not found. Defaulting to cleaning resources.")
 		return true // default value
 	}
 	shouldClean, err := strconv.ParseBool(val)
 	if err != nil {
-		log.Printf("Error parsing ZSCALER_SDK_TEST_SWEEP: %v. Defaulting to cleaning resources.", err)
 		return true // default to cleaning if the value is not parseable
 	}
 	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
@@ -44,11 +42,9 @@ func shouldClean() bool {
 
 func cleanResources() {
 	if !shouldClean() {
-		log.Println("Skipping resource cleaning.")
 		return
 	}
 
-	log.Println("Starting resource cleanup...")
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
@@ -62,7 +58,6 @@ func cleanResources() {
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
 		_, _ = service.Delete(r.ID)
 	}
-	log.Println("Resource cleanup completed.")
 }
 
 func TestAppConnectorGroup(t *testing.T) {
