@@ -1,6 +1,7 @@
 package provisioningkey
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -20,17 +21,18 @@ const (
 )
 
 func TestMain(m *testing.M) {
+	// Uncomment setup if needed in the future
+	// setup()
 	code := m.Run()
 	teardown()
 	os.Exit(code)
 }
 
-// func setup() {
-// 	cleanResources() // clean up at the beginning
-// }
-
 func teardown() {
-	cleanResources() // clean up at the end
+	err := cleanResources()
+	if err != nil {
+		log.Fatalf("Error during cleanup: %v", err)
+	}
 }
 
 func shouldClean() bool {
@@ -46,48 +48,59 @@ func shouldClean() bool {
 	return shouldClean
 }
 
-func cleanResources() {
+func cleanResources() error {
 	if !shouldClean() {
-		return
+		return nil
 	}
 
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		return fmt.Errorf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, _ := service.GetAll()
+	resources, err := service.GetAll()
+	if err != nil {
+		return fmt.Errorf("Error getting all resources: %v", err)
+	}
 	for _, r := range resources {
 		if !strings.HasPrefix(r.Name, "tests-") {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
 
-		// Determine which type to use based on the AssociationType of the resource
 		var associationType string
 		if r.AssociationType == connGrpAssociationType {
 			associationType = connGrpAssociationType
 		} else if r.AssociationType == serviceEdgeGrpAssociationType {
 			associationType = serviceEdgeGrpAssociationType
 		} else {
-			// If the AssociationType is neither of the two we expect, skip to the next resource
 			continue
 		}
 
-		_, _ = service.Delete(associationType, r.ID)
+		_, err := service.Delete(associationType, r.ID)
+		if err != nil {
+			return fmt.Errorf("Error deleting resource with ID: %s, Name: %s, Error: %v", r.ID, r.Name, err)
+		}
 	}
+	return nil
 }
 
 func TestAppConnectorGroupProvisiongKey(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+	randStr := func() string { return "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha) }
+	assertNoError := func(err error, errMsg string) {
+		if err != nil {
+			t.Fatalf(errMsg, err)
+			return
+		}
 	}
-	// create application connector group for testing
+
+	name := randStr()
+	updateName := randStr()
+	appConnGroupName := randStr()
+
+	client, err := tests.NewZpaClient()
+	assertNoError(err, "Error creating client: %v")
+
 	appConnectorGroupService := appconnectorgroup.New(client)
 	appGroup := appconnectorgroup.AppConnectorGroup{
 		Name:                     appConnGroupName,
@@ -110,10 +123,7 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 		TCPQuickAckReadAssistant: true,
 	}
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
-	if err != nil {
-		t.Errorf("Error creating application connector group: %v", err)
-		return
-	}
+	assertNoError(err, "Error creating application connector group: %v")
 	defer func() {
 		_, err := appConnectorGroupService.Delete(createdAppConnGroup.ID)
 		if err != nil {
@@ -123,10 +133,7 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 	// get enrollment cert for testing
 	enrollmentCertService := enrollmentcert.New(client)
 	enrollmentCert, _, err := enrollmentCertService.GetByName("Connector")
-	if err != nil {
-		t.Errorf("Error getting enrollment cert: %v", err)
-		return
-	}
+	assertNoError(err, "Error getting enrollment cert: %v")
 
 	service := New(client)
 
@@ -139,84 +146,41 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 		ZcomponentID:          createdAppConnGroup.ID,
 		MaxUsage:              "10",
 	}
-	// Test resource creation
 	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
-	}
+	assertNoError(err, "Error making POST request: %v")
 
-	if createdResource.ID == "" {
-		t.Error("Expected created resource ID to be non-empty, but got ''")
-	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
-	// Test resource retrieval
+	assertNoError(checkResourceFields(*createdResource, name), "")
+
 	retrievedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
-	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
-	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
-	}
+	assertNoError(err, "Error retrieving resource: %v")
+	assertNoError(checkResourceFields(*retrievedResource, name), "")
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = service.Update(connGrpAssociationType, createdResource.ID, retrievedResource)
-	if err != nil {
-		t.Errorf("Error updating resource: %v", err)
-	}
+	assertNoError(err, "Error updating resource: %v")
+
 	updatedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
-	}
-	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
-	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	}
-	// Test resource retrieval by name
+	assertNoError(err, "Error retrieving resource: %v")
+	assertNoError(checkResourceFields(*updatedResource, updateName), "")
+
 	retrievedResource, _, err = service.GetByName(connGrpAssociationType, updateName)
-	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
-	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
-	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
-	}
-	// Test resources retrieval
+	assertNoError(err, "Error retrieving resource by name: %v")
+	assertNoError(checkResourceFields(*retrievedResource, updateName), "")
+
 	resources, err := service.GetAll()
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
+	assertNoError(err, "Error retrieving resources: %v")
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
-	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
+
+	if !resourceInSlice(*createdResource, resources) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
-	// Test resource removal
-	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
-		return
-	}
 
-	// Test resource retrieval after deletion
+	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
+	assertNoError(err, "Error deleting resource: %v")
+
 	_, _, err = service.Get(connGrpAssociationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
@@ -224,14 +188,20 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 }
 
 func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	serviceEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+	randStr := func() string { return "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha) }
+	assertNoError := func(err error, errMsg string) {
+		if err != nil {
+			t.Fatalf(errMsg, err)
+			return
+		}
 	}
+
+	name := randStr()
+	updateName := randStr()
+	serviceEdgeGroupName := randStr()
+
+	client, err := tests.NewZpaClient()
+	assertNoError(err, "Error creating client: %v")
 	// create application connector group for testing
 	serviceEdgeGroupService := serviceedgegroup.New(client)
 	edgeGroup := serviceedgegroup.ServiceEdgeGroup{
@@ -249,10 +219,7 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 		VersionProfileID:       "0",
 	}
 	createdServiceEdgeGroup, _, err := serviceEdgeGroupService.Create(edgeGroup)
-	if err != nil {
-		t.Errorf("Error creating service edge group: %v", err)
-		return
-	}
+	assertNoError(err, "Error creating service edge group: %v")
 	defer func() {
 		_, err := serviceEdgeGroupService.Delete(createdServiceEdgeGroup.ID)
 		if err != nil {
@@ -262,10 +229,7 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 	// get enrollment cert for testing
 	enrollmentCertService := enrollmentcert.New(client)
 	enrollmentCert, _, err := enrollmentCertService.GetByName("Service Edge")
-	if err != nil {
-		t.Errorf("Error getting enrollment cert: %v", err)
-		return
-	}
+	assertNoError(err, "Error getting enrollment cert: %v")
 
 	service := New(client)
 
@@ -278,86 +242,62 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 		ZcomponentID:          createdServiceEdgeGroup.ID,
 		MaxUsage:              "10",
 	}
-	// Test resource creation
 	createdResource, _, err := service.Create(serviceEdgeGrpAssociationType, &resource)
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
-	}
+	assertNoError(err, "Error making POST request: %v")
 
-	if createdResource.ID == "" {
-		t.Error("Expected created resource ID to be non-empty, but got ''")
-	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
-	// Test resource retrieval
+	assertNoError(checkResourceFields(*createdResource, name), "")
+
 	retrievedResource, _, err := service.Get(serviceEdgeGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
-	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
-	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
-	}
+	assertNoError(err, "Error retrieving resource: %v")
+	assertNoError(checkResourceFields(*retrievedResource, name), "")
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = service.Update(serviceEdgeGrpAssociationType, createdResource.ID, retrievedResource)
-	if err != nil {
-		t.Errorf("Error updating resource: %v", err)
-	}
+	assertNoError(err, "Error updating resource: %v")
+
 	updatedResource, _, err := service.Get(serviceEdgeGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
-	}
-	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
-	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	}
-	// Test resource retrieval by name
+	assertNoError(err, "Error retrieving resource: %v")
+	assertNoError(checkResourceFields(*updatedResource, updateName), "")
+
 	retrievedResource, _, err = service.GetByName(serviceEdgeGrpAssociationType, updateName)
-	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
-	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
-	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
-	}
-	// Test resources retrieval
+	assertNoError(err, "Error retrieving resource by name: %v")
+	assertNoError(checkResourceFields(*retrievedResource, updateName), "")
+
 	resources, err := service.GetAll()
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
+	assertNoError(err, "Error retrieving resources: %v")
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
-	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
+
+	if !resourceInSlice(*createdResource, resources) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
-	// Test resource removal
-	_, err = service.Delete(serviceEdgeGrpAssociationType, createdResource.ID)
-	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
-		return
-	}
 
-	// Test resource retrieval after deletion
+	_, err = service.Delete(serviceEdgeGrpAssociationType, createdResource.ID)
+	assertNoError(err, "Error deleting resource: %v")
+
 	_, _, err = service.Get(serviceEdgeGrpAssociationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+}
+
+func checkResourceFields(resource ProvisioningKey, expectedName string) error {
+	if resource.ID == "" {
+		return fmt.Errorf("Expected created resource ID to be non-empty, but got ''")
+	}
+	if resource.Name != expectedName {
+		return fmt.Errorf("Expected created resource name '%s', but got '%s'", expectedName, resource.Name)
+	}
+	return nil
+}
+
+func resourceInSlice(target ProvisioningKey, resourceList []ProvisioningKey) bool {
+	for _, resource := range resourceList {
+		if resource.ID == target.ID {
+			return true
+		}
+	}
+	return false
 }
