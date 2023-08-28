@@ -1,13 +1,68 @@
 package dlp_engines
 
 import (
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
 
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	if !present {
+		return true // default value
+	}
+	shouldClean, err := strconv.ParseBool(val)
+	if err != nil {
+		return true // default to cleaning if the value is not parseable
+	}
+	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
+	return shouldClean
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(r.ID)
+	}
+}
+
 func TestDLPEngine(t *testing.T) {
+	cleanResources()                // At the start of the test
+	defer t.Cleanup(cleanResources) // Will be called at the end
+
 	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)

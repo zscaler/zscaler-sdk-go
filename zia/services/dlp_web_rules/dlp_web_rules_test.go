@@ -1,7 +1,6 @@
 package dlp_web_rules
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -15,15 +14,42 @@ import (
 )
 
 // clean all resources
-func init() {
-	log.Printf("init cleaning test")
-	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
-	if !shouldCleanAllResources {
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources()
+}
+
+func teardown() {
+	cleanResources()
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	if !present {
+		return true
+	}
+	shouldClean, err := strconv.ParseBool(val)
+	if err != nil {
+		return true
+	}
+	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
+	return shouldClean
+}
+
+func cleanResources() {
+	if !shouldClean() {
 		return
 	}
+
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		panic(fmt.Sprintf("Error creating client: %v", err))
+		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
 	resources, _ := service.GetAll()
@@ -36,12 +62,14 @@ func init() {
 }
 
 func TestDLPWebRule(t *testing.T) {
+	cleanResources()                // At the start of the test
+	defer t.Cleanup(cleanResources) // Will be called at the end
+
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
 
 	// create rule label for testing
@@ -50,16 +78,18 @@ func TestDLPWebRule(t *testing.T) {
 		Name:        name,
 		Description: name,
 	})
-	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error creating rule label for testing server group: %v", err)
+		t.Fatalf("Error creating rule label for testing: %v", err)
 	}
+
+	// Ensure the rule label is cleaned up at the end of this test
 	defer func() {
 		_, err := ruleLabelService.Delete(ruleLabel.ID)
 		if err != nil {
 			t.Errorf("Error deleting rule label: %v", err)
 		}
 	}()
+
 	service := New(client)
 	rule := WebDLPRules{
 		Name:                     name,
@@ -83,37 +113,40 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Test resource creation
 	createdResource, err := service.Create(&rule)
-	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
+		t.Fatalf("Error making POST request: %v", err)
 	}
 
+	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
-		t.Errorf("Error updating resource: %v", err)
+		t.Fatalf("Error updating resource: %v", err)
 	}
+
 	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
@@ -123,27 +156,29 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedByNameResource, err := service.GetByName(updateName)
 	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	if retrievedByNameResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	allResources, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
+		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(resources) == 0 {
+	if len(allResources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
+
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range resources {
+	for _, resource := range allResources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -152,16 +187,16 @@ func TestDLPWebRule(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
-		return
+		t.Fatalf("Error deleting resource: %v", err)
 	}
 
 	// Test resource retrieval after deletion
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
-		t.Errorf("Expected error retrieving deleted resource, but got nil")
+		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }

@@ -1,7 +1,6 @@
 package rule_labels
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -13,15 +12,42 @@ import (
 )
 
 // clean all resources
-func init() {
-	log.Printf("init cleaning test")
-	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
-	if !shouldCleanAllResources {
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	if !present {
+		return true // default value
+	}
+	shouldClean, err := strconv.ParseBool(val)
+	if err != nil {
+		return true // default to cleaning if the value is not parseable
+	}
+	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
+	return shouldClean
+}
+
+func cleanResources() {
+	if !shouldClean() {
 		return
 	}
+
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		panic(fmt.Sprintf("Error creating client: %v", err))
+		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
 	resources, _ := service.GetAll()
@@ -34,6 +60,7 @@ func init() {
 }
 
 func TestRuleLabels(t *testing.T) {
+	cleanResources()
 	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
@@ -132,4 +159,5 @@ func TestRuleLabels(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+	cleanResources()
 }
