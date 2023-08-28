@@ -9,7 +9,7 @@ import (
 func TestEnrollmentCert(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 
@@ -17,22 +17,39 @@ func TestEnrollmentCert(t *testing.T) {
 
 	certificates, _, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error getting enrollment certificates: %v", err)
+		t.Fatalf("Error getting enrollment certificates: %v", err)
 		return
 	}
 	if len(certificates) == 0 {
-		t.Errorf("No enrollment certificate found")
+		t.Fatalf("No enrollment certificate found")
 		return
 	}
-	name := certificates[0].Name
-	t.Log("Getting enrollment certificate by name:" + name)
-	certificate, _, err := service.GetByName(name)
-	if err != nil {
-		t.Errorf("Error getting enrollment certificatee by name: %v", err)
-		return
+
+	// Check if GetAll returns specific certificate names
+	requiredNames := []string{"Root", "Client", "Connector", "Service Edge"}
+	for _, reqName := range requiredNames {
+		found := false
+		for _, cert := range certificates {
+			if cert.Name == reqName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected certificate with name %s not found in GetAll response", reqName)
+		}
 	}
-	if certificate.Name != name {
-		t.Errorf("enrollment certificate name does not match: expected %s, got %s", name, certificate.Name)
-		return
+
+	// Test GetByName for each specific certificate name
+	for _, reqName := range requiredNames {
+		t.Run("GetByName for "+reqName, func(t *testing.T) {
+			certificate, _, err := service.GetByName(reqName)
+			if err != nil {
+				t.Fatalf("Error getting enrollment certificate by name %s: %v", reqName, err)
+			}
+			if certificate.Name != reqName {
+				t.Errorf("Enrollment certificate name does not match: expected %s, got %s", reqName, certificate.Name)
+			}
+		})
 	}
 }
