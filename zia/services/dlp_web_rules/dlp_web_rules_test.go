@@ -1,6 +1,7 @@
 package dlp_web_rules
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -110,6 +111,11 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Ensure the rule label is cleaned up at the end of this test
 	defer func() {
+		_, getErr := ruleLabelService.Get(ruleLabel.ID)
+		if getErr != nil {
+			t.Logf("Rule label %d may have already been deleted: %v", ruleLabel.ID, getErr)
+			return
+		}
 		_, err := ruleLabelService.Delete(ruleLabel.ID)
 		if err != nil {
 			t.Errorf("Error deleting rule label: %v", err)
@@ -227,6 +233,10 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
+		_, getErr := service.Get(createdResource.ID)
+		if getErr != nil {
+			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
+		}
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
