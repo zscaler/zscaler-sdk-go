@@ -112,12 +112,12 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 
 func (service *Service) GetCustomURLCategories(customName string) (*URLCategory, error) {
 	var urlCategory []URLCategory
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, "true"), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
 	for _, custom := range urlCategory {
-		if strings.EqualFold(custom.ID, customName) {
+		if strings.EqualFold(custom.ConfiguredName, customName) { // Use ConfiguredName instead of ID for comparison
 			return &custom, nil
 		}
 	}

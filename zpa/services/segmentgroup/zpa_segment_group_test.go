@@ -3,7 +3,6 @@ package segmentgroup
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -29,15 +28,7 @@ func teardown() {
 
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	if !present {
-		return true // default value
-	}
-	shouldClean, err := strconv.ParseBool(val)
-	if err != nil {
-		return true // default to cleaning if the value is not parseable
-	}
-	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
-	return shouldClean
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
 }
 
 func cleanResources() {
@@ -61,9 +52,6 @@ func cleanResources() {
 }
 
 func TestSegmentGroup(t *testing.T) {
-	cleanResources()                // At the start of the test
-	defer t.Cleanup(cleanResources) // Will be called at the end
-
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
