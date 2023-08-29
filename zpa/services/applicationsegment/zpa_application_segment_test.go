@@ -63,6 +63,9 @@ func cleanResources() {
 }
 
 func TestApplicationSegment(t *testing.T) {
+	cleanResources()                // At the start of the test
+	defer t.Cleanup(cleanResources) // Will be called at the end
+
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
