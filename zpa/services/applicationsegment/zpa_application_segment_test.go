@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
@@ -77,9 +78,15 @@ func TestApplicationSegment(t *testing.T) {
 		return
 	}
 	defer func() {
-		_, err := appGroupService.Delete(createdAppGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application segment group: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appGroupService.Delete(createdAppGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting application segment group: %v", err)
+			}
 		}
 	}()
 
