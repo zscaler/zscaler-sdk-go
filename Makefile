@@ -34,13 +34,13 @@ test\:all:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
+	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 5 -timeout 120m
 	go tool cover -func zpacoverage.txt | grep total:
 	rm -rf zpacoverage.txt
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
+	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 5 -timeout 120m
 	go tool cover -func ziacoverage.txt | grep total:
 	rm -rf zpacoverage.txt
 

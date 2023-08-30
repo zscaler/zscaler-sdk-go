@@ -2,17 +2,43 @@ package security_policy_settings
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
-	"reflect"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
 
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
+
 func randomURL() string {
 	rand.Seed(time.Now().UnixNano())
 	return fmt.Sprintf(".example%d.com", rand.Intn(10000))
+}
+
+func retryOnConflict(operation func() error) error {
+	var lastErr error
+	for i := 0; i < maxConflictRetries; i++ {
+		lastErr = operation()
+		if lastErr == nil {
+			return nil
+		}
+
+		if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
+			log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		return lastErr
+	}
+	return lastErr
 }
 
 func TestSecurityPolicySettings(t *testing.T) {
@@ -39,22 +65,33 @@ func TestSecurityPolicySettings(t *testing.T) {
 		Black: testBlackListURLs,
 	}
 
-	updatedSettings, err := service.UpdateListUrls(newSettings)
+	err = retryOnConflict(func() error {
+		_, err := service.UpdateListUrls(newSettings)
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Error updating settings: %v", err)
 	}
 
+	updatedSettings, err := service.GetListUrls()
+	if err != nil {
+		t.Fatalf("Error fetching updated settings: %v", err)
+	}
+
 	// Verify if the settings were updated
-	if !reflect.DeepEqual(updatedSettings.White, testWhiteListURLs) {
+	if !areSlicesEqual(updatedSettings.White, testWhiteListURLs) {
 		t.Errorf("Whitelist URLs were not updated correctly. Expected: %v, Got: %v", testWhiteListURLs, updatedSettings.White)
 	}
 
-	if !reflect.DeepEqual(updatedSettings.Black, testBlackListURLs) {
+	if !areSlicesEqual(updatedSettings.Black, testBlackListURLs) {
 		t.Errorf("Blacklist URLs were not updated correctly. Expected: %v, Got: %v", testBlackListURLs, updatedSettings.Black)
 	}
 
 	// Restore initial settings
-	_, err = service.UpdateListUrls(*initialSettings)
+	err = retryOnConflict(func() error {
+		_, err := service.UpdateListUrls(*initialSettings)
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Error restoring initial settings: %v", err)
 	}
@@ -65,7 +102,23 @@ func TestSecurityPolicySettings(t *testing.T) {
 		t.Fatalf("Error fetching final settings: %v", err)
 	}
 
-	if !reflect.DeepEqual(finalSettings, initialSettings) {
+	if !areSlicesEqual(finalSettings.White, initialSettings.White) || !areSlicesEqual(finalSettings.Black, initialSettings.Black) {
 		t.Errorf("Settings were not restored correctly. Expected: %+v, Got: %+v", initialSettings, finalSettings)
 	}
+}
+
+func areSlicesEqual(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	sort.Strings(s1)
+	sort.Strings(s2)
+
+	for i := range s1 {
+		if s1[i] != s2[i] {
+			return false
+		}
+	}
+	return true
 }

@@ -1,6 +1,5 @@
 package rule_labels
 
-/*
 import (
 	"log"
 	"os"
@@ -8,16 +7,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/tests"
 )
 
-const maxRetries = 3
-const retryInterval = 2 * time.Second
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
 
 // Constants for conflict retries
-const maxConflictRetries = 5
-const conflictRetryInterval = 1 * time.Second
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -85,7 +88,6 @@ func cleanResources() {
 }
 
 func TestRuleLabels(t *testing.T) {
-
 	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
@@ -113,7 +115,7 @@ func TestRuleLabels(t *testing.T) {
 	}
 
 	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-empty, but got ''")
+		t.Fatal("Expected created resource ID to be non-zero, but got 0")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created rule label '%s', but got '%s'", name, createdResource.Name)
@@ -148,7 +150,7 @@ func TestRuleLabels(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
 	if updatedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateDescription, updatedResource.Description)
+		t.Errorf("Expected retrieved updated resource description '%s', but got '%s'", updateDescription, updatedResource.Description)
 	}
 
 	// Test resource retrieval by name
@@ -208,4 +210,3 @@ func tryRetrieveResource(s *Service, id int) (*RuleLabels, error) {
 
 	return nil, err
 }
-*/

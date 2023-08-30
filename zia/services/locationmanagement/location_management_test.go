@@ -92,31 +92,40 @@ func TestLocationManagement(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
-	// static ip for vpn credentials testing
+
+	cleanupTasks := []func(){}
+
+	defer func() {
+		for _, task := range cleanupTasks {
+			task()
+		}
+	}()
+
+	// static ip for location management testing
 	staticipsService := staticips.New(client)
-	// Test resource creation
 	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   "testing static ip for location management",
 	})
 	if err != nil {
-		t.Errorf("creating static ip failed: %v", err)
+		t.Fatalf("creating static ip failed: %v", err)
 		return
 	}
-	defer func() {
+
+	cleanupTasks = append(cleanupTasks, func() {
 		_, err := staticipsService.Delete(staticIP.ID)
-		if err != nil {
-			t.Errorf("deleting static ip failed: %v", err)
+		if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
+			t.Errorf("Error deleting static ip: %v", err)
 		}
-	}()
+	})
 
 	service := New(client)
-
 	location := Locations{
 		Name:              name,
 		Description:       name,
@@ -144,12 +153,29 @@ func TestLocationManagement(t *testing.T) {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
+	alreadyDeleted := false
+
+	// This deferred deletion should be declared right after confirming resource creation
+	defer func() {
+		if alreadyDeleted {
+			return
+		}
+		err = retryOnConflict(func() error {
+			_, delErr := service.Delete(createdResource.ID)
+			return delErr
+		})
+		if err != nil {
+			t.Errorf("Error deleting rule: %v", err)
+		}
+	}()
+
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
@@ -161,8 +187,10 @@ func TestLocationManagement(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Description = updateDescription
+	retrievedResource.Name = updateName // Added this line
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
@@ -174,8 +202,8 @@ func TestLocationManagement(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
-	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+	if updatedResource.Description != updateDescription {
+		t.Errorf("Expected updated resource description '%s', but got '%s'", updateDescription, updatedResource.Description)
 	}
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
@@ -192,6 +220,7 @@ func TestLocationManagement(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, err := service.GetAll()
 	if err != nil {
@@ -211,11 +240,17 @@ func TestLocationManagement(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
+	if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
+		t.Fatalf("Error deleting resource: %v", err)
+	}
+	alreadyDeleted = true // Set the flag to true after successfully deleting the rule
+
 	_, err = service.GetLocation(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
@@ -224,17 +259,17 @@ func TestLocationManagement(t *testing.T) {
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
 func tryRetrieveResource(s *Service, id int) (*Locations, error) {
-	var resource *Locations
-	var err error
+	var result *Locations
+	var lastErr error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.GetLocation(id)
-		if err == nil && resource != nil && resource.ID == id {
-			return resource, nil
+		result, lastErr = s.GetLocation(id)
+		if lastErr == nil {
+			return result, nil
 		}
-		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
+
 		time.Sleep(retryInterval)
 	}
 
-	return nil, err
+	return nil, lastErr
 }

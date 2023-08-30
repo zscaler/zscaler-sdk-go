@@ -1,4 +1,4 @@
-package urlfilteringpolicies
+package usermanagement
 
 import (
 	"log"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -87,60 +88,63 @@ func cleanResources() {
 	}
 }
 
-func TestURLFilteringRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestUserManagement(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	rPassword := acctest.RandString(10)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
-
+	// For groups, you might want to make sure you get a list of groups instead, as per your structure.
+	// Assuming a function similar to GetAll for departments exists for groups:
+	groupService := New(client)
+	groups, err := groupService.GetAllGroups()
+	if err != nil || len(groups) == 0 {
+		t.Fatalf("Error retrieving groups or no groups found: %v", err)
+	}
+	// Retrieve the first department and group (for simplicity; you can enhance this to retrieve by name or other criteria)
+	departmentService := New(client)
+	departments, err := departmentService.GetAll()
+	if err != nil || len(departments) == 0 {
+		t.Fatalf("Error retrieving departments or no departments found: %v", err)
+	}
 	service := New(client)
-	rule := URLFilteringRule{
-		Name:           name,
-		Description:    name,
-		Order:          1,
-		Rank:           7,
-		State:          "ENABLED",
-		Action:         "BLOCK",
-		URLCategories:  []string{"ANY"},
-		Protocols:      []string{"ANY_RULE"},
-		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
+
+	user := Users{
+		Name:     name,
+		Email:    email + "@securitygeek.io",
+		Password: rPassword,
+		Comments: updateComments,
+		Groups: []common.IDNameExtensions{
+			{
+				ID: groups[0].ID, // For simplicity, we are associating the first group; you can extend this to multiple groups
+			},
+		},
+		Department: &common.UserDepartment{
+			ID: departments[0].ID, // Associating the first department for simplicity
+		},
 	}
 
-	var createdResource *URLFilteringRule
+	var createdResource *Users
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, err = service.Create(&user)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	alreadyDeleted := false
-	// Defer function to delete the created URLFilteringRule
-	defer func() {
-		if alreadyDeleted {
-			return
-		}
-		err = retryOnConflict(func() error {
-			_, delErr := service.Delete(createdResource.ID)
-			return delErr
-		})
-		if err != nil {
-			t.Errorf("Error deleting rule: %v", err)
-		}
-	}()
-
 	if createdResource.ID == 0 {
-		t.Error("Expected created resource ID to be non-empty, but got ''")
+		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created user '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
@@ -150,11 +154,11 @@ func TestURLFilteringRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved user '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
-	retrievedResource.Name = updateName
-	retrievedResource.Description = updateDescription
+	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
@@ -162,6 +166,7 @@ func TestURLFilteringRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
+
 	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
@@ -169,23 +174,23 @@ func TestURLFilteringRule(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved updated resource description '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComments, updatedResource.Comments)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = service.GetUserByName(name) // Name should be prefixed with "tests-"
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource description '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := service.GetAllUsers()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -208,11 +213,6 @@ func TestURLFilteringRule(t *testing.T) {
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
-	if err != nil {
-		t.Fatalf("Error deleting resource: %v", err)
-	}
-	alreadyDeleted = true // Set the flag to true after successfully deleting the rule
-
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
@@ -220,18 +220,18 @@ func TestURLFilteringRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*URLFilteringRule, error) {
-	var result *URLFilteringRule
-	var lastErr error
+func tryRetrieveResource(s *Service, id int) (*Users, error) {
+	var resource *Users
+	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		result, lastErr = s.Get(id)
-		if lastErr == nil {
-			return result, nil
+		resource, err = s.Get(id)
+		if err == nil && resource != nil && resource.ID == id {
+			return resource, nil
 		}
-
+		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
 		time.Sleep(retryInterval)
 	}
 
-	return nil, lastErr
+	return nil, err
 }
