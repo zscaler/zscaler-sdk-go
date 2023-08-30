@@ -9,18 +9,21 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 
+	"github.com/zscaler/zscaler-sdk-go/cache"
 	"github.com/zscaler/zscaler-sdk-go/logger"
 	"github.com/zscaler/zscaler-sdk-go/utils"
 )
 
 type Client struct {
 	Config *Config
+	cache  cache.Cache
 }
 
 // NewClient returns a new client for the specified apiKey.
@@ -28,12 +31,69 @@ func NewClient(config *Config) (c *Client) {
 	if config == nil {
 		config, _ = NewConfig("", "", "", "", "")
 	}
-	c = &Client{Config: config}
+	cche, err := cache.NewCache(config.cacheTtl, config.cacheCleanwindow, config.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	c = &Client{Config: config, cache: cche}
 	return
 }
 
+func (client *Client) WithFreshCache() {
+	client.Config.freshCache = true
+}
+
 func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
-	return client.newRequestDoCustom(method, url, options, body, v)
+	req, err := client.getRequest(method, url, options, body)
+	if err != nil {
+		return nil, err
+	}
+	key := cache.CreateCacheKey(req)
+	if client.Config.cacheEnabled {
+		if req.Method != http.MethodGet {
+			// this will allow to remove resource from cache when PUT/DELETE/PATCH requests are called, which modifies the resource
+			client.cache.Delete(key)
+			// to avoid resources that GET url is not the same as DELETE/PUT/PATCH url, because of different query params.
+			// example delete app segment has key url/<id>?forceDelete=true but GET has url/<id>, in this case we clean the whole cache entries with key prefix url/<id>
+			client.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+		}
+		resp := client.cache.Get(key)
+		inCache := resp != nil
+		if client.Config.freshCache {
+			client.cache.Delete(key)
+			inCache = false
+			client.Config.freshCache = false
+		}
+		if inCache {
+			if v != nil {
+				respData, err := io.ReadAll(resp.Body)
+				if err == nil {
+					resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+				}
+				if err := decodeJSON(respData, v); err != nil {
+					return resp, err
+				}
+			}
+			unescapeHTML(v)
+			client.Config.Logger.Printf("[INFO] served from cache, key:%s\n", key)
+			return resp, nil
+		}
+	}
+	resp, err := client.newRequestDoCustom(method, url, options, body, v)
+	if err != nil {
+		return resp, err
+	}
+	if client.Config.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet && v != nil && reflect.TypeOf(v).Kind() != reflect.Slice {
+		d, err := json.Marshal(v)
+		if err == nil {
+			resp.Body = io.NopCloser(bytes.NewReader(d))
+			client.Config.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+			client.cache.Set(key, cache.CopyResponse(resp))
+		} else {
+			client.Config.Logger.Printf("[ERROR] saving to cache error:%s, key:%s\n", err, key)
+		}
+	}
+	return resp, nil
 }
 
 func (client *Client) authenticate() error {
@@ -124,12 +184,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	return resp, err
 }
 
-// Generating the Http request
-func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
-	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s\n", ZPA_CLIENT_ID, client.Config.ClientID)
-		return nil, fmt.Errorf("failed to signin the user %s=%s", ZPA_CLIENT_ID, client.Config.ClientID)
-	}
+func (client *Client) getRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	var buf io.ReadWriter
 	if body != nil {
 		buf = new(bytes.Buffer)
@@ -163,7 +218,19 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	if err != nil {
 		return nil, err
 	}
+	return req, nil
+}
 
+// Generating the Http request
+func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
+	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
+		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s\n", ZPA_CLIENT_ID, client.Config.ClientID)
+		return nil, fmt.Errorf("failed to signin the user %s=%s", ZPA_CLIENT_ID, client.Config.ClientID)
+	}
+	req, err := client.getRequest(method, urlPath, options, body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.Config.AuthToken.AccessToken))
 	req.Header.Add("Content-Type", "application/json")
 
@@ -179,13 +246,16 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	if err != nil {
 		return nil, err
 	}
-
-	if err := checkErrorInResponse(resp); err != nil {
+	respData, err := io.ReadAll(resp.Body)
+	if err == nil {
+		resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+	}
+	if err := checkErrorInResponse(resp, respData); err != nil {
 		return resp, err
 	}
 
 	if v != nil {
-		if err := decodeJSON(resp, v); err != nil {
+		if err := decodeJSON(respData, v); err != nil {
 			return resp, err
 		}
 	}
@@ -194,8 +264,8 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	return resp, nil
 }
 
-func decodeJSON(res *http.Response, v interface{}) error {
-	return json.NewDecoder(res.Body).Decode(&v)
+func decodeJSON(respData []byte, v interface{}) error {
+	return json.NewDecoder(bytes.NewBuffer(respData)).Decode(&v)
 }
 
 func unescapeHTML(entity interface{}) {
