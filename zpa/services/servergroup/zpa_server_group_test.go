@@ -226,7 +226,7 @@ func TestServerGroup(t *testing.T) {
 	retrievedAfterDelete, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
-		// Note: This is a basic check. You may want to improve the accuracy based on the exact error message or code.
+		// Note: This is a basic check.
 		if strings.Contains(err.Error(), "resource.not.found") {
 			t.Logf("Resource with ID %s has been deleted as expected.", createdResource.ID)
 		} else {

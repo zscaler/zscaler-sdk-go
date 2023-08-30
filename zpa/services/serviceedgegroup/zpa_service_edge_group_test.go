@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
@@ -102,12 +103,29 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
+		return
 	}
+
+	// Add a delay and retry logic, just in case there's eventual consistency on the backend
+	for retries := 0; retries < 5; retries++ {
+		_, _, err = service.GetByName(updateName)
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second) // Wait for 2 seconds before retrying
+	}
+
+	if err != nil {
+		t.Errorf("Error retrieving resource by name after retries: %v", err)
+		return
+	}
+
 	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
@@ -118,6 +136,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
@@ -129,6 +148,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAll()
 	if err != nil {
