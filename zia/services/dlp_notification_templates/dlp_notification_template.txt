@@ -1,0 +1,11 @@
+The attached content triggered a Web DLP rule for your organization.
+
+Transaction ID: $${TRANSACTION_ID}
+User Accessing the URL: $${USER}
+URL Accessed: $${URL}
+Posting Type: $${TYPE}
+DLP MD5: $${DLPMD5}
+Triggered DLP Violation Engines (assigned to the hit rule): $${ENGINES_IN_RULE}
+Triggered DLP Violation Dictionaries (assigned to the hit rule): $${DICTIONARIES}
+
+No action is required on your part.
