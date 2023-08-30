@@ -70,11 +70,11 @@ ziaActivator: DESTINATION=/usr/local/bin
 endif
 ziaActivator:
 	@echo "==> Installing ziaActivator cli $(DESTINATION)"
-	cd ./zia/cli
+	cd ./zia/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/ziaActivator ./zia/cli/ziaActivator.go
+	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
 	ziaActivator
 
 .PHONY: fmt
