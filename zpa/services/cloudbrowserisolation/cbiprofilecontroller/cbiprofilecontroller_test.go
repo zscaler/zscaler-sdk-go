@@ -92,7 +92,7 @@ func TestCBIProfileController(t *testing.T) {
 		t.Error("Expected to retrieve a cbi certificate, but got nil")
 	}
 
-	cbiLogo, err := readFileContent("../cbibannercontroller/cbiLogo.txt")
+	cbiLogo, err := readFileContent("../cbibannercontroller/cbiLogo")
 	if err != nil {
 		t.Fatalf("Error reading CBI Banner content: %v", err)
 	}
