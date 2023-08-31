@@ -14,6 +14,8 @@ on:
         required: true
       ZPA_CLOUD:
         required: true
+      ZSCALER_SDK_TEST_SWEEP:
+        required: true
 
 jobs:
   zpa-test:
@@ -39,6 +41,7 @@ jobs:
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
         run: |
           make test:unit:zpa
           make test:integration:zpa

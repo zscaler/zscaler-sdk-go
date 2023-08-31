@@ -1,18 +1,16 @@
-package provisioningkey
+package lssconfigcontroller
 
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/appconnectorgroup"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/enrollmentcert"
 )
-
-const connGrpAssociationType = "CONNECTOR_GRP"
 
 // clean all resources
 func TestMain(m *testing.M) {
@@ -45,26 +43,27 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, _ := service.GetAll()
+	resources, _, _ := service.GetAll()
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
+		if !strings.HasPrefix(r.LSSConfig.Name, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(connGrpAssociationType, r.ID)
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.LSSConfig.Name)
+		_, _ = service.Delete(r.ID)
 	}
 }
 
-func TestProvisiongKey(t *testing.T) {
+func TestLSSConfigController(t *testing.T) {
+	ipAddress, _ := acctest.RandIpAddress("192.168.0.0/24")
+	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application connector group for testing
 	appConnectorGroupService := appconnectorgroup.New(client)
 	appGroup := appconnectorgroup.AppConnectorGroup{
 		Name:                     appConnGroupName,
@@ -105,87 +104,132 @@ func TestProvisiongKey(t *testing.T) {
 		}
 	}()
 
-	// get enrollment cert for testing
-	enrollmentCertService := enrollmentcert.New(client)
-	enrollmentCert, _, err := enrollmentCertService.GetByName("Connector")
-	if err != nil {
-		t.Errorf("Error getting enrollment cert: %v", err)
-		return
-	}
+	// lssConfigFormatService := New(client)
+	// lssLogType, _, err := lssConfigFormatService.GetFormats()
+	// if err != nil {
+	// 	t.Errorf("Error getting LSS Log Type: %v", err)
+	// 	return
+	// }
 
 	service := New(client)
-
-	resource := ProvisioningKey{
-		AssociationType:       connGrpAssociationType,
-		Name:                  name,
-		AppConnectorGroupID:   createdAppConnGroup.ID,
-		AppConnectorGroupName: createdAppConnGroup.Name,
-		EnrollmentCertID:      enrollmentCert.ID,
-		ZcomponentID:          createdAppConnGroup.ID,
-		MaxUsage:              "10",
+	lssConfig := &LSSResource{
+		LSSConfig: &LSSConfig{
+			Name:          name,
+			Description:   name,
+			Enabled:       true,
+			LSSHost:       ipAddress,
+			LSSPort:       rPort,
+			Format:        "json",
+			SourceLogType: "zpn_trans_log",
+			UseTLS:        true,
+		},
+		ConnectorGroups: []ConnectorGroups{
+			{
+				ID: createdAppConnGroup.ID,
+			},
+		},
+		PolicyRuleResource: &PolicyRuleResource{
+			Name:        name,
+			Description: name,
+			Action:      "ALLOW",
+			Conditions: []PolicyRuleResourceConditions{
+				{
+					Negated:  false,
+					Operator: "OR",
+					Operands: &[]PolicyRuleResourceOperands{
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_exporter"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_ip_anchoring"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_zapp"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_edge_connector"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_machine_tunnel"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_browser_isolation"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_slogger"},
+						},
+					},
+				},
+			},
+		},
 	}
-	// Test resource creation
-	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
-	if err != nil || createdResource == nil || createdResource.ID == "" {
-		t.Fatalf("Error making POST request or created resource is nil/empty: %v", err)
-		return
+
+	createdResource, _, err := service.Create(lssConfig)
+	if err != nil || createdResource == nil {
+		t.Fatalf("Error making POST request: %v or createdResource is nil", err)
 	}
 
+	// Fetch the resource again to get full details
+	createdResource, _, err = service.Get(createdResource.ID)
+	if err != nil {
+		t.Fatalf("Error fetching the created resource: %v", err)
+	}
 	if createdResource.ID == "" {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+	if createdResource.LSSConfig.Name != name {
+		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.LSSConfig.Name)
 	}
+
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
+	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+	if retrievedResource.LSSConfig.Name != name {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.LSSConfig.Name)
 	}
 	// Test resource update
-	retrievedResource.Name = updateName
-	_, err = service.Update(connGrpAssociationType, createdResource.ID, retrievedResource)
+	retrievedResource.LSSConfig.Name = updateName
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
+	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.LSSConfig.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.LSSConfig.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(connGrpAssociationType, updateName)
+	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
-		t.Fatalf("Error retrieving resource by name: %v", err)
-		return
-	}
-	if retrievedResource == nil {
-		t.Fatalf("Error: retrievedResource is nil")
-		return
+		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
+	if retrievedResource.LSSConfig.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.LSSConfig.Name)
 	}
-
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, _, err := service.GetAll()
 	if err != nil {
-		t.Fatalf("Error retrieving resources: %v", err)
-		return
+		t.Errorf("Error retrieving groups: %v", err)
 	}
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
@@ -199,17 +243,17 @@ func TestProvisiongKey(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
+		t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
+	_, err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(connGrpAssociationType, createdResource.ID)
+	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

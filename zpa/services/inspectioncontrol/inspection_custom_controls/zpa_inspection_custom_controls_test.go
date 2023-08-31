@@ -1,17 +1,57 @@
-package policysetcontroller
+package inspection_custom_controls
 
 import (
+	"log"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/postureprofile"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
-func TestPolicyAccessRule(t *testing.T) {
-	policyType := "ACCESS_POLICY"
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, _ = service.Delete(r.ID)
+	}
+}
+
+func TestInspectionCustomControls(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -19,66 +59,43 @@ func TestPolicyAccessRule(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting idps: %v", err)
-		return
-	}
-	if len(idpList) == 0 {
-		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
-	}
-	samlService := samlattribute.New(client)
-	samlsList, _, err := samlService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting saml attributes: %v", err)
-		return
-	}
-	if len(samlsList) == 0 {
-		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
-	}
-	postureService := postureprofile.New(client)
-	postureList, _, err := postureService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting posture profiles: %v", err)
-		return
-	}
-	if len(postureList) == 0 {
-		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
-	}
 	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
-	if err != nil {
-		t.Errorf("Error getting access policy set: %v", err)
-		return
-	}
-	accessPolicyRule := PolicyRule{
-		Name:        name,
-		Description: "New application segment",
-		PolicySetID: accessPolicySet.ID,
-		Action:      "ALLOW",
-		RuleOrder:   "1",
-		Conditions: []Conditions{
+
+	customControl := InspectionCustomControl{
+		Name:          name,
+		Description:   name,
+		Action:        "PASS",
+		DefaultAction: "PASS",
+		ParanoiaLevel: "1",
+		Severity:      "CRITICAL",
+		Type:          "RESPONSE",
+		Rules: []Rules{
 			{
-				Operator: "OR",
-				Operands: []Operands{
+				Names: []string{name, name, name},
+				Type:  "RESPONSE_HEADERS",
+				Conditions: []Conditions{
 					{
-						ObjectType: "POSTURE",
-						LHS:        postureList[0].PostureudID,
-						RHS:        "false",
+						LHS: "SIZE",
+						OP:  "GE",
+						RHS: "1000",
 					},
+				},
+			},
+			{
+				Type: "RESPONSE_BODY",
+				Conditions: []Conditions{
 					{
-						ObjectType: "SAML",
-						LHS:        samlsList[0].ID,
-						RHS:        "user1@acme.com",
-						IdpID:      idpList[0].ID,
+						LHS: "SIZE",
+						OP:  "GE",
+						RHS: "1000",
 					},
 				},
 			},
 		},
 	}
+
 	// Test resource creation
-	createdResource, _, err := service.Create(&accessPolicyRule)
+	createdResource, _, err := service.Create(customControl)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -91,7 +108,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -103,11 +120,11 @@ func TestPolicyAccessRule(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -117,8 +134,9 @@ func TestPolicyAccessRule(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
+	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -129,7 +147,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(policyType)
+	resources, _, err := service.GetAll()
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -148,14 +166,14 @@ func TestPolicyAccessRule(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(accessPolicySet.ID, createdResource.ID)
+	_, err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

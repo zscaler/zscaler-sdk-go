@@ -1,14 +1,59 @@
 package applicationsegment
 
 import (
+	"log"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/segmentgroup"
 )
+
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, _ = service.Delete(r.ID)
+	}
+}
 
 func TestApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -33,27 +78,34 @@ func TestApplicationSegment(t *testing.T) {
 		return
 	}
 	defer func() {
-		_, err := appGroupService.Delete(createdAppGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application segment group: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appGroupService.Delete(createdAppGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting application segment group: %v", err)
+			}
 		}
 	}()
 
 	service := New(client)
 
 	appSegment := ApplicationSegmentResource{
-		Name:             name,
-		Description:      "New application segment",
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.example.com"},
+		Name:                  name,
+		Description:           "New application segment",
+		Enabled:               true,
+		SegmentGroupID:        createdAppGroup.ID,
+		SegmentGroupName:      createdAppGroup.Name,
+		IsCnameEnabled:        true,
+		BypassType:            "NEVER",
+		IcmpAccessType:        "PING_TRACEROUTING",
+		HealthReporting:       "ON_ACCESS",
+		HealthCheckType:       "DEFAULT",
+		TCPKeepAlive:          "1",
+		InspectTrafficWithZia: false,
+		DomainNames:           []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
 				From: rPort,

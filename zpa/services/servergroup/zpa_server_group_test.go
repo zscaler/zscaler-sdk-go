@@ -1,7 +1,11 @@
 package servergroup
 
 import (
+	"log"
+	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
@@ -9,12 +13,53 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/zpa/services/appservercontroller"
 )
 
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, _ = service.Delete(r.ID)
+	}
+}
+
 func TestServerGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 	// create app connector group for testing
@@ -44,9 +89,15 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Error creating app connector group for testing server group: %v", err)
 	}
 	defer func() {
-		_, err := appConnGroupService.Delete(appConnGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting app connector group: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting app connector group: %v", err)
+			}
 		}
 	}()
 
@@ -62,9 +113,15 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Error creating app server for testing server group: %v", err)
 	}
 	defer func() {
-		_, err := appServerService.Delete(appServer.ID)
-		if err != nil {
-			t.Errorf("Error deleting app server: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appServerService.Get(appServer.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appServerService.Delete(appServer.ID)
+			if err != nil {
+				t.Errorf("Error deleting app server: %v", err)
+			}
 		}
 	}()
 
@@ -166,8 +223,20 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
-	if err == nil {
-		t.Errorf("Expected error retrieving deleted resource, but got nil")
+	retrievedAfterDelete, _, err := service.Get(createdResource.ID)
+	if err != nil {
+		// Check if the error implies the resource doesn't exist.
+		// Note: This is a basic check.
+		if strings.Contains(err.Error(), "resource.not.found") {
+			t.Logf("Resource with ID %s has been deleted as expected.", createdResource.ID)
+		} else {
+			t.Errorf("Unexpected error retrieving resource after delete: %v", err)
+		}
+		return
+	}
+
+	// If no error and the resource still exists, this is unexpected.
+	if retrievedAfterDelete != nil && retrievedAfterDelete.ID == createdResource.ID {
+		t.Errorf("Expected resource with ID %s to be deleted, but it still exists.", createdResource.ID)
 	}
 }

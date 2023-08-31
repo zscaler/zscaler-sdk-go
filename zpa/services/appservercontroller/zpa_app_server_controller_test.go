@@ -1,4 +1,4 @@
-package networkservices
+package appservercontroller
 
 import (
 	"log"
@@ -10,6 +10,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
 
+// clean all resources
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
@@ -18,11 +19,11 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	cleanResources()
+	cleanResources() // clean up at the beginning
 }
 
 func teardown() {
-	cleanResources()
+	cleanResources() // clean up at the end
 }
 
 func shouldClean() bool {
@@ -35,75 +36,48 @@ func cleanResources() {
 		return
 	}
 
-	client, err := tests.NewZiaClient()
+	client, err := tests.NewZpaClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAllNetworkServices()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
+	resources, _, _ := service.GetAll()
 	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
 		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, _ = service.Delete(r.ID)
 	}
 }
 
-func TestFWFileringNWServices(t *testing.T) {
+func TestApplicationServer(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	randomIP, _ := acctest.RandIpAddress("192.168.0.0/24")
+	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	// create anetwork services for testing
 	service := New(client)
-	networkServices := NetworkServices{
+
+	server := ApplicationServer{
 		Name:        name,
 		Description: name,
-		Type:        "CUSTOM",
-		SrcTCPPorts: []NetworkPorts{
-			{
-				Start: 5000,
-			},
-			{
-				Start: 5001,
-			},
-			{
-				Start: 5002,
-				End:   5005,
-			},
-		},
-		DestTCPPorts: []NetworkPorts{
-			{
-				Start: 5000,
-			},
-			{
-				Start: 5001,
-			},
-			{
-				Start: 5003,
-				End:   5005,
-			},
-		},
+		Enabled:     true,
+		Address:     randomIP,
 	}
+
 	// Test resource creation
-	createdResource, err := service.Create(&networkServices)
+	createdResource, _, err := service.Create(server)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
 	}
 
-	if createdResource.ID == 0 {
+	if createdResource.ID == "" {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
@@ -111,68 +85,47 @@ func TestFWFileringNWServices(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	retrievedResource.SrcTCPPorts = []NetworkPorts{
-		{
-			Start: 5000,
-		},
-		{
-			Start: 5001,
-		},
-		{
-			Start: 5002,
-			End:   5005,
-		},
-	}
-	retrievedResource.DestTCPPorts = []NetworkPorts{
-		{
-			Start: 5001,
-		},
-		{
-			Start: 5003,
-			End:   5005,
-		},
-	}
-	_, _, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = service.Update(createdResource.ID, *retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+		t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
 	}
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAllNetworkServices()
+	resources, _, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
+		t.Errorf("Error retrieving groups: %v", err)
 	}
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
@@ -186,7 +139,7 @@ func TestFWFileringNWServices(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
+		t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
@@ -196,7 +149,7 @@ func TestFWFileringNWServices(t *testing.T) {
 	}
 
 	// Test resource retrieval after deletion
-	_, err = service.Get(createdResource.ID)
+	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

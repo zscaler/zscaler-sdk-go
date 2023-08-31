@@ -1,4 +1,4 @@
-package dlp_engines
+package usermanagement
 
 import (
 	"log"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/zia/services/common"
 )
 
 const (
@@ -87,29 +88,50 @@ func cleanResources() {
 	}
 }
 
-func TestDLPEngine(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+func TestUserManagement(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	rPassword := acctest.RandString(10)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
+	}
+	// For groups, you might want to make sure you get a list of groups instead, as per your structure.
+	// Assuming a function similar to GetAll for departments exists for groups:
+	groupService := New(client)
+	groups, err := groupService.GetAllGroups()
+	if err != nil || len(groups) == 0 {
+		t.Fatalf("Error retrieving groups or no groups found: %v", err)
+	}
+	// Retrieve the first department and group (for simplicity; you can enhance this to retrieve by name or other criteria)
+	departmentService := New(client)
+	departments, err := departmentService.GetAll()
+	if err != nil || len(departments) == 0 {
+		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
 	service := New(client)
 
-	engine := DLPEngines{
-		Name:             name,
-		Description:      description,
-		EngineExpression: "((D63.S > 1))",
-		CustomDlpEngine:  true,
+	user := Users{
+		Name:     name,
+		Email:    email + "@securitygeek.io",
+		Password: rPassword,
+		Comments: updateComments,
+		Groups: []common.IDNameExtensions{
+			{
+				ID: groups[0].ID, // For simplicity, we are associating the first group; you can extend this to multiple groups
+			},
+		},
+		Department: &common.UserDepartment{
+			ID: departments[0].ID, // Associating the first department for simplicity
+		},
 	}
 
-	var createdResource *DLPEngines
-
+	var createdResource *Users
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&engine)
+		createdResource, err = service.Create(&user)
 		return err
 	})
 	if err != nil {
@@ -120,8 +142,9 @@ func TestDLPEngine(t *testing.T) {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created dlp engine '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created user '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
@@ -131,11 +154,11 @@ func TestDLPEngine(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved user '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
-	retrievedResource.Description = updateDescription
+	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
@@ -151,23 +174,23 @@ func TestDLPEngine(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateDescription, updatedResource.Description)
+	if updatedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComments, updatedResource.Comments)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(name)
+	retrievedResource, err = service.GetUserByName(name) // Name should be prefixed with "tests-"
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved resource description '%s', but got '%s'", updateDescription, createdResource.Description)
+	if retrievedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := service.GetAllUsers()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -197,8 +220,8 @@ func TestDLPEngine(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DLPEngines, error) {
-	var resource *DLPEngines
+func tryRetrieveResource(s *Service, id int) (*Users, error) {
+	var resource *Users
 	var err error
 
 	for i := 0; i < maxRetries; i++ {

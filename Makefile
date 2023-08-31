@@ -34,13 +34,13 @@ test\:all:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
+	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
 	go tool cover -func zpacoverage.txt | grep total:
 	rm -rf zpacoverage.txt
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
+	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 10 -timeout 120m
 	go tool cover -func ziacoverage.txt | grep total:
 	rm -rf zpacoverage.txt
 
@@ -70,11 +70,11 @@ ziaActivator: DESTINATION=/usr/local/bin
 endif
 ziaActivator:
 	@echo "==> Installing ziaActivator cli $(DESTINATION)"
-	cd ./zia/cli
+	cd ./zia/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/ziaActivator ./zia/cli/ziaActivator.go
+	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
 	ziaActivator
 
 .PHONY: fmt

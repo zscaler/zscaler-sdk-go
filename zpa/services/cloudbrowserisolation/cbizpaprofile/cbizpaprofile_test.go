@@ -1,4 +1,4 @@
-package isolationprofile
+package cbizpaprofile
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
 
-func TestIsolationProfile(t *testing.T) {
+func TestCBIZPAProfile(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

@@ -37,6 +37,7 @@ type AppSegmentInspection struct {
 	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                  `json:"useInDrMode"`
+	InspectTrafficWithZia     bool                  `json:"inspectTrafficWithZia"`
 	TCPPortRanges             []string              `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string              `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`

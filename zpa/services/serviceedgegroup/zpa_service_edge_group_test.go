@@ -1,11 +1,56 @@
 package serviceedgegroup
 
 import (
+	"log"
+	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/tests"
 )
+
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, _ = service.Delete(r.ID)
+	}
+}
 
 func TestServiceEdgeGroup_Create(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -58,12 +103,29 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
+		return
 	}
+
+	// Add a delay and retry logic, just in case there's eventual consistency on the backend
+	for retries := 0; retries < 5; retries++ {
+		_, _, err = service.GetByName(updateName)
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second) // Wait for 2 seconds before retrying
+	}
+
+	if err != nil {
+		t.Errorf("Error retrieving resource by name after retries: %v", err)
+		return
+	}
+
 	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
@@ -74,6 +136,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
@@ -85,6 +148,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAll()
 	if err != nil {
