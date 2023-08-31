@@ -54,14 +54,6 @@ func cleanResources() {
 	}
 }
 
-//	func readFileContent(path string) (string, error) {
-//		data, err := ioutil.ReadFile(path)
-//		if err != nil {
-//			return "", err
-//		}
-//		// Prepend the data URI prefix
-//		return "data:image/png;base64," + string(data), nil
-//	}
 func TestCBIProfileController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -91,10 +83,6 @@ func TestCBIProfileController(t *testing.T) {
 		t.Error("Expected to retrieve a cbi certificate, but got nil")
 	}
 
-	// cbiLogo, err := readFileContent("../cbibannercontroller/cbiLogo")
-	// if err != nil {
-	// 	t.Fatalf("Error reading CBI Banner content: %v", err)
-	// }
 	// create application connector group for testing
 	cbiBannerService := cbibannercontroller.New(client)
 	cbiBanner := cbibannercontroller.CBIBannerController{
