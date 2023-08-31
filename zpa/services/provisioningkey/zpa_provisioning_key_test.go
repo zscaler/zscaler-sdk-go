@@ -86,15 +86,19 @@ func TestProvisiongKey(t *testing.T) {
 		TCPQuickAckAssistant:     true,
 		TCPQuickAckReadAssistant: true,
 	}
+
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
-	if err != nil {
-		t.Errorf("Error creating application connector group: %v", err)
+	if err != nil || createdAppConnGroup == nil || createdAppConnGroup.ID == "" {
+		t.Fatalf("Error creating application connector group or ID is empty")
 		return
 	}
+
 	defer func() {
-		_, err := appConnectorGroupService.Delete(createdAppConnGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application connector group: %v", err)
+		if createdAppConnGroup != nil && createdAppConnGroup.ID != "" {
+			_, err := appConnectorGroupService.Delete(createdAppConnGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting application connector group: %v", err)
+			}
 		}
 	}()
 	// get enrollment cert for testing
@@ -118,9 +122,9 @@ func TestProvisiongKey(t *testing.T) {
 	}
 	// Test resource creation
 	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
+	if err != nil || createdResource == nil || createdResource.ID == "" {
+		t.Fatalf("Error making POST request or created resource is nil/empty: %v", err)
+		return
 	}
 
 	if createdResource.ID == "" {
@@ -159,18 +163,25 @@ func TestProvisiongKey(t *testing.T) {
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(connGrpAssociationType, updateName)
 	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving resource by name: %v", err)
+		return
+	}
+	if retrievedResource == nil {
+		t.Fatalf("Error: retrievedResource is nil")
+		return
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
+		t.Fatalf("Error retrieving resources: %v", err)
+		return
 	}
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
