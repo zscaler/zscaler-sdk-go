@@ -95,12 +95,16 @@ func TestProvisiongKey(t *testing.T) {
 
 	defer func() {
 		if createdAppConnGroup != nil && createdAppConnGroup.ID != "" {
-			_, err := appConnectorGroupService.Delete(createdAppConnGroup.ID)
-			if err != nil {
-				t.Errorf("Error deleting application connector group: %v", err)
+			existingGroup, _, errCheck := appConnectorGroupService.Get(createdAppConnGroup.ID)
+			if errCheck == nil && existingGroup != nil {
+				_, errDelete := appConnectorGroupService.Delete(createdAppConnGroup.ID)
+				if errDelete != nil {
+					t.Errorf("Error deleting application connector group: %v", errDelete)
+				}
 			}
 		}
 	}()
+
 	// get enrollment cert for testing
 	enrollmentCertService := enrollmentcert.New(client)
 	enrollmentCert, _, err := enrollmentCertService.GetByName("Connector")
