@@ -3,7 +3,6 @@ package zpa
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -16,14 +15,13 @@ func (r *ErrorResponse) Error() string {
 	return fmt.Sprintf("FAILED: %v, %v, %d, %v, %v", r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Response.Status, r.Message)
 }
 
-func checkErrorInResponse(res *http.Response) error {
+func checkErrorInResponse(res *http.Response, respData []byte) error {
 	if c := res.StatusCode; c >= 200 && c <= 299 {
 		return nil
 	}
 	errorResponse := &ErrorResponse{Response: res}
-	errorMessage, err := io.ReadAll(res.Body)
-	if err == nil && len(errorMessage) > 0 {
-		errorResponse.Message = string(errorMessage)
+	if len(respData) > 0 {
+		errorResponse.Message = string(respData)
 	}
 	return errorResponse
 }
