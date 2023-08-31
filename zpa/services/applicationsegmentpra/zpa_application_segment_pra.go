@@ -37,6 +37,7 @@ type AppSegmentPRA struct {
 	ModifiedTime              string                `json:"modifiedTime,omitempty"`
 	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
+	InspectTrafficWithZia     bool                  `json:"inspectTrafficWithZia"`
 	UseInDrMode               bool                  `json:"useInDrMode"`
 	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts `json:"udpPortRange,omitempty"`
