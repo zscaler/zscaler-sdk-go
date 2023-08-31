@@ -176,17 +176,19 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	alreadyDeleted := false
 	defer func() {
-		if alreadyDeleted {
-			return
-		}
+		// Delete the main rule first
 		err = retryOnConflict(func() error {
 			_, delErr := service.Delete(createdResource.ID)
 			return delErr
 		})
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 			t.Errorf("Error deleting rule: %v", err)
+		}
+
+		// Then delete secondary resources
+		for _, task := range cleanupTasks {
+			task()
 		}
 	}()
 
@@ -277,7 +279,7 @@ func TestFirewallFilteringRule(t *testing.T) {
 	if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 		t.Fatalf("Error deleting resource: %v", err)
 	}
-	alreadyDeleted = true // Set the flag to true after successfully deleting the rule
+	// alreadyDeleted = true // Set the flag to true after successfully deleting the rule
 
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
