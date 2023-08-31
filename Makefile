@@ -34,7 +34,7 @@ test\:all:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 10 -timeout 120m
+	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
 	go tool cover -func zpacoverage.txt | grep total:
 	rm -rf zpacoverage.txt
 

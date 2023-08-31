@@ -1,6 +1,7 @@
 package inspection_profile
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -48,8 +49,13 @@ func cleanResources() {
 		if !strings.HasPrefix(r.Name, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
+
+		// Check if the resource exists before deleting
+		_, _, err := service.Get(r.ID)
+		if err == nil { // if no error, resource exists
+			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+			_, _ = service.Delete(r.ID)
+		}
 	}
 }
 
@@ -58,9 +64,11 @@ func TestInspectionProfile(t *testing.T) {
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
+	var resourcesToDelete []string
+
 	// create Inspection Custom Control for testing
 	customInspectionControlService := inspection_custom_controls.New(client)
 	customControl := inspection_custom_controls.InspectionCustomControl{
@@ -99,17 +107,17 @@ func TestInspectionProfile(t *testing.T) {
 	createdCustomControl, _, err := customInspectionControlService.Create(customControl)
 	if err != nil || createdCustomControl == nil || createdCustomControl.ID == "" {
 		t.Fatalf("Error creating inspection custom control or ID is empty")
-		return
 	}
+	fmt.Printf("Created custom inspection control with ID: %s\n", createdCustomControl.ID)
+
+	resourcesToDelete = append(resourcesToDelete, createdCustomControl.ID) // Add to our list
 
 	defer func() {
-		if createdCustomControl != nil && createdCustomControl.ID != "" {
-			existingControl, _, errCheck := customInspectionControlService.Get(createdCustomControl.ID)
-			if errCheck == nil && existingControl != nil {
-				_, errDelete := customInspectionControlService.Delete(createdCustomControl.ID)
-				if errDelete != nil {
-					t.Errorf("Error deleting inspection custom control: %v", errDelete)
-				}
+		existingControl, _, errCheck := customInspectionControlService.Get(createdCustomControl.ID)
+		if errCheck == nil && existingControl != nil {
+			_, errDelete := customInspectionControlService.Delete(createdCustomControl.ID)
+			if errDelete != nil {
+				t.Errorf("Error deleting inspection custom control: %v", errDelete)
 			}
 		}
 	}()
@@ -149,7 +157,7 @@ func TestInspectionProfile(t *testing.T) {
 		IncarnationNumber:         "6",
 		ControlInfoResource: []ControlInfoResource{
 			{
-				ControlType: "PREDEFINED",
+				ControlType: "CUSTOM",
 			},
 		},
 		CustomControls: []InspectionCustomControl{
@@ -170,6 +178,32 @@ func TestInspectionProfile(t *testing.T) {
 	if err != nil || createdResource == nil {
 		t.Fatalf("Error making POST request: %v or createdResource is nil", err)
 	}
+	resourcesToDelete = append(resourcesToDelete, createdResource.ID) // Add to our list
+
+	retrievedResourceAfterCreation, _, err := service.Get(createdResource.ID)
+	if err != nil || retrievedResourceAfterCreation == nil {
+		t.Fatalf("Failed to verify the creation of the resource: %v", err)
+	}
+
+	defer func() {
+		for _, resourceID := range resourcesToDelete {
+			existingResource, _, errCheck := service.Get(resourceID)
+			if errCheck == nil && existingResource != nil {
+				_, errDelete := service.Delete(resourceID)
+				if errDelete != nil {
+					t.Errorf("Error deleting inspection profile with ID %s: %v", resourceID, errDelete)
+				}
+			}
+
+			existingControl, _, errCheckControl := customInspectionControlService.Get(resourceID)
+			if errCheckControl == nil && existingControl != nil {
+				_, errDeleteControl := customInspectionControlService.Delete(resourceID)
+				if errDeleteControl != nil {
+					t.Errorf("Error deleting inspection custom control with ID %s: %v", resourceID, errDeleteControl)
+				}
+			}
+		}
+	}()
 
 	if createdResource.ID == "" {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
@@ -181,6 +215,12 @@ func TestInspectionProfile(t *testing.T) {
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
+		return
+	}
+	// Add this check to ensure that retrievedResource is not nil
+	if retrievedResource == nil {
+		t.Error("Retrieved resource is nil.")
+		return
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
