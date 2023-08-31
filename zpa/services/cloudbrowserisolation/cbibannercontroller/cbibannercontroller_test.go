@@ -69,7 +69,7 @@ func TestCBIBannerController(t *testing.T) {
 		return
 	}
 
-	cbiLogo, err := readFileContent("cbiLogo.txt")
+	cbiLogo, err := readFileContent("./cbiLogo")
 	if err != nil {
 		t.Fatalf("Error reading CBI Banner content: %v", err)
 	}
