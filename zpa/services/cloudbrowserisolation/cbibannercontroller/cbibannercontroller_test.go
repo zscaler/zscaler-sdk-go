@@ -57,7 +57,8 @@ func readFileContent(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	// Prepend the data URI prefix
+	return "data:image/png;base64," + string(data), nil
 }
 
 func TestCBIBannerController(t *testing.T) {
@@ -69,7 +70,7 @@ func TestCBIBannerController(t *testing.T) {
 		return
 	}
 
-	cbiLogo, err := readFileContent("./cbiLogo")
+	cbiLogo, err := readFileContent("cbiLogo")
 	if err != nil {
 		t.Fatalf("Error reading CBI Banner content: %v", err)
 	}

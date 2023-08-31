@@ -60,9 +60,9 @@ func readFileContent(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	// Prepend the data URI prefix
+	return "data:image/png;base64," + string(data), nil
 }
-
 func TestCBIProfileController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
