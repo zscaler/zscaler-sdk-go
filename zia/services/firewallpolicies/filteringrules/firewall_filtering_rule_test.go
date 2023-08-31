@@ -118,12 +118,12 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Fatalf("Error creating source ip group for testing server group: %v", err)
 	}
 
-	cleanupTasks = append(cleanupTasks, func() {
+	cleanupTasks = append([]func(){func() {
 		_, err := sourceIPGroupService.Delete(sourceIPGroup.ID)
 		if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 			t.Errorf("Error deleting source ip group: %v", err)
 		}
-	})
+	}}, cleanupTasks...)
 
 	// create ip destination group for testing
 	dstIPGroupService := ipdestinationgroups.New(client)
@@ -137,12 +137,12 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Fatalf("Error creating ip destination group for testing server group: %v", err)
 	}
 
-	cleanupTasks = append(cleanupTasks, func() {
+	cleanupTasks = append([]func(){func() {
 		_, err := dstIPGroupService.Delete(dstIPGroup.ID)
 		if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 			t.Errorf("Error deleting destination ip group: %v", err)
 		}
-	})
+	}}, cleanupTasks...)
 
 	service := New(client)
 	rule := FirewallFilteringRules{
