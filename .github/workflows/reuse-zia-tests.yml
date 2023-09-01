@@ -31,16 +31,20 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ubuntu-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-      - name: Set Credentials
+      - name: Run tests with retry on Ubuntu
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10  # Adjust as needed
+          command: |
+            make test:integration:zia
+            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-        run: |
-          make test:integration:zia
-          make ziaActivator
 
   zia-test-macos:
     environment: ${{ inputs.environment }}
@@ -56,13 +60,17 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: macos-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-      - name: Set Credentials
+      - name: Run tests with retry on MacOS
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10  # Adjust as needed
+          command: |
+            make test:integration:zia
+            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-        run: |
-          make test:integration:zia
-          make ziaActivator
