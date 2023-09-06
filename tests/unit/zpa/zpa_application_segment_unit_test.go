@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/applicationsegment"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
 )
 
 func TestApplicationSegment_GetByName(t *testing.T) {

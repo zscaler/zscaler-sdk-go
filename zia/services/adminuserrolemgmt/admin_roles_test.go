@@ -3,7 +3,7 @@ package adminuserrolemgmt
 import (
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
 func TestAdminRoles_data(t *testing.T) {

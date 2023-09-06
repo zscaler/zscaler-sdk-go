@@ -3,7 +3,7 @@ package lssconfigcontroller
 import (
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
 func TestGetAllStatusCodes(t *testing.T) {

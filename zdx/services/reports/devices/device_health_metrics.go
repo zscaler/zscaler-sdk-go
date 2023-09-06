@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (

@@ -1,7 +1,7 @@
 package samlattribute
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 type Service struct {

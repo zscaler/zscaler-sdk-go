@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -28,17 +28,19 @@ type CloudConnectorGroup struct {
 }
 
 type CloudConnectors struct {
-	CreationTime string                 `json:"creationTime,omitempty"`
-	Description  string                 `json:"description,omitempty"`
-	Enabled      bool                   `json:"enabled,omitempty"`
-	Fingerprint  string                 `json:"fingerprint,omitempty"`
-	ID           string                 `json:"id,omitempty"`
-	IPACL        []string               `json:"ipAcl,omitempty"`
-	IssuedCertID string                 `json:"issuedCertId,omitempty"`
-	ModifiedBy   string                 `json:"modifiedBy,omitempty"`
-	ModifiedTime string                 `json:"modifiedTime,omitempty"`
-	SigningCert  map[string]interface{} `json:"signingCert,omitempty"`
-	Name         string                 `json:"name,omitempty"`
+	ID              string                 `json:"id,omitempty"`
+	Name            string                 `json:"name,omitempty"`
+	CreationTime    string                 `json:"creationTime,omitempty"`
+	Description     string                 `json:"description,omitempty"`
+	Enabled         bool                   `json:"enabled,omitempty"`
+	Fingerprint     string                 `json:"fingerprint,omitempty"`
+	IPACL           []string               `json:"ipAcl,omitempty"`
+	IssuedCertID    string                 `json:"issuedCertId,omitempty"`
+	ModifiedBy      string                 `json:"modifiedBy,omitempty"`
+	ModifiedTime    string                 `json:"modifiedTime,omitempty"`
+	SigningCert     map[string]interface{} `json:"signingCert,omitempty"`
+	MicroTenantID   string                 `json:"microtenantId,omitempty"`
+	MicroTenantName string                 `json:"microtenantName,omitempty"`
 }
 
 func (service *Service) Get(cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {

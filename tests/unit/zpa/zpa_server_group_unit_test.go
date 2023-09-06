@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 func TestService_Get(t *testing.T) {

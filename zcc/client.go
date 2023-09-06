@@ -14,8 +14,8 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 
-	"github.com/zscaler/zscaler-sdk-go/logger"
-	"github.com/zscaler/zscaler-sdk-go/utils"
+	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/utils"
 )
 
 type Client struct {

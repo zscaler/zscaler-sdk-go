@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbibannercontroller"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbiregions"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiregions"
 )
 
 // clean all resources

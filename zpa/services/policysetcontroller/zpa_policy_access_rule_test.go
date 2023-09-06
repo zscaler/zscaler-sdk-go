@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/postureprofile"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
 func TestPolicyAccessRule(t *testing.T) {

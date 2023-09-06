@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/enrollmentcert"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
 )
 
 func TestEnrollmentCert_Get(t *testing.T) {

@@ -1,7 +1,7 @@
 package dlp_idm_profiles
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zia"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 )
 
 type Service struct {
