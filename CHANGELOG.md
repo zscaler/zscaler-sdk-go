@@ -1,6 +1,6 @@
 # Changelog
 
-# 2.0.0 (September xx, 2023)
+# 2.0.0 (September 6, 2023)
 
 ## Notes
 - Golang: **v1.19**
