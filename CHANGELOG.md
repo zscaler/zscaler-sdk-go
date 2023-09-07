@@ -1,5 +1,33 @@
 # Changelog
 
+# 2.0.0 (September xx, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #159](https://github.com/zscaler/zscaler-sdk-go/pull/159)
+  1. Zscaler Private Access Microtenant feature is now supported across the following ZPA resources:
+      - ``application_controller``
+      - ``app_connector_group``
+      - ``application_segment``
+      - ``application_segment_browser_access``
+      - ``application_segment_inspection``
+      - ``application_segment_pra``
+      - ``app_server_controller``
+      - ``machine_group``
+      - ``access_policy_rule``
+      - ``timeout_policy_rule``
+      - ``forward_policy_rule``
+      - ``inspection_policy_rule``
+      - ``isolation_policy_rule``
+      - ``provisioning_key``
+      - ``segment_group``
+      - ``server_group``
+      - ``service_edge_controller``
+      - ``service_edge_group``
+
 # 1.8.0-beta (August 25, 2023)
 
 ## Notes

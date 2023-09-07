@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/zscaler/zscaler-sdk-go/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 )
 
 // Request ... // Needs to review this function.

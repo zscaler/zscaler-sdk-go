@@ -1,6 +1,6 @@
 package security_policy_settings
 
-import "github.com/zscaler/zscaler-sdk-go/zia"
+import "github.com/zscaler/zscaler-sdk-go/v2/zia"
 
 type Service struct {
 	Client *zia.Client

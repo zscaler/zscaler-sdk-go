@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -14,50 +14,68 @@ const (
 )
 
 type ServiceEdgeController struct {
-	ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
-	ServiceEdgeGroupID               string                 `json:"serviceEdgeGroupId,omitempty"`
-	ServiceEdgeGroupName             string                 `json:"serviceEdgeGroupName,omitempty"`
-	ControlChannelStatus             string                 `json:"controlChannelStatus,omitempty"`
-	CreationTime                     string                 `json:"creationTime,omitempty"`
-	CtrlBrokerName                   string                 `json:"ctrlBrokerName,omitempty"`
-	CurrentVersion                   string                 `json:"currentVersion,omitempty"`
-	Description                      string                 `json:"description,omitempty"`
-	Enabled                          bool                   `json:"enabled,omitempty"`
-	ExpectedUpgradeTime              string                 `json:"expectedUpgradeTime,omitempty"`
-	ExpectedVersion                  string                 `json:"expectedVersion,omitempty"`
-	Fingerprint                      string                 `json:"fingerprint,omitempty"`
-	ID                               string                 `json:"id,omitempty"`
-	IPACL                            string                 `json:"ipAcl,omitempty"`
-	IssuedCertID                     string                 `json:"issuedCertId,omitempty"`
-	LastBrokerConnectTime            string                 `json:"lastBrokerConnectTime,omitempty"`
-	LastBrokerConnectTimeDuration    string                 `json:"lastBrokerConnectTimeDuration,omitempty"`
-	LastBrokerDisconnectTime         string                 `json:"lastBrokerDisconnectTime,omitempty"`
-	LastBrokerDisconnectTimeDuration string                 `json:"lastBrokerDisconnectTimeDuration,omitempty"`
-	LastUpgradeTime                  string                 `json:"lastUpgradeTime,omitempty"`
-	Latitude                         string                 `json:"latitude,omitempty"`
-	Location                         string                 `json:"location,omitempty"`
-	Longitude                        string                 `json:"longitude,omitempty"`
-	ListenIPs                        string                 `json:"listenIps,omitempty"`
-	ModifiedBy                       string                 `json:"modifiedBy,omitempty"`
-	ModifiedTime                     string                 `json:"modifiedTime,omitempty"`
-	Name                             string                 `json:"name,omitempty"`
-	ProvisioningKeyID                string                 `json:"provisioningKeyId"`
-	ProvisioningKeyName              string                 `json:"provisioningKeyName"`
-	Platform                         string                 `json:"platform,omitempty"`
-	PreviousVersion                  string                 `json:"previousVersion,omitempty"`
-	PrivateIP                        string                 `json:"privateIp,omitempty"`
-	PublicIP                         string                 `json:"publicIp,omitempty"`
-	PublishIPs                       string                 `json:"publishIps,omitempty"`
-	SargeVersion                     string                 `json:"sargeVersion,omitempty"`
-	EnrollmentCert                   map[string]interface{} `json:"enrollmentCert,omitempty"`
-	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
-	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
+	ApplicationStartTime             string                    `json:"applicationStartTime,omitempty"`
+	ServiceEdgeGroupID               string                    `json:"serviceEdgeGroupId,omitempty"`
+	ServiceEdgeGroupName             string                    `json:"serviceEdgeGroupName,omitempty"`
+	ControlChannelStatus             string                    `json:"controlChannelStatus,omitempty"`
+	CreationTime                     string                    `json:"creationTime,omitempty"`
+	CtrlBrokerName                   string                    `json:"ctrlBrokerName,omitempty"`
+	CurrentVersion                   string                    `json:"currentVersion,omitempty"`
+	Description                      string                    `json:"description,omitempty"`
+	Enabled                          bool                      `json:"enabled,omitempty"`
+	ExpectedUpgradeTime              string                    `json:"expectedUpgradeTime,omitempty"`
+	ExpectedVersion                  string                    `json:"expectedVersion,omitempty"`
+	Fingerprint                      string                    `json:"fingerprint,omitempty"`
+	ID                               string                    `json:"id,omitempty"`
+	IPACL                            string                    `json:"ipAcl,omitempty"`
+	IssuedCertID                     string                    `json:"issuedCertId,omitempty"`
+	LastBrokerConnectTime            string                    `json:"lastBrokerConnectTime,omitempty"`
+	LastBrokerConnectTimeDuration    string                    `json:"lastBrokerConnectTimeDuration,omitempty"`
+	LastBrokerDisconnectTime         string                    `json:"lastBrokerDisconnectTime,omitempty"`
+	LastBrokerDisconnectTimeDuration string                    `json:"lastBrokerDisconnectTimeDuration,omitempty"`
+	LastUpgradeTime                  string                    `json:"lastUpgradeTime,omitempty"`
+	Latitude                         string                    `json:"latitude,omitempty"`
+	Location                         string                    `json:"location,omitempty"`
+	Longitude                        string                    `json:"longitude,omitempty"`
+	ListenIPs                        string                    `json:"listenIps,omitempty"`
+	ModifiedBy                       string                    `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                    `json:"modifiedTime,omitempty"`
+	Name                             string                    `json:"name,omitempty"`
+	ProvisioningKeyID                string                    `json:"provisioningKeyId"`
+	ProvisioningKeyName              string                    `json:"provisioningKeyName"`
+	Platform                         string                    `json:"platform,omitempty"`
+	PreviousVersion                  string                    `json:"previousVersion,omitempty"`
+	PrivateIP                        string                    `json:"privateIp,omitempty"`
+	PublicIP                         string                    `json:"publicIp,omitempty"`
+	PublishIPs                       string                    `json:"publishIps,omitempty"`
+	SargeVersion                     string                    `json:"sargeVersion,omitempty"`
+	EnrollmentCert                   map[string]interface{}    `json:"enrollmentCert,omitempty"`
+	UpgradeAttempt                   string                    `json:"upgradeAttempt,omitempty"`
+	UpgradeStatus                    string                    `json:"upgradeStatus,omitempty"`
+	MicroTenantID                    string                    `json:"microtenantId,omitempty"`
+	MicroTenantName                  string                    `json:"microtenantName,omitempty"`
+	ZPNSubModuleUpgradeList          []ZPNSubModuleUpgradeList `json:"zpnSubModuleUpgradeList,omitempty"`
+}
+
+type ZPNSubModuleUpgradeList struct {
+	ID              string `json:"id,omitempty"`
+	CreationTime    string `json:"creationTime,omitempty"`
+	CurrentVersion  string `json:"currentVersion,omitempty"`
+	EntityGid       string `json:"entityGid,omitempty"`
+	EntityType      string `json:"entityType,omitempty"`
+	ExpectedVersion string `json:"expectedVersion,omitempty"`
+	ModifiedBy      string `json:"modifiedBy,omitempty"`
+	ModifiedTime    string `json:"modifiedTime,omitempty"`
+	PreviousVersion string `json:"previousVersion,omitempty"`
+	Role            string `json:"role,omitempty"`
+	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
+	UpgradeTime     string `json:"upgradeTime,omitempty"`
 }
 
 func (service *Service) Get(serviceEdgeID string) (*ServiceEdgeController, *http.Response, error) {
 	v := new(ServiceEdgeController)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,7 +84,7 @@ func (service *Service) Get(serviceEdgeID string) (*ServiceEdgeController, *http
 
 func (service *Service) GetByName(serviceEdgeName string) (*ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{Search: serviceEdgeName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -80,7 +98,7 @@ func (service *Service) GetByName(serviceEdgeName string) (*ServiceEdgeControlle
 
 func (service *Service) GetAll() ([]ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServiceEdgeController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -93,19 +111,22 @@ type BulkDeleteRequest struct {
 
 // Update Updates the Service Edge details for the specified ID.
 func (service *Service) Update(serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
-	v := new(ServiceEdgeController)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, serviceEdge, v)
+	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, serviceEdgeID, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	resource, resp, err := service.Get(serviceEdgeID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return resource, resp, nil
 }
 
 // Delete Deletes the Service Edge for the specified ID.
 func (service *Service) Delete(serviceEdgeID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +136,7 @@ func (service *Service) Delete(serviceEdgeID string) (*http.Response, error) {
 // BulkDelete Bulk deletes the Service Edge.
 func (service *Service) BulkDelete(serviceEdgeIDs []string) (*http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint + "/bulkDelete"
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
 	if err != nil {
 		return nil, err
 	}

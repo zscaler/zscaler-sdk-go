@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -121,7 +121,7 @@ type ApplicationServer struct {
 func (service *Service) Get(groupID string) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -130,7 +130,7 @@ func (service *Service) Get(groupID string) (*ServerGroup, *http.Response, error
 
 func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServerGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{Search: serverGroupName, MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -144,7 +144,7 @@ func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.R
 
 func (service *Service) Create(serverGroup *ServerGroup) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, nil, serverGroup, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -153,7 +153,7 @@ func (service *Service) Create(serverGroup *ServerGroup) (*ServerGroup, *http.Re
 
 func (service *Service) Update(groupId string, serverGroup *ServerGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, serverGroup, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (service *Service) Update(groupId string, serverGroup *ServerGroup) (*http.
 
 func (service *Service) Delete(groupId string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (service *Service) Delete(groupId string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServerGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
 var supportedPolicyTypes = []string{

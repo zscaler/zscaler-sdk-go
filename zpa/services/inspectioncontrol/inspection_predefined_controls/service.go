@@ -1,7 +1,7 @@
 package inspection_predefined_controls
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 type Service struct {

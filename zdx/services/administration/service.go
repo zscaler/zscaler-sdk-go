@@ -1,7 +1,7 @@
 package administration
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
 )
 
 type Service struct {

@@ -10,9 +10,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/logger"
-	"github.com/zscaler/zscaler-sdk-go/zia"
-	"github.com/zscaler/zscaler-sdk-go/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 func NewZpaClient() (*zpa.Client, error) {

@@ -3,7 +3,7 @@ package dlp_icap_servers
 import (
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
 func TestDLPICAPServer_data(t *testing.T) {
