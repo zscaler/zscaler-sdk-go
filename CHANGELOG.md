@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.0.2 (September 10, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #162](https://github.com/zscaler/zscaler-sdk-go/pull/162) Fixed microtenant search criteria for ``provisioning_key``
+
 # 2.0.0 (September 6, 2023)
 
 ## Notes
