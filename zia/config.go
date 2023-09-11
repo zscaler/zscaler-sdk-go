@@ -10,15 +10,18 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-
+	"github.com/zscaler/zscaler-sdk-go/v2/cache"
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v2/ratelimiter"
 )
 
 const (
@@ -50,6 +53,13 @@ type Client struct {
 	HTTPClient       *http.Client
 	Logger           logger.Logger
 	UserAgent        string
+	freshCache       bool
+	cacheEnabled     bool
+	cache            cache.Cache
+	cacheTtl         time.Duration
+	cacheCleanwindow time.Duration
+	cacheMaxSizeMB   int
+	rateLimiter      *rl.RateLimiter
 }
 
 // Session ...
@@ -98,20 +108,32 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 // NewClient Returns a Client from credentials passed as parameters.
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
-	httpClient := getHTTPClient(logger)
+	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
+	httpClient := getHTTPClient(logger, rateLimiter)
 	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
 	if ziaCloud == "zspreview" {
 		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
 	}
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := Client{
-		userName:   username,
-		password:   password,
-		apiKey:     apiKey,
-		HTTPClient: httpClient,
-		URL:        url,
-		Logger:     logger,
-		UserAgent:  userAgent,
+		userName:         username,
+		password:         password,
+		apiKey:           apiKey,
+		HTTPClient:       httpClient,
+		URL:              url,
+		Logger:           logger,
+		UserAgent:        userAgent,
+		cacheEnabled:     !cacheDisabled,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
+		rateLimiter:      rateLimiter,
 	}
+	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	cli.cache = cche
 	return &cli, nil
 }
 
@@ -199,6 +221,34 @@ func (c *Client) refreshSession() error {
 	return nil
 }
 
+func (c *Client) WithCache(cache bool) {
+	c.cacheEnabled = cache
+}
+
+func (c *Client) WithCacheTtl(i time.Duration) {
+	c.cacheTtl = i
+	c.Lock()
+	c.cache.Close()
+	cche, err := cache.NewCache(i, c.cacheCleanwindow, c.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	c.cache = cche
+	c.Unlock()
+}
+
+func (c *Client) WithCacheCleanWindow(i time.Duration) {
+	c.cacheCleanwindow = i
+	c.Lock()
+	c.cache.Close()
+	cche, err := cache.NewCache(c.cacheTtl, i, c.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	c.cache = cche
+	c.Unlock()
+}
+
 // checkSession synce new session if its over the timeout limit.
 func (c *Client) checkSession() error {
 	c.Lock()
@@ -246,13 +296,61 @@ func (c *Client) GetContentType() string {
 	return contentTypeJSON
 }
 
-func getHTTPClient(logger logger.Logger) *http.Client {
+func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
+	if s, ok := resp.Header["Retry-After"]; ok {
+		if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+			l.Printf("[INFO] got Retry-After from header:%s\n", s)
+			return time.Second * time.Duration(sleep)
+		} else {
+			l.Printf("[INFO] error getting Retry-After from header:%s\n", err)
+		}
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		l.Printf("[INFO] error getting Retry-After from body:%s\n", err)
+		return 0
+	}
+	data := map[string]string{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		l.Printf("[INFO] error getting Retry-After from body:%s\n", err)
+		return 0
+	}
+	if retryAfterStr, ok := data["Retry-After"]; ok && retryAfterStr != "" {
+		l.Printf("[INFO] got Retry-After from body:%s\n", retryAfterStr)
+		secondsStr := strings.Split(retryAfterStr, " ")[0]
+		seconds, err := strconv.Atoi(secondsStr)
+		if err != nil {
+			l.Printf("[INFO] error getting Retry-After from body:%s\n", err)
+			return 0
+		}
+		return time.Duration(seconds) * time.Second
+	}
+	return 0
+}
+
+func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	retryableClient.RetryMax = MaxNumOfRetries
+	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+		if resp != nil {
+			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+				retryAfter := getRetryAfter(resp, l)
+				if retryAfter > 0 {
+					return retryAfter
+				}
+			}
+		}
+		wait, d := rateLimiter.Wait(resp.Request.Method)
+		if wait {
+			return d
+		}
+		return 0
+	}
 	retryableClient.CheckRetry = checkRetry
-	retryableClient.Logger = logger
+	retryableClient.Logger = l
 	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
 	retryableClient.HTTPClient.Transport = &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,

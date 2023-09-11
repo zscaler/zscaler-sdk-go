@@ -8,11 +8,47 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/zscaler/zscaler-sdk-go/v2/cache"
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 )
+
+func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
+	key := cache.CreateCacheKey(req)
+	if c.cacheEnabled {
+		if req.Method != http.MethodGet {
+			// this will allow to remove resource from cache when PUT/DELETE/PATCH requests are called, which modifies the resource
+			c.cache.Delete(key)
+			// to avoid resources that GET url is not the same as DELETE/PUT/PATCH url, because of different query params.
+			// example delete app segment has key url/<id>?forceDelete=true but GET has url/<id>, in this case we clean the whole cache entries with key prefix url/<id>
+			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+		}
+		resp := c.cache.Get(key)
+		inCache := resp != nil
+		if c.freshCache {
+			c.cache.Delete(key)
+			inCache = false
+			c.freshCache = false
+		}
+		if inCache {
+			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
+			return resp, nil
+		}
+	}
+	resp, err := c.HTTPClient.Do(req)
+	logger.LogResponse(c.Logger, resp, start, reqID)
+	if err != nil {
+		return resp, err
+	}
+	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
+		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+		c.cache.Set(key, cache.CopyResponse(resp))
+	}
+	return resp, nil
+}
 
 // Request ... // Needs to review this function.
 func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
@@ -41,7 +77,7 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 			return nil, err
 		}
 
-		resp, err = c.HTTPClient.Do(req)
+		resp, err = c.do(req, start, reqID)
 		if err != nil {
 			return nil, err
 		}
@@ -57,14 +93,16 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 		}
 	}
 
-	logger.LogResponse(c.Logger, resp, start, reqID)
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return body, nil
+}
+
+func (client *Client) WithFreshCache() {
+	client.freshCache = true
 }
 
 // Create send HTTP Post request.

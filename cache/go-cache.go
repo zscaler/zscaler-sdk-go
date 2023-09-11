@@ -56,6 +56,10 @@ func (c cache) Clear() {
 	c.bcache.Reset()
 }
 
+func (c cache) Close() {
+	c.bcache.Close()
+}
+
 func (c cache) ClearAllKeysWithPrefix(prefix string) {
 	it := c.bcache.Iterator()
 	for it.SetNext() {
