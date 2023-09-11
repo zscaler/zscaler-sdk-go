@@ -74,7 +74,7 @@ func (service *Service) GetByName(associationType, name string) (*ProvisioningKe
 func (service *Service) Create(associationType string, provisioningKey *ProvisioningKey) (*ProvisioningKey, *http.Response, error) {
 	v := new(ProvisioningKey)
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
-	resp, err := service.Client.NewRequestDo("POST", path, nil, provisioningKey, v)
+	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.microTenantID}, provisioningKey, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,7 +84,7 @@ func (service *Service) Create(associationType string, provisioningKey *Provisio
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}
 func (service *Service) Update(associationType, provisioningKeyID string, provisioningKey *ProvisioningKey) (*http.Response, error) {
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, provisioningKey, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, provisioningKey, nil)
 	if err != nil {
 		return nil, err
 	}
