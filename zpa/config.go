@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,7 +20,8 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	logger "github.com/zscaler/zscaler-sdk-go/v2/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v2/ratelimiter"
 )
 
 const (
@@ -71,7 +73,7 @@ type CredentialsConfig struct {
 type Config struct {
 	BaseURL     *url.URL
 	httpClient  *http.Client
-	rateLimiter *RateLimiter
+	rateLimiter *rl.RateLimiter
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
@@ -155,7 +157,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		Cloud:            cloud,
 		BackoffConf:      defaultBackoffConf,
 		UserAgent:        userAgent,
-		rateLimiter:      NewRateLimiter(),
+		rateLimiter:      rl.NewRateLimiter(20, 10, 10, 10),
 		cacheEnabled:     !cacheDisabled,
 		cacheTtl:         time.Minute * 10,
 		cacheCleanwindow: time.Minute * 8,
@@ -217,18 +219,22 @@ func (c *Config) GetHTTPClient() *http.Client {
 							}
 						}
 					}
-				}
-				wait, duration := c.rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
-				}
-				/*
-					sleep := time.Duration(float64(min) * float64(attemptNum+1))
-					if sleep > max {
-						sleep = max
+					if resp.Request != nil {
+						wait, duration := c.rateLimiter.Wait(resp.Request.Method)
+						if wait {
+							c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
+						} else {
+							return 0
+						}
 					}
-				*/
-				return duration
+				}
+				// default to exp backoff
+				mult := math.Pow(2, float64(attemptNum)) * float64(min)
+				sleep := time.Duration(mult)
+				if float64(sleep) != mult || sleep > max {
+					sleep = max
+				}
+				return sleep
 			}
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
@@ -273,6 +279,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	if resp != nil && resp.StatusCode == http.StatusBadRequest {
 		respMap := map[string]string{}
 		data, err := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 		if err == nil {
 			_ = json.Unmarshal(data, &respMap)
 			if errorID, ok := respMap["id"]; ok && (errorID == "non.restricted.entity.authorization.failed" || errorID == "bad.request") {
@@ -288,57 +295,6 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
-		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-}
-
-type RateLimiter struct {
-	mu                    sync.Mutex
-	getRequests           []time.Time
-	postPutDeleteRequests []time.Time
-	getLimit              int
-	postPutDeleteLimit    int
-}
-
-func NewRateLimiter() *RateLimiter {
-	return &RateLimiter{
-		getRequests:           []time.Time{},
-		postPutDeleteRequests: []time.Time{},
-		getLimit:              20,
-		postPutDeleteLimit:    10,
-	}
-}
-
-func (rl *RateLimiter) Wait(method string) (bool, time.Duration) {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-
-	now := time.Now()
-
-	switch method {
-	case http.MethodGet:
-		if len(rl.getRequests) >= rl.getLimit {
-			oldestRequest := rl.getRequests[0]
-			if now.Sub(oldestRequest) < 10*time.Second {
-				d := 10*time.Second - now.Sub(oldestRequest)
-				return true, d
-			}
-			rl.getRequests = rl.getRequests[1:]
-		}
-		rl.getRequests = append(rl.getRequests, now)
-
-	case http.MethodPost, http.MethodPut, http.MethodDelete:
-		if len(rl.postPutDeleteRequests) >= rl.postPutDeleteLimit {
-			oldestRequest := rl.postPutDeleteRequests[0]
-			if now.Sub(oldestRequest) < 10*time.Second {
-				d := 10*time.Second - now.Sub(oldestRequest)
-				return true, d
-			}
-			rl.postPutDeleteRequests = rl.postPutDeleteRequests[1:]
-		}
-		rl.postPutDeleteRequests = append(rl.postPutDeleteRequests, now)
-	}
-
-	return false, 0
 }

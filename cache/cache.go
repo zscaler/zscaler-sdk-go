@@ -12,6 +12,7 @@ type Cache interface {
 	Delete(key string)
 	Clear()
 	ClearAllKeysWithPrefix(prefix string)
+	Close()
 }
 
 func CreateCacheKey(req *http.Request) string {
