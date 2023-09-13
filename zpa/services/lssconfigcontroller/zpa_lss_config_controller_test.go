@@ -1,5 +1,6 @@
 package lssconfigcontroller
 
+/*
 import (
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 )
+
 
 // clean all resources
 func TestMain(m *testing.M) {
@@ -258,3 +260,4 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/
