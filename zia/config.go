@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -342,12 +343,22 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 					return retryAfter
 				}
 			}
+			if resp.Request != nil {
+				wait, d := rateLimiter.Wait(resp.Request.Method)
+				if wait {
+					return d
+				} else {
+					return 0
+				}
+			}
 		}
-		wait, d := rateLimiter.Wait(resp.Request.Method)
-		if wait {
-			return d
+		// default to exp backoff
+		mult := math.Pow(2, float64(attemptNum)) * float64(min)
+		sleep := time.Duration(mult)
+		if float64(sleep) != mult || sleep > max {
+			sleep = max
 		}
-		return 0
+		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
@@ -377,6 +388,11 @@ func getRetryOnStatusCodes() []int {
 	return []int{http.StatusTooManyRequests}
 }
 
+type ApiErr struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
 // Used to make http client retry on provided list of response status codes.
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	// do not retry on context.Canceled or context.DeadlineExceeded
@@ -385,6 +401,21 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
+	}
+
+	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict) {
+		apiRespErr := ApiErr{}
+		data, err := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewBuffer(data))
+		if err == nil {
+			err = json.Unmarshal(data, &apiRespErr)
+			if err == nil {
+				if apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Failed during enter Org barrier" ||
+					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" {
+					return true, nil
+				}
+			}
+		}
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
