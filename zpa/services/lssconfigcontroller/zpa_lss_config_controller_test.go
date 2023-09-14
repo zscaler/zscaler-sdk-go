@@ -14,23 +14,23 @@ import (
 
 // clean all resources
 func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
+	setup()           // Initial cleanup
+	code := m.Run()   // Run tests
+	deferredCleanup() // Cleanup at the end without using defer
 	os.Exit(code)
 }
 
 func setup() {
-	cleanResources() // clean up at the beginning
+	cleanResources()
 }
 
-func teardown() {
-	cleanResources() // clean up at the end
+func deferredCleanup() {
+	cleanResources()
 }
 
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+	return !present || (present && (val == "" || val == "true"))
 }
 
 func cleanResources() {
@@ -43,13 +43,21 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, _, _ := service.GetAll()
+	resources, _, err := service.GetAll()
+	if err != nil {
+		log.Printf("Error fetching resources: %v", err)
+		return
+	}
 	for _, r := range resources {
 		if !strings.HasPrefix(r.LSSConfig.Name, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.LSSConfig.Name)
-		_, _ = service.Delete(r.ID)
+		_, err := service.Delete(r.ID)
+		if err != nil {
+			log.Printf("Error deleting resource with ID: %s, Name: %s, Error: %v", r.ID, r.LSSConfig.Name, err)
+		} else {
+			log.Printf("Successfully deleted resource with ID: %s, Name: %s", r.ID, r.LSSConfig.Name)
+		}
 	}
 }
 
@@ -61,9 +69,9 @@ func TestLSSConfigController(t *testing.T) {
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+
 	appConnectorGroupService := appconnectorgroup.New(client)
 	appGroup := appconnectorgroup.AppConnectorGroup{
 		Name:                     appConnGroupName,
@@ -88,7 +96,7 @@ func TestLSSConfigController(t *testing.T) {
 
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
 	if err != nil || createdAppConnGroup == nil || createdAppConnGroup.ID == "" {
-		t.Fatalf("Error creating application connector group or ID is empty")
+		t.Fatalf("Error creating app connector group or ID is empty")
 		return
 	}
 
@@ -98,18 +106,11 @@ func TestLSSConfigController(t *testing.T) {
 			if errCheck == nil && existingGroup != nil {
 				_, errDelete := appConnectorGroupService.Delete(createdAppConnGroup.ID)
 				if errDelete != nil {
-					t.Errorf("Error deleting application connector group: %v", errDelete)
+					t.Errorf("Error deleting app connector group: %v", errDelete)
 				}
 			}
 		}
 	}()
-
-	// lssConfigFormatService := New(client)
-	// lssLogType, _, err := lssConfigFormatService.GetFormats()
-	// if err != nil {
-	// 	t.Errorf("Error getting LSS Log Type: %v", err)
-	// 	return
-	// }
 
 	service := New(client)
 	lssConfig := &LSSResource{
@@ -172,9 +173,18 @@ func TestLSSConfigController(t *testing.T) {
 	}
 
 	createdResource, _, err := service.Create(lssConfig)
-	if err != nil || createdResource == nil {
-		t.Fatalf("Error making POST request: %v or createdResource is nil", err)
+	if err != nil || createdResource == nil || createdResource.ID == "" {
+		t.Fatalf("Error making POST request: %v or createdResource is nil or ID is empty", err)
 	}
+
+	defer func() {
+		if createdResource != nil && createdResource.ID != "" {
+			_, errDelete := service.Delete(createdResource.ID)
+			if errDelete != nil {
+				t.Errorf("Error deleting LSSResource: %v", errDelete)
+			}
+		}
+	}()
 
 	// Fetch the resource again to get full details
 	createdResource, _, err = service.Get(createdResource.ID)
@@ -217,9 +227,17 @@ func TestLSSConfigController(t *testing.T) {
 	}
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(updateName)
-	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
+	if err != nil || retrievedResource == nil {
+		t.Errorf("Error retrieving resource by name or resource is nil: %v", err)
+		return
 	}
+
+	// Check if the retrieved resource is nil
+	if retrievedResource == nil {
+		t.Errorf("Expected to retrieve a resource, but got nil.")
+		return
+	}
+
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
