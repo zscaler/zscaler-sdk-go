@@ -1,5 +1,15 @@
 # Changelog
 
+# 2.1.0 (September 14, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #164](https://github.com/zscaler/zscaler-sdk-go/pull/164) Implemented caching (BigCache) for ZIA API client.
+- [PR #164](https://github.com/zscaler/zscaler-sdk-go/pull/164) Implemented detailed rate limiter per method for ZPA and ZIA API Clients. The rate limiter separates limits and frequencies for GET and other (POST, PUT, DELETE) requests for further flexibility.
+
 # 2.0.2 (September 10, 2023)
 
 ## Notes
