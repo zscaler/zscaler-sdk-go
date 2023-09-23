@@ -53,6 +53,11 @@ type FirewallFilteringRules struct {
 	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
 	DestCountries []string `json:"destCountries,omitempty"`
 
+	// Indicates whether the countries specified in the sourceCountries field are included or excluded from the rule.
+	// A true value denotes that the specified source countries are excluded from the rule.
+	// A false value denotes that the rule is applied to the source countries if there is a match.
+	ExcludeSrcCountries bool `json:"excludeSrcCountries,omitempty"`
+
 	// User-defined network service applications on which the rule is applied. If not set, the rule is not restricted to a specific network service application.
 	NwApplications []string `json:"nwApplications,omitempty"`
 
