@@ -1,6 +1,16 @@
 # Changelog
 
-# 2.1.0 (September 14, 2023)
+# 2.1.0 (September 22, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #166](https://github.com/zscaler/zscaler-sdk-go/pull/166) Added new ZIA Firewall attribute ``excludeSrcCountries``
+- [PR #166](https://github.com/zscaler/zscaler-sdk-go/pull/166) Added support documents and updated README page.
+
+# 2.1.0-beta (September 14, 2023)
 
 ## Notes
 - Golang: **v1.19**
