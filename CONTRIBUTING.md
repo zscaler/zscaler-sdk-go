@@ -1,5 +1,5 @@
-Contributing to GoZscaler SDK Open Source Repos
-======================================
+Contributing to Zscaler SDK GO Open Source Repos
+================================================
 
 Summary
 -------
