@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.1.0-beta``
+``Last updated: v2.1.1``
 
 ---
+
+# 2.1.1 (September 30, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #167](https://github.com/zscaler/zscaler-sdk-go/pull/167) Added ZPA LSS Config Controller `ResourceLHSRHSValue` to allow for more granular SIEM policy configuration.
 
 # 2.1.0 (September 14, 2023)
 
