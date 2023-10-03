@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.1.2 (October 3, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #168](https://github.com/zscaler/zscaler-sdk-go/pull/168) Restructured zia user management package directory for better organization and readability.
+
 # 2.1.1 (September 30, 2023)
 
 ## Notes

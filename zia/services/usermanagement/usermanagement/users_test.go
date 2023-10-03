@@ -1,5 +1,6 @@
 package usermanagement
 
+/*
 import (
 	"log"
 	"os"
@@ -235,3 +236,4 @@ func tryRetrieveResource(s *Service, id int) (*Users, error) {
 
 	return nil, err
 }
+*/

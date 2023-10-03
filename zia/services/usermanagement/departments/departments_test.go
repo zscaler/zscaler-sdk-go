@@ -1,4 +1,4 @@
-package usermanagement
+package departments
 
 import (
 	"testing"
