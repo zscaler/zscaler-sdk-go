@@ -1,7 +1,8 @@
-package usermanagement
+package groups
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
@@ -36,18 +37,34 @@ func (service *Service) GetGroups(groupID int) (*Groups, error) {
 	return &groups, nil
 }
 
-func (service *Service) GetGroupByName(groupName string) (*Groups, error) {
+func (service *Service) GetGroupByName(targetGroup string) (*Groups, error) {
 	var groups []Groups
-	err := common.ReadAllPages(service.Client, groupsEndpoint, &groups)
-	if err != nil {
-		return nil, err
-	}
-	for _, group := range groups {
-		if strings.EqualFold(group.Name, groupName) {
-			return &group, nil
+	page := 1
+
+	// Construct the endpoint with the search parameter
+	endpointWithSearch := fmt.Sprintf("%s?search=%s", groupsEndpoint, url.QueryEscape(targetGroup))
+
+	for {
+		err := common.ReadPage(service.Client, endpointWithSearch, page, &groups)
+		if err != nil {
+			return nil, err
 		}
+
+		// Iterate over the groups and check if the name matches the targetGroup
+		for _, group := range groups {
+			if strings.EqualFold(group.Name, targetGroup) {
+				return &group, nil
+			}
+		}
+
+		// Break the loop if there are no more pages
+		if len(groups) < common.GetPageSize() {
+			break
+		}
+		page++
 	}
-	return nil, fmt.Errorf("no group found with name: %s", groupName)
+
+	return nil, fmt.Errorf("no group found with name: %s", targetGroup)
 }
 
 func (service *Service) GetAllGroups() ([]Groups, error) {

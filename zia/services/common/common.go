@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
@@ -45,6 +46,10 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
+// GetPageSize returns the page size.
+func GetPageSize() int {
+	return pageSize
+}
 func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil
@@ -66,5 +71,34 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 		}
 		page++
 	}
+	return nil
+}
+
+func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) error {
+	if list == nil {
+		return nil
+	}
+
+	// Parse the endpoint into a URL.
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return fmt.Errorf("could not parse endpoint URL: %w", err)
+	}
+
+	// Get the existing query parameters and add new ones.
+	q := u.Query()
+	q.Set("pageSize", fmt.Sprintf("%d", pageSize))
+	q.Set("page", fmt.Sprintf("%d", page))
+
+	// Set the URL's RawQuery to the encoded query parameters.
+	u.RawQuery = q.Encode()
+
+	// Convert the URL back to a string and read the page.
+	pageItems := []T{}
+	err = client.Read(u.String(), &pageItems)
+	if err != nil {
+		return err
+	}
+	*list = pageItems
 	return nil
 }

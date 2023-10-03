@@ -1,4 +1,4 @@
-package usermanagement
+package groups
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ func TestAccGroupManagement(t *testing.T) {
 
 	service := New(client)
 
-	groups, err := service.GetAll()
+	groups, err := service.GetAllGroups()
 	if err != nil {
 		t.Errorf("Error getting groups: %v", err)
 		return
