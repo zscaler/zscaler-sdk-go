@@ -72,18 +72,17 @@ type CommonAppsDto struct {
 }
 
 type AppsConfig struct {
-	Name                string   `json:"name,omitempty"`
-	AllowOptions        bool     `json:"allowOptions"`
 	ID                  string   `json:"id,omitempty"`
 	AppID               string   `json:"appId,omitempty"`
+	Name                string   `json:"name,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Enabled             bool     `json:"enabled,omitempty"`
 	AppTypes            []string `json:"appTypes,omitempty"`
 	ApplicationPort     string   `json:"applicationPort,omitempty"`
 	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
 	Cname               string   `json:"cname,omitempty"`
 	ConnectionSecurity  string   `json:"connectionSecurity,omitempty"`
-	Description         string   `json:"description,omitempty"`
 	Domain              string   `json:"domain,omitempty"`
-	Enabled             bool     `json:"enabled,omitempty"`
 	Hidden              bool     `json:"hidden,omitempty"`
 	LocalDomain         string   `json:"localDomain,omitempty"`
 	Portal              bool     `json:"portal,omitempty"`

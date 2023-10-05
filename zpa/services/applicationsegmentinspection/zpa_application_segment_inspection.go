@@ -24,7 +24,7 @@ type AppSegmentInspection struct {
 	Description               string                   `json:"description,omitempty"`
 	Enabled                   bool                     `json:"enabled"`
 	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
-	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
+	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled,omitempty"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
@@ -70,10 +70,12 @@ type CommonAppsDto struct {
 }
 
 type AppsConfig struct {
-	Name                string   `json:"name,omitempty"`
-	AllowOptions        bool     `json:"allowOptions"`
 	ID                  string   `json:"id,omitempty"`
 	AppID               string   `json:"appId,omitempty"`
+	Name                string   `json:"name,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Enabled             bool     `json:"enabled"`
+	AllowOptions        bool     `json:"allowOptions"`
 	AppTypes            []string `json:"appTypes,omitempty"`
 	ApplicationPort     string   `json:"applicationPort,omitempty"`
 	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
@@ -81,27 +83,25 @@ type AppsConfig struct {
 	CertificateID       string   `json:"certificateId,omitempty"`
 	CertificateName     string   `json:"certificateName,omitempty"`
 	Cname               string   `json:"cname,omitempty"`
-	Description         string   `json:"description,omitempty"`
 	Domain              string   `json:"domain,omitempty"`
-	Enabled             bool     `json:"enabled"`
 	Hidden              bool     `json:"hidden"`
+	TrustUntrustedCert  bool     `json:"trustUntrustedCert"`
 	LocalDomain         string   `json:"localDomain,omitempty"`
 	Portal              bool     `json:"portal"`
 }
 
 type InspectionAppDto struct {
+	ID                  string `json:"id,omitempty"`
 	AppID               string `json:"appId,omitempty"`
+	Name                string `json:"name,omitempty"`
+	Description         string `json:"description,omitempty"`
+	Enabled             bool   `json:"enabled"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
 	CertificateID       string `json:"certificateId,omitempty"`
 	CertificateName     string `json:"certificateName,omitempty"`
-	Description         string `json:"description,omitempty"`
 	Domain              string `json:"domain,omitempty"`
-	Enabled             bool   `json:"enabled"`
-	ID                  string `json:"id,omitempty"`
-	Name                string `json:"name,omitempty"`
-	Hidden              bool   `json:"hidden"`
-	Portal              bool   `json:"portal"`
+	TrustUntrustedCert  bool   `json:"trustUntrustedCert"`
 	MicroTenantID       string `json:"microtenantId,omitempty"`
 	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
