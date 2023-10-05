@@ -155,7 +155,10 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 			filters.MicroTenantID = &mt.ID
 		}
 	}
-	filters.Search = url.QueryEscape(filters.Search)
+
+	// Updated filter search: replace spaces with '&' for the API's search query format
+	filters.Search = strings.ReplaceAll(filters.Search, " ", "&")
+
 	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, filters)
 	if err != nil {
 		return nil, resp, err
