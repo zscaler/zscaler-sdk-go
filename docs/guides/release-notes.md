@@ -16,14 +16,14 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 ``Last updated: v2.1.3``
 
 ---
-
-# 2.1.3 (October xx, 2023)
+# 2.1.3 (October 5, 2023)
 
 ## Notes
 - Golang: **v1.19**
 
 ### Fixes
 
+- [PR #170](https://github.com/zscaler/zscaler-sdk-go/pull/170) Fixed ZPA common custom pagination function `GetAllPagesGenericWithCustomFilters` to accommodate recent API changes on searches of objects containing multiple spaces when searching by name. Issue [#169](https://github.com/zscaler/zscaler-sdk-go/issues/169)
 - [PR #171](https://github.com/zscaler/zscaler-sdk-go/pull/171) Fixed ZPA application segment PRA and Inspection to include additional attributes within the ``apps_config`` menu
 
 # 2.1.2 (October 3, 2023)
