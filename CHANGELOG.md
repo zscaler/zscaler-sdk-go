@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.1.4 (October 18, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #172](https://github.com/zscaler/zscaler-sdk-go/pull/172) Added ``GetAllSubLocations`` function to ZIA package.
+
 # 2.1.3 (October 5, 2023)
 
 ## Notes

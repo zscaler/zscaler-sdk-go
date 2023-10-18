@@ -209,7 +209,7 @@ func (service *Service) GetSubLocationBySubID(subLocationID int) (*Locations, er
 			return subLoc, nil
 		}
 	}
-	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
+	return nil, fmt.Errorf("sublocation not found: %d", subLocationID)
 }
 
 // GetSublocations gets all sub-locations for a given location ID.
@@ -230,7 +230,7 @@ func (service *Service) GetSubLocation(locationID, subLocationID int) (*Location
 			return &location, nil
 		}
 	}
-	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
+	return nil, fmt.Errorf("sublocation not found: %d", subLocationID)
 }
 
 // GetLocationByName gets a location by its name.
@@ -324,6 +324,31 @@ func (service *Service) GetAll() ([]Locations, error) {
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	return locations, err
+}
+
+func (service *Service) GetAllSublocations() ([]Locations, error) {
+	// Step 1: Fetch all parent locations.
+	parentLocations, err := service.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var allSublocations []Locations
+
+	// Step 2: For each parent location, fetch its sub-locations.
+	for _, parent := range parentLocations {
+		var sublocations []Locations
+		// Create the sub-location endpoint for the current parent location.
+		subEndpoint := fmt.Sprintf("%s/%d%s", locationsEndpoint, parent.ID, subLocationEndpoint)
+
+		err := common.ReadAllPages(service.Client, subEndpoint, &sublocations)
+		if err != nil {
+			return nil, err
+		}
+		allSublocations = append(allSublocations, sublocations...)
+	}
+
+	return allSublocations, nil
 }
 
 // GetLocationOrSublocationByID gets a location or sub-location by its ID.
