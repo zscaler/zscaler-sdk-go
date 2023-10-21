@@ -66,3 +66,58 @@ func TestSCIMGroup(t *testing.T) {
 		t.Logf("No SCIM groups retrieved for IdP ID: %s", testIdpId)
 	}
 }
+
+func TestResponseFormatValidation(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting idps: %v", err)
+		return
+	}
+	// Find an IdP with ssoType USER
+	var testIdpId string
+	for _, idp := range idpList {
+		for _, ssoType := range idp.SsoType {
+			if ssoType == "USER" {
+				testIdpId = idp.ID
+				break
+			}
+		}
+		if testIdpId != "" {
+			break
+		}
+	}
+
+	if testIdpId == "" {
+		t.Error("No IdP with ssoType USER found")
+		return
+	}
+	service := New(client)
+
+	providers, _, err := service.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Errorf("Error getting identity provider: %v", err)
+		return
+	}
+	if len(providers) == 0 {
+		t.Errorf("No identity provider found")
+		return
+	}
+
+	// Validate each group
+	for _, provider := range providers {
+		// Checking if essential fields are not empty
+		if provider.ID == 0 {
+			t.Errorf("Identity provider ID is empty")
+		}
+		if provider.Name == "" {
+			t.Errorf("Identity provider Name is empty")
+		}
+	}
+}

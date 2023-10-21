@@ -12,7 +12,9 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
 )
 
-const connGrpAssociationType = "CONNECTOR_GRP"
+const (
+	connGrpAssociationType = "CONNECTOR_GRP"
+)
 
 // clean all resources
 func TestMain(m *testing.M) {
@@ -32,7 +34,7 @@ func teardown() {
 
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+	return !present || (present && (val == "" || val == "true"))
 }
 
 func cleanResources() {
@@ -55,7 +57,7 @@ func cleanResources() {
 	}
 }
 
-func TestProvisiongKey(t *testing.T) {
+func TestProvisiongKeyConnectorGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)

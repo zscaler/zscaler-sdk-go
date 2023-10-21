@@ -52,9 +52,6 @@ func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Respons
 
 func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
 	adaptedTrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
-	// to avoid such errors:
-	// - {"params" : [ "-" ], "id" : "filtering.input.invalid.operand", "reason" : "Invalid operand:- in Filtering criteria."}
-	// - search=Corp++Trusted++Networks {"params" : [ "" ],"id" : "filtering.input.invalid.operand","reason" : "Invalid operand: in Filtering criteria."}
 	adaptedTrustedNetworkName = strings.ReplaceAll(adaptedTrustedNetworkName, "-", " ")
 	adaptedTrustedNetworkName = strings.TrimSpace(adaptedTrustedNetworkName)
 	adaptedTrustedNetworkName = strings.Split(adaptedTrustedNetworkName, " ")[0]

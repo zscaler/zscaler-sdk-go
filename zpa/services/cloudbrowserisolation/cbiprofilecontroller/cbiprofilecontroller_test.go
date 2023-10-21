@@ -119,13 +119,13 @@ func TestCBIProfileController(t *testing.T) {
 		Name:           name,
 		Description:    name,
 		BannerID:       cbiBannerController.ID,
-		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID}, // Ensure at least 3 regions are assigned
+		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
 		CertificateIDs: []string{cbiCertificate.ID},
-		UserExperience: &UserExperience{ // <--- This seems to be a struct literal; you might be missing a field name here
+		UserExperience: &UserExperience{
 			SessionPersistence: true,
 			BrowserInBrowser:   true,
 		},
-		SecurityControls: &SecurityControls{ // <--- Similarly, this might be missing a field name
+		SecurityControls: &SecurityControls{
 			CopyPaste:          "all",
 			UploadDownload:     "all",
 			DocumentViewer:     true,

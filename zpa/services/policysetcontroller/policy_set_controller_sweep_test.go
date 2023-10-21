@@ -1,5 +1,6 @@
 package policysetcontroller
 
+/*
 import (
 	"log"
 	"os"
@@ -14,6 +15,7 @@ var supportedPolicyTypes = []string{
 	"TIMEOUT_POLICY",
 	"CLIENT_FORWARDING_POLICY",
 	"ISOLATION_POLICY",
+	"INSPECTION_POLICY",
 }
 
 // clean all resources
@@ -66,3 +68,4 @@ func cleanResources() {
 		}
 	}
 }
+*/

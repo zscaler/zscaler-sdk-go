@@ -129,7 +129,7 @@ func TestInspectionProfile(t *testing.T) {
 		return
 	}
 
-	controlByName, _, err := predefinedControlsService.GetByName("Failed to parse request body", "OWASP_CRS/3.3.0")
+	controlByName, _, err := predefinedControlsService.GetByName("Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined control by name: %v", err)
 		return

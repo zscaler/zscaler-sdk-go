@@ -26,7 +26,7 @@ func TestEnrollmentCert(t *testing.T) {
 	}
 
 	// Check if GetAll returns specific certificate names
-	requiredNames := []string{"Root", "Client", "Connector", "Service Edge"}
+	requiredNames := []string{"Root", "Client", "Connector", "Service Edge", "Isolation Client"}
 	for _, reqName := range requiredNames {
 		found := false
 		for _, cert := range certificates {

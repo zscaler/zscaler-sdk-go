@@ -55,10 +55,17 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, adaptedPostureName)
+
+	// Set up custom filters for pagination
+	filters := common.Filter{Search: adaptedPostureName} // Using the adapted posture name for searching
+
+	// Use the custom pagination function with custom filters
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PostureProfile](service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Iterate through the list and find the posture profile by its name
 	for _, postureProfile := range list {
 		if strings.EqualFold(common.RemoveCloudSuffix(postureProfile.Name), adaptedPostureName) {
 			return &postureProfile, resp, nil

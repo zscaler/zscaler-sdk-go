@@ -5,14 +5,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_profile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
-func TestAccessIsolationPolicyIsolate(t *testing.T) {
-	policyType := "ISOLATION_POLICY"
-	isolationProfileID := "BD_SA_Profile1"
+func TestAccessInspectionPolicyInspect(t *testing.T) {
+	policyType := "INSPECTION_POLICY"
+	inspectionProfileID := "BD_SA_Profile1"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -41,22 +41,22 @@ func TestAccessIsolationPolicyIsolate(t *testing.T) {
 	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access isolation policy set: %v", err)
+		t.Errorf("Error getting access inspection policy set: %v", err)
 		return
 	}
-	profile := isolationprofile.New(client)
-	profileID, _, err := profile.GetByName(isolationProfileID)
+	profile := inspection_profile.New(client)
+	profileID, _, err := profile.GetByName(inspectionProfileID)
 	if err != nil {
-		t.Errorf("Error getting isolation profile id set: %v", err)
+		t.Errorf("Error getting inspection profile id set: %v", err)
 		return
 	}
 	accessPolicyRule := PolicyRule{
-		Name:                  name,
-		Description:           name,
-		RuleOrder:             "1",
-		PolicySetID:           accessPolicySet.ID,
-		ZpnIsolationProfileID: profileID.ID,
-		Action:                "ISOLATE",
+		Name:                   name,
+		Description:            name,
+		RuleOrder:              "1",
+		PolicySetID:            accessPolicySet.ID,
+		ZpnInspectionProfileID: profileID.ID,
+		Action:                 "INSPECT",
 		Conditions: []Conditions{
 			{
 				Operator: "OR",
@@ -160,9 +160,8 @@ func TestAccessIsolationPolicyIsolate(t *testing.T) {
 	}
 }
 
-func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
-	policyType := "ISOLATION_POLICY"
-	// isolationProfileID := "BD_SA_Profile1"
+func TestAccessInspectionPolicyBypass(t *testing.T) {
+	policyType := "INSPECTION_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -191,7 +190,7 @@ func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
 	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access isolation policy set: %v", err)
+		t.Errorf("Error getting access inspection policy set: %v", err)
 		return
 	}
 	accessPolicyRule := PolicyRule{
@@ -199,7 +198,7 @@ func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
 		Description: name,
 		RuleOrder:   "1",
 		PolicySetID: accessPolicySet.ID,
-		Action:      "BYPASS_ISOLATE", // Testing isolation policy creation without isolation profile
+		Action:      "BYPASS_INSPECT", // Testing inspect policy creation without inspection
 		Conditions: []Conditions{
 			{
 				Operator: "OR",

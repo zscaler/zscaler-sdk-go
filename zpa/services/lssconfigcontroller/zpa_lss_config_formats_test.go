@@ -6,7 +6,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
-func TestGetAllClientTypes(t *testing.T) {
+func TestGetAllFormats(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
