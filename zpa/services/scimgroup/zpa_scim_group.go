@@ -22,6 +22,7 @@ type ScimGroup struct {
 	IdpName      string `json:"idpName,omitempty"`
 	ModifiedTime int64  `json:"modifiedTime,omitempty"`
 	Name         string `json:"name,omitempty"`
+	InternalID   string `json:"internalId,omitempty"`
 }
 
 func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {

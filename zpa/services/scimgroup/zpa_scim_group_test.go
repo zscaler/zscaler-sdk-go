@@ -2,11 +2,49 @@ package scimgroup
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 )
+
+func getTestIdpId(t *testing.T) string {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+		return ""
+	}
+
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
+	if err != nil {
+		t.Fatalf("Error getting idps: %v", err)
+		return ""
+	}
+
+	// Find an IdP with ssoType USER
+	var testIdpId string
+	for _, idp := range idpList {
+		for _, ssoType := range idp.SsoType {
+			if ssoType == "USER" {
+				testIdpId = idp.ID
+				break
+			}
+		}
+		if testIdpId != "" {
+			break
+		}
+	}
+
+	if testIdpId == "" {
+		t.Fatalf("No IdP with ssoType USER found")
+		return ""
+	}
+
+	return testIdpId
+}
 
 func TestSCIMGroup(t *testing.T) {
 	client, err := tests.NewZpaClient()
@@ -70,54 +108,169 @@ func TestSCIMGroup(t *testing.T) {
 func TestResponseFormatValidation(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting idps: %v", err)
-		return
-	}
-	// Find an IdP with ssoType USER
-	var testIdpId string
-	for _, idp := range idpList {
-		for _, ssoType := range idp.SsoType {
-			if ssoType == "USER" {
-				testIdpId = idp.ID
-				break
-			}
-		}
-		if testIdpId != "" {
-			break
-		}
-	}
-
-	if testIdpId == "" {
-		t.Error("No IdP with ssoType USER found")
-		return
-	}
+	testIdpId := getTestIdpId(t)
 	service := New(client)
 
-	providers, _, err := service.GetAllByIdpId(testIdpId)
+	groups, _, err := service.GetAllByIdpId(testIdpId)
 	if err != nil {
-		t.Errorf("Error getting identity provider: %v", err)
+		t.Errorf("Error getting scim group: %v", err)
 		return
 	}
-	if len(providers) == 0 {
-		t.Errorf("No identity provider found")
+	if len(groups) == 0 {
+		t.Errorf("No scim group found")
 		return
 	}
 
 	// Validate each group
-	for _, provider := range providers {
+	for _, group := range groups {
 		// Checking if essential fields are not empty
-		if provider.ID == 0 {
-			t.Errorf("Identity provider ID is empty")
+		if group.ID == 0 {
+			t.Errorf("Scim group ID is empty")
 		}
-		if provider.Name == "" {
-			t.Errorf("Identity provider Name is empty")
+		if group.Name == "" {
+			t.Errorf("Scim group Name is empty")
 		}
+	}
+}
+
+func TestNonExistentSCIMGroupName(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+		return
+	}
+
+	testIdpId := getTestIdpId(t)
+	service := New(client)
+	_, _, err = service.GetByName("NonExistentName", testIdpId)
+	if err == nil {
+		t.Errorf("Expected error when getting non-existent SCIM group by name, got none")
+	}
+}
+
+func TestEmptyResponse(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+	testIdpId := getTestIdpId(t)
+	groups, _, err := service.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Errorf("Error getting SCIM Groups: %v", err)
+		return
+	}
+	if groups == nil {
+		t.Errorf("Received nil response for SCIM Groups")
+		return
+	}
+}
+
+func TestGetSCIMGroupByID(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+	testIdpId := getTestIdpId(t)
+	groups, _, err := service.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Errorf("Error getting all SCIM Groups: %v", err)
+		return
+	}
+
+	if len(groups) == 0 {
+		t.Errorf("No SCIM Group found")
+		return
+	}
+
+	specificID := groups[0].ID
+	group, _, err := service.Get(strconv.FormatInt(specificID, 10))
+	if err != nil {
+		t.Errorf("Error getting SCIM Group by ID: %v", err)
+		return
+	}
+	if group.ID != specificID {
+		t.Errorf("Mismatch in group ID: expected '%d', got %d", specificID, group.ID)
+		return
+	}
+}
+
+func TestAllFieldsOfSCIMGroups(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+	testIdpId := getTestIdpId(t)
+	groups, _, err := service.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Errorf("Error getting all SCIM Group: %v", err)
+		return
+	}
+
+	if len(groups) == 0 {
+		t.Errorf("No SCIM Group found")
+		return
+	}
+
+	specificID := groups[0].ID
+	group, _, err := service.Get(strconv.FormatInt(specificID, 10))
+	if err != nil {
+		t.Errorf("Error getting SCIM Group by ID: %v", err)
+		return
+	}
+
+	// Now check each field
+	if group.CreationTime == 0 {
+		t.Errorf("CreationTime is empty")
+	}
+	if group.ID == 0 {
+		t.Errorf("ID is empty")
+	}
+	if group.IdpID == 0 {
+		t.Errorf("IdpID is empty")
+	}
+	if group.ModifiedTime == 0 {
+		t.Errorf("ModifiedTime is empty")
+	}
+	if group.Name == "" {
+		t.Errorf("Name is empty")
+	}
+	if group.InternalID == "" {
+		t.Errorf("InternalID is empty")
+	}
+}
+
+func TestResponseHeadersAndFormat(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+	testIdpId := getTestIdpId(t)
+	_, resp, err := service.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Errorf("Error getting SCIM Groups: %v", err)
+		return
+	}
+	if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+	contentType := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "application/json") {
+		t.Errorf("Expected content type to start with 'application/json', got %s", contentType)
 	}
 }
