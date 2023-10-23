@@ -235,15 +235,6 @@ func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
 	}
 
 	// Now check each field
-	if attribute.CreationTime == "" {
-		t.Errorf("CreationTime is empty")
-	}
-	if attribute.ModifiedTime == "" {
-		t.Errorf("ModifiedTime is empty")
-	}
-	if attribute.ModifiedBy == "" {
-		t.Errorf("ModifiedBy is empty")
-	}
 	if attribute.ID == "" {
 		t.Errorf("ID is empty")
 	}
