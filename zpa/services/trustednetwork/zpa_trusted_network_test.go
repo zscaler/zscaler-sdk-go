@@ -19,8 +19,8 @@ func TestTrustedNetworks(t *testing.T) {
 
 	service := New(client)
 
-	// Assuming a network with the name "BD-TrustedNetwork01" exists
-	knownName := "BD-TrustedNetwork01"
+	// Assuming a network with the name "BD-TrustedNetwork03" exists
+	knownName := "BD-TrustedNetwork03"
 
 	// Case variations to test
 	variations := []string{
@@ -85,7 +85,7 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 	service := New(client)
 
 	// Use GetByName to fetch a known network
-	knownName := "BD-TrustedNetwork01"
+	knownName := "BD-TrustedNetwork03"
 	network, _, err := service.GetByName(knownName)
 	if err != nil || network == nil {
 		t.Errorf("Error getting trusted network with name '%s': %v", knownName, err)

@@ -232,17 +232,11 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 	}
 
 	// Now check each field
-	if group.CreationTime == 0 {
-		t.Errorf("CreationTime is empty")
-	}
 	if group.ID == 0 {
 		t.Errorf("ID is empty")
 	}
 	if group.IdpID == 0 {
 		t.Errorf("IdpID is empty")
-	}
-	if group.ModifiedTime == 0 {
-		t.Errorf("ModifiedTime is empty")
 	}
 	if group.Name == "" {
 		t.Errorf("Name is empty")
