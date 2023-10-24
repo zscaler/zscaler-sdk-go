@@ -26,14 +26,20 @@ type ZPAProfiles struct {
 
 // The current API does not seem to support search by ID
 func (service *Service) Get(profileID string) (*ZPAProfiles, *http.Response, error) {
-	v := new(ZPAProfiles)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+zpaProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	// First get all the profiles
+	profiles, resp, err := service.GetAll()
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 
-	return v, resp, nil
+	// Loop through the profiles and find the one with the matching ID
+	for _, profile := range profiles {
+		if profile.ID == profileID {
+			return &profile, resp, nil
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation profile with ID '%s' was found", profileID)
 }
 
 // The current API does not seem to support search by Name

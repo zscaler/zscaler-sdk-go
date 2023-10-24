@@ -129,7 +129,7 @@ func TestInspectionProfile(t *testing.T) {
 		return
 	}
 
-	controlByName, _, err := predefinedControlsService.GetByName("Failed to parse request body", "OWASP_CRS/3.3.0")
+	controlByName, _, err := predefinedControlsService.GetByName("Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined control by name: %v", err)
 		return
@@ -286,5 +286,57 @@ func TestInspectionProfile(t *testing.T) {
 	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Get("non-existent-id")
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete("non-existent-id")
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update("non-existent-id", &InspectionProfile{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }

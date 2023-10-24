@@ -119,13 +119,13 @@ func TestCBIProfileController(t *testing.T) {
 		Name:           name,
 		Description:    name,
 		BannerID:       cbiBannerController.ID,
-		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID}, // Ensure at least 3 regions are assigned
+		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
 		CertificateIDs: []string{cbiCertificate.ID},
-		UserExperience: &UserExperience{ // <--- This seems to be a struct literal; you might be missing a field name here
+		UserExperience: &UserExperience{
 			SessionPersistence: true,
 			BrowserInBrowser:   true,
 		},
-		SecurityControls: &SecurityControls{ // <--- Similarly, this might be missing a field name
+		SecurityControls: &SecurityControls{
 			CopyPaste:          "all",
 			UploadDownload:     "all",
 			DocumentViewer:     true,
@@ -220,5 +220,57 @@ func TestCBIProfileController(t *testing.T) {
 	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Get("non-existent-id")
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete("non-existent-id")
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update("non-existent-id", &IsolationProfile{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }

@@ -27,22 +27,35 @@ type IsolationProfile struct {
 }
 
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
-	v := new(IsolationProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+isolationProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	// First get all the profiles
+	profiles, resp, err := service.GetAll()
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 
-	return v, resp, nil
+	// Loop through the profiles and find the one with the matching ID
+	for _, profile := range profiles {
+		if profile.ID == profileID {
+			return &profile, resp, nil
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation profile with ID '%s' was found", profileID)
 }
 
 func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, profileName)
+
+	// Set up custom filters for pagination
+	filters := common.Filter{Search: profileName} // We only have the Search filter as per your example. You can add more filters if required.
+
+	// Use the custom pagination function
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IsolationProfile](service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// The rest remains the same as your logic for finding the profile by its name
 	for _, profile := range list {
 		if strings.EqualFold(profile.Name, profileName) {
 			return &profile, resp, nil

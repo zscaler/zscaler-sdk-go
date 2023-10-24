@@ -1,4 +1,4 @@
-package segmentgroup
+package microtenants
 
 import (
 	"log"
@@ -51,7 +51,20 @@ func cleanResources() {
 	}
 }
 
-func TestSegmentGroup(t *testing.T) {
+func TestMicrotenants(t *testing.T) {
+	// Define the list of all possible domain names
+	domains := []string{
+		"144124980601290752.zpa-customer.com",
+		"public-api-sdk-testing.com",
+		"144124981675032576.zpa-customer.com",
+		"public-api-sdk-testing1.com",
+		"bd-hashicorp.com",
+		"216199618143191040.zpa-customer.com",
+		"securitygeek.io",
+		"72058304855015424.zpa-customer.com",
+		"securitygeekio.ca",
+	}
+
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -61,14 +74,33 @@ func TestSegmentGroup(t *testing.T) {
 	}
 	service := New(client)
 
-	// Create new resource
-	createdResource, _, err := service.Create(&SegmentGroup{
-		Name:        name,
-		Description: name,
-		Enabled:     true,
-	})
-	if err != nil {
-		t.Fatalf("Error creating resource: %v", err)
+	var createdResource *MicroTenant
+
+	// Loop through each domain until successful creation or all domains exhausted
+	for _, domain := range domains {
+		createdResource, _, err = service.Create(MicroTenant{
+			Name:                    name,
+			Description:             name,
+			Enabled:                 true,
+			CriteriaAttribute:       "AuthDomain",
+			CriteriaAttributeValues: []string{domain},
+		})
+		if err != nil {
+			// Check for specific error message and continue if found
+			if strings.Contains(err.Error(), "domains.does.not.belong.to.customer") {
+				continue
+			} else {
+				t.Fatalf("Error creating resource with domain '%s': %v", domain, err)
+			}
+		} else {
+			// If successfully created, break out of loop
+			break
+		}
+	}
+
+	// If we've exhausted all domains without a successful creation, fail the test
+	if err != nil && strings.Contains(err.Error(), "domains.does.not.belong.to.customer") {
+		t.Fatalf("Error creating resource: all domains exhausted, none belong to customer.")
 	}
 
 	t.Run("TestResourceCreation", func(t *testing.T) {
@@ -90,6 +122,26 @@ func TestSegmentGroup(t *testing.T) {
 		}
 		if retrievedResource.Name != name {
 			t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		}
+	})
+
+	t.Run("TestRetrieveLoginInfo", func(t *testing.T) {
+		if createdResource.UserResource == nil {
+			t.Fatalf("Expected user details in created resource, but got nil")
+		}
+
+		username := createdResource.UserResource.Username
+		if username == "" {
+			t.Error("Expected username to be non-empty, but got ''")
+		} else {
+			if !strings.Contains(username, "@") {
+				t.Errorf("Expected valid username format containing '@', but got '%s'", username)
+			}
+		}
+
+		password := createdResource.UserResource.Password
+		if password == "" {
+			t.Error("Expected password to be non-empty, but got ''")
 		}
 	})
 
@@ -175,7 +227,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update("non-existent-id", &SegmentGroup{})
+	_, err = service.Update("non-existent-id", &MicroTenant{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
