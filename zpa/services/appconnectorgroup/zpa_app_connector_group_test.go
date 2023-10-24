@@ -78,7 +78,6 @@ func TestAppConnectorGroup(t *testing.T) {
 		VersionProfileID:         "0",
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
-		WAFDisabled:              true,
 		TCPQuickAckApp:           true,
 		TCPQuickAckAssistant:     true,
 		TCPQuickAckReadAssistant: true,
