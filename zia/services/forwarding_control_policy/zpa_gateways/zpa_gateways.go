@@ -15,7 +15,7 @@ const (
 
 type ZPAGateways struct {
 	// A unique identifier assigned to the ZPA gateway
-	ID int `json:"id,omitempty"`
+	ID int `json:"id"`
 
 	// The name of the ZPA gateway
 	Name string `json:"name,omitempty"`
@@ -24,10 +24,10 @@ type ZPAGateways struct {
 	Description string `json:"description,omitempty"`
 
 	// The ZPA Server Group that is configured for Source IP Anchoring
-	ZPAServerGroup []common.IDNameExtensions `json:"zpaServerGroup,omitempty"`
+	ZPAServerGroup ZPAServerGroup `json:"zpaServerGroup,omitempty"`
 
 	// All the Application Segments that are associated with the selected ZPA Server Group for which Source IP Anchoring is enabled
-	ZPAAppSegments []common.IDNameExtensions `json:"zpaAppSegments,omitempty"`
+	ZPAAppSegments []ZPAAppSegments `json:"zpaAppSegments,omitempty"`
 
 	// The ID of the ZPA tenant where Source IP Anchoring is configured
 	ZPATenantId int `json:"zpaTenantId,omitempty"`
@@ -40,7 +40,23 @@ type ZPAGateways struct {
 
 	// Indicates whether the ZPA gateway is configured for Zscaler Internet Access (using option ZPA) or Zscaler Cloud Connector (using option ECZPA)
 	// Supported Values: "ZPA", "ECZPA"
-	Type string `json:"type,omitempty"`
+	Type string `json:"type"`
+}
+
+type ZPAServerGroup struct {
+	// A unique identifier assigned to the Application Segment
+	ExternalID string `json:"externalId,omitempty"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+}
+
+type ZPAAppSegments struct {
+	// A unique identifier assigned to the Application Segment
+	ExternalID string `json:"externalId,omitempty"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*ZPAGateways, error) {

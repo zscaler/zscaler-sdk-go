@@ -135,7 +135,7 @@ type ForwardingRules struct {
 	// The ZPA Server Group for which this rule is applicable.
 	// Only the Server Groups that are associated with the selected Application Segments are allowed.
 	// This field is applicable only for the ZPA forwarding method.
-	ZPAGateway []common.IDNameExtensions `json:"zpaGateway,omitempty"`
+	ZPAGateway ZPAGateway `json:"zpaGateway,omitempty"`
 
 	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
 	ZPAAppSegments []ZPAAppSegments `json:"zpaAppSegments,omitempty"`
@@ -152,6 +152,17 @@ type ForwardingRules struct {
 	ZPABrokerRule bool `json:"zpaBrokerRule,omitempty"`
 }
 
+type ZPAGateway struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id,omitempty"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Indicates the external ID. Applicable only when this reference is of an external entity.
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
+}
+
 type ZPAAppSegments struct {
 	// A unique identifier assigned to the Application Segment
 	ID int `json:"id,omitempty"`
@@ -160,7 +171,7 @@ type ZPAAppSegments struct {
 	Name string `json:"name,omitempty"`
 
 	// Indicates the external ID. Applicable only when this reference is of an external entity.
-	ExternalID int `json:"externalId,omitempty"`
+	ExternalID string `json:"externalId,omitempty"`
 
 	//ID of the ZPA tenant where the Application Segment is configured
 	ZPATenantId int `json:"zpaTenantId,omitempty"`

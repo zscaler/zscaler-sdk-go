@@ -1,6 +1,7 @@
 package zpa_gateways
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"strings"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
@@ -89,9 +89,9 @@ func cleanResources() {
 }
 
 func TestZPAGateways(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	description := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -102,19 +102,26 @@ func TestZPAGateways(t *testing.T) {
 	zpaGateways := ZPAGateways{
 		Name:        name,
 		Description: description,
-		ZPAServerGroup: []common.IDNameExtensions{
-			{
-				ID: 216196257331370183,
-			},
+		Type:        "ZPA",
+		ZPAServerGroup: ZPAServerGroup{
+			ExternalID: "72058304855041029",
+			Name:       "Example",
 		},
-		ZPAAppSegments: []common.IDNameExtensions{
+		ZPAAppSegments: []ZPAAppSegments{
 			{
-				ID: 216196257331370184,
+				ExternalID: "72058304855041030",
+				Name:       "App_Segment_IP_Source_Anchoring",
 			},
 		},
 	}
 
 	var createdResource *ZPAGateways
+	// Convert the zpaGateways to JSON and log it
+	jsonRepresentation, err := json.MarshalIndent(zpaGateways, "", "  ")
+	if err != nil {
+		t.Fatalf("Error converting zpaGateways to JSON: %v", err)
+	}
+	t.Logf("JSON Payload being sent:\n%s", string(jsonRepresentation))
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
@@ -145,6 +152,21 @@ func TestZPAGateways(t *testing.T) {
 
 	// Test resource update
 	retrievedResource.Description = updateDescription
+	// Ensure type is retained
+	retrievedResource.Type = "ZPA" // or whatever the correct value should be
+
+	// Remove metadata fields before sending update request
+	retrievedResource.LastModifiedBy = nil
+	retrievedResource.LastModifiedTime = 0
+
+	// Convert the retrievedResource to JSON and log it before the update
+	// var jsonRepresentation []byte
+	jsonRepresentation, err = json.MarshalIndent(retrievedResource, "", "  ")
+	if err != nil {
+		t.Fatalf("Error converting retrievedResource to JSON before update: %v", err)
+	}
+	t.Logf("JSON Payload being sent for update:\n%s", string(jsonRepresentation))
+
 	err = retryOnConflict(func() error {
 		_, err = service.Update(createdResource.ID, retrievedResource)
 		return err
