@@ -1,7 +1,10 @@
 package policysetcontroller
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -200,6 +203,36 @@ func (service *Service) Reorder(policySetID, ruleId string, order int) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+	return resp, err
+}
+
+// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
+func (service *Service) BulkReorder(policySetID string, ruleIds []string) (*http.Response, error) {
+	// Construct the URL path
+	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/reorder", policySetID)
+
+	// Convert ruleIds slice to JSON
+	jsonData, err := json.Marshal(ruleIds)
+	if err != nil {
+		return nil, err
+	}
+
+	// Log the request payload and endpoint for debugging
+	log.Printf("Sending reorder request to: %s\n", path)
+	log.Printf("Payload: %s\n", string(jsonData))
+
+	// Create a new PUT request
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, jsonData, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for non-2xx status code and log response body for debugging
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		log.Printf("Error response from API: %s\n", string(bodyBytes))
+	}
+
 	return resp, err
 }
 
