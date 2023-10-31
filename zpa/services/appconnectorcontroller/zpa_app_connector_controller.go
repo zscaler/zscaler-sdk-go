@@ -1,6 +1,8 @@
 package appconnectorcontroller
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -9,8 +11,9 @@ import (
 )
 
 const (
-	mgmtConfig           = "/mgmtconfig/v1/admin/customers/"
-	appConnectorEndpoint = "/connector"
+	mgmtConfig                = "/mgmtconfig/v1/admin/customers/"
+	appConnectorEndpoint      = "/connector"
+	assistantScheduleEndpoint = "/assistantSchedule"
 )
 
 type AppConnector struct {
@@ -52,6 +55,15 @@ type AppConnector struct {
 	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
 	MicroTenantID                    string                 `json:"microtenantId,omitempty"`
 	MicroTenantName                  string                 `json:"microtenantName,omitempty"`
+}
+
+type AssistantSchedule struct {
+	ID                string `json:"id,omitempty"`
+	CustomerId        string `json:"customerId,omitempty"`
+	DeleteDisabled    bool   `json:"deleteDisabled,omitempty"`
+	Enabled           bool   `json:"enabled,omitempty"`
+	Frequency         string `json:"frequency,omitempty"`
+	FrequencyInterval string `json:"frequencyInterval,omitempty"`
 }
 
 // This function search the App Connector by ID
@@ -126,4 +138,52 @@ func (service *Service) BulkDelete(appConnectorIDs []string) (*http.Response, er
 	}
 
 	return resp, nil
+}
+
+func (service *Service) GetAllAssistantSchedule() (*AssistantSchedule, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + assistantScheduleEndpoint
+
+	// Make the GET request
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Read and unmarshal the response
+	var schedule AssistantSchedule
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&schedule)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &schedule, resp, nil
+}
+
+func (service *Service) CreateScheduleAssistant(scheduleAssistant *AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
+	v := new(AssistantSchedule)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+assistantScheduleEndpoint, common.Filter{MicroTenantID: service.microTenantID}, scheduleAssistant, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
+}
+
+// PUT - /mgmtconfig/v1/admin/customers/{customerId}/assistantSchedule/{id}
+func (service *Service) UpdateScheduleAssistant(scheduleAssistant *AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
+	// Construct the URL
+	if scheduleAssistant.ID == "" {
+		return nil, nil, errors.New("the AssistantSchedule provided must have a valid ID")
+	}
+	relativeURL := fmt.Sprintf("%s%s%s/%s", mgmtConfig, service.Client.Config.CustomerID, assistantScheduleEndpoint, scheduleAssistant.ID)
+
+	// Define the response variable
+	v := new(AssistantSchedule)
+
+	// Send the PUT request
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, scheduleAssistant, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return v, resp, nil
 }
