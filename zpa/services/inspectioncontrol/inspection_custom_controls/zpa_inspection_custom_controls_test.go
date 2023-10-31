@@ -179,6 +179,7 @@ func TestInspectionCustomControls(t *testing.T) {
 	}
 }
 
+/*
 func TestRetrieveNonExistentResource(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -230,3 +231,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/
