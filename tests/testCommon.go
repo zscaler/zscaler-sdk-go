@@ -20,7 +20,7 @@ func NewZpaClient() (*zpa.Client, error) {
 	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
 	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
 	zpa_cloud := os.Getenv("ZPA_CLOUD")
-	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "testing")
+	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "zscaler-sdk-go")
 	if err != nil {
 		log.Printf("[ERROR] creating config failed: %v\n", err)
 		return nil, err
@@ -35,7 +35,7 @@ func NewZiaClient() (*zia.Client, error) {
 	apiKey := os.Getenv("ZIA_API_KEY")
 	ziaCloud := os.Getenv("ZIA_CLOUD")
 
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "testing")
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
 	if err != nil {
 		log.Printf("[ERROR] creating client failed: %v\n", err)
 		return nil, err

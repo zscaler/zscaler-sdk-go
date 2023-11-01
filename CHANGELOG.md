@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.1.5 (November 1, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #177](https://github.com/zscaler/zscaler-sdk-go/pull/177) Temporarily disabled Cloud Browser Isolation test edge cases to prevent some errors
+
 # 2.1.4 (October 18, 2023)
 
 ## Notes
