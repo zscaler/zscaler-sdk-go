@@ -60,6 +60,12 @@ type DlpDictionary struct {
 	// Indicates whether to exclude documents that are a 100% match to already-indexed documents from triggering an Indexed Document Match (IDM) Dictionary.
 	IgnoreExactMatchIdmDict bool `json:"ignoreExactMatchIdmDict,omitempty"`
 
+	// A true value indicates that the DLP dictionary is of hierarchical type that includes sub-dictionaries. A false value indicates that the dictionary is not hierarchical.
+	HierarchicalDictionary []EDMMatchDetails `json:"hierarchicalDictionary,omitempty"`
+
+	// The list of identifiers selected within a DLP dictionary of hierarchical type. Each identifier represents a sub-dictionary that consists of specific patterns.
+	HierarchicalIdentifiers []EDMMatchDetails `json:"hierarchicalIdentifiers,omitempty"`
+
 	// A true value denotes that the specified Bank Identification Number (BIN) values are included in the Credit Cards dictionary. A false value denotes that the specified BIN values are excluded from the Credit Cards dictionary.
 	// Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
 	IncludeBinNumbers bool `json:"includeBinNumbers,omitempty"`
