@@ -22,9 +22,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 ## Notes
 - Golang: **v1.19**
 
-### Enhancements
+### Fixes
 
 - [PR #177](https://github.com/zscaler/zscaler-sdk-go/pull/177) Temporarily disabled Cloud Browser Isolation test edge cases to prevent some errors
+- [PR #178](https://github.com/zscaler/zscaler-sdk-go/pull/178) Added missing `microtenant_id` attribute to ZPA Enrollment Certificate resource.
 
 # 2.1.4 (October 18, 2023)
 
