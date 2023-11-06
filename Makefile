@@ -7,6 +7,15 @@ GOFMT := gofumpt
 GOIMPORTS := goimports
 
 help:
+	@echo "$(COLOR_ZSCALER)"
+	@echo "  ______              _           "
+	@echo " |___  /             | |          "
+	@echo "    / / ___  ___ __ _| | ___ _ __ "
+	@echo "   / / / __|/ __/ _\` | |/ _ \ '__|"
+	@echo "  / /__\__ \ (_| (_| | |  __/ |   "
+	@echo " /_____|___/\___\__,_|_|\___|_|   "
+	@echo "                                  "
+	@echo "                                  "
 	@echo "$(COLOR_OK)Zscaler SDK for Golang$(COLOR_NONE)"
 	@echo ""
 	@echo "$(COLOR_WARNING)Usage:$(COLOR_NONE)"
