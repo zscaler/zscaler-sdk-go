@@ -229,11 +229,17 @@ func (service *Service) BulkReorder(policySetID string, ruleIds []string) (*http
 
 	// Check for non-2xx status code and log response body for debugging
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close() // Ensure the body is always closed
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			// Handle the error of reading the body (optional)
+			log.Printf("Error reading response body: %s\n", err.Error())
+		}
 		log.Printf("Error response from API: %s\n", string(bodyBytes))
+		return resp, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	return resp, err
+	return resp, nil
 }
 
 func (service *Service) RulesCount() (int, *http.Response, error) {
