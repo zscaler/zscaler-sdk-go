@@ -22,6 +22,8 @@ type Pagination struct {
 	Search2         string  `json:"search,omitempty" url:"search,omitempty"`
 	MicroTenantID   *string `url:"microtenantId,omitempty"`
 	MicroTenantName *string `url:"-,omitempty"`
+	SortBy          string  `json:"sortBy,omitempty" url:"sortBy,omitempty"`       // New field for sorting by attribute
+	SortOrder       string  `json:"sortOrder,omitempty" url:"sortOrder,omitempty"` // New field for the sort order (ASC or DESC)
 }
 
 type Filter struct {
