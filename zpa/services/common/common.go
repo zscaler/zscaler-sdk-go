@@ -30,6 +30,8 @@ type Filter struct {
 	Search          string  `url:"search,omitempty"`
 	MicroTenantID   *string `url:"microtenantId,omitempty"`
 	MicroTenantName *string `url:"-,omitempty"`
+	SortBy          string  `url:"sortBy,omitempty"`    // New field for sorting by attribute
+	SortOrder       string  `url:"sortOrder,omitempty"` // New field for the sort order (ASC or DESC)
 }
 
 type DeleteApplicationQueryParams struct {
@@ -86,6 +88,8 @@ func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 		MicroTenantID: filters.MicroTenantID,
 		PageSize:      pageSize,
 		Page:          page,
+		SortBy:        filters.SortBy,
+		SortOrder:     filters.SortOrder,
 	}, nil, &v)
 	if err != nil {
 		return 0, nil, resp, err
