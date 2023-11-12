@@ -1,11 +1,13 @@
 package scimgroup
 
-/*
 import (
+	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
@@ -104,6 +106,64 @@ func TestSCIMGroup(t *testing.T) {
 	} else {
 		t.Logf("No SCIM groups retrieved for IdP ID: %s", testIdpId)
 	}
+}
+
+func TestSCIMGroupGetByNameWithSort(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	testIdpId := getTestIdpId(t)
+
+	scimGroupService := New(client)
+
+	// Retrieve a list of SCIM groups
+	scimGroups, _, err := scimGroupService.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Fatalf("Error retrieving SCIM groups: %v", err)
+	}
+	if len(scimGroups) == 0 {
+		t.Fatalf("No SCIM groups found to test with")
+	}
+
+	// Log the retrieved SCIM groups
+	log.Println("Retrieved SCIM groups:")
+	for _, group := range scimGroups {
+		log.Printf("ID: %d, Name: %s\n", group.ID, group.Name)
+	}
+
+	// Check if we have enough groups for the test, otherwise return an error
+	if len(scimGroups) < 100 {
+		t.Fatalf("Not enough SCIM groups available for testing. Required: 50, Found: %d", len(scimGroups))
+	}
+
+	// Randomly pick a group name from the first 50 groups
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(500)
+	testScimName := scimGroups[randomIndex].Name
+
+	// Test with both DESC and ASC sort orders
+	for _, sortOrder := range []SortOrder{DESCSortOrder, ASCSortOrder} {
+		// Define sorting parameters
+		sortField := IDSortField
+
+		// Call GetByName with sorting parameters
+		scimGroup, _, err := scimGroupService.WithSort(sortField, sortOrder).GetByName(testScimName, testIdpId)
+		if err != nil {
+			t.Errorf("Error getting SCIM group by name with sort order %s: %v", sortOrder, err)
+			continue
+		}
+
+		if scimGroup == nil {
+			t.Errorf("No SCIM group named '%s' found with sort order %s", testScimName, sortOrder)
+		} else {
+			// Log the details of the retrieved SCIM group
+			log.Printf("SCIM group found with GetByName (sorted %s): ID: %d, Name: %s\n", sortOrder, scimGroup.ID, scimGroup.Name)
+		}
+	}
+
+	// Additional assertions can be added here if needed
 }
 
 func TestResponseFormatValidation(t *testing.T) {
@@ -269,4 +329,3 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 		t.Errorf("Expected content type to start with 'application/json', got %s", contentType)
 	}
 }
-*/
