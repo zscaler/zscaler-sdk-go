@@ -1,7 +1,6 @@
 package scimgroup
 
 import (
-	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -128,10 +127,10 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 	}
 
 	// Log the retrieved SCIM groups
-	log.Println("Retrieved SCIM groups:")
-	for _, group := range scimGroups {
-		log.Printf("ID: %d, Name: %s\n", group.ID, group.Name)
-	}
+	// log.Println("Retrieved SCIM groups:")
+	// for _, group := range scimGroups {
+	// 	log.Printf("ID: %d, Name: %s\n", group.ID, group.Name)
+	// }
 
 	// Check if we have enough groups for the test, otherwise return an error
 	if len(scimGroups) < 100 {
@@ -157,13 +156,9 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 
 		if scimGroup == nil {
 			t.Errorf("No SCIM group named '%s' found with sort order %s", testScimName, sortOrder)
-		} else {
-			// Log the details of the retrieved SCIM group
-			log.Printf("SCIM group found with GetByName (sorted %s): ID: %d, Name: %s\n", sortOrder, scimGroup.ID, scimGroup.Name)
 		}
 	}
 
-	// Additional assertions can be added here if needed
 }
 
 func TestResponseFormatValidation(t *testing.T) {
