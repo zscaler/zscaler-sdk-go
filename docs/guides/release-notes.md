@@ -13,9 +13,29 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.1.4``
+``Last updated: v2.1.6``
 
 ---
+
+# 2.1.6 (November xx, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #182](https://github.com/zscaler/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
+- [PR #183](https://github.com/zscaler/zscaler-sdk-go/pull/183) Added support for new ZPA Access Policy Bulk Reorder Endpoint
+
+# 2.1.5 (November 1, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #177](https://github.com/zscaler/zscaler-sdk-go/pull/177) Temporarily disabled Cloud Browser Isolation test edge cases to prevent some errors
+- [PR #178](https://github.com/zscaler/zscaler-sdk-go/pull/178) Added missing `microtenant_id` attribute to ZPA Enrollment Certificate resource.
 
 # 2.1.4 (October 18, 2023)
 
