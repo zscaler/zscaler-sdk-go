@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.1.6 (November xx, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) Added `JSESSIONID` cookie jar
+
 # 2.1.5 (November 1, 2023)
 
 ## Notes
