@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.1.5``
+``Last updated: v2.1.6``
 
 ---
+
+# 2.1.6 (November xx, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
 
 # 2.1.5 (November 1, 2023)
 

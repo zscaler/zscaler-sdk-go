@@ -7,7 +7,7 @@
 
 ### Fixes
 
-- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) Added `JSESSIONID` cookie jar
+- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
 
 # 2.1.5 (November 1, 2023)
 
