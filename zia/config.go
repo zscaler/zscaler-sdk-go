@@ -26,15 +26,15 @@ import (
 )
 
 const (
-	maxIdleConnections int = 40
-	requestTimeout     int = 60
-	// JSessionIDTimeout         = 30 // minutes.
-	jSessionTimeoutOffset = 5 * time.Minute
-	contentTypeJSON       = "application/json"
-	cookieName            = "JSESSIONID"
-	MaxNumOfRetries       = 100
-	RetryWaitMaxSeconds   = 20
-	RetryWaitMinSeconds   = 5
+	maxIdleConnections    int = 40
+	requestTimeout        int = 60
+	JSessionIDTimeout         = 30 // minutes.
+	jSessionTimeoutOffset     = 5 * time.Minute
+	contentTypeJSON           = "application/json"
+	cookieName                = "JSESSIONID"
+	MaxNumOfRetries           = 100
+	RetryWaitMaxSeconds       = 20
+	RetryWaitMinSeconds       = 5
 	// API types.
 	ziaAPIVersion = "api/v1"
 	ziaAPIAuthURL = "/authenticatedSession"
@@ -335,6 +335,21 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	retryableClient.RetryMax = MaxNumOfRetries
+
+	// Set up the cookie jar
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		l.Printf("[ERROR] failed to create cookie jar: %v", err)
+		// Handle the error, possibly by continuing without a cookie jar
+		// or you can choose to halt the execution if the cookie jar is critical
+	}
+
+	// Configure the underlying HTTP client
+	retryableClient.HTTPClient = &http.Client{
+		Jar: jar, // Set the cookie jar
+		// ... other configurations ...
+	}
+
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
@@ -367,7 +382,19 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 		Proxy:               http.ProxyFromEnvironment,
 		MaxIdleConnsPerHost: maxIdleConnections,
 	}
+
+	retryableClient.HTTPClient = &http.Client{
+		Timeout: time.Duration(requestTimeout) * time.Second,
+		Transport: &http.Transport{
+			Proxy:               http.ProxyFromEnvironment,
+			MaxIdleConnsPerHost: maxIdleConnections,
+		},
+		Jar: jar, // Set the cookie jar
+	}
 	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
+
+	retryableClient.CheckRetry = checkRetry
+	retryableClient.Logger = l
 
 	return retryableClient.StandardClient()
 }

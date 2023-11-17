@@ -7,9 +7,9 @@
 
 ### Fixes
 
-- [PR #182](https://github.com/zscaler/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
+- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
 
-# 2.1.5 (November 5, 2023)
+# 2.1.5 (November 1, 2023)
 
 ## Notes
 - Golang: **v1.19**
