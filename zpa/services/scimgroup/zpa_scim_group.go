@@ -11,7 +11,7 @@ import (
 const (
 	userConfig        = "/userconfig/v1/customers/"
 	scimGroupEndpoint = "/scimgroup"
-	idpId             = "/idpId"
+	idpIdPath         = "/idpId"
 )
 
 type ScimGroup struct {
@@ -36,23 +36,35 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(scimName, IdpId string) (*ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
+func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Response, error) {
+	// Construct the API endpoint URL with query parameters
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+	// Fetch the pages
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+		Search:    scimName,
+		SortBy:    string(service.sortBy),
+		SortOrder: string(service.sortOrder),
+	})
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
+
+	// Look for the group with the specified name
 	for _, scim := range list {
 		if strings.EqualFold(scim.Name, scimName) {
 			return &scim, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimName)
+
+	return nil, resp, fmt.Errorf("no SCIM group named '%s' was found", scimName)
 }
 
-func (service *Service) GetAllByIdpId(IdpId string) ([]ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpId, IdpId)
-	list, resp, err := common.GetAllPagesGeneric[ScimGroup](service.Client, relativeURL, "")
+func (service *Service) GetAllByIdpId(idpId string) ([]ScimGroup, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+		SortBy:    string(service.sortBy),
+		SortOrder: string(service.sortOrder),
+	})
 	if err != nil {
 		return nil, nil, err
 	}
