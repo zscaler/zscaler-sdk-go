@@ -1,6 +1,15 @@
 # Changelog
 
-# 2.1.5 (November 1, 2023)
+# 2.1.6 (November 17, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #182](https://github.com/zscaler/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
+
+# 2.1.5 (November 5, 2023)
 
 ## Notes
 - Golang: **v1.19**
