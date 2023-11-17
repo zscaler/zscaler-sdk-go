@@ -126,12 +126,6 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 		t.Fatalf("No SCIM groups found to test with")
 	}
 
-	// Log the retrieved SCIM groups
-	// log.Println("Retrieved SCIM groups:")
-	// for _, group := range scimGroups {
-	// 	log.Printf("ID: %d, Name: %s\n", group.ID, group.Name)
-	// }
-
 	// Check if we have enough groups for the test, otherwise return an error
 	if len(scimGroups) < 100 {
 		t.Fatalf("Not enough SCIM groups available for testing. Required: 50, Found: %d", len(scimGroups))
