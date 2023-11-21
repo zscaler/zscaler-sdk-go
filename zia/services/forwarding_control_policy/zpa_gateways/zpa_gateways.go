@@ -20,7 +20,7 @@ type ZPAGateways struct {
 	// The name of the ZPA gateway
 	Name string `json:"name,omitempty"`
 
-	// Additional information about the rule
+	// Additional details about the ZPA gateway
 	Description string `json:"description,omitempty"`
 
 	// The ZPA Server Group that is configured for Source IP Anchoring
@@ -43,20 +43,36 @@ type ZPAGateways struct {
 	Type string `json:"type"`
 }
 
+// The ZPA Server Group that is configured for Source IP Anchoring
 type ZPAServerGroup struct {
-	// A unique identifier assigned to the Application Segment
-	ExternalID string `json:"externalId,omitempty"`
+	//Identifier that uniquely identifies an entity
+	ID string `json:"id,omitempty"`
 
 	// The name of the Application Segment
 	Name string `json:"name,omitempty"`
+
+	// An external identifier used for an entity that is managed outside of ZIA.
+	// Examples include zpaServerGroup and zpaAppSegments.
+	// This field is not applicable to ZIA-managed entities.
+	ExternalID string `json:"externalId,omitempty"`
+
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
+// All the Application Segments that are associated with the selected ZPA Server Group for which Source IP Anchoring is enabled
 type ZPAAppSegments struct {
-	// A unique identifier assigned to the Application Segment
-	ExternalID string `json:"externalId,omitempty"`
+	//Identifier that uniquely identifies an entity
+	ID string `json:"id,omitempty"`
 
 	// The name of the Application Segment
 	Name string `json:"name,omitempty"`
+
+	// An external identifier used for an entity that is managed outside of ZIA.
+	// Examples include zpaServerGroup and zpaAppSegments.
+	// This field is not applicable to ZIA-managed entities.
+	ExternalID string `json:"externalId,omitempty"`
+
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*ZPAGateways, error) {
