@@ -1,6 +1,5 @@
 package adminusers
 
-/*
 import (
 	"log"
 	"math/rand"
@@ -262,4 +261,3 @@ func tryRetrieveResource(s *Service, id int) (*AdminUsers, error) {
 
 	return nil, err
 }
-*/

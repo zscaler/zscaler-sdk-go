@@ -1,85 +1,90 @@
 package adminroles
 
 /*
-const (
+import (
+	"log"
+	"os"
+	"strings"
+	"testing"
 
-	maxRetries    = 3
-	retryInterval = 2 * time.Second
-
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
-// Constants for conflict retries
-const (
+// const (
+// 	maxRetries    = 3
+// 	retryInterval = 2 * time.Second
+// )
 
-	maxConflictRetries    = 5
-	conflictRetryInterval = 1 * time.Second
+// // Constants for conflict retries
+// const (
+// 	maxConflictRetries    = 5
+// 	conflictRetryInterval = 1 * time.Second
+// )
 
-)
+// func retryOnConflict(operation func() error) error {
+// 	var lastErr error
+// 	for i := 0; i < maxConflictRetries; i++ {
+// 		lastErr = operation()
+// 		if lastErr == nil {
+// 			return nil
+// 		}
 
-	func retryOnConflict(operation func() error) error {
-		var lastErr error
-		for i := 0; i < maxConflictRetries; i++ {
-			lastErr = operation()
-			if lastErr == nil {
-				return nil
+// 		if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
+// 			log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
+// 			time.Sleep(conflictRetryInterval)
+// 			continue
+// 		}
+
+// 		return lastErr
+// 	}
+// 	return lastErr
+// }
+
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources()
+}
+
+func teardown() {
+	cleanResources()
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZConClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, err := service.GetAllAdminRoles()
+	if err != nil {
+		log.Printf("Error retrieving resources during cleanup: %v", err)
+		return
+	}
+
+	for _, r := range resources {
+		if strings.HasPrefix(r.Name, "tests-") {
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
-
-			if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
-				log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
-				time.Sleep(conflictRetryInterval)
-				continue
-			}
-
-			return lastErr
-		}
-		return lastErr
-	}
-
-	func TestMain(m *testing.M) {
-		setup()
-		code := m.Run()
-		teardown()
-		os.Exit(code)
-	}
-
-	func setup() {
-		cleanResources()
-	}
-
-	func teardown() {
-		cleanResources()
-	}
-
-	func shouldClean() bool {
-		val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-		return !present || (present && (val == "" || val == "true")) // simplified for clarity
-	}
-
-	func cleanResources() {
-		if !shouldClean() {
-			return
-		}
-
-		client, err := tests.NewZConClient()
-		if err != nil {
-			log.Fatalf("Error creating client: %v", err)
-		}
-		service := New(client)
-		resources, err := service.GetAllAdminRoles()
-		if err != nil {
-			log.Printf("Error retrieving resources during cleanup: %v", err)
-			return
-		}
-
-		for _, r := range resources {
-			if strings.HasPrefix(r.Name, "tests-") {
-				_, err := service.Delete(r.ID)
-				if err != nil {
-					log.Printf("Error deleting resource %d: %v", r.ID, err)
-				}
-			}
 		}
 	}
+}
 
 func TestZCONAdminRoles(t *testing.T) {
 	client, err := tests.NewZConClient()
@@ -91,33 +96,43 @@ func TestZCONAdminRoles(t *testing.T) {
 
 	testRoles := []AdminRoles{
 		// {
-		// 	Name:               "test-role-any",
-		// 	PolicyAccess:       "READ_WRITE",
-		// 	AlertingAccess:     "READ_WRITE",
-		// 	AnalysisAccess:     "READ_WRITE",
-		// 	DashboardAccess:    "READ_WRITE",
-		// 	ReportAccess:       "READ_WRITE",
-		// 	UsernameAccess:     "READ_WRITE",
-		// 	DeviceInfoAccess:   "READ_WRITE",
-		// 	FeaturePermissions: "READ_WRITE",
-		// 	AdminAcctAccess:    "READ_WRITE",
-		// 	LogsLimit:          "UNRESTRICTED",
-		// 	RoleType:           "ANY",
+		// 	Name:             "test-role-any",
+		// 	PolicyAccess:     "READ_WRITE",
+		// 	AlertingAccess:   "READ_WRITE",
+		// 	AnalysisAccess:   "READ_WRITE",
+		// 	DashboardAccess:  "READ_WRITE",
+		// 	ReportAccess:     "READ_WRITE",
+		// 	UsernameAccess:   "READ_WRITE",
+		// 	DeviceInfoAccess: "READ_WRITE",
+		// 	AdminAcctAccess:  "READ_WRITE",
+		// 	LogsLimit:        "UNRESTRICTED",
+		// 	RoleType:         "ANY",
 		// },
-		{
-			Name:             "test-role-public-api",
-			PolicyAccess:     "READ_ONLY",
-			Rank:             7,
-			AlertingAccess:   "NONE",
-			AnalysisAccess:   "NONE",
-			DashboardAccess:  "NONE",
-			ReportAccess:     "NONE",
-			UsernameAccess:   "NONE",
-			DeviceInfoAccess: "NONE",
-			AdminAcctAccess:  "READ_ONLY",
-			RoleType:         "PUBLIC_API",
-			LogsLimit:        "UNRESTRICTED",
-		},
+		// {
+		// 	Name:             "test-role-public-api",
+		// 	PolicyAccess:     "READ_ONLY",
+		// 	Rank:             7,
+		// 	AlertingAccess:   "NONE",
+		// 	AnalysisAccess:   "NONE",
+		// 	DashboardAccess:  "NONE",
+		// 	ReportAccess:     "NONE",
+		// 	UsernameAccess:   "NONE",
+		// 	DeviceInfoAccess: "NONE",
+		// 	AdminAcctAccess:  "READ_ONLY",
+		// 	RoleType:         "PUBLIC_API",
+		// 	LogsLimit:        "UNRESTRICTED",
+		// 	FeaturePermissions: map[string]interface{}{
+		// 		"EDGE_CONNECTOR_LOCATION_MANAGEMENT": "READ_WRITE",
+		// 		"REMOTE_ASSISTANCE_MANAGEMENT":       "READ_WRITE",
+		// 		"EDGE_CONNECTOR_CLOUD_PROVISIONING":  "READ_WRITE",
+		// 		"APIKEY_MANAGEMENT":                  "READ_WRITE",
+		// 		"EDGE_CONNECTOR_NSS_CONFIGURATION":   "READ_WRITE",
+		// 		"EDGE_CONNECTOR_TEMPLATE":            "READ_WRITE",
+		// 		"EDGE_CONNECTOR_ADMIN_MANAGEMENT":    "READ_WRITE",
+		// 		"EDGE_CONNECTOR_DASHBOARD":           "READ_ONLY",
+		// 		"EDGE_CONNECTOR_FORWARDING":          "READ_WRITE",
+		// 	},
+		// },
 		// {
 		// 	Name:             "test-role-sdwan",
 		// 	PolicyAccess:     "READ_WRITE",
@@ -130,18 +145,18 @@ func TestZCONAdminRoles(t *testing.T) {
 		// 	AdminAcctAccess:  "READ_WRITE",
 		// 	RoleType:         "SDWAN",
 		// },
-		// {
-		// 	Name:             "test-role-org-admin",
-		// 	PolicyAccess:     "READ_WRITE",
-		// 	AlertingAccess:   "READ_WRITE",
-		// 	AnalysisAccess:   "READ_WRITE",
-		// 	DashboardAccess:  "READ_WRITE",
-		// 	ReportAccess:     "READ_WRITE",
-		// 	UsernameAccess:   "READ_WRITE",
-		// 	DeviceInfoAccess: "READ_WRITE",
-		// 	AdminAcctAccess:  "READ_WRITE",
-		// 	RoleType:         "ORG_ADMIN",
-		// },
+		{
+			Name:             "test-role-org-admin",
+			PolicyAccess:     "READ_WRITE",
+			AlertingAccess:   "READ_WRITE",
+			AnalysisAccess:   "READ_WRITE",
+			DashboardAccess:  "READ_WRITE",
+			ReportAccess:     "READ_WRITE",
+			UsernameAccess:   "READ_WRITE",
+			DeviceInfoAccess: "READ_WRITE",
+			AdminAcctAccess:  "READ_WRITE",
+			RoleType:         "ORG_ADMIN",
+		},
 	}
 
 	// Create test roles and verify creation

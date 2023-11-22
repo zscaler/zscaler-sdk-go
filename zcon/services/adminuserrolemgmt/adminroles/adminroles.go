@@ -61,9 +61,7 @@ type AdminRoles struct {
 	// The admin role type. ()This attribute is subject to change.)
 	RoleType string `json:"roleType,omitempty"`
 
-	FeaturePermissions string `json:"featurePermissions,omitempty"`
-
-	// FeaturePermissions map[string]interface{} `json:"featurePermissions,omitempty"`
+	FeaturePermissions map[string]interface{} `json:"featurePermissions,omitempty"`
 }
 
 func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {

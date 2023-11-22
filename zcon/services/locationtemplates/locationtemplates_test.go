@@ -1,6 +1,5 @@
 package locationtemplates
 
-/*
 import (
 	"fmt"
 	"log"
@@ -237,4 +236,3 @@ func tryRetrieveResource(s *Service, id int) (*LocationTemplate, error) {
 
 	return nil, err
 }
-*/

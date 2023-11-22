@@ -1,6 +1,7 @@
 package provisioning
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -8,7 +9,8 @@ import (
 )
 
 const (
-	apiKeysEndpoint = "/apiKeys"
+	apiKeysEndpoint           = "/apiKeys"
+	regenerateApiKeysEndpoint = "/regenerate"
 )
 
 type ProvisioningAPIKeys struct {
@@ -45,8 +47,58 @@ func (service *Service) Get(apiKeyID int) (*ProvisioningAPIKeys, error) {
 	return &apiKey, nil
 }
 
+func (service *Service) GetPartnerAPIKey(apiKeyValue string, includePartnerKey bool) (*ProvisioningAPIKeys, error) {
+	// Constructing the API endpoint URL
+	url := fmt.Sprintf("%s?includePartnerKey=%t", apiKeysEndpoint, includePartnerKey)
+
+	var apiKeys []ProvisioningAPIKeys
+	err := service.Client.Read(url, &apiKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	// Iterating through the API keys to find a match
+	for _, key := range apiKeys {
+		if key.KeyValue == apiKeyValue {
+			return &key, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no partner api key found with key value: %s", apiKeyValue)
+}
+
 func (service *Service) GetAll() ([]ProvisioningAPIKeys, error) {
 	var apiKeys []ProvisioningAPIKeys
 	err := common.ReadAllPages(service.Client, apiKeysEndpoint, &apiKeys)
 	return apiKeys, err
+}
+
+func (service *Service) Create(apiKeyValue *ProvisioningAPIKeys, includePartnerKey bool, keyId *int) (*ProvisioningAPIKeys, error) {
+	// Handle nil apiKeyValue appropriately
+	if apiKeyValue == nil {
+		apiKeyValue = &ProvisioningAPIKeys{}
+	}
+	// Determine the API endpoint URL based on whether keyId is provided
+
+	var url string
+	if keyId != nil {
+		// Regenerate API key
+		url = fmt.Sprintf("%s/%d%s?includePartnerKey=%t", apiKeysEndpoint, *keyId, regenerateApiKeysEndpoint, includePartnerKey)
+	} else {
+		// Create new API key
+		url = fmt.Sprintf("%s?includePartnerKey=%t", apiKeysEndpoint, includePartnerKey)
+	}
+
+	resp, err := service.Client.Create(url, *apiKeyValue)
+	if err != nil {
+		return nil, err
+	}
+
+	createdApiKeys, ok := resp.(*ProvisioningAPIKeys)
+	if !ok {
+		return nil, errors.New("object returned from API was not an API key pointer")
+	}
+
+	log.Printf("returning API key from create: %d", createdApiKeys.ID)
+	return createdApiKeys, nil
 }
