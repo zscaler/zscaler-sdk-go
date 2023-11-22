@@ -1,0 +1,46 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The GitHub environment to use
+        type: string
+        required: true
+    secrets:
+      ZCON_USERNAME:
+        required: true
+      ZCON_PASSWORD:
+        required: true
+      ZCON_API_KEY:
+        required: true
+      ZCON_CLOUD:
+        required: true
+      ZSCALER_SDK_TEST_SWEEP:
+        required: true
+
+jobs:
+  zcon-test-ubuntu:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.19
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ubuntu-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+      - name: Run tests with retry on Ubuntu
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10 # Adjust as needed
+          command: |
+            make test:integration:zcon
+        env:
+          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
