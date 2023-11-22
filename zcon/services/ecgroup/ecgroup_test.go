@@ -1,6 +1,5 @@
 package ecgroup
 
-/*
 import (
 	"testing"
 
@@ -47,4 +46,3 @@ func TestECGroup(t *testing.T) {
 		return
 	}
 }
-*/
