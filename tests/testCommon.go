@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
@@ -20,7 +21,7 @@ func NewZpaClient() (*zpa.Client, error) {
 	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
 	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
 	zpa_cloud := os.Getenv("ZPA_CLOUD")
-	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "zscaler-sdk-go")
+	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "testing")
 	if err != nil {
 		log.Printf("[ERROR] creating config failed: %v\n", err)
 		return nil, err
@@ -35,7 +36,7 @@ func NewZiaClient() (*zia.Client, error) {
 	apiKey := os.Getenv("ZIA_API_KEY")
 	ziaCloud := os.Getenv("ZIA_CLOUD")
 
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "testing")
 	if err != nil {
 		log.Printf("[ERROR] creating client failed: %v\n", err)
 		return nil, err
@@ -92,4 +93,18 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 	}
 
 	return nil
+}
+
+func NewZConClient() (*zcon.Client, error) {
+	username := os.Getenv("ZCON_USERNAME")
+	password := os.Getenv("ZCON_PASSWORD")
+	apiKey := os.Getenv("ZCON_API_KEY")
+	zconCloud := os.Getenv("ZCON_CLOUD")
+
+	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "testing")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
