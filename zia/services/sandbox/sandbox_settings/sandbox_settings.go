@@ -25,9 +25,8 @@ func (service *Service) Get() (*BaAdvancedSettings, error) {
 	return &hashes, nil
 }
 
-func (service *Service) Update() (*BaAdvancedSettings, error) {
-	var hashes BaAdvancedSettings
-	err := service.Client.Read(advancedSettingsEndpoint, &hashes)
+func (service *Service) Update(hashes BaAdvancedSettings) (*BaAdvancedSettings, error) {
+	_, err := service.Client.UpdateWithPut(advancedSettingsEndpoint, hashes)
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +42,6 @@ func (service *Service) GetFileHashCount() (*FileHashCount, error) {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning used andd unusedd quota for blocking MD5 file hashes from Get: %v", hashes)
+	service.Client.Logger.Printf("[DEBUG] Returning used andd unused quota for blocking MD5 file hashes from Get: %v", hashes)
 	return &hashes, nil
 }

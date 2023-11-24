@@ -1,10 +1,50 @@
 package sandbox_settings
 
 import (
+	"bufio"
+	"os"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
+
+func TestUpdateBaAdvancedSettings(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := &Service{Client: client}
+
+	// Read hashes from a file
+	file, err := os.Open("hashes.txt")
+	if err != nil {
+		t.Fatalf("Error opening hashes file: %v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var hashes []string
+	for scanner.Scan() {
+		hashes = append(hashes, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		t.Fatalf("Error reading hashes from file: %v", err)
+	}
+
+	// Define the desired settings for the update
+	desiredSettings := BaAdvancedSettings{
+		FileHashesToBeBlocked: hashes,
+	}
+
+	updatedSettings, err := service.Update(desiredSettings)
+	if err != nil {
+		t.Errorf("Error updating BA Advanced Settings: %v", err)
+	}
+	if updatedSettings == nil {
+		t.Error("Expected updated BA Advanced Settings, got nil")
+	}
+}
 
 func TestGetBaAdvancedSettings(t *testing.T) {
 	client, err := tests.NewZiaClient()
@@ -21,25 +61,6 @@ func TestGetBaAdvancedSettings(t *testing.T) {
 	if settings == nil {
 		t.Error("Expected BA Advanced Settings, got nil")
 	}
-	// You can add more assertions here to validate the contents of `settings`
-}
-
-func TestUpdateBaAdvancedSettings(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	service := &Service{Client: client}
-
-	updatedSettings, err := service.Update()
-	if err != nil {
-		t.Errorf("Error updating BA Advanced Settings: %v", err)
-	}
-	if updatedSettings == nil {
-		t.Error("Expected updated BA Advanced Settings, got nil")
-	}
-	// You can add more assertions here to validate the contents of `updatedSettings`
 }
 
 func TestGetFileHashCount(t *testing.T) {
@@ -57,5 +78,26 @@ func TestGetFileHashCount(t *testing.T) {
 	if hashCount == nil {
 		t.Error("Expected file hash count, got nil")
 	}
-	// You can add more assertions here to validate the contents of `hashCount`
+}
+
+func TestEmptyHashList(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := &Service{Client: client}
+
+	// Define the desired settings for the update
+	desiredSettings := BaAdvancedSettings{
+		FileHashesToBeBlocked: []string{},
+	}
+
+	updatedSettings, err := service.Update(desiredSettings)
+	if err != nil {
+		t.Errorf("Error updating BA Advanced Settings: %v", err)
+	}
+	if updatedSettings == nil {
+		t.Error("Expected updated BA Advanced Settings, got nil")
+	}
 }
