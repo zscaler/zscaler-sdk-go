@@ -99,18 +99,18 @@ func TestDLPWebRule(t *testing.T) {
 
 	service := New(client)
 	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		OcrEnabled:               true,
+		Name:        name,
+		Description: name,
+		Order:       1,
+		Rank:        7,
+		State:       "ENABLED",
+		Action:      "BLOCK",
+		// OcrEnabled:               true,
 		ZscalerIncidentReceiver:  true,
 		WithoutContentInspection: false,
 		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+		FileTypes:                []string{"YAML_FILES", "GO_FILES"},
 	}
 
 	var createdResource *WebDLPRules
