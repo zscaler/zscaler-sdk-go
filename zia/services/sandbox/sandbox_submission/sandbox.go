@@ -1,6 +1,5 @@
 package sandbox_submission
 
-/*
 import (
 	"bytes"
 	"compress/gzip"
@@ -78,4 +77,3 @@ func (service *Service) scanFile(filename string, file io.Reader, force, endpoin
 
 	return &result, nil
 }
-*/

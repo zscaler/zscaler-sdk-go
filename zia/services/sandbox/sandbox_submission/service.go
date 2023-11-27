@@ -1,6 +1,5 @@
 package sandbox_submission
 
-/*
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 )
@@ -14,4 +13,3 @@ func New(c *zia.Client) *Service {
 		Client: c,
 	}
 }
-*/
