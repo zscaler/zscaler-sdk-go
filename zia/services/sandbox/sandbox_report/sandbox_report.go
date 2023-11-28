@@ -1,6 +1,10 @@
 package sandbox_report
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+)
 
 const (
 	reportQuotaEndpoint = "/sandbox/report/quota"
@@ -16,8 +20,69 @@ type RatingQuota struct {
 }
 
 type ReportMD5Hash struct {
-	MD5Hash string `json:"md5Hash,omitempty"`
-	Details string `json:"details,omitempty"`
+	FullDetails *FullDetails `json:"Full Details,omitempty"`
+	Summary     *Summary     `json:"Summary,omitempty"`
+	MD5Hash     string       `json:"md5Hash,omitempty"`
+	Details     string       `json:"details,omitempty"`
+}
+
+type Summary struct {
+	Detail         *SummaryDetail  `json:"Summary,omitempty"`
+	Classification *Classification `json:"Classification,omitempty"`
+	FileProperties *FileProperties `json:"FileProperties,omitempty"`
+}
+
+type SummaryDetail struct {
+	Status    string `json:"Status,omitempty"`
+	Category  string `json:"Category,omitempty"`
+	FileType  string `json:"FileType,omitempty"`
+	StartTime int    `json:"StartTime,omitempty"`
+	Duration  int    `json:"Duration,omitempty"`
+}
+
+type Classification struct {
+	Type            string `json:"Type,omitempty"`
+	Category        string `json:"Category,omitempty"`
+	Score           int    `json:"Score,omitempty"`
+	DetectedMalware string `json:"DetectedMalware,omitempty"`
+}
+
+type FileProperties struct {
+	FileType          string `json:"FileType,omitempty"`
+	FileSize          int    `json:"FileSize,omitempty"`
+	MD5               string `json:"MD5,omitempty"`
+	SHA1              string `json:"SHA1,omitempty"`
+	SHA256            string `json:"Sha256,omitempty"`
+	Issuer            string `json:"Issuer,omitempty"`
+	DigitalCerificate string `json:"DigitalCerificate,omitempty"`
+	SSDeep            string `json:"SSDeep,omitempty"`
+	RootCA            string `json:"RootCA,omitempty"`
+}
+
+type FullDetails struct {
+	Summary        *SummaryDetail         `json:"Summary,omitempty"`
+	Classification *Classification        `json:"Classification,omitempty"`
+	FileProperties *FileProperties        `json:"FileProperties,omitempty"`
+	Origin         *Origin                `json:"Origin,omitempty"`
+	SystemSummary  []*SystemSummaryDetail `json:"SystemSummary,omitempty"`
+	Spyware        []*common.SandboxRSS   `json:"Spyware,omitempty"`
+	Networking     []*common.SandboxRSS   `json:"Networking,omitempty"`
+	SecurityBypass []*common.SandboxRSS   `json:"SecurityBypass,omitempty"`
+	Exploit        []*common.SandboxRSS   `json:"Exploit,omitempty"`
+	Stealth        []*common.SandboxRSS   `json:"Stealth,omitempty"`
+	Persistence    []*common.SandboxRSS   `json:"Persistence,omitempty"`
+}
+
+type Origin struct {
+	Risk     string `json:"Risk,omitempty"`
+	Language string `json:"Language,omitempty"`
+	Country  string `json:"Country,omitempty"`
+}
+
+type SystemSummaryDetail struct {
+	Risk             string   `json:"Risk,omitempty"`
+	Signature        string   `json:"Signature,omitempty"`
+	SignatureSources []string `json:"SignatureSources,omitempty"`
 }
 
 func (service *Service) GetRatingQuota() ([]RatingQuota, error) {

@@ -46,6 +46,12 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
+type SandboxRSS struct {
+	Risk             string `json:"Risk,omitempty"`
+	Signature        string `json:"Signature,omitempty"`
+	SignatureSources string `json:"SignatureSources,omitempty"`
+}
+
 // GetPageSize returns the page size.
 func GetPageSize() int {
 	return pageSize
