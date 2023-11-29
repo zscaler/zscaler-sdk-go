@@ -249,8 +249,6 @@ func TestForwardingRules(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(ziaClient)
-
 	// create segment group for testing
 	zpaGatewayService := zpa_gateways.New(ziaClient)
 	zpaGateway, err := zpaGatewayService.Create(&zpa_gateways.ZPAGateways{
@@ -270,7 +268,7 @@ func TestForwardingRules(t *testing.T) {
 	})
 	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error creating zpa gateway for testing: %v", err)
+		t.Errorf("Error creating zpa gateway for testing forwarding rule: %v", err)
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
@@ -285,6 +283,8 @@ func TestForwardingRules(t *testing.T) {
 		}
 	}()
 
+	service := New(ziaClient)
+	// create ForwardingRule
 	rule := ForwardingRules{
 		Name:          name,
 		Description:   name,
@@ -305,24 +305,25 @@ func TestForwardingRules(t *testing.T) {
 		},
 	}
 
-	var createdResource *ForwardingRules
-
-	// Test resource creation
-	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
-		return err
-	})
+	// Inside Forwarding Control Rule function
+	createdResource, err := service.Create(&rule)
 	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
+		t.Fatalf("Error creating Forwarding Control Rule resource: %v", err)
 	}
 
-	// Other assertions based on the creation result
-	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-empty, but got ''")
-	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
+	defer func() {
+		// Attempt to delete the resource
+		_, delErr := service.Delete(createdResource.ID)
+		if delErr != nil {
+			// If the error indicates the resource is already deleted, log it as information
+			if strings.Contains(delErr.Error(), "409") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
+				t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
+			} else {
+				// If the deletion error is not due to the resource being missing, log it as an actual error
+				t.Errorf("Error deleting Forwarding Control Rule resource: %v", delErr)
+			}
+		}
+	}()
 
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)

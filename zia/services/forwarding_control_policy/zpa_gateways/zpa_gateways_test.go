@@ -1,7 +1,6 @@
 package zpa_gateways
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 	"strconv"
@@ -311,12 +310,12 @@ func TestZPAGateways(t *testing.T) {
 	retrievedResource.LastModifiedTime = 0
 
 	//Convert the retrievedResource to JSON and log it before the update
-	var jsonRepresentation []byte
-	jsonRepresentation, err = json.MarshalIndent(retrievedResource, "", "  ")
-	if err != nil {
-		t.Fatalf("Error converting retrievedResource to JSON before update: %v", err)
-	}
-	t.Logf("JSON Payload being sent for update:\n%s", string(jsonRepresentation))
+	// var jsonRepresentation []byte
+	// jsonRepresentation, err = json.MarshalIndent(retrievedResource, "", "  ")
+	// if err != nil {
+	// 	t.Fatalf("Error converting retrievedResource to JSON before update: %v", err)
+	// }
+	// t.Logf("JSON Payload being sent for update:\n%s", string(jsonRepresentation))
 
 	err = retryOnConflict(func() error {
 		_, err = service.Update(createdResource.ID, retrievedResource)

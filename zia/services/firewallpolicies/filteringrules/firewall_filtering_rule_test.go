@@ -1,4 +1,4 @@
-package dlp_web_rules
+package filteringrules
 
 import (
 	"fmt"
@@ -98,21 +98,17 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+	rule := FirewallFilteringRules{
+		Name:           name,
+		Description:    name,
+		Order:          1,
+		Rank:           7,
+		Action:         "ALLOW",
+		DestCountries:  []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications: []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
 	}
 
-	var createdResource *WebDLPRules
+	var createdResource *FirewallFilteringRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
@@ -216,8 +212,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*FirewallFilteringRules, error) {
+	var resource *FirewallFilteringRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {

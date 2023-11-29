@@ -1,6 +1,5 @@
 package usermanagement
 
-/*
 import (
 	"log"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/groups"
 )
 
 const (
@@ -73,7 +74,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAll()
+	resources, err := service.GetAllUsers()
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -101,13 +102,13 @@ func TestUserManagement(t *testing.T) {
 	}
 	// For groups, you might want to make sure you get a list of groups instead, as per your structure.
 	// Assuming a function similar to GetAll for departments exists for groups:
-	groupService := New(client)
+	groupService := groups.New(client)
 	groups, err := groupService.GetAllGroups()
 	if err != nil || len(groups) == 0 {
 		t.Fatalf("Error retrieving groups or no groups found: %v", err)
 	}
 	// Retrieve the first department and group (for simplicity; you can enhance this to retrieve by name or other criteria)
-	departmentService := New(client)
+	departmentService := departments.New(client)
 	departments, err := departmentService.GetAll()
 	if err != nil || len(departments) == 0 {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
@@ -116,7 +117,7 @@ func TestUserManagement(t *testing.T) {
 
 	user := Users{
 		Name:     name,
-		Email:    email + "@securitygeek.io",
+		Email:    email + "@bd-hashicorp.com",
 		Password: rPassword,
 		Comments: updateComments,
 		Groups: []common.IDNameExtensions{
@@ -236,4 +237,3 @@ func tryRetrieveResource(s *Service, id int) (*Users, error) {
 
 	return nil, err
 }
-*/
