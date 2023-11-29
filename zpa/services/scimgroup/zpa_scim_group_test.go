@@ -1,10 +1,12 @@
 package scimgroup
 
 import (
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
@@ -103,6 +105,54 @@ func TestSCIMGroup(t *testing.T) {
 	} else {
 		t.Logf("No SCIM groups retrieved for IdP ID: %s", testIdpId)
 	}
+}
+
+func TestSCIMGroupGetByNameWithSort(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	testIdpId := getTestIdpId(t)
+
+	scimGroupService := New(client)
+
+	// Retrieve a list of SCIM groups
+	scimGroups, _, err := scimGroupService.GetAllByIdpId(testIdpId)
+	if err != nil {
+		t.Fatalf("Error retrieving SCIM groups: %v", err)
+	}
+	if len(scimGroups) == 0 {
+		t.Fatalf("No SCIM groups found to test with")
+	}
+
+	// Check if we have enough groups for the test, otherwise return an error
+	if len(scimGroups) < 100 {
+		t.Fatalf("Not enough SCIM groups available for testing. Required: 50, Found: %d", len(scimGroups))
+	}
+
+	// Randomly pick a group name from the first 50 groups
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(500)
+	testScimName := scimGroups[randomIndex].Name
+
+	// Test with both DESC and ASC sort orders
+	for _, sortOrder := range []SortOrder{DESCSortOrder, ASCSortOrder} {
+		// Define sorting parameters
+		sortField := IDSortField
+
+		// Call GetByName with sorting parameters
+		scimGroup, _, err := scimGroupService.WithSort(sortField, sortOrder).GetByName(testScimName, testIdpId)
+		if err != nil {
+			t.Errorf("Error getting SCIM group by name with sort order %s: %v", sortOrder, err)
+			continue
+		}
+
+		if scimGroup == nil {
+			t.Errorf("No SCIM group named '%s' found with sort order %s", testScimName, sortOrder)
+		}
+	}
+
 }
 
 func TestResponseFormatValidation(t *testing.T) {
