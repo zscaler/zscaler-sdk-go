@@ -105,7 +105,6 @@ func TestDLPWebRule(t *testing.T) {
 		Rank:                     7,
 		State:                    "ENABLED",
 		Action:                   "BLOCK",
-		OcrEnabled:               true,
 		ZscalerIncidentReceiver:  true,
 		WithoutContentInspection: false,
 		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
