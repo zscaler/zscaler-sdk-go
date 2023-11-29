@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
@@ -38,6 +39,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 			return resp, nil
 		}
 	}
+
 	resp, err := c.HTTPClient.Do(req)
 	logger.LogResponse(c.Logger, resp, start, reqID)
 	if err != nil {
@@ -51,7 +53,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 }
 
 // Request ... // Needs to review this function.
-func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
+func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -59,8 +61,18 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	var req *http.Request
 	var resp *http.Response
 	var err error
-
-	req, err = http.NewRequest(method, c.URL+endpoint, bytes.NewReader(data))
+	params := ""
+	if urlParams != nil {
+		params = urlParams.Encode()
+	}
+	if strings.Contains(endpoint, "?") && params != "" {
+		endpoint += "&" + params
+	} else if params != "" {
+		endpoint += "?" + params
+	}
+	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
+	isSandboxRequest := baseUrl == c.GetSandboxURL()
+	req, err = http.NewRequest(method, fullURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +80,23 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
-	reqID := uuid.New().String()
-	logger.LogRequest(c.Logger, req, reqID)
-	start := time.Now()
-	for retry := 1; retry <= 5; retry++ {
+	var otherHeaders map[string]string
+	if !isSandboxRequest {
 		err = c.checkSession()
 		if err != nil {
 			return nil, err
+		}
+		otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
+	}
+	reqID := uuid.New().String()
+	start := time.Now()
+	logger.LogRequest(c.Logger, req, reqID, otherHeaders, !isSandboxRequest)
+	for retry := 1; retry <= 5; retry++ {
+		if !isSandboxRequest {
+			err = c.checkSession()
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		resp, err = c.do(req, start, reqID)
@@ -93,12 +115,17 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 		}
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	bodyResp, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	return bodyResp, nil
+}
+
+// Request ... // Needs to review this function.
+func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
+	return c.GenericRequest(c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
 }
 
 func (client *Client) WithFreshCache() {

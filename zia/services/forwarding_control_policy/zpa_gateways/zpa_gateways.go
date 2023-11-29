@@ -46,7 +46,7 @@ type ZPAGateways struct {
 // The ZPA Server Group that is configured for Source IP Anchoring
 type ZPAServerGroup struct {
 	//Identifier that uniquely identifies an entity
-	ID string `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 
 	// The name of the Application Segment
 	Name string `json:"name,omitempty"`
@@ -62,7 +62,7 @@ type ZPAServerGroup struct {
 // All the Application Segments that are associated with the selected ZPA Server Group for which Source IP Anchoring is enabled
 type ZPAAppSegments struct {
 	//Identifier that uniquely identifies an entity
-	ID string `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 
 	// The name of the Application Segment
 	Name string `json:"name,omitempty"`

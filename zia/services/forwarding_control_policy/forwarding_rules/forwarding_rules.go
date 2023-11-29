@@ -269,6 +269,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]ForwardingRules, error) {
 	var rules []ForwardingRules
 	err := common.ReadAllPages(service.Client, forwardingRulesEndpoint, &rules)

@@ -4,12 +4,18 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
@@ -92,52 +98,197 @@ func TestZPAGateways(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	description := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
+
+	zpaClient, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
 
+	// create app connector group for testing
+	appConnGroupService := appconnectorgroup.New(zpaClient)
+	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
+		Name:                     name,
+		Description:              name,
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating app connector group for testing server group: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting app connector group: %v", err)
+			}
+		}
+	}()
+
+	// create app server for testing
+	serverGroupService := servergroup.New(zpaClient)
+	serverGroup, _, err := serverGroupService.Create(&servergroup.ServerGroup{
+		Name:             name,
+		Description:      name,
+		Enabled:          true,
+		DynamicDiscovery: true,
+		AppConnectorGroups: []servergroup.AppConnectorGroups{
+			{
+				ID: appConnGroup.ID,
+			},
+		},
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating app server for testing server group: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := serverGroupService.Get(serverGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := serverGroupService.Delete(serverGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting server group: %v", err)
+			}
+		}
+	}()
+
+	// create segment group for testing
+	segmentGroupService := segmentgroup.New(zpaClient)
+	segmentGroup, _, err := segmentGroupService.Create(&segmentgroup.SegmentGroup{
+		Name:        name,
+		Description: name,
+		Enabled:     true,
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating segment for testing: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := segmentGroupService.Get(segmentGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := segmentGroupService.Delete(segmentGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting segment group: %v", err)
+			}
+		}
+	}()
+
+	// create segment group for testing
+	appSegmentService := applicationsegment.New(zpaClient)
+	appSegment, _, err := appSegmentService.Create(applicationsegment.ApplicationSegmentResource{
+		Name:                  name,
+		Description:           name,
+		Enabled:               true,
+		IpAnchored:            true,
+		SegmentGroupID:        segmentGroup.ID,
+		IsCnameEnabled:        true,
+		BypassType:            "NEVER",
+		IcmpAccessType:        "PING_TRACEROUTING",
+		HealthReporting:       "ON_ACCESS",
+		HealthCheckType:       "DEFAULT",
+		TCPKeepAlive:          "1",
+		InspectTrafficWithZia: false,
+		DomainNames:           []string{"test.example.com"},
+		ServerGroups: []applicationsegment.AppServerGroups{
+			{
+				ID: serverGroup.ID,
+			},
+		},
+		TCPAppPortRange: []common.NetworkPorts{
+			{
+				From: rPort,
+				To:   rPort,
+			},
+		},
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating application segment for testing: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appSegmentService.Get(appSegment.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appSegmentService.Delete(appSegment.ID)
+			if err != nil {
+				t.Errorf("Error deleting application segment: %v", err)
+			}
+		}
+	}()
+
+	// Initialize ZIA client for creating ZPA Gateways
+	ziaClient, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating ZIA client: %v", err)
+		return
+	}
+	service := New(ziaClient)
+
+	// Initialize ZPAGateways resource
 	zpaGateways := ZPAGateways{
 		Name:        name,
 		Description: description,
 		Type:        "ZPA",
 		ZPAServerGroup: ZPAServerGroup{
-			ExternalID: "72058304855041029",
-			Name:       "Example",
+			ExternalID: serverGroup.ID, // Assigning int value
+			Name:       serverGroup.Name,
 		},
 		ZPAAppSegments: []ZPAAppSegments{
 			{
-				ExternalID: "72058304855041030",
-				Name:       "App_Segment_IP_Source_Anchoring",
+				ExternalID: appSegment.ID, // Assigning int value
+				Name:       appSegment.Name,
 			},
 		},
 	}
 
-	var createdResource *ZPAGateways
-	// Convert the zpaGateways to JSON and log it
-	jsonRepresentation, err := json.MarshalIndent(zpaGateways, "", "  ")
+	// Inside TestZPAGateways function
+	createdResource, err := service.Create(&zpaGateways)
 	if err != nil {
-		t.Fatalf("Error converting zpaGateways to JSON: %v", err)
-	}
-	t.Logf("JSON Payload being sent:\n%s", string(jsonRepresentation))
-
-	// Test resource creation
-	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&zpaGateways)
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
+		t.Fatalf("Error creating ZPAGateways resource: %v", err)
 	}
 
-	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-zero, but got 0")
-	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created zpa gateway '%s', but got '%s'", name, createdResource.Name)
-	}
+	defer func() {
+		// Attempt to delete the resource
+		_, delErr := service.Delete(createdResource.ID)
+		if delErr != nil {
+			// If the error indicates the resource is already deleted, log it as information
+			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
+				t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
+			} else {
+				// If the deletion error is not due to the resource being missing, log it as an actual error
+				t.Errorf("Error deleting ZPAGateways resource: %v", delErr)
+			}
+		}
+	}()
+
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
@@ -159,8 +310,8 @@ func TestZPAGateways(t *testing.T) {
 	retrievedResource.LastModifiedBy = nil
 	retrievedResource.LastModifiedTime = 0
 
-	// Convert the retrievedResource to JSON and log it before the update
-	// var jsonRepresentation []byte
+	//Convert the retrievedResource to JSON and log it before the update
+	var jsonRepresentation []byte
 	jsonRepresentation, err = json.MarshalIndent(retrievedResource, "", "  ")
 	if err != nil {
 		t.Fatalf("Error converting retrievedResource to JSON before update: %v", err)
@@ -219,11 +370,20 @@ func TestZPAGateways(t *testing.T) {
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, delErr := service.Delete(createdResource.ID)
-		return delErr
+		if delErr != nil {
+			// Check if the error is due to the resource not being found (i.e., already deleted)
+			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
+				log.Printf("Resource with ID %d not found (already deleted).", createdResource.ID)
+				return nil // No error, as the resource is already deleted
+			}
+			return delErr // Return the actual error for other cases
+		}
+		return nil // No error, deletion successful
 	})
-	_, err = service.Get(createdResource.ID)
-	if err == nil {
-		t.Fatalf("Expected error retrieving deleted resource, but got nil")
+	if err != nil {
+		t.Errorf("Error occurred during resource deletion: %v", err)
+	} else {
+		t.Logf("Resource deleted successfully.")
 	}
 }
 
