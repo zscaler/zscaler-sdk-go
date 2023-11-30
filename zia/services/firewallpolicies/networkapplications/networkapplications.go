@@ -2,6 +2,8 @@ package networkapplications
 
 import (
 	"fmt"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
@@ -26,4 +28,10 @@ func (service *Service) GetNetworkApplication(id, locale string) (*NetworkApplic
 		return nil, err
 	}
 	return &networkApplications, nil
+}
+
+func (service *Service) GetAll() ([]NetworkApplications, error) {
+	var networkApplications []NetworkApplications
+	err := common.ReadAllPages(service.Client, networkApplicationsEndpoint, &networkApplications)
+	return networkApplications, err
 }
