@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.2.0 (December xx, 2023)
+
+## Notes
+- Golang: **v1.20**
+
+### Fixes
+
+- [PR #189](https://github.com/zscaler/zscaler-sdk-go/pull/189) Fixed missing `microtenantId` and `microtenantName` attributes in ZPA browser access package.
+
 # 2.1.6 (November 17, 2023)
 
 ## Notes

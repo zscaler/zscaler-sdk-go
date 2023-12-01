@@ -22,9 +22,12 @@ type AppSegmentPRA struct {
 	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
+	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	Applications              string                   `json:"applications,omitempty"`
 	BypassType                string                   `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
+	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
 	IpAnchored                bool                     `json:"ipAnchored"`
@@ -46,7 +49,7 @@ type AppSegmentPRA struct {
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
 	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
+	UDPProtocols              []string                 `json:"udpProtocols,omitempty"`
 	SRAAppsDto                []SRAAppsDto             `json:"sraApps,omitempty"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`

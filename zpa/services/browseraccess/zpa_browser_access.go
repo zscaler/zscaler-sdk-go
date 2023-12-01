@@ -15,15 +15,18 @@ const (
 
 type BrowserAccess struct {
 	ID                        string                   `json:"id,omitempty"`
+	Name                      string                   `json:"name,omitempty"`
+	Description               string                   `json:"description,omitempty"`
 	SegmentGroupID            string                   `json:"segmentGroupId,omitempty"`
 	SegmentGroupName          string                   `json:"segmentGroupName,omitempty"`
 	BypassType                string                   `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
+	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	DomainNames               []string                 `json:"domainNames,omitempty"`
-	Name                      string                   `json:"name,omitempty"`
-	Description               string                   `json:"description,omitempty"`
 	Enabled                   bool                     `json:"enabled"`
 	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
+	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
@@ -33,6 +36,8 @@ type BrowserAccess struct {
 	IsIncompleteDRConfig      bool                     `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                     `json:"useInDrMode"`
 	InspectTrafficWithZia     bool                     `json:"inspectTrafficWithZia"`
+	MicroTenantID             string                   `json:"microtenantId,omitempty"`
+	MicroTenantName           string                   `json:"microtenantName,omitempty"`
 	HealthReporting           string                   `json:"healthReporting,omitempty"`
 	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
 	CreationTime              string                   `json:"creationTime,omitempty"`
@@ -81,6 +86,8 @@ type ClientlessApps struct {
 	ModifiedTime        string `json:"modifiedTime,omitempty"`
 	Name                string `json:"name,omitempty"`
 	Path                string `json:"path,omitempty"`
+	MicroTenantID       string `json:"microtenantId,omitempty"`
+	MicroTenantName     string `json:"microtenantName,omitempty"`
 	TrustUntrustedCert  bool   `json:"trustUntrustedCert"`
 }
 
