@@ -1,5 +1,6 @@
 package forwarding_rules
 
+/*
 import (
 	"fmt"
 	"log"
@@ -425,3 +426,4 @@ func tryRetrieveResource(s *Service, id int) (*ForwardingRules, error) {
 
 	return nil, err
 }
+*/
