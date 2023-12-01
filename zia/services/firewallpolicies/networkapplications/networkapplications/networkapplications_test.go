@@ -2,6 +2,7 @@ package networkapplications
 
 import (
 	"fmt"
+	"math/rand"
 	"net/url"
 	"testing"
 
@@ -110,6 +111,105 @@ func TestLocaleSpecificResponse(t *testing.T) {
 			}
 
 			// Here, you can add additional validations specific to the locale, if necessary
+		})
+	}
+}
+
+func TestDeprecatedApplications(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	nwApplications, err := service.GetFirstPage("")
+	if err != nil {
+		t.Fatalf("Error getting network applications: %v", err)
+	}
+
+	var foundDeprecated bool
+	for _, app := range nwApplications {
+		if app.Deprecated {
+			foundDeprecated = true
+			t.Logf("Found deprecated application: %s", app.ID)
+			break
+		}
+	}
+
+	if !foundDeprecated {
+		t.Logf("No deprecated applications found in the first page")
+	}
+}
+
+func TestDescriptionField(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	nwApplications, err := service.GetFirstPage("")
+	if err != nil {
+		t.Fatalf("Error getting network applications: %v", err)
+	}
+
+	for _, app := range nwApplications {
+		if app.Description == "" {
+			t.Errorf("Description is missing for application ID: %s", app.ID)
+		}
+	}
+}
+
+func TestInvalidLocaleResponses(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	invalidLocales := []string{"abc", "xyz", "123"}
+	for _, locale := range invalidLocales {
+		t.Run("Invalid Locale: "+locale, func(t *testing.T) {
+			_, err := service.GetFirstPage(locale)
+			if err == nil {
+				t.Errorf("Expected error for invalid locale %s, but got none", locale)
+			}
+		})
+	}
+}
+
+func TestRandomizedLocaleSpecificResponse(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	locales := []string{"en-US", "de-DE", "es-ES", "fr-FR", "ja-JP", "zh-CN"}
+
+	for _, locale := range locales {
+		t.Run("Locale: "+locale, func(t *testing.T) {
+			applications, err := service.GetFirstPage(locale)
+			if err != nil {
+				t.Errorf("Error fetching applications for locale %s: %v", locale, err)
+				return
+			}
+
+			if len(applications) == 0 {
+				t.Errorf("No applications found for locale %s", locale)
+				return
+			}
+
+			// Randomly select an application from the first page
+			randomApp := applications[rand.Intn(len(applications))]
+			t.Log("Testing application: " + randomApp.ID + " in locale " + locale)
+
+			// Validate the randomly selected application
+			// Additional test logic for the selected application can be added here
 		})
 	}
 }
