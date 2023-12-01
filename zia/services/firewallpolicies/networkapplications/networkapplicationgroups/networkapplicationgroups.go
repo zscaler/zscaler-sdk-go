@@ -1,4 +1,4 @@
-package networkapplications
+package networkapplicationgroups
 
 import (
 	"errors"
