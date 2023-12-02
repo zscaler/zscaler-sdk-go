@@ -80,7 +80,7 @@ type Locations struct {
 	// Note: For sub-locations, this attribute is a read-only field as the value is inherited from the parent location.
 	XFFForwardEnabled bool `json:"xffForwardEnabled"`
 
-	//Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
+	// Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
 	SurrogateIP bool `json:"surrogateIP"`
 
 	// Idle Time to Disassociation. The user mapping idle time (in minutes) is required if a Surrogate IP is enabled

@@ -25,7 +25,7 @@ type GetDepartmentsFilters struct {
 	common.GetFromToFilters
 	// The Zscaler location (ID). You can add multiple location IDs.
 	Loc []int `json:"loc,omitempty" url:"loc,omitempty"`
-	//The search string used to support search by name or department ID.
+	// The search string used to support search by name or department ID.
 	Search string `json:"search,omitempty" url:"search,omitempty"`
 }
 
@@ -33,7 +33,7 @@ type GetLocationsFilters struct {
 	common.GetFromToFilters
 	// The Zscaler location (ID). You can add multiple location IDs.
 	Loc []int `json:"loc,omitempty" url:"loc,omitempty"`
-	//The search string used to support search by name or department ID.
+	// The search string used to support search by name or department ID.
 	Search string `json:"q,omitempty" url:"q,omitempty"`
 }
 

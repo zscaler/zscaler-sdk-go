@@ -329,6 +329,7 @@ func (service *Service) UpdateMakeDefault(certID int, certificates *Intermediate
 	service.Client.Logger.Printf("[DEBUG]returning default certificate from update: %d", updatedIntermediateCaCert.ID)
 	return updatedIntermediateCaCert, nil
 }
+
 func (service *Service) Delete(certID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID))
 	if err != nil {

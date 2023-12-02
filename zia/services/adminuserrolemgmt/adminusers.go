@@ -13,7 +13,7 @@ const (
 )
 
 type AdminUsers struct {
-	//Admin or auditor's user ID
+	// Admin or auditor's user ID
 	ID int `json:"id,omitempty"`
 
 	// Admin or auditor's login name. loginName is in email format and uses the domain name associated to the Zscaler account

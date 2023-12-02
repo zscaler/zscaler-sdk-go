@@ -73,7 +73,7 @@ type URLFilteringRule struct {
 	// Action taken when traffic matches rule criteria
 	Action string `json:"action,omitempty"`
 
-	//If set to true, the CIPA Compliance rule is enabled
+	// If set to true, the CIPA Compliance rule is enabled
 	Ciparule bool `json:"ciparule,omitempty"`
 
 	// List of device trust levels for which the rule must be applied. This field is applicable for devices that are managed using Zscaler Client Connector. The trust levels are assigned to the devices based on your posture configurations in the Zscaler Client Connector Portal. If no value is set, this field is ignored during the policy evaluation.

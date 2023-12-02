@@ -14,7 +14,6 @@ const (
 )
 
 type WebDLPRules struct {
-
 	// The unique identifier for the DLP policy rule.
 	ID int `json:"id,omitempty"`
 

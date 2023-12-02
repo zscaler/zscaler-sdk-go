@@ -61,6 +61,7 @@ type SandboxRSS struct {
 func GetPageSize() int {
 	return pageSize
 }
+
 func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil

@@ -45,7 +45,7 @@ type ZPAGateways struct {
 
 // The ZPA Server Group that is configured for Source IP Anchoring
 type ZPAServerGroup struct {
-	//Identifier that uniquely identifies an entity
+	// Identifier that uniquely identifies an entity
 	ID int `json:"id,omitempty"`
 
 	// The name of the Application Segment
@@ -61,7 +61,7 @@ type ZPAServerGroup struct {
 
 // All the Application Segments that are associated with the selected ZPA Server Group for which Source IP Anchoring is enabled
 type ZPAAppSegments struct {
-	//Identifier that uniquely identifies an entity
+	// Identifier that uniquely identifies an entity
 	ID int `json:"id,omitempty"`
 
 	// The name of the Application Segment
@@ -133,6 +133,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]ZPAGateways, error) {
 	var rules []ZPAGateways
 	err := common.ReadAllPages(service.Client, zpaGatewaysEndpoint, &rules)

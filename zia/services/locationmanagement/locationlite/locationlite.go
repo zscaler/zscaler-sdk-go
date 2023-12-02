@@ -29,7 +29,7 @@ type LocationLite struct {
 	// Note: For sub-locations, this attribute is a read-only field as the value is inherited from the parent location.
 	XFFForwardEnabled bool `json:"xffForwardEnabled,omitempty"`
 
-	//Enable AUP. When set to true, AUP is enabled for the location. To learn more, see About End User Notifications
+	// Enable AUP. When set to true, AUP is enabled for the location. To learn more, see About End User Notifications
 	AUPEnabled bool `json:"aupEnabled"`
 
 	// Enable Caution. When set to true, a caution notifcation is enabled for the location
@@ -41,7 +41,7 @@ type LocationLite struct {
 	// For First Time AUP Behavior, Force SSL Inspection. When set, Zscaler forces SSL Inspection in order to enforce AUP for HTTPS traffic.
 	AUPForceSSLInspection bool `json:"aupForceSslInspection"`
 
-	//Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
+	// Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
 	SurrogateIP bool `json:"surrogateIP"`
 
 	// Enforce Surrogate IP for Known Browsers. When set to true, IP Surrogate is enforced for all known browsers

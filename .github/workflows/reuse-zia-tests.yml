@@ -16,6 +16,14 @@ on:
         required: true
       ZIA_SANDBOX_TOKEN:
         required: true
+      ZPA_CLIENT_ID:
+        required: true
+      ZPA_CLIENT_SECRET:
+        required: true
+      ZPA_CUSTOMER_ID:
+        required: true
+      ZPA_CLOUD:
+        required: true
       ZSCALER_SDK_TEST_SWEEP:
         required: true
 
@@ -46,6 +54,10 @@ jobs:
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
   zia-test-macos:
@@ -76,4 +88,8 @@ jobs:
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
           ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}

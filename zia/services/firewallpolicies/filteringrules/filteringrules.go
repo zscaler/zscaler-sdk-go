@@ -169,6 +169,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
 	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)

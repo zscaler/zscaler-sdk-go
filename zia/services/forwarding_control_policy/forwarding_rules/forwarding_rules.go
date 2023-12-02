@@ -119,7 +119,7 @@ type ForwardingRules struct {
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
 
 	// User-defined network service applications to which the rule applies.
-	//If not set, the rule is not restricted to a specific network service application.
+	// If not set, the rule is not restricted to a specific network service application.
 	NwApplications []string `json:"nwApplications,omitempty"`
 
 	// User-defined network service application groups to which the rule applied.

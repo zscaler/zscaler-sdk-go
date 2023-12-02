@@ -109,7 +109,7 @@ func TestDLPWebRule(t *testing.T) {
 		WithoutContentInspection: false,
 		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		//FileTypes:                []string{"YAML_FILES", "GO_FILES"},
+		// FileTypes:                []string{"YAML_FILES", "GO_FILES"},
 	}
 
 	var createdResource *WebDLPRules

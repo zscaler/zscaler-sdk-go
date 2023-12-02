@@ -91,6 +91,7 @@ func (service *Service) Delete(serviceID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAllNetworkServices() ([]NetworkServices, error) {
 	var networkServices []NetworkServices
 	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)

@@ -152,7 +152,6 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 			t.Errorf("No SCIM group named '%s' found with sort order %s", testScimName, sortOrder)
 		}
 	}
-
 }
 
 func TestResponseFormatValidation(t *testing.T) {
