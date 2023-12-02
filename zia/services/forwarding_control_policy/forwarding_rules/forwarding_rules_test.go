@@ -1,23 +1,15 @@
 package forwarding_rules
 
-/*
 import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
@@ -96,196 +88,16 @@ func cleanResources() {
 	}
 }
 
-func TestForwardingRules(t *testing.T) {
+func TestForwardingRulesDirect(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
-
-	zpaClient, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-		return
-	}
-
-	// create app connector group for testing
-	appConnGroupService := appconnectorgroup.New(zpaClient)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
-		Name:                     name,
-		Description:              name,
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating app connector group for testing server group: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := appConnGroupService.Delete(appConnGroup.ID)
-			if err != nil {
-				t.Errorf("Error deleting app connector group: %v", err)
-			}
-		}
-	}()
-
-	// create app server for testing
-	serverGroupService := servergroup.New(zpaClient)
-	serverGroup, _, err := serverGroupService.Create(&servergroup.ServerGroup{
-		Name:             name,
-		Description:      name,
-		Enabled:          true,
-		DynamicDiscovery: true,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
-			{
-				ID: appConnGroup.ID,
-			},
-		},
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating app server for testing server group: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := serverGroupService.Get(serverGroup.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := serverGroupService.Delete(serverGroup.ID)
-			if err != nil {
-				t.Errorf("Error deleting server group: %v", err)
-			}
-		}
-	}()
-
-	// create segment group for testing
-	segmentGroupService := segmentgroup.New(zpaClient)
-	segmentGroup, _, err := segmentGroupService.Create(&segmentgroup.SegmentGroup{
-		Name:        name,
-		Description: name,
-		Enabled:     true,
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating segment for testing: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentGroupService.Get(segmentGroup.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := segmentGroupService.Delete(segmentGroup.ID)
-			if err != nil {
-				t.Errorf("Error deleting segment group: %v", err)
-			}
-		}
-	}()
-
-	// create segment group for testing
-	appSegmentService := applicationsegment.New(zpaClient)
-	appSegment, _, err := appSegmentService.Create(applicationsegment.ApplicationSegmentResource{
-		Name:                  name,
-		Description:           name,
-		Enabled:               true,
-		IpAnchored:            true,
-		SegmentGroupID:        segmentGroup.ID,
-		IsCnameEnabled:        true,
-		BypassType:            "NEVER",
-		IcmpAccessType:        "PING_TRACEROUTING",
-		HealthReporting:       "ON_ACCESS",
-		HealthCheckType:       "DEFAULT",
-		TCPKeepAlive:          "1",
-		InspectTrafficWithZia: false,
-		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
-			{
-				ID: serverGroup.ID,
-			},
-		},
-		TCPAppPortRange: []common.NetworkPorts{
-			{
-				From: rPort,
-				To:   rPort,
-			},
-		},
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating application segment for testing: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appSegmentService.Get(appSegment.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := appSegmentService.Delete(appSegment.ID)
-			if err != nil {
-				t.Errorf("Error deleting application segment: %v", err)
-			}
-		}
-	}()
-
+	randomSrcIPAddress, _ := acctest.RandIpAddress("192.168.100.0/24")
 	ziaClient, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// create segment group for testing
-	zpaGatewayService := zpa_gateways.New(ziaClient)
-	zpaGateway, err := zpaGatewayService.Create(&zpa_gateways.ZPAGateways{
-		Name:        name,
-		Description: name,
-		Type:        "ZPA",
-		ZPAServerGroup: zpa_gateways.ZPAServerGroup{
-			ExternalID: serverGroup.ID,
-			Name:       serverGroup.Name,
-		},
-		ZPAAppSegments: []zpa_gateways.ZPAAppSegments{
-			{
-				ExternalID: appSegment.ID,
-				Name:       appSegment.Name,
-			},
-		},
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating zpa gateway for testing forwarding rule: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, getErr := zpaGatewayService.Get(zpaGateway.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := zpaGatewayService.Delete(zpaGateway.ID)
-			if err != nil {
-				t.Errorf("Error deleting zpa gateway: %v", err)
-			}
-		}
-	}()
-
 	service := New(ziaClient)
-	// create ForwardingRule
 	rule := ForwardingRules{
 		Name:          name,
 		Description:   name,
@@ -293,17 +105,9 @@ func TestForwardingRules(t *testing.T) {
 		Rank:          7,
 		State:         "ENABLED",
 		Type:          "FORWARDING",
-		ForwardMethod: "ZPA",
-		ZPAGateway: ZPAGateway{
-			ID:   zpaGateway.ID,
-			Name: zpaGateway.Name,
-		},
-		ZPAAppSegments: []ZPAAppSegments{
-			{
-				ExternalID: appSegment.ID,
-				Name:       appSegment.Name,
-			},
-		},
+		ForwardMethod: "DIRECT",
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		SrcIps:        []string{randomSrcIPAddress},
 	}
 
 	// Inside Forwarding Control Rule function
@@ -426,4 +230,3 @@ func tryRetrieveResource(s *Service, id int) (*ForwardingRules, error) {
 
 	return nil, err
 }
-*/
