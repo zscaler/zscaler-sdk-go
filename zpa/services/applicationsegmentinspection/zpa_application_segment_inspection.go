@@ -18,13 +18,16 @@ type AppSegmentInspection struct {
 	SegmentGroupID            string                   `json:"segmentGroupId,omitempty"`
 	SegmentGroupName          string                   `json:"segmentGroupName,omitempty"`
 	BypassType                string                   `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	DomainNames               []string                 `json:"domainNames,omitempty"`
 	Name                      string                   `json:"name,omitempty"`
 	Description               string                   `json:"description,omitempty"`
 	Enabled                   bool                     `json:"enabled"`
+	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
 	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
 	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled,omitempty"`
+	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
@@ -43,6 +46,8 @@ type AppSegmentInspection struct {
 	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
+	TCPProtocols              []string                 `json:"tcpProtocols,omitempty"`
+	UDPProtocols              []string                 `json:"udpProtocols,omitempty"`
 	InspectionAppDto          []InspectionAppDto       `json:"inspectionApps,omitempty"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	AppServerGroups           []AppServerGroups        `json:"serverGroups,omitempty"`
@@ -91,19 +96,20 @@ type AppsConfig struct {
 }
 
 type InspectionAppDto struct {
-	ID                  string `json:"id,omitempty"`
-	AppID               string `json:"appId,omitempty"`
-	Name                string `json:"name,omitempty"`
-	Description         string `json:"description,omitempty"`
-	Enabled             bool   `json:"enabled"`
-	ApplicationPort     string `json:"applicationPort,omitempty"`
-	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
-	CertificateID       string `json:"certificateId,omitempty"`
-	CertificateName     string `json:"certificateName,omitempty"`
-	Domain              string `json:"domain,omitempty"`
-	TrustUntrustedCert  bool   `json:"trustUntrustedCert"`
-	MicroTenantID       string `json:"microtenantId,omitempty"`
-	MicroTenantName     string `json:"microtenantName,omitempty"`
+	ID                  string   `json:"id,omitempty"`
+	AppID               string   `json:"appId,omitempty"`
+	Name                string   `json:"name,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Enabled             bool     `json:"enabled"`
+	ApplicationPort     string   `json:"applicationPort,omitempty"`
+	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
+	CertificateID       string   `json:"certificateId,omitempty"`
+	CertificateName     string   `json:"certificateName,omitempty"`
+	Domain              string   `json:"domain,omitempty"`
+	Protocols           []string `json:"protocols,omitempty"`
+	TrustUntrustedCert  bool     `json:"trustUntrustedCert"`
+	MicroTenantID       string   `json:"microtenantId,omitempty"`
+	MicroTenantName     string   `json:"microtenantName,omitempty"`
 }
 
 type AppServerGroups struct {
