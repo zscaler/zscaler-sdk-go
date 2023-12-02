@@ -1,4 +1,4 @@
-package usermanagement
+package users
 
 import (
 	"log"
@@ -117,7 +117,7 @@ func TestUserManagement(t *testing.T) {
 
 	user := Users{
 		Name:     name,
-		Email:    email + "@bd-hashicorp.com",
+		Email:    email + "@securitygeek.io",
 		Password: rPassword,
 		Comments: updateComments,
 		Groups: []common.IDNameExtensions{

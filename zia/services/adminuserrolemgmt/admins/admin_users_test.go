@@ -1,4 +1,4 @@
-package adminuserrolemgmt
+package admins
 
 import (
 	"log"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/roles"
 )
 
 // Constants for conflict retries
@@ -126,7 +127,7 @@ func TestUserManagement(t *testing.T) {
 		return
 	}
 
-	roleService := New(client)
+	roleService := roles.New(client)
 	roles, err := roleService.GetAllAdminRoles()
 	if err != nil || len(roles) == 0 {
 		t.Fatalf("Error retrieving roles or no roles found: %v", err)
@@ -238,7 +239,7 @@ func TestUserManagement(t *testing.T) {
 		_, delErr := service.DeleteAdminUser(createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = service.GetAdminUsers(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}

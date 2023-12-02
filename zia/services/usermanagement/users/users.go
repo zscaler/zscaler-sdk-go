@@ -1,4 +1,4 @@
-package usermanagement
+package users
 
 import (
 	"errors"
@@ -74,7 +74,7 @@ func (service *Service) Get(userID int) (*Users, error) {
 
 func (service *Service) GetUserByName(userName string) (*Users, error) {
 	var users []Users
-	err := service.Client.Read(fmt.Sprintf("%s?name=%s", usersEndpoint, url.QueryEscape(userName)), &users)
+	err := service.Client.Read(fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(service.sortBy, service.sortOrder)), &users)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (service *Service) Delete(userID int) (*http.Response, error) {
 
 func (service *Service) GetAllUsers() ([]Users, error) {
 	var users []Users
-	err := common.ReadAllPages(service.Client, usersEndpoint, &users)
+	err := common.ReadAllPages(service.Client, usersEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &users)
 	if err != nil {
 		return nil, err
 	}
