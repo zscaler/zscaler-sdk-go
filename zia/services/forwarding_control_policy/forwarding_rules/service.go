@@ -1,4 +1,4 @@
-package applicationservicesgroup
+package forwarding_rules
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"

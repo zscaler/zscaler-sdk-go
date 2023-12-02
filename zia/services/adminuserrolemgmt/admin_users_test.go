@@ -137,8 +137,8 @@ func TestUserManagement(t *testing.T) {
 	service := New(client)
 	admin := AdminUsers{
 		UserName:                    name + name,
-		LoginName:                   name + "@securitygeek.io",
-		Email:                       email + "@securitygeek.io",
+		LoginName:                   name + "@bd-hashicorp.com",
+		Email:                       email + "@bd-hashicorp.com",
 		Comments:                    updateComments,
 		Password:                    rPassword,
 		IsPasswordLoginAllowed:      true,
@@ -165,7 +165,7 @@ func TestUserManagement(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	expectedLoginName := name + "@securitygeek.io"
+	expectedLoginName := name + "@bd-hashicorp.com"
 	if createdResource.LoginName != expectedLoginName {
 		t.Errorf("Expected created admin user '%s', but got '%s'", expectedLoginName, createdResource.LoginName)
 	}

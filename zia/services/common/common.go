@@ -21,6 +21,11 @@ type IDExtensions struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
+type IDName struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type UserGroups struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`

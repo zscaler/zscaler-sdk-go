@@ -125,8 +125,6 @@ func TestServerGroup(t *testing.T) {
 		}
 	}()
 
-	// creat
-
 	service := New(client)
 
 	appGroup := ServerGroup{

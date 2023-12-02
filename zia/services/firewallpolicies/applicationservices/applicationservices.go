@@ -41,3 +41,9 @@ func (service *Service) GetByName(serviceName string) (*ApplicationServicesLite,
 	}
 	return nil, fmt.Errorf("no application services found with name: %s", serviceName)
 }
+
+func (service *Service) GetAll() ([]ApplicationServicesLite, error) {
+	var appServices []ApplicationServicesLite
+	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServices)
+	return appServices, err
+}

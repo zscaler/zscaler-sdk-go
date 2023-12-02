@@ -1,4 +1,4 @@
-package dlp_web_rules
+package forwarding_rules
 
 import (
 	"fmt"
@@ -88,48 +88,47 @@ func cleanResources() {
 	}
 }
 
-func TestDLPWebRule(t *testing.T) {
+func TestForwardingRulesDirect(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-
-	client, err := tests.NewZiaClient()
+	randomSrcIPAddress, _ := acctest.RandIpAddress("192.168.100.0/24")
+	ziaClient, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+	service := New(ziaClient)
+	rule := ForwardingRules{
+		Name:          name,
+		Description:   name,
+		Order:         1,
+		Rank:          7,
+		State:         "ENABLED",
+		Type:          "FORWARDING",
+		ForwardMethod: "DIRECT",
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		SrcIps:        []string{randomSrcIPAddress},
 	}
 
-	var createdResource *WebDLPRules
-
-	// Test resource creation
-	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
-		return err
-	})
+	// Inside Forwarding Control Rule function
+	createdResource, err := service.Create(&rule)
 	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
+		t.Fatalf("Error creating Forwarding Control Rule resource: %v", err)
 	}
 
-	// Other assertions based on the creation result
-	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-empty, but got ''")
-	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
+	defer func() {
+		// Attempt to delete the resource
+		_, delErr := service.Delete(createdResource.ID)
+		if delErr != nil {
+			// If the error indicates the resource is already deleted, log it as information
+			if strings.Contains(delErr.Error(), "409") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
+				t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
+			} else {
+				// If the deletion error is not due to the resource being missing, log it as an actual error
+				t.Errorf("Error deleting Forwarding Control Rule resource: %v", delErr)
+			}
+		}
+	}()
 
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
@@ -216,8 +215,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*ForwardingRules, error) {
+	var resource *ForwardingRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
