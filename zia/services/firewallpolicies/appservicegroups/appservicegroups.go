@@ -1,4 +1,4 @@
-package applicationservicesgroup
+package appservicegroups
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func (service *Service) Get(serviceGroupID int) (*ApplicationServicesGroupLite, 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning application services group from Get: %d", appServicesGroupLite.ID)
+	service.Client.Logger.Printf("[DEBUG]Returning app services group from Get: %d", appServicesGroupLite.ID)
 	return &appServicesGroupLite, nil
 }
 
@@ -39,5 +39,11 @@ func (service *Service) GetByName(serviceGroupName string) (*ApplicationServices
 			return &appServicesGroupLite, nil
 		}
 	}
-	return nil, fmt.Errorf("no application services group found with name: %s", serviceGroupName)
+	return nil, fmt.Errorf("no app services group found with name: %s", serviceGroupName)
+}
+
+func (service *Service) GetAll() ([]ApplicationServicesGroupLite, error) {
+	var appServiceGroups []ApplicationServicesGroupLite
+	err := common.ReadAllPages(service.Client, appServicesGroupLiteEndpoint, &appServiceGroups)
+	return appServiceGroups, err
 }

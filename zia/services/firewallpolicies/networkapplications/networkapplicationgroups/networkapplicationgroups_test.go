@@ -1,7 +1,6 @@
-package dlp_web_rules
+package networkapplicationgroups
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -72,7 +71,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAll()
+	resources, err := service.GetAllNetworkApplicationGroups()
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -88,44 +87,35 @@ func cleanResources() {
 	}
 }
 
-func TestDLPWebRule(t *testing.T) {
+func TestNetworkApplicationGroups(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
 	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		//FileTypes:                []string{"YAML_FILES", "GO_FILES"},
+
+	nwAppgroup := NetworkApplicationGroups{
+		Name:                name,
+		Description:         name,
+		NetworkApplications: []string{"APNS", "APPSTORE", "DICT"},
 	}
 
-	var createdResource *WebDLPRules
+	var createdResource *NetworkApplicationGroups
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, err = service.Create(&nwAppgroup)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-empty, but got ''")
+		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
@@ -140,22 +130,22 @@ func TestDLPWebRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := service.GetNetworkApplicationGroups(createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
+		t.Errorf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
@@ -165,29 +155,27 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedResource, err = service.GetNetworkApplicationGroupsByName(updateName)
 	if err != nil {
-		t.Fatalf("Error retrieving resource by name: %v", err)
+		t.Errorf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedByNameResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+	if retrievedResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
-
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	resources, err := service.GetAllNetworkApplicationGroups()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(allResources) == 0 {
+	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range allResources {
+	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -196,32 +184,24 @@ func TestDLPWebRule(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
-
-	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
-
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = service.GetNetworkApplicationGroups(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*NetworkApplicationGroups, error) {
+	var resource *NetworkApplicationGroups
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = s.GetNetworkApplicationGroups(id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
