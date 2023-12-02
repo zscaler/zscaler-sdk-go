@@ -101,7 +101,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	}
 	start := time.Now()
 	reqID := uuid.NewString()
-	logger.LogRequest(client.Config.Logger, req, reqID, nil)
+	logger.LogRequest(client.Config.Logger, req, reqID, nil, true)
 	resp, err := client.do(req, v, start, reqID)
 	if err != nil {
 		return nil, err

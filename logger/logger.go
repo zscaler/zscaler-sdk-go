@@ -78,7 +78,7 @@ func LogRequestSensitive(logger Logger, req *http.Request, reqID string, sensiti
 	}
 }
 
-func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParams map[string]string) {
+func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParams map[string]string, body bool) {
 	if logger != nil && req != nil {
 		l, ok := logger.(*defaultLogger)
 		if ok && l.Verbose {
@@ -86,7 +86,7 @@ func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParam
 				req.Header.Add(k, v)
 			}
 		}
-		out, err := httputil.DumpRequestOut(req, true)
+		out, err := httputil.DumpRequestOut(req, body)
 		if err == nil {
 			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
 		}

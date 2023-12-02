@@ -46,6 +46,7 @@ type Client struct {
 	sync.Mutex
 	userName         string
 	password         string
+	cloud            string
 	apiKey           string
 	session          *Session
 	sessionRefreshed time.Time     // Also indicates last usage
@@ -120,6 +121,7 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		userName:         username,
 		password:         password,
 		apiKey:           apiKey,
+		cloud:            ziaCloud,
 		HTTPClient:       httpClient,
 		URL:              url,
 		Logger:           logger,
@@ -453,4 +455,12 @@ func (c *Client) Logout() error {
 		return err
 	}
 	return nil
+}
+
+func (c *Client) GetSandboxURL() string {
+	return "https://csbapi." + c.cloud + ".net"
+}
+
+func (c *Client) GetSandboxToken() string {
+	return os.Getenv("ZIA_SANDBOX_TOKEN")
 }
