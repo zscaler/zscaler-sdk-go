@@ -25,8 +25,9 @@ help:
 	@echo "$(COLOR_OK)  build                 Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zcon        	Run only zcon integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zia        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
 
 build:
@@ -40,6 +41,12 @@ test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
 	@make test:zpa
 	@make test:zia
+
+test\:integration\:zcon:
+	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
+	go test -failfast -race ./zcon/... -race -coverprofile zconcoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
+	go tool cover -func zconcoverage.txt | grep total:
+	rm -rf zconcoverage.txt
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"

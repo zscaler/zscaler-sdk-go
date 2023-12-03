@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
@@ -27,20 +28,6 @@ func NewZpaClient() (*zpa.Client, error) {
 	}
 	zpaClient := zpa.NewClient(config)
 	return zpaClient, nil
-}
-
-func NewZiaClient() (*zia.Client, error) {
-	username := os.Getenv("ZIA_USERNAME")
-	password := os.Getenv("ZIA_PASSWORD")
-	apiKey := os.Getenv("ZIA_API_KEY")
-	ziaCloud := os.Getenv("ZIA_CLOUD")
-
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating client failed: %v\n", err)
-		return nil, err
-	}
-	return cli, nil
 }
 
 func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
@@ -68,6 +55,34 @@ func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
 		},
 	}
 	return client, mux, server
+}
+
+func NewZiaClient() (*zia.Client, error) {
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
+
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
+}
+
+func NewZConClient() (*zcon.Client, error) {
+	username := os.Getenv("ZCON_USERNAME")
+	password := os.Getenv("ZCON_PASSWORD")
+	apiKey := os.Getenv("ZCON_API_KEY")
+	zconCloud := os.Getenv("ZCON_CLOUD")
+
+	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.

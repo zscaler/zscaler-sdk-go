@@ -141,6 +141,17 @@ jobs:
     needs:
       - zia-zsbeta-tests
 
+  zcon-zs3-tests:
+    uses: ./.github/workflows/reuse-zcon-tests.yml
+    with:
+      environment: ZCON_ZSCALER_THREE
+    secrets:
+      ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+      ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+      ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+      ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+
   zdx-tenant01:
     uses: ./.github/workflows/reuse-zdx-tests.yml
     with:
