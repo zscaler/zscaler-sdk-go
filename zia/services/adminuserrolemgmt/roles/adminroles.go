@@ -1,4 +1,4 @@
-package adminuserrolemgmt
+package roles
 
 import (
 	"fmt"

@@ -39,7 +39,7 @@ func (service *Service) GetDepartments(departmentID int) (*Department, error) {
 
 func (service *Service) GetDepartmentsByName(departmentName string) (*Department, error) {
 	var departments []Department
-	err := common.ReadAllPages(service.Client, departmentEndpoint, &departments)
+	err := common.ReadAllPages(service.Client, departmentEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &departments)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +53,6 @@ func (service *Service) GetDepartmentsByName(departmentName string) (*Department
 
 func (service *Service) GetAll() ([]Department, error) {
 	var departments []Department
-	err := common.ReadAllPages(service.Client, departmentEndpoint, &departments)
+	err := common.ReadAllPages(service.Client, departmentEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &departments)
 	return departments, err
 }

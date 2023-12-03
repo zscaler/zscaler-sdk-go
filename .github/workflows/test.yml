@@ -73,10 +73,9 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
       ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-    # needs:
-      # - zpa-qa-tenant01
-      # - zpa-qa-tenant02
-      # - zpa-preview-tenant01
+    needs:
+      - zpa-qa-tenant01
+      - zpa-qa-tenant02
 
   zpa-prod-tenant01:
     uses: ./.github/workflows/reuse-zpa-tests.yml
@@ -88,11 +87,10 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
       ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-    # needs:
-      # - zpa-qa-tenant01
-      # - zpa-qa-tenant02
-      # - zpa-preview-tenant01
-      # - zpa-beta-tenant01
+    needs:
+      - zpa-qa-tenant01
+      - zpa-qa-tenant02
+      - zpa-beta-tenant01
 
   zia-zsbeta-tests:
     uses: ./.github/workflows/reuse-zia-tests.yml
@@ -123,6 +121,8 @@ jobs:
   #     ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
   #     ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
   #     ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+  #   needs:
+  #     - zia-zsbeta-tests
 
   zia-zs3-tests:
     uses: ./.github/workflows/reuse-zia-tests.yml
@@ -138,6 +138,8 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
       ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    needs:
+      - zia-zsbeta-tests
 
   zdx-tenant01:
     uses: ./.github/workflows/reuse-zdx-tests.yml

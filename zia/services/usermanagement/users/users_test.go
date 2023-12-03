@@ -1,4 +1,4 @@
-package usermanagement
+package users
 
 import (
 	"log"

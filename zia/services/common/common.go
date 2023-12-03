@@ -107,3 +107,29 @@ func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) e
 	*list = pageItems
 	return nil
 }
+
+type SortOrder string
+type SortField string
+
+const (
+	ASCSortOrder          SortOrder = "ASC"
+	DESCSortOrder                   = "DESC"
+	IDSortField           SortField = "id"
+	NameSortField                   = "name"
+	CreationTimeSortField           = "creationTime"
+	ModifiedTimeSortField           = "modifiedTime"
+)
+
+func GetSortParams(sortBy SortField, sortOrder SortOrder) string {
+	params := ""
+	if sortBy != "" {
+		params = "sortBy=" + string(sortBy)
+	}
+	if sortOrder != "" {
+		if params != "" {
+			params += "&"
+		}
+		params += "sortOrder=" + string(sortOrder)
+	}
+	return params
+}

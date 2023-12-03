@@ -76,7 +76,7 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           max_attempts: 3
-          timeout_minutes: 10  # Adjust as needed
+          timeout_minutes: 90  # Adjust as needed
           command: |
             make test:integration:zia
             make ziaActivator
