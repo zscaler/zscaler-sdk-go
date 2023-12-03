@@ -16,19 +16,19 @@ const (
 )
 
 type EcGroup struct {
-	ID                    int             `json:"id,omitempty"`
-	Name                  string          `json:"name,omitempty"`
-	Description           string          `json:"desc,omitempty"`
-	DeployType            string          `json:"deployType,omitempty"`
-	Status                []string        `json:"status,omitempty"`
-	Platform              string          `json:"platform,omitempty"`
-	AWSAvailabilityZone   string          `json:"awsAvailabilityZone,omitempty"`
-	AzureAvailabilityZone string          `json:"azureAvailabilityZone,omitempty"`
-	MaxEcCount            int             `json:"maxEcCount,omitempty"`
-	TunnelMode            string          `json:"tunnelMode,omitempty"`
-	Location              *common.UIDName `json:"location,omitempty"`
-	ProvTemplate          *common.UIDName `json:"provTemplate,omitempty"`
-	ECVMs                 []common.ECVMs  `json:"ecVMs,omitempty"`
+	ID                    int                    `json:"id,omitempty"`
+	Name                  string                 `json:"name,omitempty"`
+	Description           string                 `json:"desc,omitempty"`
+	DeployType            string                 `json:"deployType,omitempty"`
+	Status                []string               `json:"status,omitempty"`
+	Platform              string                 `json:"platform,omitempty"`
+	AWSAvailabilityZone   string                 `json:"awsAvailabilityZone,omitempty"`
+	AzureAvailabilityZone string                 `json:"azureAvailabilityZone,omitempty"`
+	MaxEcCount            int                    `json:"maxEcCount,omitempty"`
+	TunnelMode            string                 `json:"tunnelMode,omitempty"`
+	Location              *common.GeneralPurpose `json:"location,omitempty"`
+	ProvTemplate          *common.GeneralPurpose `json:"provTemplate,omitempty"`
+	ECVMs                 []common.ECVMs         `json:"ecVMs,omitempty"`
 }
 
 type ManagementNw struct {

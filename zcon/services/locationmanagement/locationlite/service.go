@@ -1,4 +1,4 @@
-package locationtemplates
+package locationlite
 
 import "github.com/zscaler/zscaler-sdk-go/v2/zcon"
 

@@ -1,4 +1,4 @@
-package locationtemplates
+package locationtemplate
 
 import (
 	"fmt"

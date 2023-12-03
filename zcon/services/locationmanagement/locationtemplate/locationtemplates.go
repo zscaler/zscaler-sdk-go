@@ -1,4 +1,4 @@
-package locationtemplates
+package locationtemplate
 
 import (
 	"errors"
@@ -34,7 +34,7 @@ type LocationTemplate struct {
 	LastModTime int `json:"lastModTime,omitempty"`
 
 	// User ID of last time Cloud & Branch Connector location template was modified
-	LastModUid *common.UIDName `json:"lastModUid,omitempty"`
+	LastModUid *common.GeneralPurpose `json:"lastModUid,omitempty"`
 }
 
 type LocationTemplateDetails struct {

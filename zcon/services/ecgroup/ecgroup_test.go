@@ -45,4 +45,11 @@ func TestECGroup(t *testing.T) {
 		t.Errorf("Cloud & Branch Connector Group name does not match: expected %s, got %s", name, ecgroupLite.Name)
 		return
 	}
+	// Negative Test: Try to retrieve a EcGroup with a non-existent name
+	nonExistentName := "ThisEcGroupDoesNotExist"
+	_, err = service.GetByName(nonExistentName)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
 }

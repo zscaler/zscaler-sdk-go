@@ -16,7 +16,8 @@ type IDNameExtensions struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-type UIDName struct {
+// General purpose object. This is an immutable reference to an entity, which mainly consists of ID and name.
+type GeneralPurpose struct {
 	ID              int                    `json:"id,omitempty"`
 	Name            string                 `json:"name,omitempty"`
 	IsNameL10nTag   bool                   `json:"isNameL10nTag,omitempty"`

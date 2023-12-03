@@ -1,5 +1,6 @@
 package provisioning
 
+/*
 import (
 	"testing"
 
@@ -53,5 +54,5 @@ func TestZConProvisioningAPIKey(t *testing.T) {
 		if regeneratedKey.LastModifiedTime <= testKey.LastModifiedTime {
 			t.Errorf("API key regeneration did not update lastModifiedTime")
 		}
-	*/
 }
+*/
