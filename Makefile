@@ -104,12 +104,12 @@ zconActivator: DESTINATION=/usr/local/bin
 endif
 zconActivator:
 	@echo "==> Installing zconActivator cli $(DESTINATION)"
-	cd ./zcon/activation_cli
+	cd ./zcon/services/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/zconActivator ./zcon/services/activation_cli/zconActivator.go
-	ziaActivator
+	zconActivator
 
 .PHONY: fmt
 fmt: check-fmt # Format the code
