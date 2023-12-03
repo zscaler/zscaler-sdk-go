@@ -1,6 +1,7 @@
-package networkapplications
+package filteringrules
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -71,7 +72,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAllNetworkApplicationGroups()
+	resources, err := service.GetAll()
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -87,35 +88,40 @@ func cleanResources() {
 	}
 }
 
-func TestNetworkApplicationGroups(t *testing.T) {
+func TestDLPWebRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+
 	service := New(client)
-
-	nwAppgroup := NetworkApplicationGroups{
-		Name:                name,
-		Description:         name,
-		NetworkApplications: []string{"APNS", "APPSTORE", "DICT"},
+	rule := FirewallFilteringRules{
+		Name:           name,
+		Description:    name,
+		Order:          1,
+		Rank:           7,
+		Action:         "ALLOW",
+		DestCountries:  []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications: []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
 	}
 
-	var createdResource *NetworkApplicationGroups
+	var createdResource *FirewallFilteringRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&nwAppgroup)
+		createdResource, err = service.Create(&rule)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
+	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
-		t.Error("Expected created resource ID to be non-empty, but got ''")
+		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
@@ -130,22 +136,22 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.GetNetworkApplicationGroups(createdResource.ID)
+	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
@@ -155,27 +161,29 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetNetworkApplicationGroupsByName(updateName)
+	retrievedByNameResource, err := service.GetByName(updateName)
 	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	if retrievedByNameResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, err := service.GetAllNetworkApplicationGroups()
+	allResources, err := service.GetAll()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(resources) == 0 {
+	if len(allResources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
+
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range resources {
+	for _, resource := range allResources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -184,24 +192,32 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
+	// Introduce a delay before deleting
+	time.Sleep(5 * time.Second) // sleep for 5 seconds
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
+		_, getErr := service.Get(createdResource.ID)
+		if getErr != nil {
+			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
+		}
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
-	_, err = service.GetNetworkApplicationGroups(createdResource.ID)
+	_, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*NetworkApplicationGroups, error) {
-	var resource *NetworkApplicationGroups
+func tryRetrieveResource(s *Service, id int) (*FirewallFilteringRules, error) {
+	var resource *FirewallFilteringRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.GetNetworkApplicationGroups(id)
+		resource, err = s.Get(id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}

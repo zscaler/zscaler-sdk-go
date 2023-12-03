@@ -110,6 +110,13 @@ func TestURLCategories(t *testing.T) {
 		Urls: []string{
 			".coupons.com",
 		},
+		IPRanges: []string{
+			"3.217.228.0/25",
+			"3.235.112.0/24",
+		},
+		IPRangesRetainingParentCategory: []string{
+			"13.107.6.152/31",
+		},
 	}
 
 	var createdResource *URLCategory

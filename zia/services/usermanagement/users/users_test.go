@@ -1,7 +1,6 @@
-package dlp_web_rules
+package users
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -10,6 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/groups"
 )
 
 const (
@@ -72,7 +74,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAll()
+	resources, err := service.GetAllUsers()
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -88,47 +90,61 @@ func cleanResources() {
 	}
 }
 
-func TestDLPWebRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-
+func TestUserManagement(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	rPassword := acctest.RandString(10)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
+		return
 	}
-
+	// For groups, you might want to make sure you get a list of groups instead, as per your structure.
+	// Assuming a function similar to GetAll for departments exists for groups:
+	groupService := groups.New(client)
+	groups, err := groupService.GetAllGroups()
+	if err != nil || len(groups) == 0 {
+		t.Fatalf("Error retrieving groups or no groups found: %v", err)
+	}
+	// Retrieve the first department and group (for simplicity; you can enhance this to retrieve by name or other criteria)
+	departmentService := departments.New(client)
+	departments, err := departmentService.GetAll()
+	if err != nil || len(departments) == 0 {
+		t.Fatalf("Error retrieving departments or no departments found: %v", err)
+	}
 	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+
+	user := Users{
+		Name:     name,
+		Email:    email + "@bd-hashicorp.com",
+		Password: rPassword,
+		Comments: updateComments,
+		Groups: []common.IDNameExtensions{
+			{
+				ID: groups[0].ID, // For simplicity, we are associating the first group; you can extend this to multiple groups
+			},
+		},
+		Department: &common.UserDepartment{
+			ID: departments[0].ID, // Associating the first department for simplicity
+		},
 	}
 
-	var createdResource *WebDLPRules
-
+	var createdResource *Users
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, err = service.Create(&user)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created user '%s', but got '%s'", name, createdResource.Name)
 	}
 
 	// Test resource retrieval
@@ -140,13 +156,13 @@ func TestDLPWebRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved user '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -160,34 +176,32 @@ func TestDLPWebRule(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComments, updatedResource.Comments)
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedResource, err = service.GetUserByName(name) // Name should be prefixed with "tests-"
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedByNameResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+	if retrievedResource.Comments != updateComments {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
-
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	resources, err := service.GetAllUsers()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(allResources) == 0 {
+	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range allResources {
+	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -196,16 +210,8 @@ func TestDLPWebRule(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
-
-	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
-
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
@@ -216,8 +222,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*Users, error) {
+	var resource *Users
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
