@@ -29,11 +29,28 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
   - **Sandbox Quota MD5 Hash Report** - Gets a full (i.e., complete) or summary detail report for an MD5 hash of a file that was analyzed by Sandbox.
   - **Sandbox Advanced Settings** - Gets and Upddates the custom list of MD5 file hashes that are blocked by Sandbox.
   - **Sandbox Advanced Settings Hash Count** - Gets the used and unused quota for blocking MD5 file hashes with Sandbox
+
+- [PR #187](https://github.com/zscaler/zscaler-sdk-go/pull/187) Added ZIA Sandbox Submission:
   - **Sandbox Submission** - Submits raw or archive files (e.g., ZIP) to Sandbox for analysis. You can submit up to 100 files per day and it supports all file types that are currently supported by Sandbox.
   - **Sandbox Out-of-Band File Inspection** - Submits raw or archive files (e.g., ZIP) to the Zscaler service for out-of-band file inspection to generate real-time verdicts for known and unknown files. It leverages capabilities such as Malware Prevention, Advanced Threat Prevention, Sandbox cloud effect, AI/ML-driven file analysis, and integrated third-party threat intelligence feeds to inspect files and classify them as benign or malicious instantaneously.
 
 - [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Forwarding Control Policy endpoint `/forwardingRules`
 - [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Custom ZPA Gateway endpoint `/zpaGateways`for use with Forwarding Control policy to forward traffic to ZPA for Source IP Anchoring
+- [PR #190](https://github.com/zscaler/zscaler-sdk-go/pull/190) Added support for ZIA Group, Department and UserName using ``SortOrder`` and ``SortBy`` search criteria option
+- [PR #191](https://github.com/zscaler/zscaler-sdk-go/pull/191) Added support for Zscaler Cloud & Branch Connector API endpoints. The following endpoint resources are supported:
+  - `/adminRoles`
+  - `/adminUsers`
+  - `/ecgroup`
+  - `/ecgroup/lite`
+  - `/location`
+  - `/location/lite`
+  - `/locationTemplate`
+  - `/apiKeys`
+  - `/apiKeys/{keyId}/regenerate`
+
+### Fixes
+
+- [PR #189](https://github.com/zscaler/zscaler-sdk-go/pull/189) Fixed missing `microtenantId` and `microtenantName` attributes in ZPA browser access package.
 
 # 2.1.6 (November 17, 2023)
 
