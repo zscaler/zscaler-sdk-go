@@ -25,8 +25,9 @@ help:
 	@echo "$(COLOR_OK)  build                 Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zcon        	Run only zcon integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zia        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
 
 build:
@@ -40,6 +41,12 @@ test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
 	@make test:zpa
 	@make test:zia
+
+test\:integration\:zcon:
+	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
+	go test -failfast -race ./zcon/... -race -coverprofile zconcoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
+	go tool cover -func zconcoverage.txt | grep total:
+	rm -rf zconcoverage.txt
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
@@ -57,18 +64,20 @@ test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zpa -test.v
 
+test\:unit\zcon:
+	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -failfast -race ./tests/unit/zcon -test.v
+
 test\:unit\:zpa:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zpa -test.v
 
-test\:unit\zia:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zia -test.v
-
 test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -race ./tests/unit/zpa -test.v
+	go test -race ./tests/unit/zcon -test.v
 	go test -race ./tests/unit/zia -test.v
+	go test -race ./tests/unit/zpa -test.v
+
 
 ziaActivator: GOOS=$(shell go env GOOS)
 ziaActivator: GOARCH=$(shell go env GOARCH)
@@ -85,6 +94,22 @@ ziaActivator:
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
 	ziaActivator
+
+zconActivator: GOOS=$(shell go env GOOS)
+zconActivator: GOARCH=$(shell go env GOARCH)
+ifeq ($(OS),Windows_NT)  # is Windows_NT on XP, 2000, 7, Vista, 10...
+zconActivator: DESTINATION=C:\Windows\System32
+else
+zconActivator: DESTINATION=/usr/local/bin
+endif
+zconActivator:
+	@echo "==> Installing zconActivator cli $(DESTINATION)"
+	cd ./zcon/services/activation_cli
+	go mod vendor && go mod tidy
+	@mkdir -p $(DESTINATION)
+	@rm -f $(DESTINATION)/ziaActivator
+	@go build -o $(DESTINATION)/zconActivator ./zcon/services/activation_cli/zconActivator.go
+	zconActivator
 
 .PHONY: fmt
 fmt: check-fmt # Format the code

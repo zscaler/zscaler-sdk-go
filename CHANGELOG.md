@@ -18,6 +18,16 @@
 - [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Forwarding Control Policy endpoint `/forwardingRules`
 - [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Custom ZPA Gateway endpoint `/zpaGateways`for use with Forwarding Control policy to forward traffic to ZPA for Source IP Anchoring
 - [PR #190](https://github.com/zscaler/zscaler-sdk-go/pull/190) Added support for ZIA Group, Department and UserName using ``SortOrder`` and ``SortBy`` search criteria option
+- [PR #191](https://github.com/zscaler/zscaler-sdk-go/pull/191) Added support for Zscaler Cloud & Branch Connector API endpoints. The following endpoint resources are supported:
+  - `/adminRoles`
+  - `/adminUsers`
+  - `/ecgroup`
+  - `/ecgroup/lite`
+  - `/location`
+  - `/location/lite`
+  - `/locationTemplate`
+  - `/apiKeys`
+  - `/apiKeys/{keyId}/regenerate`
 
 ### Fixes
 
