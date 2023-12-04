@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddresslist"
+	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress/recommended_list"
 )
 
 const (
@@ -90,7 +90,7 @@ func cleanResources() {
 }
 
 func TestGRETunnel(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("104.239.237.0/24")
+	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
@@ -122,7 +122,7 @@ func TestGRETunnel(t *testing.T) {
 		}
 	}()
 
-	vipRecommended := virtualipaddresslist.New(client)
+	vipRecommended := virtualipaddress.New(client)
 	vipRecommendedList, err := vipRecommended.GetAll(ipAddress)
 	if err != nil {
 		t.Errorf("Error getting recommended vip: %v", err)

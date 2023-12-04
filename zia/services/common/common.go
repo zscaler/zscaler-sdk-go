@@ -51,6 +51,17 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
+type DatacenterSearchParameters struct {
+	RoutableIP                bool
+	WithinCountryOnly         bool
+	IncludePrivateServiceEdge bool
+	IncludeCurrentVips        bool
+	SourceIp                  string
+	Latitude                  float64
+	Longitude                 float64
+	Subcloud                  string
+}
+
 // GetPageSize returns the page size.
 func GetPageSize() int {
 	return pageSize

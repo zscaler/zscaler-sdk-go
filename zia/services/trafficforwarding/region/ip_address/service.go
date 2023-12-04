@@ -1,4 +1,4 @@
-package virtualipaddresslist
+package ip_address
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"

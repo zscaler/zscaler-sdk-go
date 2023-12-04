@@ -177,8 +177,14 @@ func (service *Service) GetDevicesByOSVersion(osVersionName string) (*Devices, e
 	return nil, fmt.Errorf("no device found for version: %s", osVersionName)
 }
 
-func (service *Service) GetAll() ([]Devices, error) {
+func (service *Service) GetAllDevices() ([]Devices, error) {
 	var owners []Devices
 	err := common.ReadAllPages(service.Client, devicesEndpoint, &owners)
+	return owners, err
+}
+
+func (service *Service) GetAllDevicesGroups() ([]Devices, error) {
+	var owners []Devices
+	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
 	return owners, err
 }
