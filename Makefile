@@ -62,6 +62,7 @@ test\:integration\:zia:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -failfast -race ./tests/unit -test.v
 	go test -failfast -race ./tests/unit/zpa -test.v
 
 test\:unit\zcon:
