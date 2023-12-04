@@ -41,6 +41,7 @@ jobs:
           max_attempts: 3
           timeout_minutes: 10  # Adjust as needed
           command: |
+            make test:unit
             make test:unit:zpa
             make test:integration:zpa
         env:
