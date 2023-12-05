@@ -1,6 +1,7 @@
 package dlp_icap_servers
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
@@ -41,6 +42,76 @@ func TestDLPICAPServer_data(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
+	}
+}
+
+func TestGetById(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	// Get all servers to find a valid ID
+	servers, err := service.GetAll()
+	if err != nil {
+		t.Fatalf("Error getting all icap servers: %v", err)
+	}
+	if len(servers) == 0 {
+		t.Fatalf("No icap servers found for testing")
+	}
+
+	// Choose the first server's ID for testing
+	testID := servers[0].ID
+
+	// Retrieve the server by ID
+	server, err := service.Get(testID)
+	if err != nil {
+		t.Errorf("Error retrieving icap server with ID %d: %v", testID, err)
+		return
+	}
+
+	// Verify the retrieved server
+	if server == nil {
+		t.Errorf("No server returned for ID %d", testID)
+		return
+	}
+
+	if server.ID != testID {
+		t.Errorf("Retrieved server ID mismatch: expected %d, got %d", testID, server.ID)
+	}
+}
+
+func TestURLAndStatusFields(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	// Retrieve all servers
+	servers, err := service.GetAll()
+	if err != nil {
+		t.Fatalf("Error getting all icap servers: %v", err)
+	}
+	if len(servers) == 0 {
+		t.Fatalf("No icap servers found for testing")
+	}
+
+	for _, server := range servers {
+		if server.URL == "" {
+			t.Errorf("URL field is empty for server ID %d", server.ID)
+		} else if !strings.HasPrefix(server.URL, "icaps://") {
+			t.Errorf("Invalid URL format for server ID %d: %s", server.ID, server.URL)
+		}
+
+		if server.Status == "" {
+			t.Errorf("Status field is empty for server ID %d", server.ID)
+		} else if server.Status != "ENABLED" && server.Status != "DISABLED" {
+			t.Errorf("Invalid status for server ID %d: %s", server.ID, server.Status)
+		}
 	}
 }
 

@@ -42,6 +42,7 @@ func TestDeviceGroup_data(t *testing.T) {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
+
 }
 
 func TestResponseFormatValidation(t *testing.T) {
