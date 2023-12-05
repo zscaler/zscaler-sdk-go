@@ -47,7 +47,6 @@ jobs:
           command: |
             make test:unit
             make test:integration:zia
-            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
