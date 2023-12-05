@@ -28,7 +28,7 @@ type GreTunnels struct {
 	LastModificationTime int `json:"lastModificationTime,omitempty"`
 
 	// Restrict the data center virtual IP addresses (VIPs) only to those within the same country as the source IP address
-	WithinCountry *bool `json:"withinCountry"`
+	WithinCountry bool `json:"withinCountry"`
 
 	// Additional information about this GRE tunnel
 	Comment string `json:"comment,omitempty"`

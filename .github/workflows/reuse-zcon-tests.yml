@@ -66,6 +66,7 @@ jobs:
             max_attempts: 3
             timeout_minutes: 90  # Adjust as needed
             command: |
+              make test:unit
               make test:integration:zcon
               make zconActivator
           env:

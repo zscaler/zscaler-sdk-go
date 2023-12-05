@@ -62,11 +62,15 @@ test\:integration\:zia:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zpa -test.v
+	go test -failfast -race ./tests/unit -test.v
 
 test\:unit\zcon:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zcon -test.v
+
+test\:unit\:zia:
+	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -failfast -race ./tests/unit/zia -test.v
 
 test\:unit\:zpa:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"

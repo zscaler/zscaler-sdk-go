@@ -138,8 +138,6 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
       ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-    needs:
-      - zia-zsbeta-tests
 
   zcon-zs3-tests:
     uses: ./.github/workflows/reuse-zcon-tests.yml

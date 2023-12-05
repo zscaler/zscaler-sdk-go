@@ -1,4 +1,4 @@
-package virtualipaddresslist
+package virtualipaddress
 
 import (
 	"fmt"

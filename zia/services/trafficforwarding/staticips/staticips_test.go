@@ -154,7 +154,7 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comment)
 	}
 
-	// Test resource retrieval by name
+	// Test resource retrieval by ip address
 	retrievedResource, err = service.GetByIPAddress(ipAddress)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
