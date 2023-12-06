@@ -100,3 +100,9 @@ func (service *Service) GetLocationLiteByName(locationLiteName string) (*Locatio
 	}
 	return nil, fmt.Errorf("no location found with name: %s", locationLiteName)
 }
+
+func (service *Service) GetAll() ([]LocationLite, error) {
+	var locations []LocationLite
+	err := common.ReadAllPages(service.Client, locationLiteEndpoint, &locations)
+	return locations, err
+}

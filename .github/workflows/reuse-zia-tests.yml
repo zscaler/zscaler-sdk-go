@@ -14,6 +14,8 @@ on:
         required: true
       ZIA_CLOUD:
         required: true
+      ZIA_SANDBOX_TOKEN:
+        required: true
       ZPA_CLIENT_ID:
         required: true
       ZPA_CLIENT_SECRET:
@@ -52,6 +54,7 @@ jobs:
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
@@ -75,8 +78,8 @@ jobs:
       - name: Run tests with retry on MacOS
         uses: nick-invision/retry@v2
         with:
-          max_attempts: 3
-          timeout_minutes: 90  # Adjust as needed
+          max_attempts: 1
+          timeout_minutes: 2  # Adjust as needed
           command: |
             make test:integration:zia
             make ziaActivator
@@ -85,6 +88,7 @@ jobs:
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}

@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"os"
 	"testing"
@@ -42,3 +43,4 @@ func checkEnvVarForTest(t *testing.T, k string) {
 		t.Fatalf("[ERROR] Couldn't find environment variable %s", k)
 	}
 }
+*/

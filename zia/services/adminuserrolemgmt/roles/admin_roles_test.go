@@ -1,9 +1,12 @@
 package roles
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestAdminRoles_data(t *testing.T) {
@@ -71,6 +74,40 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 		if role.Name == "" {
 			t.Errorf("admin role Name is empty")
+		}
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming a role with the name "Engineering" exists
+	knownName := "Super Admin"
+
+	// Case variations to test
+	variations := []string{
+		strings.ToUpper(knownName),
+		strings.ToLower(knownName),
+		cases.Title(language.English).String(knownName),
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve role with name variation: %s", variation)
+		role, err := service.GetByName(variation)
+		if err != nil {
+			t.Errorf("Error getting role with name variation '%s': %v", variation, err)
+			continue
+		}
+
+		// Check if the group's actual name matches the known name
+		if role.Name != knownName {
+			t.Errorf("Expected role name to be '%s' for variation '%s', but got '%s'", knownName, variation, role.Name)
 		}
 	}
 }
