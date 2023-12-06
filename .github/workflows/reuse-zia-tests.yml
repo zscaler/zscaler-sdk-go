@@ -78,11 +78,11 @@ jobs:
       - name: Run tests with retry on MacOS
         uses: nick-invision/retry@v2
         with:
-          max_attempts: 1
-          timeout_minutes: 2  # Adjust as needed
+          max_attempts: 3
+          timeout_minutes: 10  # Adjust as needed
           command: |
+            make test:unit
             make test:integration:zia
-            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
