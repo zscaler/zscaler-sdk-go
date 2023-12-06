@@ -132,12 +132,12 @@ func TestGRETunnel(t *testing.T) {
 		t.Error("Expected retrieved recommended vip to be non-empty, but got empty slice")
 	}
 
+	withinCountry := true // Create a boolean variable
 	service := New(client)
-
 	greTunnel := GreTunnels{
 		SourceIP:      staticIP.IpAddress,
 		Comment:       comment,
-		WithinCountry: true,
+		WithinCountry: &withinCountry,
 		IPUnnumbered:  true,
 		PrimaryDestVip: &PrimaryDestVip{
 			ID:        vipRecommendedList[0].ID,
