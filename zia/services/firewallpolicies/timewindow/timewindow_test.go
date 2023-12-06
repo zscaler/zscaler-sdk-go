@@ -87,8 +87,8 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	service := New(client)
 
-	// Assuming a service with the name "SKYPEFORBUSINESS" exists
-	knownName := "Off hours"
+	// Assuming a service with the name "Weekends" exists
+	knownName := "Weekends"
 
 	// Case variations to test
 	variations := []string{
@@ -99,15 +99,15 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve service with name variation: %s", variation)
-		service, err := service.GetTimeWindowByName(variation)
+		timeWindows, err := service.GetTimeWindowByName(variation)
 		if err != nil {
 			t.Errorf("Error getting service with name variation '%s': %v", variation, err)
 			continue
 		}
 
 		// Check if the group's actual name matches the known name
-		if service.Name != knownName {
-			t.Errorf("Expected role name to be '%s' for variation '%s', but got '%s'", knownName, variation, service.Name)
+		if timeWindows.Name != knownName {
+			t.Errorf("Expected role name to be '%s' for variation '%s', but got '%s'", knownName, variation, timeWindows.Name)
 		}
 	}
 }
