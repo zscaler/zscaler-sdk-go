@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
-	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress/recommended_list"
+	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
 )
 
 const (

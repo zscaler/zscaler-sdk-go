@@ -1,6 +1,8 @@
 package sandbox_report
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
@@ -21,11 +23,6 @@ type RatingQuota struct {
 
 type ReportMD5Hash struct {
 	Details *FullDetails `json:"details,omitempty"`
-}
-
-type ReportMD5HashApiResponse struct {
-	FullDetails *FullDetails `json:"Full Details,omitempty"`
-	Summary     *FullDetails `json:"Summary,omitempty"`
 }
 
 type Summary struct {
@@ -108,17 +105,33 @@ func (service *Service) GetReportMD5Hash(md5Hash, details string) (*ReportMD5Has
 	// Construct the endpoint URL with the md5Hash and details query parameters.
 	endpoint := fmt.Sprintf("%s%s?details=%s", reportMD5Endpoint, md5Hash, details)
 
-	var resp ReportMD5HashApiResponse
+	var resp map[string]interface{}
 	err := service.Client.Read(endpoint, &resp)
 	if err != nil {
 		return nil, err
 	}
-
+	var data interface{}
 	var report ReportMD5Hash
 	if details == "full" {
-		report.Details = resp.FullDetails
+		data = resp["Full Details"]
 	} else {
-		report.Details = resp.Summary
+		data = resp["Summary"]
+	}
+	if data == nil {
+		return nil, errors.New("got empty response")
+	}
+
+	if msg, ok := data.(string); ok {
+		return nil, errors.New(msg)
+	}
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(dataBytes, &report.Details); err != nil {
+		return nil, err
 	}
 
 	service.Client.Logger.Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
