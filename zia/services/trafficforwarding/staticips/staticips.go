@@ -25,10 +25,10 @@ type StaticIP struct {
 	GeoOverride bool `json:"geoOverride"`
 
 	// Required only if the geoOverride attribute is set. Latitude with 7 digit precision after decimal point, ranges between -90 and 90 degrees.
-	Latitude float32 `json:"latitude,omitempty"`
+	Latitude float64 `json:"latitude,omitempty"`
 
 	// Required only if the geoOverride attribute is set. Longitude with 7 digit precision after decimal point, ranges between -180 and 180 degrees.
-	Longitude float32 `json:"longitude,omitempty"`
+	Longitude float64 `json:"longitude,omitempty"`
 
 	// Indicates whether a non-RFC 1918 IP address is publicly routable. This attribute is ignored if there is no ZIA Private Service Edge associated to the organization.
 	RoutableIP bool `json:"routableIP,omitempty"`

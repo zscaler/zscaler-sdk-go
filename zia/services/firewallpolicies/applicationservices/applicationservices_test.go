@@ -1,9 +1,12 @@
 package applicationservices
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestApplicationServices_data(t *testing.T) {
@@ -71,6 +74,40 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 		if appService.Name == "" {
 			t.Errorf("application service Name is empty")
+		}
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming a service with the name "SKYPEFORBUSINESS" exists
+	knownName := "SKYPEFORBUSINESS"
+
+	// Case variations to test
+	variations := []string{
+		strings.ToUpper(knownName),
+		strings.ToLower(knownName),
+		cases.Title(language.English).String(knownName),
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve service with name variation: %s", variation)
+		service, err := service.GetByName(variation)
+		if err != nil {
+			t.Errorf("Error getting service with name variation '%s': %v", variation, err)
+			continue
+		}
+
+		// Check if the group's actual name matches the known name
+		if service.Name != knownName {
+			t.Errorf("Expected role name to be '%s' for variation '%s', but got '%s'", knownName, variation, service.Name)
 		}
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
-	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress/recommended_list"
+	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
 )
 
 const (
@@ -132,12 +132,12 @@ func TestGRETunnel(t *testing.T) {
 		t.Error("Expected retrieved recommended vip to be non-empty, but got empty slice")
 	}
 
+	withinCountry := true // Create a boolean variable
 	service := New(client)
-
 	greTunnel := GreTunnels{
 		SourceIP:      staticIP.IpAddress,
 		Comment:       comment,
-		WithinCountry: true,
+		WithinCountry: &withinCountry,
 		IPUnnumbered:  true,
 		PrimaryDestVip: &PrimaryDestVip{
 			ID:        vipRecommendedList[0].ID,

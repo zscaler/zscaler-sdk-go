@@ -1,9 +1,12 @@
 package devicegroups
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestDeviceGroup_data(t *testing.T) {
@@ -72,6 +75,40 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 		if group.Name == "" {
 			t.Errorf("device group Name is empty")
+		}
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming a group with the name "IOS" exists
+	knownName := "IOS"
+
+	// Case variations to test
+	variations := []string{
+		strings.ToUpper(knownName),
+		strings.ToLower(knownName),
+		cases.Title(language.English).String(knownName),
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve group with name variation: %s", variation)
+		group, err := service.GetDeviceGroupByName(variation)
+		if err != nil {
+			t.Errorf("Error getting device group with name variation '%s': %v", variation, err)
+			continue
+		}
+
+		// Check if the group's actual name matches the known name
+		if group.Name != knownName {
+			t.Errorf("Expected group name to be '%s' for variation '%s', but got '%s'", knownName, variation, group.Name)
 		}
 	}
 }

@@ -62,6 +62,12 @@ type DatacenterSearchParameters struct {
 	Subcloud                  string
 }
 
+type SandboxRSS struct {
+	Risk             string `json:"Risk,omitempty"`
+	Signature        string `json:"Signature,omitempty"`
+	SignatureSources string `json:"SignatureSources,omitempty"`
+}
+
 // GetPageSize returns the page size.
 func GetPageSize() int {
 	return pageSize

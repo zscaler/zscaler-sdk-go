@@ -1,9 +1,12 @@
 package departments
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestAccDepartmentManagement(t *testing.T) {
@@ -108,5 +111,39 @@ func TestAllFieldsDepartments(t *testing.T) {
 	}
 	if department.Name == "" {
 		t.Errorf("Name is empty")
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming a department with the name "Engineering" exists
+	knownName := "Engineering"
+
+	// Case variations to test
+	variations := []string{
+		strings.ToUpper(knownName),
+		strings.ToLower(knownName),
+		cases.Title(language.English).String(knownName),
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve department with name variation: %s", variation)
+		department, err := service.GetDepartmentsByName(variation)
+		if err != nil {
+			t.Errorf("Error getting department with name variation '%s': %v", variation, err)
+			continue
+		}
+
+		// Check if the department's actual name matches the known name
+		if department.Name != knownName {
+			t.Errorf("Expected department name to be '%s' for variation '%s', but got '%s'", knownName, variation, department.Name)
+		}
 	}
 }

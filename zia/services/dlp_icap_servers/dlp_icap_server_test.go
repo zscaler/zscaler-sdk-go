@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestDLPICAPServer_data(t *testing.T) {
@@ -142,6 +144,40 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 		if server.Name == "" {
 			t.Errorf("icap server Name is empty")
+		}
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming a group with the name "ZS_BD_ICAP_01" exists
+	knownName := "ZS_BD_ICAP_01"
+
+	// Case variations to test
+	variations := []string{
+		strings.ToUpper(knownName),
+		strings.ToLower(knownName),
+		cases.Title(language.English).String(knownName),
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve group with name variation: %s", variation)
+		server, err := service.GetByName(variation)
+		if err != nil {
+			t.Errorf("Error getting icap server with name variation '%s': %v", variation, err)
+			continue
+		}
+
+		// Check if the group's actual name matches the known name
+		if server.Name != knownName {
+			t.Errorf("Expected group name to be '%s' for variation '%s', but got '%s'", knownName, variation, server.Name)
 		}
 	}
 }
