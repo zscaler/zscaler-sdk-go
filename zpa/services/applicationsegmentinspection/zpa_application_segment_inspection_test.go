@@ -113,8 +113,8 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		DomainNames:      []string{"server1.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "443",
-				To:   "443",
+				From: "8443",
+				To:   "8443",
 			},
 		},
 		CommonAppsDto: CommonAppsDto{
@@ -124,7 +124,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 					Description:         name,
 					Enabled:             true,
 					AppTypes:            []string{"INSPECT"},
-					ApplicationPort:     "443",
+					ApplicationPort:     "8443",
 					ApplicationProtocol: "HTTPS",
 					Domain:              "server1.bd-hashicorp.com",
 					CertificateID:       certificateList[0].ID,

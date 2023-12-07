@@ -120,14 +120,14 @@ func TestApplicationSegment(t *testing.T) {
 				TrustUntrustedCert:  true,
 				Domain:              name + ".bd-hashicorp",
 				ApplicationProtocol: "HTTPS",
-				ApplicationPort:     "443",
+				ApplicationPort:     "9443",
 				CertificateID:       certificateList[0].ID,
 			},
 		},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "443",
-				To:   "443",
+				From: "9443",
+				To:   "9443",
 			},
 		},
 	}
