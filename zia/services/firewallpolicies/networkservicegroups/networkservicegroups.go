@@ -1,4 +1,4 @@
-package networkservices
+package networkservicegroups
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 )
 
 const (
@@ -21,16 +22,16 @@ type NetworkServiceGroups struct {
 }
 
 type Services struct {
-	ID            int            `json:"id"`
-	Name          string         `json:"name,omitempty"`
-	Tag           string         `json:"tag,omitempty"`
-	SrcTCPPorts   []NetworkPorts `json:"srcTcpPorts,omitempty"`
-	DestTCPPorts  []NetworkPorts `json:"destTcpPorts,omitempty"`
-	SrcUDPPorts   []NetworkPorts `json:"srcUdpPorts,omitempty"`
-	DestUDPPorts  []NetworkPorts `json:"destUdpPorts,omitempty"`
-	Type          string         `json:"type,omitempty"`
-	Description   string         `json:"description,omitempty"`
-	IsNameL10nTag bool           `json:"isNameL10nTag,omitempty"`
+	ID            int                            `json:"id"`
+	Name          string                         `json:"name,omitempty"`
+	Tag           string                         `json:"tag,omitempty"`
+	SrcTCPPorts   []networkservices.NetworkPorts `json:"srcTcpPorts,omitempty"`
+	DestTCPPorts  []networkservices.NetworkPorts `json:"destTcpPorts,omitempty"`
+	SrcUDPPorts   []networkservices.NetworkPorts `json:"srcUdpPorts,omitempty"`
+	DestUDPPorts  []networkservices.NetworkPorts `json:"destUdpPorts,omitempty"`
+	Type          string                         `json:"type,omitempty"`
+	Description   string                         `json:"description,omitempty"`
+	IsNameL10nTag bool                           `json:"isNameL10nTag,omitempty"`
 }
 
 func (service *Service) GetNetworkServiceGroups(serviceGroupID int) (*NetworkServiceGroups, error) {

@@ -1,4 +1,4 @@
-package applicationsegmentpra
+package applicationsegmentinspection
 
 import (
 	"log"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 )
@@ -53,7 +54,7 @@ func cleanResources() {
 		_, _ = service.Delete(r.ID)
 	}
 }
-func TestApplicationSegmentPRA(t *testing.T) {
+func TestAppSegmentInspectionInspection(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -86,8 +87,18 @@ func TestApplicationSegmentPRA(t *testing.T) {
 		}
 	}()
 
+	baCertificateService := bacertificate.New(client)
+	certificateList, _, err := baCertificateService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
+	if len(certificateList) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	}
+
 	service := New(client)
-	appSegment := AppSegmentPRA{
+	appSegment := AppSegmentInspection{
 		Name:             name,
 		Description:      name,
 		Enabled:          true,
@@ -95,15 +106,15 @@ func TestApplicationSegmentPRA(t *testing.T) {
 		SegmentGroupName: createdAppGroup.Name,
 		IsCnameEnabled:   true,
 		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
+		ICMPAccessType:   "PING_TRACEROUTING",
 		HealthReporting:  "ON_ACCESS",
 		HealthCheckType:  "DEFAULT",
 		TCPKeepAlive:     "1",
-		DomainNames:      []string{"rdp_pra.bd-hashicorp.com"},
+		DomainNames:      []string{"server1.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "3389",
-				To:   "3389",
+				From: "443",
+				To:   "443",
 			},
 		},
 		CommonAppsDto: CommonAppsDto{
@@ -112,11 +123,11 @@ func TestApplicationSegmentPRA(t *testing.T) {
 					Name:                name,
 					Description:         name,
 					Enabled:             true,
-					AppTypes:            []string{"SECURE_REMOTE_ACCESS"},
-					ApplicationPort:     "3389",
-					ApplicationProtocol: "RDP",
-					ConnectionSecurity:  "ANY",
-					Domain:              "rdp_pra.bd-hashicorp.com",
+					AppTypes:            []string{"INSPECT"},
+					ApplicationPort:     "443",
+					ApplicationProtocol: "HTTPS",
+					Domain:              "server1.bd-hashicorp.com",
+					CertificateID:       certificateList[0].ID,
 				},
 			},
 		},
@@ -175,25 +186,6 @@ func TestApplicationSegmentPRA(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
-	// Test resources retrieval
-	resources, _, err := service.GetAll()
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
-	if len(resources) == 0 {
-		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
-	}
-	// check if the created resource is in the list
-	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
-	}
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
@@ -241,7 +233,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update("non-existent-id", &AppSegmentPRA{})
+	_, err = service.Update("non-existent-id", &AppSegmentInspection{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

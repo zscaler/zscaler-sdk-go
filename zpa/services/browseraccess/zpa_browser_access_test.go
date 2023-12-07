@@ -59,8 +59,6 @@ func TestApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	// rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
-	// updatedPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

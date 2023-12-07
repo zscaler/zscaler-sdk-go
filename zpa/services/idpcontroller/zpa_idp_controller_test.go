@@ -35,8 +35,8 @@ func TestIdPController(t *testing.T) {
 		t.Errorf("identity provider name does not match: expected %s, got %s", name, provider.Name)
 		return
 	}
-	// Negative Test: Try to retrieve a group with a non-existent name
-	nonExistentName := "ThisMachineGroupNameDoesNotExist"
+	// Negative Test: Try to retrieve a Idp with a non-existent name
+	nonExistentName := "ThisIdpNameDoesNotExist"
 	_, _, err = service.GetByName(nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")

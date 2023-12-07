@@ -89,10 +89,11 @@ func cleanResources() {
 }
 
 func TestLocationManagement(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
+	ipAddress, _ := acctest.RandIpAddress("104.239.245.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	comment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
@@ -111,7 +112,7 @@ func TestLocationManagement(t *testing.T) {
 	staticipsService := staticips.New(client)
 	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
 		IpAddress: ipAddress,
-		Comment:   "testing static ip for location management",
+		Comment:   comment,
 	})
 	if err != nil {
 		t.Fatalf("creating static ip failed: %v", err)
@@ -272,4 +273,56 @@ func tryRetrieveResource(s *Service, id int) (*Locations, error) {
 	}
 
 	return nil, lastErr
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetLocation(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Update(0, &Locations{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetLocationByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }
