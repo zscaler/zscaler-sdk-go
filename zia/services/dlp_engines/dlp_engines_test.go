@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
 
@@ -138,6 +139,7 @@ func TestDLPEngine(t *testing.T) {
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		require.NoError(t, err, "Updating a dlp engine caused an error")
 		return err
 	})
 	if err != nil {
@@ -188,6 +190,7 @@ func TestDLPEngine(t *testing.T) {
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, delErr := service.Delete(createdResource.ID)
+		require.NoError(t, err, "Should not error when deleting")
 		return delErr
 	})
 	_, err = service.Get(createdResource.ID)

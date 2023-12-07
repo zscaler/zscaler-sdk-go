@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/roles"
 )
@@ -122,16 +124,13 @@ func TestUserManagement(t *testing.T) {
 	updateComments := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-		return
-	}
+	require.NoError(t, err, "Error creating client")
 
 	roleService := roles.New(client)
 	roles, err := roleService.GetAllAdminRoles()
-	if err != nil || len(roles) == 0 {
-		t.Fatalf("Error retrieving roles or no roles found: %v", err)
-	}
+	require.NoError(t, err, "Error retrieving roles")
+	require.NotEmpty(t, roles, "No roles found")
+
 	// Generate random complex password for admin user account
 	rPassword := generateComplexPassword(12)
 
@@ -157,11 +156,11 @@ func TestUserManagement(t *testing.T) {
 	// Test resource creation
 	err = retryOnConflict(func() error {
 		createdResource, err = service.CreateAdminUser(admin)
+		require.NoError(t, err, "Creating a new admin user should not error")
 		return err
 	})
-	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
-	}
+	require.NoError(t, err, "Error making POST request")
+	require.NotZero(t, createdResource.ID, "Expected created resource ID to be non-empty")
 
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
@@ -194,6 +193,9 @@ func TestUserManagement(t *testing.T) {
 	}
 
 	updatedResource, err := service.GetAdminUsers(createdResource.ID)
+	require.NoError(t, err, "Could not get admin user by ID")
+	assert.NotNil(t, updatedResource.Disabled, "admin user disabled is missing")
+
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -239,10 +241,10 @@ func TestUserManagement(t *testing.T) {
 		_, delErr := service.DeleteAdminUser(createdResource.ID)
 		return delErr
 	})
+	require.NoError(t, err, "Should not error when deleting")
+
 	_, err = service.GetAdminUsers(createdResource.ID)
-	if err == nil {
-		t.Fatalf("Expected error retrieving deleted resource, but got nil")
-	}
+	require.Error(t, err, "Expected error retrieving deleted resource")
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
