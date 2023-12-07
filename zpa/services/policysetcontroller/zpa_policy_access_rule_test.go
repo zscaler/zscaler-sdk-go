@@ -58,7 +58,7 @@ func TestPolicyAccessRule(t *testing.T) {
 
 		accessPolicyRule := PolicyRule{
 			Name:        name,
-			Description: "New application segment",
+			Description: name,
 			PolicySetID: accessPolicySet.ID,
 			Action:      "ALLOW",
 			Conditions: []Conditions{
