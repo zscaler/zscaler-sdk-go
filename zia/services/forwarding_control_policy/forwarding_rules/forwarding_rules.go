@@ -105,31 +105,14 @@ type ForwardingRules struct {
 	// If not set, the rule is not restricted to a specific network service group.
 	NwServiceGroups []common.IDNameExtensions `json:"nwServiceGroups,omitempty"`
 
-	// Name-ID pairs of devices for which the rule must be applied.
-	// Specifies devices that are managed using Zscaler Client Connector.
-	// If no value is set, this field is ignored during the policy evaluation.
-	Devices []common.IDNameExtensions `json:"devices,omitempty"`
-
-	// Name-ID pairs of device groups for which the rule must be applied.
-	// This field is applicable for devices that are managed using Zscaler Client Connector.
-	//  If no value is set, this field is ignored during the policy evaluation.
-	DeviceGroups []common.IDNameExtensions `json:"deviceGroups,omitempty"`
-
 	// Labels that are applicable to the rule.
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
-
-	// User-defined network service applications to which the rule applies.
-	//If not set, the rule is not restricted to a specific network service application.
-	NwApplications []string `json:"nwApplications,omitempty"`
 
 	// User-defined network service application groups to which the rule applied.
 	// If not set, the rule is not restricted to a specific network service application group.
 	NwApplicationGroups []common.IDNameExtensions `json:"nwApplicationGroups,omitempty"`
 
 	AppServiceGroups []common.IDNameExtensions `json:"appServiceGroups,omitempty"`
-
-	// The time interval at which the forwarding rule applies
-	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
 	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
 	ProxyGateway *common.IDName `json:"proxyGateway,omitempty"`
