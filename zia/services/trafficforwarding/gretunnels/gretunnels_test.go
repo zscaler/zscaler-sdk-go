@@ -91,8 +91,8 @@ func cleanResources() {
 
 func TestGRETunnel(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
-	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	comment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateComment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
@@ -268,4 +268,56 @@ func tryRetrieveResource(s *Service, id int) (*GreTunnels, error) {
 	}
 
 	return nil, err
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetGreTunnels(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.DeleteGreTunnels(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.UpdateGreTunnels(0, &GreTunnels{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByIPAddressNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetByIPAddress("non-existent-ip-address")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent ip address, but got nil")
+	}
 }

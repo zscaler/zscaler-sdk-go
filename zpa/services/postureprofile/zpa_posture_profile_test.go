@@ -121,38 +121,37 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	}
 }
 
-/*
-	func TestPostureProfileNamesWithSpaces(t *testing.T) {
-		client, err := tests.NewZpaClient()
+func TestPostureProfileNamesWithSpaces(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Assuming that there are profiles with the following name variations
+	variations := []string{
+		"CrowdStrike ZPA ZTA 40", "CrowdStrike  ZPAZTA  40", "CrowdStrike   ZPAZTA   40",
+		"CrowdStrike    ZPAZTA40", "CrowdStrike  ZPAZTA 40", "CrowdStrike  ZPA ZTA   40",
+		"CrowdStrike   ZPA   ZTA 40",
+	}
+
+	for _, variation := range variations {
+		t.Logf("Attempting to retrieve profile with name: %s", variation)
+		profile, _, err := service.GetByName(variation)
 		if err != nil {
-			t.Errorf("Error creating client: %v", err)
-			return
+			t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
+			continue
 		}
 
-		service := New(client)
-
-		// Assuming that there are profiles with the following name variations
-		variations := []string{
-			"CrowdStrike ZPA ZTA 40", "CrowdStrike  ZPAZTA  40", "CrowdStrike   ZPAZTA   40",
-			"CrowdStrike    ZPAZTA40", "CrowdStrike  ZPAZTA 40", "CrowdStrike  ZPA ZTA   40",
-			"CrowdStrike   ZPA   ZTA 40",
-		}
-
-		for _, variation := range variations {
-			t.Logf("Attempting to retrieve profile with name: %s", variation)
-			profile, _, err := service.GetByName(variation)
-			if err != nil {
-				t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
-				continue
-			}
-
-			// Verify if the profile's actual name matches the expected variation
-			if common.RemoveCloudSuffix(profile.Name) != variation {
-				t.Errorf("Expected posture profile name to be '%s' but got '%s'", variation, profile.Name)
-			}
+		// Verify if the profile's actual name matches the expected variation
+		if common.RemoveCloudSuffix(profile.Name) != variation {
+			t.Errorf("Expected posture profile name to be '%s' but got '%s'", variation, profile.Name)
 		}
 	}
-*/
+}
+
 func TestPostureProfileByPostureUDID(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {

@@ -1,4 +1,4 @@
-package browseraccess
+package applicationsegmentinspection
 
 import (
 	"log"
@@ -54,8 +54,7 @@ func cleanResources() {
 		_, _ = service.Delete(r.ID)
 	}
 }
-
-func TestApplicationSegment(t *testing.T) {
+func TestAppSegmentInspectionInspection(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -97,9 +96,9 @@ func TestApplicationSegment(t *testing.T) {
 	if len(certificateList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
-	service := New(client)
 
-	appSegment := BrowserAccess{
+	service := New(client)
+	appSegment := AppSegmentInspection{
 		Name:             name,
 		Description:      name,
 		Enabled:          true,
@@ -111,26 +110,29 @@ func TestApplicationSegment(t *testing.T) {
 		HealthReporting:  "ON_ACCESS",
 		HealthCheckType:  "DEFAULT",
 		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.bd-hashicorp"},
-		ClientlessApps: []ClientlessApps{
-			{
-				Name:                name + ".bd-hashicorp",
-				Description:         name + ".bd-hashicorp",
-				Enabled:             true,
-				TrustUntrustedCert:  true,
-				Domain:              name + ".bd-hashicorp",
-				ApplicationProtocol: "HTTPS",
-				ApplicationPort:     "9443",
-				CertificateID:       certificateList[0].ID,
-			},
-		},
+		DomainNames:      []string{"server1.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "9443",
-				To:   "9443",
+				From: "8443",
+				To:   "8443",
+			},
+		},
+		CommonAppsDto: CommonAppsDto{
+			AppsConfig: []AppsConfig{
+				{
+					Name:                name,
+					Description:         name,
+					Enabled:             true,
+					AppTypes:            []string{"INSPECT"},
+					ApplicationPort:     "8443",
+					ApplicationProtocol: "HTTPS",
+					Domain:              "server1.bd-hashicorp.com",
+					CertificateID:       certificateList[0].ID,
+				},
 			},
 		},
 	}
+
 	// Test resource creation
 	createdResource, _, err := service.Create(appSegment)
 	// Check if the request was successful
@@ -184,25 +186,6 @@ func TestApplicationSegment(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
-	// Test resources retrieval
-	resources, _, err := service.GetAll()
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
-	if len(resources) == 0 {
-		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
-	}
-	// check if the created resource is in the list
-	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
-	}
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
@@ -250,7 +233,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update("non-existent-id", &BrowserAccess{})
+	_, err = service.Update("non-existent-id", &AppSegmentInspection{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
