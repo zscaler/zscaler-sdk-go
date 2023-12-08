@@ -165,7 +165,7 @@ type ZPAAppSegments struct {
 	ExternalID string `json:"externalId"`
 
 	// ID of the ZPA tenant where the Application Segment is configured.
-	ZPATenantId string `json:"zpaTenantId"`
+	ZPATenantId string `json:"zpaTenantId,omitempty"`
 }
 
 type ZPAApplicationSegments struct {
