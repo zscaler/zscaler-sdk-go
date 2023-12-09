@@ -183,8 +183,8 @@ func (service *Service) GetAllDevices() ([]Devices, error) {
 	return owners, err
 }
 
-func (service *Service) GetAllDevicesGroups() ([]Devices, error) {
-	var owners []Devices
+func (service *Service) GetAllDevicesGroups() ([]DeviceGroups, error) {
+	var owners []DeviceGroups
 	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
 	return owners, err
 }

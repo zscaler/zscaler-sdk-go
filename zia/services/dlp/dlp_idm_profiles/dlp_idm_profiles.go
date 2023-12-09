@@ -21,7 +21,7 @@ type DLPIDMProfile struct {
 	// The IDM template's description.
 	ProfileDesc string `json:"profileDesc,omitempty"`
 
-	// The IDM template's type.
+	// The IDM template's type. Supported values are: "LOCAL", "REMOTECRON", and "REMOTE"
 	ProfileType string `json:"profileType,omitempty"`
 
 	// The fully qualified domain name (FQDN) of the IDM template's host machine.

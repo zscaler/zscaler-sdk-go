@@ -12,8 +12,6 @@ const (
 	dlpEDMSchemaEndpoint = "/dlpExactDataMatchSchemas"
 )
 
-// Gets a list of active IDM templates (or IDM profiles) and their criteria, only.
-
 type DLPEDMSchema struct {
 	// The identifier (1-65519) for the EDM schema (i.e., EDM template) that is unique within the organization.
 	SchemaID int `json:"schemaId,omitempty"`
@@ -35,6 +33,9 @@ type DLPEDMSchema struct {
 
 	// The status of the EDM template's CSV file upload to the Index Tool. This attribute is required by PUT and POST requests.
 	FileUploadStatus string `json:"fileUploadStatus,omitempty"`
+
+	// The status of the EDM template's CSV file upload to the Index Tool. This attribute is required by PUT and POST requests.
+	SchemaStatus string `json:"schemaStatus,omitempty"`
 
 	// The total count of actual columns selected from the CSV file. This attribute is required by PUT and POST requests.
 	OrigColCount int `json:"origColCount,omitempty"`
@@ -124,4 +125,10 @@ func (service *Service) GetDLPEDMByName(edmSchemaName string) (*DLPEDMSchema, er
 		}
 	}
 	return nil, fmt.Errorf("no edm schema found with name: %s", edmSchemaName)
+}
+
+func (service *Service) GetAll() ([]DLPEDMSchema, error) {
+	var edmData []DLPEDMSchema
+	err := common.ReadAllPages(service.Client, dlpEDMSchemaEndpoint, &edmData)
+	return edmData, err
 }

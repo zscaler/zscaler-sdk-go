@@ -112,3 +112,33 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
+
+func TestDeviceGroupFields(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	// Retrieve all device groups
+	groups, err := service.GetAllDevicesGroups()
+	if err != nil {
+		t.Fatalf("Error getting all device groups: %v", err)
+	}
+	if len(groups) == 0 {
+		t.Fatalf("No device groups found for testing")
+	}
+
+	// Check the first device group
+	firstGroup := groups[0]
+	if firstGroup.GroupType != "ZCC_OS" {
+		t.Errorf("Group Type field is incorrect, expected 'ZCC_OS', got '%s'", firstGroup.GroupType)
+	}
+	if firstGroup.OSType != "IOS" {
+		t.Errorf("OS Type field is incorrect, expected 'IOS', got '%s'", firstGroup.OSType)
+	}
+	if !firstGroup.Predefined {
+		t.Errorf("Predefined field is not set to true as expected")
+	}
+}
