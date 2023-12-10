@@ -45,11 +45,11 @@ type AppSegmentPRA struct {
 	MicroTenantName           string                   `json:"microtenantName,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
+	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
 	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
-	UDPProtocols              []string                 `json:"udpProtocols,omitempty"`
 	SRAAppsDto                []SRAAppsDto             `json:"sraApps,omitempty"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
