@@ -1,9 +1,13 @@
 package customerversionprofile
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestCustomerVersionProfile(t *testing.T) {
@@ -34,5 +38,42 @@ func TestCustomerVersionProfile(t *testing.T) {
 	if profile.Name != name {
 		t.Errorf("customer version profile name does not match: expected %s, got %s", name, profile.Name)
 		return
+	}
+}
+
+func TestCaseSensitivityOfGetByName(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	requiredNames := []string{"New Release", "Default", "Previous Default"}
+
+	for _, knownName := range requiredNames {
+		// Case variations to test for each knownName
+		variations := []string{
+			strings.ToUpper(knownName),
+			strings.ToLower(knownName),
+			cases.Title(language.English).String(knownName),
+		}
+
+		for _, variation := range variations {
+			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
+				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
+				version, _, err := service.GetByName(variation)
+				if err != nil {
+					t.Errorf("Error getting customer version profile with name variation '%s': %v", variation, err)
+					return
+				}
+
+				// Check if the customer version profile's actual name matches the known name
+				if version.Name != knownName {
+					t.Errorf("Expected customer version profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
+				}
+			})
+		}
 	}
 }
