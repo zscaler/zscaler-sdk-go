@@ -50,11 +50,10 @@ func cleanResources() {
 	service := New(client)
 	resources, _, _ := service.GetAll()
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
+		if strings.HasPrefix(r.Name, "tests-") || strings.HasPrefix(r.Name, "updated-") {
+			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+			_, _ = service.Delete(r.ID)
 		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
 	}
 }
 
