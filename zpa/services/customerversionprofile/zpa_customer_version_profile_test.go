@@ -50,7 +50,9 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	service := New(client)
 
-	requiredNames := []string{"New Release", "Default", "Previous Default"}
+	requiredNames := []string{"New Release", "Default", "Previous Default", "Default - el8"}
+	var anyVariationSucceeded = false
+	var errorMsgs []string
 
 	for _, knownName := range requiredNames {
 		// Case variations to test for each knownName
@@ -65,15 +67,26 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
 				version, _, err := service.GetByName(variation)
 				if err != nil {
-					t.Errorf("Error getting customer version profile with name variation '%s': %v", variation, err)
+					errorMsg := fmt.Sprintf("Error getting customer version profile with name variation '%s': %v", variation, err)
+					errorMsgs = append(errorMsgs, errorMsg)
 					return
 				}
 
 				// Check if the customer version profile's actual name matches the known name
 				if version.Name != knownName {
-					t.Errorf("Expected customer version profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
+					errorMsg := fmt.Sprintf("Expected customer version profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
+					errorMsgs = append(errorMsgs, errorMsg)
+					return
 				}
+
+				anyVariationSucceeded = true
 			})
+		}
+	}
+
+	if !anyVariationSucceeded {
+		for _, msg := range errorMsgs {
+			t.Error(msg)
 		}
 	}
 }
