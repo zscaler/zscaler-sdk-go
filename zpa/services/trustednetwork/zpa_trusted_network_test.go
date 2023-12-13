@@ -105,3 +105,16 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 		t.Errorf("Expected trusted network NetworkID to be '%s', but got '%s'", network.NetworkID, networkByID.NetworkID)
 	}
 }
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}

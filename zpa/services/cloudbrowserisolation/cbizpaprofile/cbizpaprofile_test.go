@@ -1,6 +1,7 @@
 package cbizpaprofile
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -88,33 +89,36 @@ func TestResponseFormatValidation(t *testing.T) {
 func TestCaseSensitivityOfGetByName(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 
 	service := New(client)
 
-	// Assuming a profile with the name "BD_SA_Profile1" exists
-	knownName := "BD_SA_Profile1"
+	requiredNames := []string{"BD_SA_Profile1", "BD SA Profile", "BD  SA Profile", "BD   SA   Profile"}
 
-	// Case variations to test
-	variations := []string{
-		strings.ToUpper(knownName),
-		strings.ToLower(knownName),
-		cases.Title(language.English).String(knownName),
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve profile with name variation: %s", variation)
-		profile, _, err := service.GetByName(variation)
-		if err != nil {
-			t.Errorf("Error getting isolation profile with name variation '%s': %v", variation, err)
-			continue
+	for _, knownName := range requiredNames {
+		// Case variations to test for each knownName
+		variations := []string{
+			strings.ToUpper(knownName),
+			strings.ToLower(knownName),
+			cases.Title(language.English).String(knownName),
 		}
 
-		// Check if the profile's actual name matches the known name
-		if profile.Name != knownName {
-			t.Errorf("Expected profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, profile.Name)
+		for _, variation := range variations {
+			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
+				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
+				version, _, err := service.GetByName(variation)
+				if err != nil {
+					t.Errorf("Error getting customer version profile with name variation '%s': %v", variation, err)
+					return
+				}
+
+				// Check if the customer version profile's actual name matches the known name
+				if version.Name != knownName {
+					t.Errorf("Expected customer version profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
+				}
+			})
 		}
 	}
 }
@@ -147,5 +151,18 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 		if profile.Name != variation {
 			t.Errorf("Expected profile name to be '%s' but got '%s'", variation, profile.Name)
 		}
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
