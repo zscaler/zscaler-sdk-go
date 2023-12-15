@@ -107,6 +107,8 @@ func TestDLPWebRule(t *testing.T) {
 		Action:                   "BLOCK",
 		ZscalerIncidentReceiver:  true,
 		WithoutContentInspection: false,
+		DLPDownloadScanEnabled:   true,
+		Severity:                 "RULE_SEVERITY_HIGH",
 		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
 		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
