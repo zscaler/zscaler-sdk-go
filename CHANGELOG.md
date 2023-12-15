@@ -1,5 +1,34 @@
 # Changelog
 
+# 2.3.0 (December 13, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added support to 🆕 ZIA Cloud Browser Isolation Profile endpoint ``/browserIsolation/profiles``
+
+- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added `cbiProfile` feature to ZIA `url filtering policy` resource
+
+# 2.2.2 (December 10, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- Fixed ZPA application segment PRA for missing attribute ``UDPPortRanges``
+
+# 2.2.1 (December 8, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- Removed unsupported attributes from ZIA Forwarding control rule resource
+
 # 2.2.0 (December xx, 2023)
 
 ## Notes
