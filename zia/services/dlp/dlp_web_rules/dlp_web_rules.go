@@ -62,7 +62,12 @@ type WebDLPRules struct {
 	// Enables or disables image file scanning.
 	OcrEnabled bool `json:"ocrEnabled,omitempty"`
 
-	DLPDownloadScanEnabled  bool `json:"dlpDownloadScanEnabled,omitempty"`
+	// If this field is set to true, DLP scan is enabled for file downloads from cloud applications configured in the rule.
+	// If this field is set to false, DLP scan is disabled for downloads from the cloud applications.
+	DLPDownloadScanEnabled bool `json:"dlpDownloadScanEnabled,omitempty"`
+
+	// If this field is set to true, Zscaler Client Connector notification is enabled for the block action triggered by the web DLP rule.
+	// If this field is set to false, Zscaler Client Connector notification is disabled.
 	ZCCNotificationsEnabled bool `json:"zccNotificationsEnabled,omitempty"`
 
 	// Indicates whether a Zscaler Incident Receiver is associated to the DLP policy rule.
@@ -118,6 +123,18 @@ type WebDLPRules struct {
 
 	// The name-ID pairs of the users that are excluded from the DLP policy rule.
 	ExcludedUsers []common.IDNameExtensions `json:"excludedUsers,omitempty"`
+
+	// Indicates the severity selected for the DLP rule violation
+	Severity string `json:"severity,omitempty"`
+
+	// The unique identifier of the parent rule under which an exception rule is added.
+	// Note: Exception rules can be configured only when the inline DLP rule evaluation type is set to evaluate all DLP rules in the DLP Advanced Settings.
+	ParentRule int `json:"parentRule,omitempty"`
+
+	// The list of exception rules added to a parent rule.
+	// All attributes within the WebDlpRule model are applicable to the sub-rules.
+	// Values for each rule are specified by using the WebDlpRule object.
+	SubRules []string `json:"subRules,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*WebDLPRules, error) {

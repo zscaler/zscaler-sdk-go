@@ -1,5 +1,17 @@
 # Changelog
 
+# 2.3.1 (December 15, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #205](https://github.com/zscaler/zscaler-sdk-go/pull/205) Added ZIA Web DLP Rule new attributes:
+  - `severity`
+  - `subRules`
+  - `parentRule`
+
 # 2.3.0 (December 13, 2023)
 
 ## Notes
@@ -8,8 +20,6 @@
 ### Enhacements
 
 - [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added support to 🆕 ZIA Cloud Browser Isolation Profile endpoint ``/browserIsolation/profiles``
-
-- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added `cbiProfile` feature to ZIA `url filtering policy` resource
 
 # 2.2.2 (December 10, 2023)
 

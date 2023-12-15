@@ -13,9 +13,21 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.0``
+``Last updated: v2.3.1``
 
 ---
+
+# 2.3.1 (December 15, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #205](https://github.com/zscaler/zscaler-sdk-go/pull/205) Added ZIA Web DLP Rule new attributes:
+  - `severity`
+  - `subRules`
+  - `parentRule`
 
 # 2.3.0 (December 13, 2023)
 
