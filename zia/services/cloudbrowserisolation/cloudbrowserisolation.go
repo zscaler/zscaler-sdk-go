@@ -12,7 +12,6 @@ const (
 )
 
 type IsolationProfile struct {
-	//The universally unique identifier (UUID) for the browser isolation profile
 	ID string `json:"id,omitempty"`
 
 	// Name of the browser isolation profile
@@ -25,22 +24,24 @@ type IsolationProfile struct {
 	DefaultProfile bool `json:"defaultProfile,omitempty"`
 }
 
-func (service *Service) Get(profileID int) (*IsolationProfile, error) {
+// Updated Get function
+func (service *Service) Get(profileID string) (*IsolationProfile, error) {
 	var cbiProfile IsolationProfile
-	err := service.Client.Read(fmt.Sprintf("%s/%d", cbiProfileEndpoint, profileID), &cbiProfile)
+	err := service.Client.Read(fmt.Sprintf("%s/%s", cbiProfileEndpoint, profileID), &cbiProfile)
 	if err != nil {
-		return nil, err
+		return nil, checkNotSubscribedError(err)
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning cloud browser isolation from Get: %d", cbiProfile.ID)
+	service.Client.Logger.Printf("[DEBUG] Returning cloud browser isolation from Get: %s", cbiProfile.ID)
 	return &cbiProfile, nil
 }
 
+// Updated GetByName function
 func (service *Service) GetByName(profileName string) (*IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
 	if err != nil {
-		return nil, err
+		return nil, checkNotSubscribedError(err)
 	}
 	for _, cbi := range cbiProfiles {
 		if strings.EqualFold(cbi.Name, profileName) {
@@ -50,8 +51,25 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, error)
 	return nil, fmt.Errorf("no cloud browser isolation profile found with name: %s", profileName)
 }
 
+// Updated GetAll function
 func (service *Service) GetAll() ([]IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
-	return cbiProfiles, err
+	return cbiProfiles, checkNotSubscribedError(err)
+}
+
+type NotSubscribedError struct {
+	message string
+}
+
+func (e *NotSubscribedError) Error() string {
+	return e.message
+}
+
+// Helper function to check and wrap the "Not Subscribed" error
+func checkNotSubscribedError(err error) error {
+	if err != nil && strings.Contains(err.Error(), "Cloud Browser Isolation subscription is required") {
+		return &NotSubscribedError{message: "NOT_SUBSCRIBED: Cloud Browser Isolation subscription is required"}
+	}
+	return err
 }

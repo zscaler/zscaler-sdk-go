@@ -26,6 +26,8 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added support to 🆕 ZIA Cloud Browser Isolation Profile endpoint ``/browserIsolation/profiles``
 
+- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added `cbiProfile` feature to ZIA `url filtering policy` resource
+
 # 2.2.2 (December 10, 2023)
 
 ## Notes

@@ -82,7 +82,7 @@ func TestResponseFormatValidation(t *testing.T) {
 			t.Errorf("IsolationProfile Name is empty")
 		}
 		if profile.URL == "" {
-			t.Errorf("IsolationProfile IsolationURL is empty")
+			t.Errorf("IsolationProfile Isolation URL is empty")
 		}
 	}
 }
