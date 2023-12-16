@@ -104,10 +104,18 @@ func TestURLFilteringRule(t *testing.T) {
 		Order:          1,
 		Rank:           7,
 		State:          "ENABLED",
-		Action:         "BLOCK",
+		Action:         "ISOLATE",
 		URLCategories:  []string{"ANY"},
-		Protocols:      []string{"ANY_RULE"},
+		Protocols:      []string{"HTTPS_RULE", "HTTP_RULE"},
 		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
+		UserAgentTypes: []string{"OPERA", "FIREFOX", "MSIE", "MSEDGE", "CHROME", "SAFARI", "MSCHREDGE"},
+		CBIProfileID:   91223046,
+		CBIProfile: CBIProfile{
+			ProfileSeq: 0,
+			ID:         "15e73a58-fe18-4e4a-8778-e3ae2dd50ba3",
+			Name:       "BD_SA_Profile1_ZIA",
+			URL:        "https://redirect.isolation.zscaler.com/tenant/americas-se/profile/15e73a58-fe18-4e4a-8778-e3ae2dd50ba3",
+		},
 	}
 
 	var createdResource *URLFilteringRule
