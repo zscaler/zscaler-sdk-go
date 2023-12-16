@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	dlpEnginesEndpoint = "/dlpEngines"
+	dlpEnginesEndpoint    = "/dlpEngines"
+	dlpEngineLiteEndpoint = "/dlpEngines/lite"
 )
 
 type DLPEngines struct {
@@ -95,10 +96,38 @@ func (service *Service) Delete(engineID int) (*http.Response, error) {
 func (service *Service) GetAll() ([]DLPEngines, error) {
 	var dlpEngines []DLPEngines
 	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
-	for i := range dlpEngines {
-		if dlpEngines[i].Name == "" && dlpEngines[i].PredefinedEngineName != "" {
-			dlpEngines[i].Name = dlpEngines[i].PredefinedEngineName
+	return dlpEngines, err
+}
+
+// Functions to for DLP Engine Lite query
+func (service *Service) GetEngineLiteID(engineID int) (*DLPEngines, error) {
+	dlpEngines, err := service.GetAllEngineLite()
+	if err != nil {
+		return nil, err
+	}
+	for _, engine := range dlpEngines {
+		if engine.ID == engineID {
+			return &engine, nil
 		}
 	}
-	return dlpEngines, err
+	return nil, fmt.Errorf("no dlp engine found with ID: %d", engineID)
+}
+
+func (service *Service) GetByPredefinedEngine(engineName string) (*DLPEngines, error) {
+	dlpEngines, err := service.GetAllEngineLite()
+	if err != nil {
+		return nil, err
+	}
+	for _, engine := range dlpEngines {
+		if strings.EqualFold(engine.PredefinedEngineName, engineName) {
+			return &engine, nil
+		}
+	}
+	return nil, fmt.Errorf("no predefined dlp engine found with name: %s", engineName)
+}
+
+func (service *Service) GetAllEngineLite() ([]DLPEngines, error) {
+	var engines []DLPEngines
+	err := common.ReadAllPages(service.Client, dlpEngineLiteEndpoint, &engines)
+	return engines, err
 }
