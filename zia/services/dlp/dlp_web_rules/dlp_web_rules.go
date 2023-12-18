@@ -135,6 +135,8 @@ type WebDLPRules struct {
 	// All attributes within the WebDlpRule model are applicable to the sub-rules.
 	// Values for each rule are specified by using the WebDlpRule object.
 	SubRules []string `json:"subRules,omitempty"`
+
+	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*WebDLPRules, error) {
