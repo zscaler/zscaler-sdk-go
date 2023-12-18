@@ -29,6 +29,8 @@ type URLFilteringRule struct {
 	// List of URL categories for which rule must be applied
 	URLCategories []string `json:"urlCategories"`
 
+	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
+
 	// Rule State
 	State string `json:"state,omitempty"`
 
@@ -114,6 +116,26 @@ type URLFilteringRule struct {
 
 	// Name-ID pairs of time interval during which rule must be enforced.
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
+
+	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
+	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
+	CBIProfile   CBIProfile `json:"cbiProfile"`
+	CBIProfileID int        `json:"cbiProfileId"`
+}
+
+type CBIProfile struct {
+	ProfileSeq int `json:"profileSeq"`
+	// The universally unique identifier (UUID) for the browser isolation profile
+	ID string `json:"id"`
+
+	// Name of the browser isolation profile
+	Name string `json:"name"`
+
+	// The browser isolation profile URL
+	URL string `json:"url"`
+
+	// (Optional) Indicates whether this is a default browser isolation profile. Zscaler sets this field.
+	DefaultProfile bool `json:"defaultProfile"`
 }
 
 func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
@@ -156,14 +178,30 @@ func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, err
 	return createdURLFilteringRule, nil
 }
 
-func (service *Service) Update(ruleID int, rules *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rules)
+func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
+	// Add debug log to print the rule object
+	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
+	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
+		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
+		var urlFilteringPolicies []URLFilteringRule
+		err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+		if err != nil {
+			return nil, nil, err
+		}
+		for _, urlFilteringPolicy := range urlFilteringPolicies {
+			if urlFilteringPolicy.ID == ruleID {
+				rule.CBIProfile = urlFilteringPolicy.CBIProfile
+				rule.CBIProfileID = urlFilteringPolicy.CBIProfileID
+			}
+		}
+	}
+	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
 
-	service.Client.Logger.Printf("[DEBUG]returning url filtering rule from update: %d", updatedURLFilteringRule.ID)
+	service.Client.Logger.Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
 	return updatedURLFilteringRule, nil, nil
 }
 
