@@ -1,5 +1,27 @@
 # Changelog
 
+# 2.3.3 (December 18, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #207](https://github.com/zscaler/zscaler-sdk-go/pull/207) - Added missing ZIA URL Filtering Rule attribute `userRiskScoreLevels`: Supported values: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+
+- [PR #207](https://github.com/zscaler/zscaler-sdk-go/pull/207) - Added New ZIA URL Filtering Rule `cbiProfile` attribute to support `ISOLATE` action.
+
+# 2.3.2 (December 16, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #206](https://github.com/zscaler/zscaler-sdk-go/pull/206) - Added missing Web DLP rule attribute `userRiskScoreLevels`: Supported values: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+
+- [PR #206](https://github.com/zscaler/zscaler-sdk-go/pull/206) - Added DLP Engine Lite endpoint to `/dlpEngines/lite`
+
 # 2.3.1 (December 15, 2023)
 
 ## Notes
