@@ -26,6 +26,17 @@ type IDName struct {
 	Name string `json:"name,omitempty"`
 }
 
+type ZPAAppSegments struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Indicates the external ID. Applicable only when this reference is of an external entity.
+	ExternalID string `json:"externalId"`
+}
+
 type UserGroups struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
