@@ -99,13 +99,14 @@ func TestFirewallFilteringRule(t *testing.T) {
 
 	service := New(client)
 	rule := FirewallFilteringRules{
-		Name:           name,
-		Description:    name,
-		Order:          1,
-		Rank:           7,
-		Action:         "ALLOW",
-		DestCountries:  []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
-		NwApplications: []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
+		Name:              name,
+		Description:       name,
+		Order:             1,
+		Rank:              7,
+		Action:            "ALLOW",
+		DestCountries:     []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications:    []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
+		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
 	}
 
 	var createdResource *FirewallFilteringRules
