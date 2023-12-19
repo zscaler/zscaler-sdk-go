@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.3``
+``Last updated: v2.3.4``
 
 ---
+
+# 2.3.4 (December 19, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #209](https://github.com/zscaler/zscaler-sdk-go/pull/209) - Added support to ZPA Application Segment within the ZIA Firewall Filtering rule resource. Only ZPA application segments with the Source IP Anchor option enabled are supported.
 
 # 2.3.3 (December 18, 2023)
 
