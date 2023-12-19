@@ -92,6 +92,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.239.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	rPassword := tests.TestPassword(20)
 
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -119,7 +120,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		Type:         "IP",
 		IPAddress:    ipAddress,
 		Comments:     comment,
-		PreSharedKey: "newPassword123!",
+		PreSharedKey: rPassword,
 	}
 
 	var createdResource *VPNCredentials

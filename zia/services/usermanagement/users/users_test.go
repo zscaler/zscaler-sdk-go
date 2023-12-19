@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
@@ -94,7 +95,6 @@ func TestUserManagement(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPassword := acctest.RandString(10)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
@@ -114,6 +114,7 @@ func TestUserManagement(t *testing.T) {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
 	service := New(client)
+	rPassword := tests.TestPassword(20)
 
 	user := Users{
 		Name:     name,

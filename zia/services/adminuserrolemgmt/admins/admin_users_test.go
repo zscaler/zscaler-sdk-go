@@ -2,7 +2,6 @@ package admins
 
 import (
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"testing"
@@ -21,38 +20,7 @@ const (
 	retryInterval         = 2 * time.Second
 	maxConflictRetries    = 5
 	conflictRetryInterval = 1 * time.Second
-	passwordCharset       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	specialCharacters     = "!@#$%^&*()-_+=<>?"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
-func generateComplexPassword(length int) string {
-	if length < 4 { // 4 is the minimum to satisfy all the criteria
-		length = 12
-	}
-
-	password := make([]byte, length)
-
-	// Ensure password meets complexity requirements
-	password[0] = byte(passwordCharset[rand.Intn(len(passwordCharset))])
-	password[1] = byte(passwordCharset[rand.Intn(26)])                       // Lowercase letter
-	password[2] = byte(passwordCharset[rand.Intn(26)+26])                    // Uppercase letter
-	password[3] = byte(passwordCharset[rand.Intn(10)+52])                    // Digit
-	password[4] = byte(specialCharacters[rand.Intn(len(specialCharacters))]) // Special character
-
-	for i := 5; i < length; i++ {
-		password[i] = byte(passwordCharset[rand.Intn(len(passwordCharset))])
-	}
-
-	rand.Shuffle(length, func(i, j int) {
-		password[i], password[j] = password[j], password[i]
-	})
-
-	return string(password)
-}
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -132,7 +100,7 @@ func TestUserManagement(t *testing.T) {
 	require.NotEmpty(t, roles, "No roles found")
 
 	// Generate random complex password for admin user account
-	rPassword := generateComplexPassword(12)
+	rPassword := tests.TestPassword(20)
 
 	service := New(client)
 	admin := AdminUsers{
@@ -243,8 +211,18 @@ func TestUserManagement(t *testing.T) {
 	})
 	require.NoError(t, err, "Should not error when deleting")
 
+	// Confirm that the user has been deleted
 	_, err = service.GetAdminUsers(createdResource.ID)
-	require.Error(t, err, "Expected error retrieving deleted resource")
+	if err != nil {
+		if strings.Contains(err.Error(), "resource not found") || strings.Contains(err.Error(), "does not exist") {
+			// User deletion confirmed, no further operations on this user
+			log.Println("User deletion confirmed. No further operations will be performed on this user.")
+		} else {
+			t.Fatalf("Unexpected error after deletion: %v", err)
+		}
+	} else {
+		t.Fatal("User still exists after deletion")
+	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
