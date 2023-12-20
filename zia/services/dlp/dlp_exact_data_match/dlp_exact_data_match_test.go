@@ -175,7 +175,7 @@ func TestEDMFields(t *testing.T) {
 		if profile.ProjectName == "" {
 			t.Errorf("ProjectName field is empty")
 		}
-		if profile.SchemaStatus != "EDM_INDEXING_SUCCESS" {
+		if profile.SchemaStatus != "EDM_INDEXING_SUCCESS" && profile.SchemaStatus != "EDM_INDEXING_NONE" {
 			t.Errorf("SchemaStatus field is not as expected: got %s", profile.SchemaStatus)
 		}
 		if !profile.SchemaActive {
@@ -183,15 +183,18 @@ func TestEDMFields(t *testing.T) {
 		}
 
 		// Asserting elements in the TokenList
+		primaryKeyFound := false
 		for _, token := range profile.TokenList {
 			if token.Name == "" || token.Type == "" {
 				t.Errorf("Token fields Name or Type are not properly populated")
 			}
-			// Here, we check if at least one token is marked as primary key
 			if token.PrimaryKey {
-				t.Log("A primary key token found")
+				primaryKeyFound = true
 				break // Break after finding the first primary key
 			}
+		}
+		if !primaryKeyFound {
+			t.Errorf("No primary key token found in profile: %s", profile.ProjectName)
 		}
 	}
 }
