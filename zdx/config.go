@@ -2,15 +2,9 @@ package zdx
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
-	"os/user"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -75,14 +69,14 @@ func NewConfig(apiKeyID, apiSecret, userAgent string) (*Config, error) {
 		apiSecret = os.Getenv(ZDX_API_SECRET)
 	}
 	// last resort to configuration file:
-	if apiKeyID == "" || apiSecret == "" {
-		creds, err := loadCredentialsFromConfig(logger)
-		if err != nil || creds == nil {
-			return nil, err
-		}
-		apiKeyID = creds.APIKeyID
-		apiSecret = creds.APISecret
-	}
+	// if apiKeyID == "" || apiSecret == "" {
+	// 	creds, err := loadCredentialsFromConfig(logger)
+	// 	if err != nil || creds == nil {
+	// 		return nil, err
+	// 	}
+	// 	apiKeyID = creds.APIKeyID
+	// 	apiSecret = creds.APISecret
+	// }
 	rawUrl := defaultBaseURL
 
 	baseURL, err := url.Parse(rawUrl)
@@ -105,26 +99,26 @@ func (c *Config) SetBackoffConfig(backoffConf BackoffConfig) {
 }
 
 // loadCredentialsFromConfig Returns the credentials found in a config file
-func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error) {
-	usr, _ := user.Current()
-	dir := usr.HomeDir
-	path := filepath.Join(dir, configPath)
-	logger.Printf("[INFO]Loading configuration file at:%s", path)
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: key_id, key_secret. " + err.Error())
-	}
-	configBytes, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	var config CredentialsConfig
-	err = json.Unmarshal(configBytes, &config)
-	if err != nil || config.APIKeyID == "" || config.APISecret == "" {
-		return nil, fmt.Errorf("could not parse credentials file, needs to contain one json object with keys: zdx_api_key_id and zdx_api_secret. error: %v", err)
-	}
-	return &config, nil
-}
+// func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error) {
+// 	usr, _ := user.Current()
+// 	dir := usr.HomeDir
+// 	path := filepath.Join(dir, configPath)
+// 	logger.Printf("[INFO]Loading configuration file at:%s", path)
+// 	file, err := os.Open(path)
+// 	if err != nil {
+// 		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: key_id, key_secret. " + err.Error())
+// 	}
+// 	configBytes, err := io.ReadAll(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var config CredentialsConfig
+// 	err = json.Unmarshal(configBytes, &config)
+// 	if err != nil || config.APIKeyID == "" || config.APISecret == "" {
+// 		return nil, fmt.Errorf("could not parse credentials file, needs to contain one json object with keys: zdx_api_key_id and zdx_api_secret. error: %v", err)
+// 	}
+// 	return &config, nil
+// }
 
 func (c *Config) GetHTTPClient() *http.Client {
 	if c.httpClient == nil {
