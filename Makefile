@@ -26,6 +26,7 @@ help:
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zcon        	Run only zcon integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zia        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
@@ -39,6 +40,8 @@ test:
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
+	@make test:zcon
+	@make test:zdx
 	@make test:zpa
 	@make test:zia
 
@@ -47,6 +50,12 @@ test\:integration\:zcon:
 	go test -failfast -race ./zcon/... -race -coverprofile zconcoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
 	go tool cover -func zconcoverage.txt | grep total:
 	rm -rf zconcoverage.txt
+
+test\:integration\:zdx:
+	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
+	go test -failfast -race ./zdx/... -race -coverprofile zdxcoverage.txt -covermode=atomic -v -parallel 4 -timeout 30m
+	go tool cover -func zdxcoverage.txt | grep total:
+	rm -rf zdxcoverage.txt
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
@@ -68,6 +77,10 @@ test\:unit\zcon:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zcon -test.v
 
+test\:unit\zdx:
+	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -failfast -race ./tests/unit/zdx -test.v
+
 test\:unit\:zia:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zia -test.v
@@ -79,6 +92,7 @@ test\:unit\:zpa:
 test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -race ./tests/unit/zcon -test.v
+	go test -race ./tests/unit/zdx -test.v
 	go test -race ./tests/unit/zia -test.v
 	go test -race ./tests/unit/zpa -test.v
 

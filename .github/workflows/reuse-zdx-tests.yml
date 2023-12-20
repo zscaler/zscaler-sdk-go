@@ -29,10 +29,14 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-      - name: Set Credentials
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 1
+          timeout_minutes: 10  # Adjust as needed
+          command: |
+            make test:integration:zdx
         env:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
-        run: |
-          go test ./zdx/... -race -coverprofile zdxcoverage.txt -covermode=atomic -v -parallel 30 -timeout 120m
-          go tool cover -func zdxcoverage.txt | grep total:
+
