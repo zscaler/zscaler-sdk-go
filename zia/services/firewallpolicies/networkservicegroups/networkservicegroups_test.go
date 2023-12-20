@@ -1,14 +1,46 @@
-package networkservices
+package networkservicegroups
 
 import (
 	"log"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 )
+
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
+
+// Constants for conflict retries
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
+
+func retryOnConflict(operation func() error) error {
+	var lastErr error
+	for i := 0; i < maxConflictRetries; i++ {
+		lastErr = operation()
+		if lastErr == nil {
+			return nil
+		}
+
+		if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
+			log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		return lastErr
+	}
+	return lastErr
+}
 
 func TestMain(m *testing.M) {
 	setup()
@@ -40,7 +72,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, err := service.GetAllNetworkServices()
+	resources, err := service.GetAllNetworkServiceGroups()
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -48,7 +80,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
+			_, err := service.DeleteNetworkServiceGroups(r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -56,7 +88,7 @@ func cleanResources() {
 	}
 }
 
-func TestFWFilteringNWServices(t *testing.T) {
+func TestNetworkServiceGroups(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
@@ -64,43 +96,43 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
+	nwServices := networkservices.New(client)
+	nwSvcList, err := nwServices.GetAllNetworkServices()
+	if err != nil {
+		t.Errorf("Error getting network services: %v", err)
+		return
+	}
+	if len(nwSvcList) == 0 {
+		t.Error("Expected retrieved network services to be non-empty, but got empty slice")
+	}
 
-	// create anetwork services for testing
 	service := New(client)
-	networkServices := NetworkServices{
+
+	nwSvcgroup := NetworkServiceGroups{
 		Name:        name,
 		Description: name,
-		Type:        "CUSTOM",
-		SrcTCPPorts: []NetworkPorts{
+		Services: []Services{
 			{
-				Start: 5000,
+				ID: nwSvcList[0].ID,
 			},
 			{
-				Start: 5001,
+				ID: nwSvcList[1].ID,
 			},
 			{
-				Start: 5002,
-				End:   5005,
-			},
-		},
-		DestTCPPorts: []NetworkPorts{
-			{
-				Start: 5000,
-			},
-			{
-				Start: 5001,
-			},
-			{
-				Start: 5003,
-				End:   5005,
+				ID: nwSvcList[2].ID,
 			},
 		},
 	}
+
+	var createdResource *NetworkServiceGroups
+
 	// Test resource creation
-	createdResource, err := service.Create(&networkServices)
-	// Check if the request was successful
+	err = retryOnConflict(func() error {
+		createdResource, err = service.CreateNetworkServiceGroups(&nwSvcgroup)
+		return err
+	})
 	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
+		t.Fatalf("Error making POST request: %v", err)
 	}
 
 	if createdResource.ID == 0 {
@@ -111,9 +143,9 @@ func TestFWFilteringNWServices(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, err := service.Get(createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -121,34 +153,18 @@ func TestFWFilteringNWServices(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
-	retrievedResource.SrcTCPPorts = []NetworkPorts{
-		{
-			Start: 5000,
-		},
-		{
-			Start: 5001,
-		},
-		{
-			Start: 5002,
-			End:   5005,
-		},
-	}
-	retrievedResource.DestTCPPorts = []NetworkPorts{
-		{
-			Start: 5001,
-		},
-		{
-			Start: 5003,
-			End:   5005,
-		},
-	}
-	_, _, err = service.Update(createdResource.ID, retrievedResource)
+	err = retryOnConflict(func() error {
+		_, _, err = service.UpdateNetworkServiceGroups(createdResource.ID, retrievedResource)
+		return err
+	})
 	if err != nil {
-		t.Errorf("Error updating resource: %v", err)
+		t.Fatalf("Error updating resource: %v", err)
 	}
-	updatedResource, err := service.Get(createdResource.ID)
+
+	updatedResource, err := service.GetNetworkServiceGroups(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -158,8 +174,9 @@ func TestFWFilteringNWServices(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = service.GetNetworkServiceGroupsByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -170,12 +187,12 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAllNetworkServices()
+	resources, err := service.GetAllNetworkServiceGroups()
 	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
+		t.Fatalf("Error retrieving resources: %v", err)
 	}
 	if len(resources) == 0 {
-		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
+		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
 	// check if the created resource is in the list
 	found := false
@@ -189,17 +206,31 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
-	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
-		return
+	err = retryOnConflict(func() error {
+		_, delErr := service.DeleteNetworkServiceGroups(createdResource.ID)
+		return delErr
+	})
+	_, err = service.GetNetworkServiceGroups(createdResource.ID)
+	if err == nil {
+		t.Fatalf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+// tryRetrieveResource attempts to retrieve a resource with retry mechanism.
+func tryRetrieveResource(s *Service, id int) (*NetworkServiceGroups, error) {
+	var resource *NetworkServiceGroups
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		resource, err = s.GetNetworkServiceGroups(id)
+		if err == nil && resource != nil && resource.ID == id {
+			return resource, nil
+		}
+		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
+		time.Sleep(retryInterval)
 	}
 
-	// Test resource retrieval after deletion
-	_, err = service.Get(createdResource.ID)
-	if err == nil {
-		t.Errorf("Expected error retrieving deleted resource, but got nil")
-	}
+	return nil, err
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
@@ -209,7 +240,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Get(0)
+	_, err = service.GetNetworkServiceGroups(0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -222,7 +253,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Delete(0)
+	_, err = service.DeleteNetworkServiceGroups(0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -235,7 +266,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.Update(0, &NetworkServices{})
+	_, _, err = service.UpdateNetworkServiceGroups(0, &NetworkServiceGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -248,7 +279,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.GetByName("non-existent-name")
+	_, err = service.GetNetworkServiceGroupsByName("non-existent-name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
