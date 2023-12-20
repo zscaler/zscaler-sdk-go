@@ -56,7 +56,7 @@ func cleanResources() {
 	}
 }
 
-func TestFWFileringNWServices(t *testing.T) {
+func TestFWFilteringNWServices(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()

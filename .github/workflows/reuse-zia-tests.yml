@@ -75,6 +75,10 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: macos-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+
+      - name: Wait before starting MacOS test
+        run: sleep 10 # Waits for 10 seconds
+
       - name: Run tests with retry on MacOS
         uses: nick-invision/retry@v2
         with:
