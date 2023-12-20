@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
@@ -37,4 +38,16 @@ func (service *Service) GetAppMetrics(appID string, filters GetAppsFilters) (*co
 		return nil, nil, err
 	}
 	return v, resp, nil
+}
+
+func (service *Service) GetAllMetrics() ([]common.Metric, error) {
+	var metrics []common.Metric
+	resp, err := service.Client.NewRequestDo("GET", metricsEndpoint, nil, nil, &metrics)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request error: status code %d", resp.StatusCode)
+	}
+	return metrics, nil
 }

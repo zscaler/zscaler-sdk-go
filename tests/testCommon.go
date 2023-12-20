@@ -14,6 +14,7 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
@@ -121,6 +122,19 @@ func NewZConClient() (*zcon.Client, error) {
 		return nil, err
 	}
 	return cli, nil
+}
+
+func NewZdxClient() (*zdx.Client, error) {
+	key_id := os.Getenv("ZDX_API_KEY_ID")
+	key_secret := os.Getenv("ZDX_API_SECRET")
+
+	config, err := zdx.NewConfig(key_id, key_secret, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating config failed: %v\n", err)
+		return nil, err
+	}
+	zdxClient := zdx.NewClient(config)
+	return zdxClient, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.

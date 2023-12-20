@@ -1,6 +1,7 @@
 package administration
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
@@ -57,4 +58,28 @@ func (service *Service) GetLocations(appID string, filters GetLocationsFilters) 
 		return nil, nil, err
 	}
 	return v, resp, nil
+}
+
+func (service *Service) GetAllDepartments() ([]Departments, error) {
+	var departments []Departments
+	resp, err := service.Client.NewRequestDo("GET", departmentsEndpoint, nil, nil, &departments)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request error: status code %d", resp.StatusCode)
+	}
+	return departments, nil
+}
+
+func (service *Service) GetAllLocations() ([]Locations, error) {
+	var locations []Locations
+	resp, err := service.Client.NewRequestDo("GET", locationsEndpoint, nil, nil, &locations)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request error: status code %d", resp.StatusCode)
+	}
+	return locations, nil
 }
