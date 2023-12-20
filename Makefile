@@ -53,7 +53,7 @@ test\:integration\:zcon:
 
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zdx/... -race -coverprofile zdxcoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
+	go test -failfast -race ./zdx/... -race -coverprofile zdxcoverage.txt -covermode=atomic -v -parallel 4 -timeout 30m
 	go tool cover -func zdxcoverage.txt | grep total:
 	rm -rf zdxcoverage.txt
 

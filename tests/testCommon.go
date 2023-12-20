@@ -125,10 +125,10 @@ func NewZConClient() (*zcon.Client, error) {
 }
 
 func NewZdxClient() (*zdx.Client, error) {
-	key_id := os.Getenv("ZDX_API_KEY_ID")
-	key_secret := os.Getenv("ZDX_API_SECRET")
+	apiKeyID := os.Getenv("ZDX_API_KEY_ID")
+	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	config, err := zdx.NewConfig(key_id, key_secret, "zscaler-sdk-go")
+	config, err := zdx.NewConfig(apiKeyID, apiSecret, "zscaler-sdk-go")
 	if err != nil {
 		log.Printf("[ERROR] creating config failed: %v\n", err)
 		return nil, err

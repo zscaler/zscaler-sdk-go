@@ -32,7 +32,7 @@ jobs:
       - name: Run tests with retry
         uses: nick-invision/retry@v2
         with:
-          max_attempts: 3
+          max_attempts: 1
           timeout_minutes: 10  # Adjust as needed
           command: |
             make test:integration:zdx
