@@ -155,10 +155,26 @@ jobs:
       ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
       ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
-  zdx-tenant01:
+  zdx-zsbeta:
     uses: ./.github/workflows/reuse-zdx-tests.yml
     with:
-      environment: ZDX_TENANT01
+      environment: ZDX_BETA
+    secrets:
+      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+
+  zdx-zs2:
+    uses: ./.github/workflows/reuse-zdx-tests.yml
+    with:
+      environment: ZDX_ZS2
+    secrets:
+      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+
+  zdx-zs3:
+    uses: ./.github/workflows/reuse-zdx-tests.yml
+    with:
+      environment: ZDX_ZS3
     secrets:
       ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
       ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}

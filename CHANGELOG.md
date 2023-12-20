@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.31.4 (December 19, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #210](https://github.com/zscaler/zscaler-sdk-go/pull/210) - Added support to ZPA App Connector Controller Assistant Schedule `assistantSchedule`
+
 # 2.3.4 (December 19, 2023)
 
 ## Notes
