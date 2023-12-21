@@ -66,7 +66,7 @@ type AssistantSchedule struct {
 	DeleteDisabled bool `json:"deleteDisabled"`
 
 	// Indicates if the setting for deleting App Connectors is enabled or disabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled"`
 
 	// The scheduled frequency at which the disconnected App Connectors are deleted.
 	Frequency string `json:"frequency"`
