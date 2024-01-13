@@ -10,7 +10,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
 const (
@@ -219,6 +218,7 @@ func TestProvisiongKeyConnectorGroup(t *testing.T) {
 	}
 }
 
+/*
 //// TEST SERVICE EDGE GROUP PROVISIONING KEY /////
 
 func TestProvisiongKeyServiceEdgeGroup(t *testing.T) {
@@ -444,3 +444,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

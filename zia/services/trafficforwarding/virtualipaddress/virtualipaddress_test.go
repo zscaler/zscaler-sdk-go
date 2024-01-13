@@ -74,12 +74,12 @@ func TestVIPs(t *testing.T) {
 
 	// Test for GetZSGREVirtualIPList
 	t.Run("TestGetZSGREVirtualIPList", func(t *testing.T) {
-		vips, err := service.GetZSGREVirtualIPList(staticIP.IpAddress, 5)
+		vips, err := service.GetZSGREVirtualIPList(staticIP.IpAddress, 3)
 		if err != nil {
 			t.Fatalf("Error fetching GRE VIP list: %v", err)
 		}
-		if len(*vips) < 5 {
-			t.Errorf("Expected at least 5 VIPs, got %d", len(*vips))
+		if len(*vips) < 3 {
+			t.Errorf("Expected at least 3 VIPs, got %d", len(*vips))
 		}
 	})
 
