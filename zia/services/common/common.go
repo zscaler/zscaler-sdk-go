@@ -21,6 +21,22 @@ type IDExtensions struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
+type IDName struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type ZPAAppSegments struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Indicates the external ID. Applicable only when this reference is of an external entity.
+	ExternalID string `json:"externalId"`
+}
+
 type UserGroups struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -44,6 +60,23 @@ type DeviceGroups struct {
 type Devices struct {
 	ID   int    `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+type DatacenterSearchParameters struct {
+	RoutableIP                bool
+	WithinCountryOnly         bool
+	IncludePrivateServiceEdge bool
+	IncludeCurrentVips        bool
+	SourceIp                  string
+	Latitude                  float64
+	Longitude                 float64
+	Subcloud                  string
+}
+
+type SandboxRSS struct {
+	Risk             string `json:"Risk,omitempty"`
+	Signature        string `json:"Signature,omitempty"`
+	SignatureSources string `json:"SignatureSources,omitempty"`
 }
 
 // GetPageSize returns the page size.
@@ -101,4 +134,30 @@ func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) e
 	}
 	*list = pageItems
 	return nil
+}
+
+type SortOrder string
+type SortField string
+
+const (
+	ASCSortOrder          SortOrder = "ASC"
+	DESCSortOrder                   = "DESC"
+	IDSortField           SortField = "id"
+	NameSortField                   = "name"
+	CreationTimeSortField           = "creationTime"
+	ModifiedTimeSortField           = "modifiedTime"
+)
+
+func GetSortParams(sortBy SortField, sortOrder SortOrder) string {
+	params := ""
+	if sortBy != "" {
+		params = "sortBy=" + string(sortBy)
+	}
+	if sortOrder != "" {
+		if params != "" {
+			params += "&"
+		}
+		params += "sortOrder=" + string(sortOrder)
+	}
+	return params
 }

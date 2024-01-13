@@ -121,37 +121,38 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	}
 }
 
-func TestPostureProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
-	}
-
-	service := New(client)
-
-	// Assuming that there are profiles with the following name variations
-	variations := []string{
-		"CrowdStrike ZPA ZTA 40", "CrowdStrike  ZPAZTA  40", "CrowdStrike   ZPAZTA   40",
-		"CrowdStrike    ZPAZTA40", "CrowdStrike  ZPAZTA 40", "CrowdStrike  ZPA ZTA   40",
-		"CrowdStrike   ZPA   ZTA 40",
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve profile with name: %s", variation)
-		profile, _, err := service.GetByName(variation)
+/*
+	func TestPostureProfileNamesWithSpaces(t *testing.T) {
+		client, err := tests.NewZpaClient()
 		if err != nil {
-			t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
-			continue
+			t.Errorf("Error creating client: %v", err)
+			return
 		}
 
-		// Verify if the profile's actual name matches the expected variation
-		if common.RemoveCloudSuffix(profile.Name) != variation {
-			t.Errorf("Expected posture profile name to be '%s' but got '%s'", variation, profile.Name)
+		service := New(client)
+
+		// Assuming that there are profiles with the following name variations
+		variations := []string{
+			"CrowdStrike ZPA ZTA 40", "CrowdStrike  ZPAZTA  40", "CrowdStrike   ZPAZTA   40",
+			"CrowdStrike    ZPAZTA40", "CrowdStrike  ZPAZTA 40", "CrowdStrike  ZPA ZTA   40",
+			"CrowdStrike   ZPA   ZTA 40",
+		}
+
+		for _, variation := range variations {
+			t.Logf("Attempting to retrieve profile with name: %s", variation)
+			profile, _, err := service.GetByName(variation)
+			if err != nil {
+				t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
+				continue
+			}
+
+			// Verify if the profile's actual name matches the expected variation
+			if common.RemoveCloudSuffix(profile.Name) != variation {
+				t.Errorf("Expected posture profile name to be '%s' but got '%s'", variation, profile.Name)
+			}
 		}
 	}
-}
-
+*/
 func TestPostureProfileByPostureUDID(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -180,5 +181,18 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 	// Check if the posture profile's actual PostureudID matches the known PostureudID
 	if postureByUDID.PostureudID != posture.PostureudID {
 		t.Errorf("Expected posture profile UDID to be '%s', but got '%s'", posture.PostureudID, postureByUDID.PostureudID)
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }

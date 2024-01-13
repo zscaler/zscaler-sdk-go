@@ -63,6 +63,7 @@ func TestMicrotenants(t *testing.T) {
 		"securitygeek.io",
 		"72058304855015424.zpa-customer.com",
 		"securitygeekio.ca",
+		"72057604775346176.zpa-customer.com",
 	}
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)

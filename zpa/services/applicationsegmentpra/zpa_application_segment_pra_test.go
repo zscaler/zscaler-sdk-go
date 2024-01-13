@@ -1,21 +1,17 @@
 package applicationsegmentpra
 
-/*
 import (
 	"log"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 )
-
-// Declare the global variable
-var createdResourceID string
-var createdResourceName string
 
 // clean all resources
 func TestMain(m *testing.M) {
@@ -57,54 +53,40 @@ func cleanResources() {
 		_, _ = service.Delete(r.ID)
 	}
 }
-
-func setupTest(t *testing.T) *segmentgroup.SegmentGroup {
+func TestApplicationSegmentPRA(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
+	// create application segment group for testing
 	appGroupService := segmentgroup.New(client)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
 	}
 	createdAppGroup, _, err := appGroupService.Create(&appGroup)
 	if err != nil {
-		t.Fatalf("Error creating application segment group: %v", err)
-	}
-
-	return createdAppGroup
-}
-
-func cleanupTest(t *testing.T, createdAppGroup *segmentgroup.SegmentGroup) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	appGroupService := segmentgroup.New(client)
-	_, err = appGroupService.Delete(createdAppGroup.ID)
-	if err != nil {
-		t.Errorf("Error deleting application segment group: %v", err)
-	}
-}
-
-func TestApplicationSegmentPRACreate(t *testing.T) {
-	createdAppGroup := setupTest(t)
-	// defer cleanupTest(t, createdAppGroup)
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appGroupService.Delete(createdAppGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting application segment group: %v", err)
+			}
+		}
+	}()
 
 	service := New(client)
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	initialPort := "3389"
-
 	appSegment := AppSegmentPRA{
 		Name:             name,
 		Description:      name,
@@ -117,11 +99,11 @@ func TestApplicationSegmentPRACreate(t *testing.T) {
 		HealthReporting:  "ON_ACCESS",
 		HealthCheckType:  "DEFAULT",
 		TCPKeepAlive:     "1",
-		DomainNames:      []string{"rdp_pra.example.com"},
+		DomainNames:      []string{"rdp_pra.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: initialPort,
-				To:   initialPort,
+				From: "3389",
+				To:   "3389",
 			},
 		},
 		CommonAppsDto: CommonAppsDto{
@@ -131,10 +113,10 @@ func TestApplicationSegmentPRACreate(t *testing.T) {
 					Description:         name,
 					Enabled:             true,
 					AppTypes:            []string{"SECURE_REMOTE_ACCESS"},
-					ApplicationPort:     initialPort,
+					ApplicationPort:     "3389",
 					ApplicationProtocol: "RDP",
 					ConnectionSecurity:  "ANY",
-					Domain:              "rdp_pra.example.com",
+					Domain:              "rdp_pra.bd-hashicorp.com",
 				},
 			},
 		},
@@ -146,209 +128,134 @@ func TestApplicationSegmentPRACreate(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
 	}
+
 	if createdResource.ID == "" {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
-	if len(createdResource.TCPPortRanges) != 2 || createdResource.TCPPortRanges[0] != initialPort || createdResource.TCPPortRanges[1] != initialPort {
-		t.Errorf("Expected created resource port '%s-%s', but got '%s'", initialPort, initialPort, createdResource.TCPPortRanges)
-	}
-	// Save the created resource's ID to the global variable
-	createdResourceID = createdResource.ID
-	createdResourceName = name
-}
 
-func TestApplicationSegmentPRAGet(t *testing.T) {
-	createdAppGroup := setupTest(t)
-	defer cleanupTest(t, createdAppGroup)
-
-	client, err := tests.NewZpaClient()
+	// Test resource retrieval
+	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Errorf("Error retrieving resource: %v", err)
 	}
-
-	service := New(client)
-	resourceID := createdResourceID
-	if resourceID == "" {
-		t.Fatal("Resource ID is empty, might be due to TestApplicationSegmentPRACreate not executed or failed.")
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
+	if retrievedResource.Name != name {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+	}
+	retrievedResource.Name = updateName
 
-	retrievedResource, _, err := service.Get(resourceID)
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
+		t.Errorf("Error updating resource: %v", err)
 	}
-	if retrievedResource == nil {
-		t.Fatalf("Expected a resource but got nil")
-	}
-	if retrievedResource.ID != resourceID {
-		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", resourceID, retrievedResource.ID)
-	}
-}
-
-func TestApplicationSegmentPRAGetByName(t *testing.T) {
-	createdAppGroup := setupTest(t)
-	defer cleanupTest(t, createdAppGroup)
-
-	client, err := tests.NewZpaClient()
+	updatedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Errorf("Error retrieving resource: %v", err)
+	}
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
+	}
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 
-	service := New(client)
-	resourceName := createdResourceName
-	if resourceName == "" {
-		t.Fatal("Resource name is empty, might be due to TestApplicationSegmentPRACreate not executed or failed.")
-	}
-
-	retrievedResource, _, err := service.GetByName(resourceName)
+	// Test resource retrieval by name
+	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
-		return
 	}
-
-	if retrievedResource == nil {
-		t.Fatal("Retrieved resource is nil")
-		return
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
-
-	if retrievedResource.Name != resourceName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", resourceName, retrievedResource.Name)
+	if retrievedResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
-}
-
-/*
-	func TestApplicationSegmentPRAUpdate(t *testing.T) {
-		createdAppGroup := setupTest(t)
-		defer cleanupTest(t, createdAppGroup)
-
-		client, err := tests.NewZpaClient()
-		if err != nil {
-			t.Errorf("Error creating client: %v", err)
-			return
-		}
-
-		service := New(client)
-		resourceID := createdResourceID
-		if resourceID == "" {
-			t.Fatal("Resource ID is empty, might be due to TestApplicationSegmentPRACreate not executed or failed.")
-		}
-		updatedPort := "3389"
-
-		retrievedResource, _, err := service.Get(resourceID)
-		if err != nil {
-			t.Fatalf("Error retrieving resource: %v", err)
-		}
-
-		initialAppPort := ""
-		if len(retrievedResource.SRAAppsDto) > 0 {
-			initialAppPort = retrievedResource.SRAAppsDto[0].ApplicationPort
-		}
-
-		// Check if there's a change in ApplicationPort
-		if initialAppPort != updatedPort {
-			// Delete the old resource
-			_, err = service.Delete(resourceID)
-			if err != nil {
-				t.Fatalf("Error deleting resource: %v", err)
-			}
-
-			// Create new resource with the updated configurations
-			// NOTE: This assumes that the service.Create function returns the created resource
-			// Create new resource with the updated configurations
-			newResource, _, err := service.Create(*retrievedResource)
-			if err != nil {
-				t.Fatalf("Error creating new resource: %v", err)
-			}
-			retrievedResource = newResource   // Updating the reference to point to the newly created resource
-			resourceID = retrievedResource.ID // Assuming the newResource (or retrievedResource after the assignment) has an ID field
-
-		} else {
-			// Your existing update logic for properties that can be updated in place.
-			retrievedResource.SegmentGroupID = createdAppGroup.ID
-			retrievedResource.SegmentGroupName = createdAppGroup.Name
-			retrievedResource.Name = createdResourceName
-			retrievedResource.TCPAppPortRange = []common.NetworkPorts{
-				{
-					From: updatedPort,
-					To:   updatedPort,
-				},
-			}
-
-			if len(retrievedResource.SRAAppsDto) > 0 {
-				retrievedResource.SRAAppsDto[0].ApplicationPort = updatedPort
-			} else {
-				retrievedResource.CommonAppsDto.AppsConfig = []AppsConfig{
-					{
-						Name:                createdResourceName,
-						Description:         createdResourceName,
-						Enabled:             true,
-						AppTypes:            []string{"SECURE_REMOTE_ACCESS"},
-						ApplicationPort:     updatedPort,
-						ApplicationProtocol: "RDP",
-						ConnectionSecurity:  "ANY",
-						Domain:              "rdp_pra.example.com",
-					},
-				}
-			}
-
-			// Update the resource
-			_, err = service.Update(resourceID, retrievedResource)
-			if err != nil {
-				t.Errorf("Error updating resource: %v", err)
-			}
-		}
-
-		// Delay to give some time for the update to propagate (if needed)
-		time.Sleep(time.Second * 5)
-
-		// Fetch the updated resource again
-		updatedResource, _, err := service.Get(resourceID)
-		if err != nil {
-			t.Fatalf("Error retrieving updated resource: %v", err)
-		}
-
-		// Assertions based on your requirements
-		if updatedResource.TCPAppPortRange[0].From != updatedPort || updatedResource.TCPAppPortRange[0].To != updatedPort {
-			t.Errorf("Expected updated resource port '%s-%s', but got '%s-%s'", updatedPort, updatedPort, updatedResource.TCPAppPortRange[0].From, updatedResource.TCPAppPortRange[0].To)
-		}
-
-		if len(updatedResource.CommonAppsDto.AppsConfig) > 0 && updatedResource.CommonAppsDto.AppsConfig[0].ApplicationPort != updatedPort {
-			t.Errorf("Expected updated ApplicationPort '%s', but got '%s'", updatedPort, updatedResource.CommonAppsDto.AppsConfig[0].ApplicationPort)
-		}
-	}
-
-func TestApplicationSegmentPRADelete(t *testing.T) {
-	createdAppGroup := setupTest(t)
-	defer cleanupTest(t, createdAppGroup)
-
-	client, err := tests.NewZpaClient()
+	// Test resources retrieval
+	resources, _, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Errorf("Error retrieving resources: %v", err)
 	}
-
-	service := New(client)
-	// Read the ID from the global variable
-	resourceID := createdResourceID
-	if resourceID == "" {
-		t.Fatal("Resource ID is empty, might be due to TestApplicationSegmentPRACreate not executed or failed.")
+	if len(resources) == 0 {
+		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-
-	// Delete the resource
-	_, err = service.Delete(resourceID)
+	// check if the created resource is in the list
+	found := false
+	for _, resource := range resources {
+		if resource.ID == createdResource.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
+	}
+	// Test resource removal
+	_, err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
-	// Try fetching the deleted resource to ensure it's deleted
-	_, _, err = service.Get(resourceID)
+	// Test resource retrieval after deletion
+	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-*/
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Get("non-existent-id")
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete("non-existent-id")
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update("non-existent-id", &AppSegmentPRA{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}

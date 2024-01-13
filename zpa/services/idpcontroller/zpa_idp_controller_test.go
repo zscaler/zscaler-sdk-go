@@ -35,8 +35,8 @@ func TestIdPController(t *testing.T) {
 		t.Errorf("identity provider name does not match: expected %s, got %s", name, provider.Name)
 		return
 	}
-	// Negative Test: Try to retrieve a group with a non-existent name
-	nonExistentName := "ThisMachineGroupNameDoesNotExist"
+	// Negative Test: Try to retrieve a Idp with a non-existent name
+	nonExistentName := "ThisIdpNameDoesNotExist"
 	_, _, err = service.GetByName(nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
@@ -72,5 +72,18 @@ func TestResponseFormatValidation(t *testing.T) {
 		if provider.Name == "" {
 			t.Errorf("Identity provider Name is empty")
 		}
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }

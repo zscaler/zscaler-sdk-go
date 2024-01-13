@@ -4,43 +4,68 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
+
+const (
+	charSetAlphaUpper  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	charSetAlphaLower  = "abcdefghijklmnopqrstuvwxyz"
+	charSetNumeric     = "0123456789"
+	charSetSpecialChar = "!@#$%^&*"
+)
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
+func TestPassword(length int) string {
+	if length < 8 {
+		length = 8
+	} else if length > 100 {
+		length = 100
+	}
+
+	result := make([]byte, length)
+	result[0] = charSetAlphaLower[rand.Intn(len(charSetAlphaLower))]
+	result[1] = charSetAlphaUpper[rand.Intn(len(charSetAlphaUpper))]
+	result[2] = charSetNumeric[rand.Intn(len(charSetNumeric))]
+	result[3] = charSetSpecialChar[rand.Intn(len(charSetSpecialChar))]
+
+	charSetAll := charSetAlphaLower + charSetAlphaUpper + charSetNumeric + charSetSpecialChar
+	for i := 4; i < length; i++ {
+		result[i] = charSetAll[rand.Intn(len(charSetAll))]
+	}
+	// Shuffle the result to avoid predictable patterns (lower, upper, numeric, special)
+	rand.Shuffle(len(result), func(i, j int) {
+		result[i], result[j] = result[j], result[i]
+	})
+
+	return string(result)
+}
 
 func NewZpaClient() (*zpa.Client, error) {
 	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
 	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
 	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
 	zpa_cloud := os.Getenv("ZPA_CLOUD")
-	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "testing")
+	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "zscaler-sdk-go")
 	if err != nil {
 		log.Printf("[ERROR] creating config failed: %v\n", err)
 		return nil, err
 	}
 	zpaClient := zpa.NewClient(config)
 	return zpaClient, nil
-}
-
-func NewZiaClient() (*zia.Client, error) {
-	username := os.Getenv("ZIA_USERNAME")
-	password := os.Getenv("ZIA_PASSWORD")
-	apiKey := os.Getenv("ZIA_API_KEY")
-	ziaCloud := os.Getenv("ZIA_CLOUD")
-
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "testing")
-	if err != nil {
-		log.Printf("[ERROR] creating client failed: %v\n", err)
-		return nil, err
-	}
-	return cli, nil
 }
 
 func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
@@ -68,6 +93,34 @@ func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
 		},
 	}
 	return client, mux, server
+}
+
+func NewZiaClient() (*zia.Client, error) {
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
+
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
+}
+
+func NewZConClient() (*zcon.Client, error) {
+	username := os.Getenv("ZCON_USERNAME")
+	password := os.Getenv("ZCON_PASSWORD")
+	apiKey := os.Getenv("ZCON_API_KEY")
+	zconCloud := os.Getenv("ZCON_CLOUD")
+
+	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.

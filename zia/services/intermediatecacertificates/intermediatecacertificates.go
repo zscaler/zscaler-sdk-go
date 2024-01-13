@@ -108,7 +108,7 @@ type CertSigningRequest struct {
 	PathLengthConstraint int `json:"pathLengthConstraint,omitempty"`
 }
 
-func (service *Service) Get(certID int) (*IntermediateCACertificate, error) {
+func (service *Service) GetCertificate(certID int) (*IntermediateCACertificate, error) {
 	var intermediateCACertificate IntermediateCACertificate
 	err := service.Client.Read(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), &intermediateCACertificate)
 	if err != nil {
@@ -166,15 +166,15 @@ func (service *Service) GetDownloadPublicKey(certID int) (*IntermediateCACertifi
 	return &downloadPublicKey, nil
 }
 
-func (service *Service) GetIntCAReadyToUse() (*IntermediateCACertificate, error) {
-	var readyToUse IntermediateCACertificate
-	err := service.Client.Read((intCAReadyToUseEndpoint), &readyToUse)
+func (service *Service) GetIntCAReadyToUse() ([]IntermediateCACertificate, error) {
+	var readyToUse []IntermediateCACertificate
+	err := service.Client.Read(intCAReadyToUseEndpoint, &readyToUse)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %d", readyToUse.ID)
-	return &readyToUse, nil
+	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %v", readyToUse)
+	return readyToUse, nil
 }
 
 func (service *Service) GetShowCert(certID int) (*CertSigningRequest, error) {

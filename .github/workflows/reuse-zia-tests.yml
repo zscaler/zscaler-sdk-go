@@ -14,6 +14,16 @@ on:
         required: true
       ZIA_CLOUD:
         required: true
+      ZIA_SANDBOX_TOKEN:
+        required: true
+      ZPA_CLIENT_ID:
+        required: true
+      ZPA_CLIENT_SECRET:
+        required: true
+      ZPA_CUSTOMER_ID:
+        required: true
+      ZPA_CLOUD:
+        required: true
       ZSCALER_SDK_TEST_SWEEP:
         required: true
 
@@ -22,7 +32,7 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.19
       - name: Checkout code
@@ -37,13 +47,18 @@ jobs:
           max_attempts: 3
           timeout_minutes: 10  # Adjust as needed
           command: |
+            make test:unit
             make test:integration:zia
-            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
   zia-test-macos:
@@ -51,7 +66,7 @@ jobs:
     runs-on: macos-latest
     needs: zia-test-ubuntu # This ensures the macos job only starts after the ubuntu job completes
     steps:
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.19
       - name: Checkout code
@@ -60,17 +75,26 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: macos-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+
+      - name: Wait before starting MacOS test
+        run: sleep 10 # Waits for 10 seconds
+
       - name: Run tests with retry on MacOS
         uses: nick-invision/retry@v2
         with:
-          max_attempts: 3
-          timeout_minutes: 10  # Adjust as needed
+          max_attempts: 2
+          timeout_minutes: 90  # Adjust as needed
           command: |
+            make test:unit
             make test:integration:zia
-            make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
           ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
           ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+          ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}

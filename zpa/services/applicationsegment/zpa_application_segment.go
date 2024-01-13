@@ -21,14 +21,17 @@ type ApplicationSegmentResource struct {
 	Name                      string                              `json:"name,omitempty"`
 	Description               string                              `json:"description,omitempty"`
 	Enabled                   bool                                `json:"enabled"`
+	ADPEnabled                bool                                `json:"adpEnabled"`
 	PassiveHealthEnabled      bool                                `json:"passiveHealthEnabled"`
 	DoubleEncrypt             bool                                `json:"doubleEncrypt"`
 	ConfigSpace               string                              `json:"configSpace,omitempty"`
 	Applications              string                              `json:"applications,omitempty"`
 	BypassType                string                              `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                                `json:"bypassOnReauth,omitempty"`
 	HealthCheckType           string                              `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                                `json:"isCnameEnabled"`
 	IpAnchored                bool                                `json:"ipAnchored"`
+	FQDNDnsCheck              bool                                `json:"fqdnDnsCheck"`
 	HealthReporting           string                              `json:"healthReporting,omitempty"`
 	SelectConnectorCloseToApp bool                                `json:"selectConnectorCloseToApp"`
 	IcmpAccessType            string                              `json:"icmpAccessType,omitempty"`

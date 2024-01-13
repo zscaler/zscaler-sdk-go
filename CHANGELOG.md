@@ -1,14 +1,119 @@
 # Changelog
 
-# 2.1.6 (November xx, 2023)
+# 2.3.4 (December 19, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #209](https://github.com/zscaler/zscaler-sdk-go/pull/209) - Added support to ZPA Application Segment within the ZIA Firewall Filtering rule resource. Only ZPA application segments with the Source IP Anchor option enabled are supported.
+
+# 2.3.3 (December 18, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #207](https://github.com/zscaler/zscaler-sdk-go/pull/207) - Added missing ZIA URL Filtering Rule attribute `userRiskScoreLevels`: Supported values: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+
+- [PR #207](https://github.com/zscaler/zscaler-sdk-go/pull/207) - Added New ZIA URL Filtering Rule `cbiProfile` attribute to support `ISOLATE` action.
+
+# 2.3.2 (December 16, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #206](https://github.com/zscaler/zscaler-sdk-go/pull/206) - Added missing Web DLP rule attribute `userRiskScoreLevels`: Supported values: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+
+- [PR #206](https://github.com/zscaler/zscaler-sdk-go/pull/206) - Added DLP Engine Lite endpoint to `/dlpEngines/lite`
+
+# 2.3.1 (December 15, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #205](https://github.com/zscaler/zscaler-sdk-go/pull/205) Added ZIA Web DLP Rule new attributes:
+  - `severity`
+  - `subRules`
+  - `parentRule`
+
+# 2.3.0 (December 13, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added support to 🆕 ZIA Cloud Browser Isolation Profile endpoint ``/browserIsolation/profiles``
+
+# 2.2.2 (December 10, 2023)
 
 ## Notes
 - Golang: **v1.19**
 
 ### Fixes
 
+- Fixed ZPA application segment PRA for missing attribute ``UDPPortRanges``
+
+# 2.2.1 (December 8, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- Removed unsupported attributes from ZIA Forwarding control rule resource
+
+# 2.2.0 (December xx, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #185](https://github.com/zscaler/zscaler-sdk-go/pull/185) Added ZIA Sandbox Resources:
+  - **Sandbox Quota Report** - The resource access quota for retrieving Sandbox Detail Reports is restricted to 1000 requests per day, with a rate limit of 2/sec and 1000/hour. Use GET /sandbox/report/quota to retrieve details regarding your organization's daily Sandbox API resource usage (i.e., used quota, unused quota).
+  - **Sandbox Quota MD5 Hash Report** - Gets a full (i.e., complete) or summary detail report for an MD5 hash of a file that was analyzed by Sandbox.
+  - **Sandbox Advanced Settings** - Gets and Upddates the custom list of MD5 file hashes that are blocked by Sandbox.
+  - **Sandbox Advanced Settings Hash Count** - Gets the used and unused quota for blocking MD5 file hashes with Sandbox
+
+- [PR #185](https://github.com/zscaler/zscaler-sdk-go/pull/185)
+  - **Sandbox Submission** - Submits raw or archive files (e.g., ZIP) to Sandbox for analysis. You can submit up to 100 files per day and it supports all file types that are currently supported by Sandbox.
+  - **Sandbox Out-of-Band File Inspection** - Submits raw or archive files (e.g., ZIP) to the Zscaler service for out-of-band file inspection to generate real-time verdicts for known and unknown files. It leverages capabilities such as Malware Prevention, Advanced Threat Prevention, Sandbox cloud effect, AI/ML-driven file analysis, and integrated third-party threat intelligence feeds to inspect files and classify them as benign or malicious instantaneously.
+
+- [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Forwarding Control Policy endpoint `/forwardingRules`
+- [PR #188](https://github.com/zscaler/zscaler-sdk-go/pull/188) Added support for ZIA 🆕 Custom ZPA Gateway endpoint `/zpaGateways`for use with Forwarding Control policy to forward traffic to ZPA for Source IP Anchoring
+- [PR #190](https://github.com/zscaler/zscaler-sdk-go/pull/190) Added support for ZIA Group, Department and UserName using ``SortOrder`` and ``SortBy`` search criteria option
+- [PR #191](https://github.com/zscaler/zscaler-sdk-go/pull/191) Added support for Zscaler Cloud & Branch Connector API endpoints. The following endpoint resources are supported:
+  - `/adminRoles`
+  - `/adminUsers`
+  - `/ecgroup`
+  - `/ecgroup/lite`
+  - `/location`
+  - `/location/lite`
+  - `/locationTemplate`
+  - `/apiKeys`
+  - `/apiKeys/{keyId}/regenerate`
+
+### Fixes
+
+- [PR #189](https://github.com/zscaler/zscaler-sdk-go/pull/189) Fixed missing `microtenantId` and `microtenantName` attributes in ZPA browser access package.
+
+# 2.1.6 (November 17, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
 - [PR #182](https://github.com/zscaler/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
-- [PR #183](https://github.com/zscaler/zscaler-sdk-go/pull/183) Added support for new ZPA Access Policy Bulk Reorder Endpoint
+- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
 
 # 2.1.5 (November 1, 2023)
 

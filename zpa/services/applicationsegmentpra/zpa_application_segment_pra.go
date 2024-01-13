@@ -22,9 +22,12 @@ type AppSegmentPRA struct {
 	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
+	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	Applications              string                   `json:"applications,omitempty"`
 	BypassType                string                   `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
+	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
 	IpAnchored                bool                     `json:"ipAnchored"`
@@ -42,11 +45,11 @@ type AppSegmentPRA struct {
 	MicroTenantName           string                   `json:"microtenantName,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
+	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
 	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
 	SRAAppsDto                []SRAAppsDto             `json:"sraApps,omitempty"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`

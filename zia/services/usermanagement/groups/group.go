@@ -42,7 +42,7 @@ func (service *Service) GetGroupByName(targetGroup string) (*Groups, error) {
 	page := 1
 
 	// Construct the endpoint with the search parameter
-	endpointWithSearch := fmt.Sprintf("%s?search=%s", groupsEndpoint, url.QueryEscape(targetGroup))
+	endpointWithSearch := fmt.Sprintf("%s?search=%s&%s", groupsEndpoint, url.QueryEscape(targetGroup), common.GetSortParams(service.sortBy, service.sortOrder))
 
 	for {
 		err := common.ReadPage(service.Client, endpointWithSearch, page, &groups)
@@ -69,6 +69,6 @@ func (service *Service) GetGroupByName(targetGroup string) (*Groups, error) {
 
 func (service *Service) GetAllGroups() ([]Groups, error) {
 	var groups []Groups
-	err := common.ReadAllPages(service.Client, groupsEndpoint, &groups)
+	err := common.ReadAllPages(service.Client, groupsEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &groups)
 	return groups, err
 }

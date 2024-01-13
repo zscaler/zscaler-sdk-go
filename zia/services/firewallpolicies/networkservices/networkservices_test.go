@@ -56,7 +56,7 @@ func cleanResources() {
 	}
 }
 
-func TestFWFileringNWServices(t *testing.T) {
+func TestFWFilteringNWServices(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
@@ -199,5 +199,57 @@ func TestFWFileringNWServices(t *testing.T) {
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Get(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Update(0, &NetworkServices{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }

@@ -109,6 +109,18 @@ type FirewallFilteringRules struct {
 
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	SrcIpGroups []common.IDNameExtensions `json:"srcIpGroups,omitempty"`
+
+	// List of device trust levels for which the rule must be applied. This field is applicable for devices that are managed using Zscaler Client Connector. The trust levels are assigned to the devices based on your posture configurations in the Zscaler Client Connector Portal. If no value is set, this field is ignored during the policy evaluation.
+	DeviceTrustLevels []string `json:"deviceTrustLevels,omitempty"`
+
+	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
+	DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
+
+	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
+	Devices []common.IDNameExtensions `json:"devices"`
+
+	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
+	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
 func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {
