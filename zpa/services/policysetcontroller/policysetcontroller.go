@@ -2,7 +2,10 @@ package policysetcontroller
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -201,6 +204,68 @@ func (service *Service) Reorder(policySetID, ruleId string, order int) (*http.Re
 		return nil, err
 	}
 	return resp, err
+}
+
+// PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
+// ruleIdOrders is a map[ruleID]Order
+func (service *Service) BulkReorder(policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
+	policySet, resp, err := service.GetByPolicyType(policySetType)
+	if err != nil {
+		return resp, err
+	}
+	all, resp, err := service.GetAllByType(policySetType)
+	if err != nil {
+		return resp, err
+	}
+	sort.SliceStable(all, func(i, j int) bool {
+		ruleIDi := all[i].ID
+		ruleIDj := all[j].ID
+
+		// Check if ruleIDi and ruleIDj exist in the ruleIdToOrder map
+		orderi, existsi := ruleIdToOrder[ruleIDi]
+		orderj, existsj := ruleIdToOrder[ruleIDj]
+
+		// If both rules exist in the map, compare their orders
+		if existsi && existsj {
+			return orderi <= orderj
+		}
+
+		// If only one of the rules exists in the map, prioritize it
+		if existsi {
+			return true
+		} else if existsj {
+			return false
+		}
+
+		// If neither rule exists in the map, maintain their relative order
+		return i <= j
+	})
+	// Construct the URL path
+	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/reorder", policySet.ID)
+	ruleIdsOrdered := []string{}
+	for _, r := range all {
+		ruleIdsOrdered = append(ruleIdsOrdered, r.ID)
+	}
+
+	// Create a new PUT request
+	resp, err = service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, ruleIdsOrdered, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for non-2xx status code and log response body for debugging
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		defer resp.Body.Close() // Ensure the body is always closed
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			// Handle the error of reading the body (optional)
+			log.Printf("Error reading response body: %s\n", err.Error())
+		}
+		log.Printf("Error response from API: %s\n", string(bodyBytes))
+		return resp, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	return resp, nil
 }
 
 func (service *Service) RulesCount() (int, *http.Response, error) {
