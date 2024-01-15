@@ -91,10 +91,31 @@ func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCod
 			pairVips = append(pairVips, vip)
 		}
 	}
+	// If not enough VIPs in the specified country, add any VIPs until there are at least two.
 	if len(pairVips) < 2 {
-		return nil, fmt.Errorf("not enough vips, got %d vips, required: %d within country", len(zscalerVips), 2)
+		for _, vip := range zscalerVips {
+			if len(pairVips) >= 2 {
+				break
+			}
+			if !containsVIP(pairVips, vip) {
+				pairVips = append(pairVips, vip)
+			}
+		}
+	}
+	if len(pairVips) < 2 {
+		return nil, fmt.Errorf("not enough vips, got %d vips, required: %d", len(pairVips), 2)
 	}
 	return &pairVips, nil
+}
+
+// Helper function to check if a VIP is already in the list
+func containsVIP(vips []GREVirtualIPList, vip GREVirtualIPList) bool {
+	for _, v := range vips {
+		if v.ID == vip.ID {
+			return true
+		}
+	}
+	return false
 }
 
 func (service *Service) GetAll(sourceIP string) ([]GREVirtualIPList, error) {

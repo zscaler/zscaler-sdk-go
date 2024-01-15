@@ -1,5 +1,23 @@
 # Changelog
 
+# 2.3.6 (January 15, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #183](https://github.com/zscaler/zscaler-sdk-go/pull/183) - (feat): Implemented New ZPA Bulk Reorder Policy Rule
+
+# 2.3.5 (December 20, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- Removed omitempty tag from enabled attribute ZPA in Assistant Schedule struct.
+
 # 2.3.4 (December 19, 2023)
 
 ## Notes
