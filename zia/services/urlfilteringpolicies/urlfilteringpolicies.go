@@ -117,6 +117,9 @@ type URLFilteringRule struct {
 	// Name-ID pairs of time interval during which rule must be enforced.
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
+	// The list of preconfigured workload groups to which the policy must be applied.
+	WorkloadGroups []common.IDNameWorkloadGroup `json:"workloadGroups,omitempty"`
+
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
 	CBIProfile   CBIProfile `json:"cbiProfile"`

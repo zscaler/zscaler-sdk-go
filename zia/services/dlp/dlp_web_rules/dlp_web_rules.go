@@ -124,6 +124,9 @@ type WebDLPRules struct {
 	// The name-ID pairs of the users that are excluded from the DLP policy rule.
 	ExcludedUsers []common.IDNameExtensions `json:"excludedUsers,omitempty"`
 
+	// The list of preconfigured workload groups to which the policy must be applied.
+	WorkloadGroups []common.IDNameWorkloadGroup `json:"workloadGroups,omitempty"`
+
 	// Indicates the severity selected for the DLP rule violation
 	Severity string `json:"severity,omitempty"`
 

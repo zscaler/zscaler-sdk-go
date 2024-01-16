@@ -121,6 +121,9 @@ type FirewallFilteringRules struct {
 
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
+
+	// The list of preconfigured workload groups to which the policy must be applied.
+	WorkloadGroups []common.IDNameWorkloadGroup `json:"workloadGroups,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*FirewallFilteringRules, error) {

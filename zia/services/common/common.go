@@ -62,6 +62,11 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
+type IDNameWorkloadGroup struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type DatacenterSearchParameters struct {
 	RoutableIP                bool
 	WithinCountryOnly         bool
