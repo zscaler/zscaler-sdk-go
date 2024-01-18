@@ -31,9 +31,39 @@ help:
 	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
 
-build:
-	@echo "$(COLOR_ZSCALER)Building SDK...$(COLOR_NONE)"
-	make test:all
+default: build
+
+build: vendor
+	@echo "$(COLOR_ZSCALER)✓ Building SDK Source Code with Go Build...$(COLOR_NONE)"
+	@go build -mod vendor -v
+
+vendor:
+	@echo "✓ Filling vendor folder with library code ..."
+	@go mod vendor
+
+fmt:
+	@echo "✓ Formatting source code with goimports ..."
+	@go run golang.org/x/tools/cmd/goimports@latest -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+	@echo "✓ Formatting source code with gofmt ..."
+	@gofmt -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+
+doc:
+	@echo "Open http://localhost:6060"
+	@go run golang.org/x/tools/cmd/godoc@latest -http=localhost:6060
+
+lint: vendor
+	@echo "✓ Linting source code with https://staticcheck.io/ ..."
+	@go run honnef.co/go/tools/cmd/staticcheck@v0.4.0 ./...
+
+test: lint
+	@echo "✓ Running tests ..."
+	@go run gotest.tools/gotestsum@latest --format pkgname-and-test-fails \
+		--no-summary=skipped --raw-command go test -v \
+		-json -short -coverprofile=coverage.txt ./...
+
+coverage: test
+	@echo "✓ Opening coverage for unit tests ..."
+	@go tool cover -html=coverage.txt
 
 test:
 	make test:all
@@ -142,3 +172,5 @@ import: check-goimports
 
 check-goimports:
 	@which $(GOIMPORTS) > /dev/null || GO111MODULE=on go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: fmt vendor fmt coverage test lint doc

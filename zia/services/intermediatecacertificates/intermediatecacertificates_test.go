@@ -67,7 +67,6 @@ func TestIntermediateCertificate_data(t *testing.T) {
 		return
 	}
 	t.Logf("Successfully retrieved ready-to-use intermediate certificate: %s", readyToUseCerts[0].Name)
-
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {

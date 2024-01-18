@@ -4,8 +4,7 @@ import (
 	"net/http"
 )
 
-type nopCache struct {
-}
+type nopCache struct{}
 
 func NewNopCache() Cache {
 	return &nopCache{}

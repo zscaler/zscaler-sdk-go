@@ -90,6 +90,7 @@ type ECInstances struct {
 func GetPageSize() int {
 	return pageSize
 }
+
 func ReadAllPages[T any](client *zcon.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil

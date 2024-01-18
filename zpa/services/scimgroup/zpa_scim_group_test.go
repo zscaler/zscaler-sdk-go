@@ -1,6 +1,5 @@
 package scimgroup
 
-/*
 import (
 	"math/rand"
 	"net/http"
@@ -9,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 )
 
 func getTestIdpId(t *testing.T) string {
@@ -153,7 +152,6 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 			t.Errorf("No SCIM group named '%s' found with sort order %s", testScimName, sortOrder)
 		}
 	}
-
 }
 
 func TestResponseFormatValidation(t *testing.T) {
@@ -319,4 +317,3 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 		t.Errorf("Expected content type to start with 'application/json', got %s", contentType)
 	}
 }
-*/

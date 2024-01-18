@@ -112,7 +112,7 @@ func TestCBICertificates(t *testing.T) {
 		Name: certName,
 	}
 
-	//Test 1: Upload Certificate with Invalid Data
+	// Test 1: Upload Certificate with Invalid Data
 	t.Run("TestInvalidCertificateUpload", func(t *testing.T) {
 		invalidCert := CBICertificate{
 			PEM:  "", // Invalid as it's empty

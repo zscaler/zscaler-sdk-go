@@ -154,7 +154,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	err := client.authenticate()
 	if err != nil {
 		return nil, err
-
 	}
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {

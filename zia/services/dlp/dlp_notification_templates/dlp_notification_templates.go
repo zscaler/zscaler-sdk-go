@@ -14,7 +14,6 @@ const (
 )
 
 type DlpNotificationTemplates struct {
-
 	// The unique identifier for a DLP notification template.
 	ID int `json:"id"`
 

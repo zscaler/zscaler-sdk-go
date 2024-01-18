@@ -15,7 +15,7 @@ const (
 )
 
 type LocationTemplate struct {
-	//ID of Cloud & Branch Connector location template
+	// ID of Cloud & Branch Connector location template
 	ID int `json:"id,omitempty"`
 
 	// Name of Cloud & Branch Connector location template
@@ -38,7 +38,7 @@ type LocationTemplate struct {
 }
 
 type LocationTemplateDetails struct {
-	//Prefix of Cloud & Branch Connector location template
+	// Prefix of Cloud & Branch Connector location template
 	TemplatePrefix string `json:"templatePrefix,omitempty"`
 
 	// Enable if you want the Zscaler service to use the X-Forwarded-For (XFF) headers that your on-premise proxy server inserts in outbound HTTP requests

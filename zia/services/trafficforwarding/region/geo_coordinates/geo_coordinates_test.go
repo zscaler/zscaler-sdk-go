@@ -24,7 +24,6 @@ func TestGeoCoordinates(t *testing.T) {
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
-
 	if err != nil {
 		t.Fatalf("Error creating static IP for testing: %v", err)
 	}

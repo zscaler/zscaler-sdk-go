@@ -64,8 +64,8 @@ type DlpDictionary struct {
 	// Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
 	IncludeBinNumbers bool `json:"includeBinNumbers,omitempty"`
 
-	//The list of Bank Identification Number (BIN) values that are included or excluded from the Credit Cards dictionary. BIN values can be specified only for Diners Club, Mastercard, RuPay, and Visa cards. Up to 512 BIN values can be configured in a dictionary.
-	//Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
+	// The list of Bank Identification Number (BIN) values that are included or excluded from the Credit Cards dictionary. BIN values can be specified only for Diners Club, Mastercard, RuPay, and Visa cards. Up to 512 BIN values can be configured in a dictionary.
+	// Note: This field is applicable only to the predefined Credit Cards dictionary and its clones.
 	BinNumbers []int `json:"binNumbers,omitempty"`
 
 	// ID of the predefined dictionary (original source dictionary) that is used for cloning. This field is applicable only to cloned dictionaries. Only a limited set of identification-based predefined dictionaries (e.g., Credit Cards, Social Security Numbers, National Identification Numbers, etc.) can be cloned. Up to 4 clones can be created from a predefined dictionary.
