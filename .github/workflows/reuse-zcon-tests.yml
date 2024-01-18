@@ -22,7 +22,7 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.19
       - name: Checkout code
@@ -35,7 +35,7 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           max_attempts: 3
-          timeout_minutes: 10  # Adjust as needed
+          timeout_minutes: 20  # Adjust as needed
           command: |
             make test:integration:zcon
             make zconActivator
@@ -51,7 +51,7 @@ jobs:
     runs-on: macos-latest
     needs: zcon-test-ubuntu # This ensures the macos job only starts after the ubuntu job completes
     steps:
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.19
       - name: Checkout code

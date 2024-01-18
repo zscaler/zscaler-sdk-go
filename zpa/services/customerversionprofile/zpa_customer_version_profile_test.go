@@ -51,7 +51,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	service := New(client)
 
 	requiredNames := []string{"New Release", "Default", "Previous Default", "Default - el8"}
-	var anyVariationSucceeded = false
+	anyVariationSucceeded := false
 	var errorMsgs []string
 
 	for _, knownName := range requiredNames {

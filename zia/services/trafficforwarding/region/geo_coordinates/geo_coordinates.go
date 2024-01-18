@@ -9,7 +9,7 @@ const (
 )
 
 type GeoCoordinates struct {
-	//The geographical ID of the city
+	// The geographical ID of the city
 	CityGeoId int `json:"cityGeoId"`
 
 	// The geographical ID of the state

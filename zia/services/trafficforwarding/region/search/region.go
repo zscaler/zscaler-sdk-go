@@ -10,7 +10,7 @@ const (
 )
 
 type Regions struct {
-	//The geographical ID of the city
+	// The geographical ID of the city
 	Datacenter int `json:"cityGeoId"`
 
 	// The geographical ID of the state

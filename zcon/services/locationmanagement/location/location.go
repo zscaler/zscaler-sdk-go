@@ -89,7 +89,7 @@ type Locations struct {
 	// Enable Basic Authentication at the location
 	ECLocation bool `json:"ecLocation"`
 
-	//Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
+	// Enable Surrogate IP. When set to true, users are mapped to internal device IP addresses
 	SurrogateIP bool `json:"surrogateIP"`
 
 	// Idle Time to Disassociation. The user mapping idle time (in minutes) is required if a Surrogate IP is enabled

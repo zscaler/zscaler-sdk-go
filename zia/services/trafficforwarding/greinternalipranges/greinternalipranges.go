@@ -9,7 +9,6 @@ const (
 )
 
 type GREInternalIPRange struct {
-
 	// Starting IP address in the range
 	StartIPAddress string `json:"startIPAddress,omitempty"`
 

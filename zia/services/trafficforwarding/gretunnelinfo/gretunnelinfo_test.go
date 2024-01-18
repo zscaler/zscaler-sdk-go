@@ -144,7 +144,6 @@ func TestGRETunnelInfo(t *testing.T) {
 			t.Logf("Received expected error for invalid IP address: %v", err)
 		}
 	})
-
 }
 
 // deleteStaticIP deletes a static IP resource

@@ -98,6 +98,7 @@ func (service *Service) Delete(ipGroupID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
 	err := common.ReadAllPages(service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)

@@ -100,7 +100,6 @@ func TestGroupByDatacenter(t *testing.T) {
 			Latitude:  float64(staticIP.Latitude),
 			Longitude: float64(staticIP.Longitude),
 		})
-
 		if err != nil {
 			t.Errorf("Error searching datacenters with Latitude/Longitude: %v", err)
 		}
@@ -120,7 +119,6 @@ func TestGroupByDatacenter(t *testing.T) {
 			Latitude:                  float64(staticIP.Latitude),
 			Longitude:                 float64(staticIP.Longitude),
 		})
-
 		if err != nil {
 			t.Errorf("Error searching datacenters with all parameters: %v", err)
 		}
