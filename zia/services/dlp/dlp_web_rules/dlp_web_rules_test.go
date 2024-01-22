@@ -1,6 +1,5 @@
 package dlp_web_rules
 
-/*
 import (
 	"fmt"
 	"log"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
@@ -121,11 +121,16 @@ func TestDLPWebRule(t *testing.T) {
 		// ZscalerIncidentReceiver:  true,
 		// WithoutContentInspection: false,
 		// DLPDownloadScanEnabled:   true,
-		// Severity:            "RULE_SEVERITY_HIGH",
-		Protocols: []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		// CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
-		// UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
-		// FileTypes:           []string{"ALL_OUTBOUND"},
+		Severity:            "RULE_SEVERITY_HIGH",
+		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
+		FileTypes:           []string{"ALL_OUTBOUND"},
+		IncludedDomainProfiles: []common.IDNameExtensions{
+			{
+				ID: 17,
+			},
+		},
 		// DLPEngines: []common.IDNameExtensions{
 		// 	{
 		// 		ID: engineList.ID,
@@ -304,4 +309,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/
