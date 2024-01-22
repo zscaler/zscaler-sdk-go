@@ -20,6 +20,9 @@ type ServiceEdgeGroup struct {
 	Description                   string            `json:"description,omitempty"`
 	Enabled                       bool              `json:"enabled"`
 	GeoLocationID                 string            `json:"geoLocationId,omitempty"`
+	GraceDistanceEnabled          bool              `json:"graceDistanceEnabled"`
+	GraceDistanceValue            string            `json:"graceDistanceValue,omitempty"`
+	GraceDistanceValueUnit        string            `json:"graceDistanceValueUnit,omitempty"`
 	ID                            string            `json:"id,omitempty"`
 	IsPublic                      string            `json:"isPublic,omitempty"`
 	Latitude                      string            `json:"latitude,omitempty"`

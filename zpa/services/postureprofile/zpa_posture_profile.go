@@ -15,16 +15,22 @@ const (
 
 // PostureProfile ...
 type PostureProfile struct {
-	CreationTime      string `json:"creationTime,omitempty"`
-	Domain            string `json:"domain,omitempty"`
-	ID                string `json:"id,omitempty"`
-	MasterCustomerID  string `json:"masterCustomerId,omitempty"`
-	ModifiedBy        string `json:"modifiedBy,omitempty"`
-	ModifiedTime      string `json:"modifiedTime,omitempty"`
-	Name              string `json:"name,omitempty"`
-	PostureudID       string `json:"postureUdid,omitempty"`
-	ZscalerCloud      string `json:"zscalerCloud,omitempty"`
-	ZscalerCustomerID string `json:"zscalerCustomerId,omitempty"`
+	ID                             string `json:"id,omitempty"`
+	Name                           string `json:"name,omitempty"`
+	ApplyToMachineTunnelEnabled    bool   `json:"applyToMachineTunnelEnabled"`
+	CRLCheckEnabled                bool   `json:"crlCheckEnabled"`
+	NonExportablePrivateKeyEnabled bool   `json:"nonExportablePrivateKeyEnabled"`
+	Platform                       string `json:"platform,omitempty"`
+	CreationTime                   string `json:"creationTime,omitempty"`
+	Domain                         string `json:"domain,omitempty"`
+	MasterCustomerID               string `json:"masterCustomerId,omitempty"`
+	ModifiedBy                     string `json:"modifiedBy,omitempty"`
+	ModifiedTime                   string `json:"modifiedTime,omitempty"`
+	PostureType                    string `json:"postureType,omitempty"`
+	PostureudID                    string `json:"postureUdid,omitempty"`
+	RootCert                       string `json:"rootCert,omitempty"`
+	ZscalerCloud                   string `json:"zscalerCloud,omitempty"`
+	ZscalerCustomerID              string `json:"zscalerCustomerId,omitempty"`
 }
 
 func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) {
