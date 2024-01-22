@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
 )
 
 const (
@@ -98,17 +99,17 @@ func TestDLPWebRule(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// dlpEngine := dlp_engines.New(client)
-	// engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
-	// if err != nil {
-	// 	t.Errorf("Error getting saml attributes: %v", err)
-	// 	return
-	// }
+	dlpEngine := dlp_engines.New(client)
+	engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
 
-	// // Check if engineList is not nil and contains elements
-	// if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
-	// 	t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
-	// }
+	// Check if engineList is not nil and contains elements
+	if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
+	}
 
 	service := New(client)
 	rule := WebDLPRules{
@@ -126,16 +127,12 @@ func TestDLPWebRule(t *testing.T) {
 		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
 		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 		FileTypes:           []string{"ALL_OUTBOUND"},
-		IncludedDomainProfiles: []common.IDNameExtensions{
+
+		DLPEngines: []common.IDNameExtensions{
 			{
-				ID: 17,
+				ID: engineList.ID,
 			},
 		},
-		// DLPEngines: []common.IDNameExtensions{
-		// 	{
-		// 		ID: engineList.ID,
-		// 	},
-		// },
 	}
 
 	var createdResource *WebDLPRules
