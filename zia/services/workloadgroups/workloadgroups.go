@@ -78,7 +78,7 @@ func (service *Service) Get(workloadID int) (*WorkloadGroup, error) {
 	return &workloadGroup, nil
 }
 
-func (service *Service) GetWorkloadGroupByName(workloadName string) (*WorkloadGroup, error) {
+func (service *Service) GetByName(workloadName string) (*WorkloadGroup, error) {
 	var workloadGroups []WorkloadGroup
 	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
 	if err != nil {
@@ -90,4 +90,10 @@ func (service *Service) GetWorkloadGroupByName(workloadName string) (*WorkloadGr
 		}
 	}
 	return nil, fmt.Errorf("no workload group found with name: %s", workloadName)
+}
+
+func (service *Service) GetAll() ([]WorkloadGroup, error) {
+	var workloadGroups []WorkloadGroup
+	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
+	return workloadGroups, err
 }
