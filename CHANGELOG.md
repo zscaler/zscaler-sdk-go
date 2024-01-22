@@ -8,7 +8,8 @@
 ### Enhacements
 
 - [PR #215](https://github.com/zscaler/zscaler-sdk-go/pull/215) - Added new ZPA attributes for application segment.
-  * `matchStyle`
+  - `matchStyle`
+  - `inconsistentConfigDetails`
 
 # 2.3.6 (January 15, 2024)
 
