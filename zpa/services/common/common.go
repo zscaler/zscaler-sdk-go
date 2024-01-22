@@ -62,6 +62,12 @@ type AssociatedProfileNames struct {
 	Name string `json:"name,omitempty"`
 }
 
+// ZPA Common Structs to Avoid Repetion
+type CommonConfigDetails struct {
+	Name   string `json:"name,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
 func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)

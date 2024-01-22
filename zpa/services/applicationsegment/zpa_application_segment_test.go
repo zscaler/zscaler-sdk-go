@@ -105,6 +105,7 @@ func TestApplicationSegment(t *testing.T) {
 		HealthCheckType:       "DEFAULT",
 		TCPKeepAlive:          "1",
 		InspectTrafficWithZia: false,
+		MatchStyle:            "EXCLUSIVE",
 		DomainNames:           []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{

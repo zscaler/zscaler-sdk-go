@@ -1,6 +1,5 @@
 package dlp_web_rules
 
-/*
 import (
 	"fmt"
 	"log"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
 )
 
 const (
@@ -98,17 +99,17 @@ func TestDLPWebRule(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// dlpEngine := dlp_engines.New(client)
-	// engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
-	// if err != nil {
-	// 	t.Errorf("Error getting saml attributes: %v", err)
-	// 	return
-	// }
+	dlpEngine := dlp_engines.New(client)
+	engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
 
-	// // Check if engineList is not nil and contains elements
-	// if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
-	// 	t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
-	// }
+	// Check if engineList is not nil and contains elements
+	if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
+	}
 
 	service := New(client)
 	rule := WebDLPRules{
@@ -121,16 +122,17 @@ func TestDLPWebRule(t *testing.T) {
 		// ZscalerIncidentReceiver:  true,
 		// WithoutContentInspection: false,
 		// DLPDownloadScanEnabled:   true,
-		// Severity:            "RULE_SEVERITY_HIGH",
-		Protocols: []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		// CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
-		// UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
-		// FileTypes:           []string{"ALL_OUTBOUND"},
-		// DLPEngines: []common.IDNameExtensions{
-		// 	{
-		// 		ID: engineList.ID,
-		// 	},
-		// },
+		Severity:            "RULE_SEVERITY_HIGH",
+		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
+		FileTypes:           []string{"ALL_OUTBOUND"},
+
+		DLPEngines: []common.IDNameExtensions{
+			{
+				ID: engineList.ID,
+			},
+		},
 	}
 
 	var createdResource *WebDLPRules
@@ -304,4 +306,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

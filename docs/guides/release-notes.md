@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.6``
+``Last updated: v2.3.7``
 
 ---
+
+# 2.3.7 (January 22, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #215](https://github.com/zscaler/zscaler-sdk-go/pull/215) - Added new ZPA attributes for application segment.
+  - `matchStyle`
+  - `inconsistentConfigDetails`
 
 # 2.3.6 (January 15, 2024)
 
