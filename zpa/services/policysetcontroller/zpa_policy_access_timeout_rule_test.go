@@ -70,7 +70,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(&accessPolicyRule)
+	createdResource, _, err := service.CreateRuleV1(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -95,7 +95,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.UpdateRuleV1(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
