@@ -1,6 +1,6 @@
 # Changelog
 
-# 2.3.7 (January 22, 2024)
+# 2.3.7 (January 26, 2024)
 
 ## Notes
 - Golang: **v1.19**
@@ -8,8 +8,10 @@
 ### Enhacements
 
 - [PR #215](https://github.com/zscaler/zscaler-sdk-go/pull/215) - Added new ZPA attributes for application segment.
-  - `matchStyle`
-  - `inconsistentConfigDetails`
+  - matchStyle
+  - inconsistentConfigDetails
+
+- [PR #217](https://github.com/zscaler/zscaler-sdk-go/pull/217) - Added support for ZIA Workload Groups Tagging
 
 # 2.3.6 (January 15, 2024)
 
