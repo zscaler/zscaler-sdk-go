@@ -24,6 +24,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Enhacements
 
+- [PR #215](https://github.com/zscaler/zscaler-sdk-go/pull/215) - Added new ZPA attributes for application segment.
+  - matchStyle
+  - inconsistentConfigDetails
+
 - [PR #217](https://github.com/zscaler/zscaler-sdk-go/pull/217) - Added support for ZIA Workload Groups Tagging
 
 # 2.3.6 (January 15, 2024)

@@ -14,7 +14,6 @@ const (
 )
 
 type WebDLPRules struct {
-
 	// The unique identifier for the DLP policy rule.
 	ID int `json:"id,omitempty"`
 
@@ -124,8 +123,17 @@ type WebDLPRules struct {
 	// The name-ID pairs of the users that are excluded from the DLP policy rule.
 	ExcludedUsers []common.IDNameExtensions `json:"excludedUsers,omitempty"`
 
+	// The list of domain profiles that must be added to the DLP rule criteria in order to apply the DLP rules only to domains that are part of the specified profiles. A maximum of 8 profiles can be selected.
+	IncludedDomainProfiles []common.IDNameExtensions `json:"includedDomainProfiles,omitempty"`
+
+	// The list of domain profiles that must be added to the DLP rule criteria in order to apply the DLP rules to all domains excluding the domains that are part of the specified profiles. A maximum of 8 profiles can be selected.
+	ExcludedDomainProfiles []common.IDNameExtensions `json:"excludedDomainProfiles,omitempty"`
+
+	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
+	SourceIpGroups []common.IDNameExtensions `json:"sourceIpGroups,omitempty"`
+
 	// The list of preconfigured workload groups to which the policy must be applied.
-	WorkloadGroups []common.IDNameWorkloadGroup `json:"workloadGroups,omitempty"`
+	WorkloadGroups []common.IDNameExtensions `json:"workloadGroups,omitempty"`
 
 	// Indicates the severity selected for the DLP rule violation
 	Severity string `json:"severity,omitempty"`

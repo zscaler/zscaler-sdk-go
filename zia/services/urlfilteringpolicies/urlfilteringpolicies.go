@@ -75,7 +75,7 @@ type URLFilteringRule struct {
 	// Action taken when traffic matches rule criteria
 	Action string `json:"action,omitempty"`
 
-	//If set to true, the CIPA Compliance rule is enabled
+	// If set to true, the CIPA Compliance rule is enabled
 	Ciparule bool `json:"ciparule,omitempty"`
 
 	// List of device trust levels for which the rule must be applied. This field is applicable for devices that are managed using Zscaler Client Connector. The trust levels are assigned to the devices based on your posture configurations in the Zscaler Client Connector Portal. If no value is set, this field is ignored during the policy evaluation.
@@ -118,7 +118,7 @@ type URLFilteringRule struct {
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
 	// The list of preconfigured workload groups to which the policy must be applied.
-	WorkloadGroups []common.IDNameWorkloadGroup `json:"workloadGroups,omitempty"`
+	WorkloadGroups []common.IDNameExtensions `json:"workloadGroups,omitempty"`
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
