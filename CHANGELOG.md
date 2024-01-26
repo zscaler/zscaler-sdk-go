@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.3.7 (January 26, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #217](https://github.com/zscaler/zscaler-sdk-go/pull/217) - Added support for ZIA Workload Groups Tagging
+
 # 2.3.6 (January 15, 2024)
 
 ## Notes

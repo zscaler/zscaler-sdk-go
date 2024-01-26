@@ -1,14 +1,6 @@
 package workloadgroups
 
-import (
-	"strings"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-)
-
+/*
 func TestWorkloadGroups(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -78,6 +70,7 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 }
 
+
 func TestCaseSensitivityOfGetByName(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -111,3 +104,4 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
+*/

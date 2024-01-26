@@ -53,14 +53,14 @@ type TagContainer struct {
 	//One or more tags, each consisting of a key-value pair, selected within a tag type.
 	// If multiple tags are present within a tag type, they are combined using a logical operator.
 	// Note: A maximum of 8 tags can be added to a workload group, irrespective of the number of tag types present.
-	Tags []Tag `json:"tags"`
+	Tags []Tags `json:"tags"`
 
 	// The logical operator (either AND or OR) used to combine the tags within a tag type
 	Operator string `json:"operator,omitempty"`
 }
 
 // The list of tags (key-value pairs) selected within a tag type
-type Tag struct {
+type Tags struct {
 	// The key component present in the key-value pair contained in a tag
 	Key string `json:"key,omitempty"`
 	// The value component present in the key-value pair contained in a tag
