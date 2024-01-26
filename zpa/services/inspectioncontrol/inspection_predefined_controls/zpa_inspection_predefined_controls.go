@@ -110,7 +110,6 @@ func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedCo
 	_, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
 		Version: version,
 	}, nil, &v)
-
 	if err != nil {
 		return nil, err
 	}

@@ -309,7 +309,7 @@ func TestZPAGateways(t *testing.T) {
 	retrievedResource.LastModifiedBy = nil
 	retrievedResource.LastModifiedTime = 0
 
-	//Convert the retrievedResource to JSON and log it before the update
+	// Convert the retrievedResource to JSON and log it before the update
 	// var jsonRepresentation []byte
 	// jsonRepresentation, err = json.MarshalIndent(retrievedResource, "", "  ")
 	// if err != nil {

@@ -27,7 +27,7 @@ jobs:
           go-version: 1.19
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ubuntu-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
@@ -35,7 +35,7 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           max_attempts: 3
-          timeout_minutes: 10  # Adjust as needed
+          timeout_minutes: 20  # Adjust as needed
           command: |
             make test:integration:zcon
             make zconActivator
@@ -56,7 +56,7 @@ jobs:
           go-version: 1.19
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: macos-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}

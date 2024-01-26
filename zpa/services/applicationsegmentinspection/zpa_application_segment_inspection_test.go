@@ -54,6 +54,7 @@ func cleanResources() {
 		_, _ = service.Delete(r.ID)
 	}
 }
+
 func TestAppSegmentInspectionInspection(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)

@@ -25,7 +25,6 @@ func TestVIPs(t *testing.T) {
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
-
 	if err != nil {
 		t.Fatalf("Error creating static IP for testing: %v", err)
 	}
@@ -69,7 +68,6 @@ func TestVIPs(t *testing.T) {
 		if vips == nil || len(vips.DataCenter) == 0 {
 			t.Errorf("Expected VIPs for datacenter %s, got none", datacenterName)
 		}
-
 	})
 
 	// Test for GetZSGREVirtualIPList
@@ -99,5 +97,4 @@ func TestVIPs(t *testing.T) {
 
 		// Additional checks can be added based on the structure of GREVirtualIPList
 	})
-
 }

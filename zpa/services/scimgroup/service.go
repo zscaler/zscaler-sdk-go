@@ -4,8 +4,10 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
-type SortOrder string
-type SortField string
+type (
+	SortOrder string
+	SortField string
+)
 
 const (
 	ASCSortOrder          SortOrder = "ASC"

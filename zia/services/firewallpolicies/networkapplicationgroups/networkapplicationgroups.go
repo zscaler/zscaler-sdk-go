@@ -79,6 +79,7 @@ func (service *Service) Delete(groupID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAllNetworkApplicationGroups() ([]NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
 	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)

@@ -47,6 +47,7 @@ type ApplicationSegmentResource struct {
 	InspectTrafficWithZia     bool                                `json:"inspectTrafficWithZia"`
 	MicroTenantID             string                              `json:"microtenantId,omitempty"`
 	MicroTenantName           string                              `json:"microtenantName,omitempty"`
+	MatchStyle                string                              `json:"matchStyle,omitempty"`
 	TCPPortRanges             []string                            `json:"tcpPortRanges"`
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
@@ -57,6 +58,24 @@ type ApplicationSegmentResource struct {
 	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`
 	ClientlessApps            []browseraccess.ClientlessApps      `json:"clientlessApps,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails            `json:"sharedMicrotenantDetails,omitempty"`
+	InconsistentConfigDetails InconsistentConfigDetails           `json:"inconsistentConfigDetails,omitempty"`
+}
+
+type InconsistentConfigDetails struct {
+	Application          []common.CommonConfigDetails `json:"application,omitempty"`
+	SegmentGroup         []common.CommonConfigDetails `json:"segmentGroup,omitempty"`
+	BaCertificate        []common.CommonConfigDetails `json:"baCertificate,omitempty"`
+	BranchConnectorGroup []common.CommonConfigDetails `json:"branchConnectorGroup,omitempty"`
+	CloudConnectorGroup  []common.CommonConfigDetails `json:"cloudConnectorGroup,omitempty"`
+	IDP                  []common.CommonConfigDetails `json:"idp,omitempty"`
+	Location             []common.CommonConfigDetails `json:"location,omitempty"`
+	MachineGroup         []common.CommonConfigDetails `json:"machineGroup,omitempty"`
+	PostureProfile       []common.CommonConfigDetails `json:"postureProfile,omitempty"`
+	SamlAttributes       []common.CommonConfigDetails `json:"samlAttributes,omitempty"`
+	ScimAttributes       []common.CommonConfigDetails `json:"scimAttributes,omitempty"`
+	ServerGroup          []common.CommonConfigDetails `json:"serverGroup,omitempty"`
+	SRAApplication       []common.CommonConfigDetails `json:"sraApplication,omitempty"`
+	TrustedNetwork       []common.CommonConfigDetails `json:"trustedNetwork,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {

@@ -231,8 +231,8 @@ func TestURLFilteringRuleBlock(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected updated name '%s', got '%s'", updateName, updatedResource.Name)
 	}
-
 }
+
 func createURLFilteringRule(t *testing.T, service *Service, rule *URLFilteringRule) (*URLFilteringRule, error) {
 	var createdResource *URLFilteringRule
 	err := retryOnConflict(func() error {

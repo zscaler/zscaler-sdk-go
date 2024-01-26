@@ -88,6 +88,7 @@ type SandboxRSS struct {
 func GetPageSize() int {
 	return pageSize
 }
+
 func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil
@@ -141,8 +142,10 @@ func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) e
 	return nil
 }
 
-type SortOrder string
-type SortField string
+type (
+	SortOrder string
+	SortField string
+)
 
 const (
 	ASCSortOrder          SortOrder = "ASC"

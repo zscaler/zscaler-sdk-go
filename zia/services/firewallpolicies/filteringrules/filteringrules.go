@@ -119,6 +119,9 @@ type FirewallFilteringRules struct {
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
 
+	// The list of preconfigured workload groups to which the policy must be applied.
+	WorkloadGroups []common.IDNameExtensions `json:"workloadGroups,omitempty"`
+
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 
@@ -184,6 +187,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 
 	return nil, nil
 }
+
 func (service *Service) GetAll() ([]FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
 	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
