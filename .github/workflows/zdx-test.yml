@@ -1,0 +1,35 @@
+name: ZDX Test
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+
+  # For systems with an upstream API that could drift unexpectedly (like most SaaS systems, etc.),
+  # we recommend testing at a regular interval not necessarily tied to code changes. This will
+  # ensure you are alerted to something breaking due to an API change, even if the code did not
+  # change.
+
+  schedule:
+    - cron: '0 14 * * 1-5' # UTC
+  workflow_dispatch:
+
+jobs:
+  zdx-zs2:
+    uses: ./.github/workflows/reuse-zdx-tests.yml
+    with:
+      environment: ZDX_ZS2
+    secrets:
+      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+
+  zdx-zs3:
+    uses: ./.github/workflows/reuse-zdx-tests.yml
+    with:
+      environment: ZDX_ZS3
+    secrets:
+      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}

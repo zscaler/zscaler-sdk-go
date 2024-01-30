@@ -27,7 +27,7 @@ help:
 	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zcon        	Run only zcon integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zdx        	Run only zdx integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zia        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
 
@@ -97,7 +97,7 @@ test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
 	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 10 -timeout 120m
 	go tool cover -func ziacoverage.txt | grep total:
-	rm -rf zpacoverage.txt
+	rm -rf ziacoverage.txt
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
