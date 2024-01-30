@@ -18,57 +18,38 @@ on:
           required: true
 
 jobs:
-  zcon-test-ubuntu:
+  zcon-test:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
     steps:
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.19
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/cache@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          path: ~/go/pkg/mod
-          key: ubuntu-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
       - name: Run tests with retry on Ubuntu
         uses: nick-invision/retry@v2
         with:
           max_attempts: 3
           timeout_minutes: 20  # Adjust as needed
-          command: |
-            make test:integration:zcon
-            make zconActivator
-        env:
-          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
-          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
-          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
-          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
-          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-
-  zcon-test-macos:
-    environment: ${{ inputs.environment }}
-    runs-on: macos-latest
-    needs: zcon-test-ubuntu # This ensures the macos job only starts after the ubuntu job completes
-    steps:
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.19
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod
-          key: macos-go1.19-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-
-      - name: Wait before starting MacOS test
-        run: sleep 5 # Waits for 10 seconds
-
-      - name: Run tests with retry on MacOS
-        uses: nick-invision/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 90  # Adjust as needed
           command: |
             make test:integration:zcon
             make zconActivator

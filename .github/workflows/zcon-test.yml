@@ -1,0 +1,42 @@
+name: ZCON Test
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+
+  # For systems with an upstream API that could drift unexpectedly (like most SaaS systems, etc.),
+  # we recommend testing at a regular interval not necessarily tied to code changes. This will
+  # ensure you are alerted to something breaking due to an API change, even if the code did not
+  # change.
+
+  schedule:
+    - cron: '0 13 * * 1-5' # UTC
+  workflow_dispatch:
+
+jobs:
+  zcon-beta-tests:
+    uses: ./.github/workflows/reuse-zcon-tests.yml
+    with:
+      environment: ZCON_ZSCALER_BETA
+    secrets:
+      ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+      ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+      ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+      ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+
+  zcon-zs3-tests:
+    uses: ./.github/workflows/reuse-zcon-tests.yml
+    with:
+      environment: ZCON_ZSCALER_THREE
+    secrets:
+      ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+      ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+      ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+      ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+
