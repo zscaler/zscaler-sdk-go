@@ -46,7 +46,7 @@ jobs:
         run: make vendor
 
       - name: Run tests with retry on Ubuntu
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
@@ -93,7 +93,7 @@ jobs:
         run: make vendor
 
       - name: Run tests with retry on Ubuntu
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
@@ -142,7 +142,7 @@ jobs:
         run: make vendor
 
       - name: Run tests with retry on Ubuntu
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
