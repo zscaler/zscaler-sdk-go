@@ -19,26 +19,91 @@ on:
 
 jobs:
   zpa-qa-tenant01:
-    uses: ./.github/workflows/reuse-zpa-tests.yml
-    with:
-      environment: ZPA_QA_TENANT01
-    secrets:
-      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    environment: ZPA_QA_TENANT01
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20  # Adjust as needed
+          command: |
+            make test:unit
+            make test:unit:zpa
+            make test:integration:zpa
+        env:
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+
 
   zpa-qa-tenant02:
-    uses: ./.github/workflows/reuse-zpa-tests.yml
-    with:
-      environment: ZPA_QA_TENANT02
-    secrets:
-      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    environment: ZPA_QA_TENANT02
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20  # Adjust as needed
+          command: |
+            make test:unit
+            make test:unit:zpa
+            make test:integration:zpa
+        env:
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
   # zpa-qa2-tenant01:
   #   uses: ./.github/workflows/reuse-zpa-tests.yml
@@ -62,29 +127,93 @@ jobs:
   #     ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
 
   zpa-beta-tenant01:
-    uses: ./.github/workflows/reuse-zpa-tests.yml
-    with:
-      environment: ZPA_BETA_TENANT01
-    secrets:
-      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    environment: ZPA_BETA_TENANT01
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20  # Adjust as needed
+          command: |
+            make test:unit
+            make test:unit:zpa
+            make test:integration:zpa
+        env:
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
 
   zpa-prod-tenant01:
-    uses: ./.github/workflows/reuse-zpa-tests.yml
-    with:
-      environment: ZPA_PROD_TENANT01
-    secrets:
-      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    environment: ZPA_PROD_TENANT01
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20  # Adjust as needed
+          command: |
+            make test:unit
+            make test:unit:zpa
+            make test:integration:zpa
+        env:
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
     needs:
       - zpa-qa-tenant01
       - zpa-qa-tenant02
