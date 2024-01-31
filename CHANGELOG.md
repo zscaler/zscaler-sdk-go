@@ -1,5 +1,17 @@
 # Changelog
 
+# 2.3.8 (January 31, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #221](https://github.com/zscaler/zscaler-sdk-go/pull/221) - Fixed new `workloadGroups` attribute for the following resources:
+  - ``Cloud Firewall Rules``
+  - ``DLP Web Rules``
+  - ``URL Filtering Rules``
+
 # 2.3.7 (January 26, 2024)
 
 ## Notes
