@@ -97,6 +97,16 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// workloadGroup := workloadgroups.New(client)
+	// groupList, err := workloadGroup.GetAll()
+	// if err != nil {
+	// 	t.Errorf("Error getting workload group: %v", err)
+	// 	return
+	// }
+	// if len(groupList) == 0 {
+	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
+	// }
+
 	service := New(client)
 	rule := FirewallFilteringRules{
 		Name:              name,
@@ -107,6 +117,12 @@ func TestFirewallFilteringRule(t *testing.T) {
 		DestCountries:     []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
 		NwApplications:    []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
 		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
+		// WorkloadGroups: []common.IDName{
+		// 	{
+		// 		ID:   groupList[0].ID,
+		// 		Name: groupList[0].Name,
+		// 	},
+		// },
 	}
 
 	var createdResource *FirewallFilteringRules
