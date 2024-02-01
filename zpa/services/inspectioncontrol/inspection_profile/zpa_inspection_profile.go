@@ -19,29 +19,23 @@ type PatchQuery struct {
 }
 
 type InspectionProfile struct {
-	ID                                string                    `json:"id,omitempty"`
-	CommonGlobalOverrideActionsConfig map[string]interface{}    `json:"commonGlobalOverrideActionsConfig,omitempty"`
-	CreationTime                      string                    `json:"creationTime,omitempty"`
-	ZSDefinedControlChoice            string                    `json:"zsDefinedControlChoice,omitempty"`
-	Description                       string                    `json:"description,omitempty"`
-	GlobalControlActions              []string                  `json:"globalControlActions,omitempty"`
-	IncarnationNumber                 string                    `json:"incarnationNumber,omitempty"`
-	ModifiedBy                        string                    `json:"modifiedBy,omitempty"`
-	ModifiedTime                      string                    `json:"modifiedTime,omitempty"`
-	Name                              string                    `json:"name,omitempty"`
-	ParanoiaLevel                     string                    `json:"paranoiaLevel,omitempty"`
-	PredefinedControlsVersion         string                    `json:"predefinedControlsVersion,omitempty"`
-	CheckControlDeploymentStatus      bool                      `json:"checkControlDeploymentStatus,omitempty"`
-	ControlInfoResource               []ControlInfoResource     `json:"controlsInfo,omitempty"`
-	CustomControls                    []InspectionCustomControl `json:"customControls"`
-	PredefinedControls                []CustomCommonControls    `json:"predefinedControls"`
-	WebSocketControls                 []CustomCommonControls    `json:"websocketControls"`
-	ThreatLabzControls                []ThreatLabzControls      `json:"threatlabzControls"`
-}
-
-type ControlInfoResource struct {
-	ControlType string `json:"controlType,omitempty"`
-	Count       string `json:"count,omitempty"`
+	ID                           string                    `json:"id,omitempty"`
+	Name                         string                    `json:"name,omitempty"`
+	ZSDefinedControlChoice       string                    `json:"zsDefinedControlChoice,omitempty"`
+	Description                  string                    `json:"description,omitempty"`
+	GlobalControlActions         []string                  `json:"globalControlActions,omitempty"`
+	IncarnationNumber            string                    `json:"incarnationNumber,omitempty"`
+	CreationTime                 string                    `json:"creationTime,omitempty"`
+	ModifiedBy                   string                    `json:"modifiedBy,omitempty"`
+	ModifiedTime                 string                    `json:"modifiedTime,omitempty"`
+	ParanoiaLevel                string                    `json:"paranoiaLevel,omitempty"`
+	PredefinedControlsVersion    string                    `json:"predefinedControlsVersion,omitempty"`
+	CheckControlDeploymentStatus bool                      `json:"checkControlDeploymentStatus,omitempty"`
+	ControlInfoResource          []ControlInfoResource     `json:"controlsInfo,omitempty"`
+	CustomControls               []InspectionCustomControl `json:"customControls"`
+	PredefinedControls           []CustomCommonControls    `json:"predefinedControls"`
+	ThreatLabzControls           []ThreatLabzControls      `json:"threatlabzControls"`
+	WebSocketControls            []WebSocketControls       `json:"websocketControls"`
 }
 
 type InspectionCustomControl struct {
@@ -89,18 +83,6 @@ type CustomCommonControls struct {
 	Version                          string                   `json:"version,omitempty"`
 }
 
-type AssociatedProfileNames struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-type AssociatedCustomers struct {
-	CustomerID           string `json:"customerId,omitempty"`
-	ExcludeConstellation bool   `json:"excludeConstellation,omitempty"`
-	IsPartner            bool   `json:"isPartner,omitempty"`
-	Name                 string `json:"name,omitempty"`
-}
-
 type ThreatLabzControls struct {
 	ID                               string                   `json:"id,omitempty"`
 	Name                             string                   `json:"name,omitempty"`
@@ -131,6 +113,42 @@ type ThreatLabzControls struct {
 	RulesetName                      string                   `json:"rulesetName,omitempty"`
 	RulesetVersion                   string                   `json:"rulesetVersion,omitempty"`
 	ZscalerInfoUrl                   string                   `json:"zscalerInfoUrl,omitempty"`
+}
+
+type WebSocketControls struct {
+	ID                               string                   `json:"id,omitempty"`
+	Name                             string                   `json:"name,omitempty"`
+	Action                           string                   `json:"action,omitempty"`
+	ActionValue                      string                   `json:"actionValue,omitempty"`
+	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
+	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
+	CreationTime                     string                   `json:"creationTime,omitempty"`
+	DefaultAction                    string                   `json:"defaultAction,omitempty"`
+	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
+	Description                      string                   `json:"description,omitempty"`
+	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
+	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	Severity                         string                   `json:"severity,omitempty"`
+	Version                          string                   `json:"version,omitempty"`
+}
+
+type ControlInfoResource struct {
+	ControlType string `json:"controlType,omitempty"`
+	Count       string `json:"count,omitempty"`
+}
+
+type AssociatedProfileNames struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type AssociatedCustomers struct {
+	CustomerID           string `json:"customerId,omitempty"`
+	ExcludeConstellation bool   `json:"excludeConstellation,omitempty"`
+	IsPartner            bool   `json:"isPartner,omitempty"`
+	Name                 string `json:"name,omitempty"`
 }
 
 func (service *Service) Get(profileID string) (*InspectionProfile, *http.Response, error) {

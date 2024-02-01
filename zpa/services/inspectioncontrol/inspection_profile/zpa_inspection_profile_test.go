@@ -168,10 +168,6 @@ func TestInspectionProfile(t *testing.T) {
 		},
 		PredefinedControls:   predefinedControls,
 		GlobalControlActions: []string{"PREDEFINED:PASS", "CUSTOM:NONE", "OVERRIDE_ACTION:COMMON"},
-		CommonGlobalOverrideActionsConfig: map[string]interface{}{
-			"PREDEF_CNTRL_GLOBAL_ACTION": interface{}("PASS"),
-			"IS_OVERRIDE_ACTION_COMMON":  interface{}("TRUE"),
-		},
 	}
 
 	createdResource, _, err := service.Create(profile)
