@@ -55,17 +55,17 @@ jobs:
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
-  zcon-zs3-tests:
-    environment: ZCON_ZSCALER_THREE
+  zcon-tests-tenants:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         goVersion: ["1.19", "1.20"]
+        environment:
+          - ZCON_ZSCLOUD
+          - ZCON_ZSCALER_THREE
+    environment: ${{ matrix.environment }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -96,3 +96,5 @@ jobs:
           ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    needs:
+      - zcon-beta-tests
