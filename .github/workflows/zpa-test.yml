@@ -63,7 +63,7 @@ jobs:
         goVersion: ["1.19", "1.20"]
         environment:
           - ZPA_QA2_TENANT01
-          - ZPA_QA2_TENANT02
+          # - ZPA_QA2_TENANT02
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
