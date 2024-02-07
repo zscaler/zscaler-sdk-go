@@ -20,7 +20,7 @@ func TestTrustedNetworks(t *testing.T) {
 	service := New(client)
 
 	// Assuming a network with the name "BD-TrustedNetwork03" exists
-	knownName := "BDTrustedNetwork01"
+	knownName := "BDTrustedNetwork"
 
 	// Case variations to test
 	variations := []string{
