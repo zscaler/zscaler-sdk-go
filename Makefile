@@ -29,7 +29,9 @@ help:
 	@echo "$(COLOR_OK)  test:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration      Run only unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
+
 
 default: build
 
@@ -70,10 +72,10 @@ test:
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
-	@make test:zcon
-	@make test:zdx
-	@make test:zpa
-	@make test:zia
+	@make test:integration:zcon
+	@make test:integration:zdx
+	@make test:integration:zpa
+	@make test:integration:zia
 
 test\:integration\:zcon:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
