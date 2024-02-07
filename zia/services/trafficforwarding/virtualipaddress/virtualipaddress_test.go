@@ -12,7 +12,7 @@ import (
 
 func TestVIPs(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.244.0/24")
-	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	comment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)

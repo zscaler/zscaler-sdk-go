@@ -89,9 +89,9 @@ func cleanResources() {
 }
 
 func TestDLPEngine(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	description := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateDescription := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

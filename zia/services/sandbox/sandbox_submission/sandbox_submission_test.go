@@ -1,6 +1,5 @@
 package sandbox_submission
 
-/*
 import (
 	"net/http"
 	"testing"
@@ -62,4 +61,3 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 		t.Logf("File submitted successfully: %+v", scanResult)
 	}
 }
-*/
