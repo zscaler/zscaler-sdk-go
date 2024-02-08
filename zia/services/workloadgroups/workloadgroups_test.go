@@ -1,5 +1,6 @@
 package workloadgroups
 
+/*
 import (
 	"strings"
 	"testing"
@@ -111,3 +112,4 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
+*/

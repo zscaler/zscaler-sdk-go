@@ -19,7 +19,7 @@ on:
 
 jobs:
   zia-zsbeta-tests:
-    environment: ZIA_ZSCALER_BETA
+    environment: ZIA_ZSBETA
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -72,11 +72,11 @@ jobs:
       matrix:
         goVersion: ["1.19"]
         environment:
-          # - ZIA_ZSCALER
-          # - ZIA_ZSCLOUD
-          # - ZIA_ZSCALER_ONE
-          - ZIA_ZSCALER_TWO
-          - ZIA_ZSCALER_THREE
+          - ZIA_ZSCLOUD
+          - ZIA_ZS0
+          # - ZIA_ZS1
+          - ZIA_ZS2
+          - ZIA_ZS3
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
