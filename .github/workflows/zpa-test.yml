@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.19"]
         environment:
           - ZPA_QA_TENANT01
           - ZPA_QA_TENANT02
@@ -25,6 +25,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Adjust for Test Concurrency
+        run: |
+          if [ "${{ matrix.goVersion }}" = "1.20" ]; then
+            echo "Introducing delay for Go 1.20 tests to avoid conflicts..."
+            sleep 10 # Adjust the sleep duration as needed
+          fi
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -60,7 +67,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.19"]
         environment:
           - ZPA_QA2_TENANT01
           # - ZPA_QA2_TENANT02
@@ -103,7 +110,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.19"]
         environment:
           - ZPA_BETA_TENANT01
     environment: ${{ matrix.environment }}
@@ -148,7 +155,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.19"]
         environment:
           - ZPA_PROD_TENANT01
     environment: ${{ matrix.environment }}

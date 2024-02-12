@@ -27,6 +27,7 @@ import (
 const (
 	defaultBaseURL           = "https://config.private.zscaler.com"
 	betaBaseURL              = "https://config.zpabeta.net"
+	zpaTwoBaseUrl            = "https://config.zpatwo.net"
 	govBaseURL               = "https://config.zpagov.net"
 	govUsBaseURL             = "https://config.zpagov.us"
 	previewBaseUrl           = "https://config.zpapreview.net"
@@ -126,6 +127,8 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = defaultBaseURL
+	} else if strings.EqualFold(cloud, "ZPATWO") {
+		rawUrl = zpaTwoBaseUrl
 	} else if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
 	} else if strings.EqualFold(cloud, "GOV") {
