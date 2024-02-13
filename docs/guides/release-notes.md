@@ -17,6 +17,16 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
+# 2.3.9 (February 12, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #224](https://github.com/zscaler/zscaler-sdk-go/pull/224) - Added support to ZPA Policy Access Redirection resource.
+  - **NOTE** This feature is in limited availability. Contact Zscaler Support to enable this feature for your organization.
+
 # 2.3.8 (January 31, 2024)
 
 ## Notes

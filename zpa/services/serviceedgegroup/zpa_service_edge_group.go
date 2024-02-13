@@ -40,6 +40,10 @@ type ServiceEdgeGroup struct {
 	VersionProfileID              string            `json:"versionProfileId,omitempty"`
 	VersionProfileName            string            `json:"versionProfileName,omitempty"`
 	VersionProfileVisibilityScope string            `json:"versionProfileVisibilityScope,omitempty"`
+	ObjectType                    string            `json:"objectType,omitempty"`
+	ScopeName                     string            `json:"scopeName,omitempty"`
+	RestrictedEntity              bool              `json:"restrictedEntity,omitempty"`
+	AltCloud                      string            `json:"altCloud,omitempty"`
 	MicroTenantID                 string            `json:"microtenantId,omitempty"`
 	MicroTenantName               string            `json:"microtenantName,omitempty"`
 }
