@@ -343,6 +343,7 @@ func (service *Service) GetAllByType(policyType string) ([]PolicyRuleResource, *
 // ConvertV1ResponseToV2Request converts a PolicyRuleResource (API v1 response) to a PolicyRule (API v2 request) with aggregated values.
 func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 	v2Request := PolicyRule{
+		ID:          v1Response.ID,
 		Name:        v1Response.Name,
 		Description: v1Response.Description,
 		Action:      v1Response.Action,
@@ -366,7 +367,7 @@ func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 			switch operand.ObjectType {
 			case "APP", "APP_GROUP", "MACHINE_GRP", "LOCATION", "BRANCH_CONNECTOR_GROUP", "EDGE_CONNECTOR_GROUP":
 				operandMap[operand.ObjectType] = append(operandMap[operand.ObjectType], operand.RHS)
-			case "PLATFORM", "POSTURE", "TRUSTED_NETWORK", "SAML", "SCIM", "SCIM_GROUP":
+			case "PLATFORM", "POSTURE", "TRUSTED_NETWORK", "SAML", "SCIM", "SCIM_GROUP", "COUNTRY_CODE":
 				entryValuesMap[operand.ObjectType] = append(entryValuesMap[operand.ObjectType], OperandsResourceLHSRHSValue{
 					LHS: operand.LHS,
 					RHS: operand.RHS,
@@ -388,9 +389,7 @@ func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 				EntryValuesLHSRHS: entryValues,
 			})
 		}
-
 		v2Request.Conditions = append(v2Request.Conditions, newCondition)
 	}
-
 	return v2Request
 }
