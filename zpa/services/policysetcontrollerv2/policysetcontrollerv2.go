@@ -41,7 +41,7 @@ type PolicyRuleResource struct {
 	Description              string                         `json:"description,omitempty"`
 	Action                   string                         `json:"action,omitempty"`
 	ActionID                 string                         `json:"actionId,omitempty"`
-	ConnectorGroups          []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	CreationTime             string                         `json:"creationTime,omitempty"`
 	ModifiedBy               string                         `json:"modifiedBy,omitempty"`
@@ -95,11 +95,8 @@ type PolicyRule struct {
 	Name                     string                         `json:"name,omitempty"`
 	Action                   string                         `json:"action,omitempty"`
 	ActionID                 string                         `json:"actionId,omitempty"`
-	BypassDefaultRule        bool                           `json:"bypassDefaultRule,omitempty"`
 	CustomMsg                string                         `json:"customMsg,omitempty"`
-	DefaultRule              bool                           `json:"defaultRule,omitempty"`
 	Description              string                         `json:"description,omitempty"`
-	IsolationDefaultRule     bool                           `json:"isolationDefaultRule,omitempty"`
 	CreationTime             string                         `json:"creationTime,omitempty"`
 	ModifiedBy               string                         `json:"modifiedBy,omitempty"`
 	ModifiedTime             string                         `json:"modifiedTime,omitempty"`
@@ -107,16 +104,18 @@ type PolicyRule struct {
 	PolicySetID              string                         `json:"policySetId,omitempty"`
 	PolicyType               string                         `json:"policyType,omitempty"`
 	Priority                 string                         `json:"priority,omitempty"`
-	ReauthDefaultRule        bool                           `json:"reauthDefaultRule,omitempty"`
 	ReauthIdleTimeout        string                         `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout            string                         `json:"reauthTimeout,omitempty"`
 	RuleOrder                string                         `json:"ruleOrder,omitempty"`
-	LssDefaultRule           bool                           `json:"lssDefaultRule,omitempty"`
-	ZpnCbiProfileID          string                         `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
+	Version                  string                         `json:"version,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
+	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
 }
 
