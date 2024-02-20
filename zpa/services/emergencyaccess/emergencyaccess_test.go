@@ -1,6 +1,5 @@
 package emergencyaccess
 
-/*
 import (
 	"testing"
 
@@ -17,7 +16,7 @@ func TestEmergencyAccess(t *testing.T) {
 	service := New(client)
 
 	// Create new resource
-	createdResource, _, err := service.Create(EmergencyAccess{
+	createdResource := EmergencyAccess{
 		ActivatedOn:       "1",
 		AllowedActivate:   true,
 		AllowedDeactivate: false,
@@ -25,7 +24,8 @@ func TestEmergencyAccess(t *testing.T) {
 		FirstName:         "John",
 		LastName:          "Doe",
 		UserId:            "jdoe",
-	})
+	}
+
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
 	}
@@ -81,4 +81,3 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
 }
-*/

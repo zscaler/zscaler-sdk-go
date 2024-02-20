@@ -11,7 +11,7 @@ import (
 
 const (
 	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
-	emergencyAccessEndpoint = "/emergencyAccess/user"
+	emergencyAccessEndpoint = "/emergencyAccess/users"
 )
 
 type EmergencyAccess struct {
