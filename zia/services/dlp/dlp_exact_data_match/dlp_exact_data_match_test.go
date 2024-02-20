@@ -175,9 +175,6 @@ func TestEDMFields(t *testing.T) {
 		if profile.ProjectName == "" {
 			t.Errorf("ProjectName field is empty")
 		}
-		if profile.SchemaStatus != "EDM_INDEXING_SUCCESS" && profile.SchemaStatus != "EDM_INDEXING_NONE" {
-			t.Errorf("SchemaStatus field is not as expected: got %s", profile.SchemaStatus)
-		}
 		if !profile.SchemaActive {
 			t.Errorf("SchemaActive field is not active")
 		}

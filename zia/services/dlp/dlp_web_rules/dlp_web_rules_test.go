@@ -111,6 +111,16 @@ func TestDLPWebRule(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
 	}
 
+	// workloadGroup := workloadgroups.New(client)
+	// groupList, err := workloadGroup.GetAll()
+	// if err != nil {
+	// 	t.Errorf("Error getting workload group: %v", err)
+	// 	return
+	// }
+	// if len(groupList) == 0 {
+	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
+	// }
+
 	service := New(client)
 	rule := WebDLPRules{
 		Name:        name,
@@ -133,6 +143,12 @@ func TestDLPWebRule(t *testing.T) {
 				ID: engineList.ID,
 			},
 		},
+		// WorkloadGroups: []common.IDName{
+		// 	{
+		// 		ID:   groupList[0].ID,
+		// 		Name: groupList[0].Name,
+		// 	},
+		// },
 	}
 
 	var createdResource *WebDLPRules

@@ -1,0 +1,100 @@
+name: ZCON Test
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 14 * * 1-5" # UTC
+  workflow_dispatch:
+
+jobs:
+  zcon-beta-tests:
+    environment: ZCON_ZSCALER_BETA
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry on Ubuntu
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20 # Adjust as needed
+          command: |
+            make test:integration:zcon
+            make zconActivator
+        env:
+          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+
+  zcon-tests-tenants:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+        environment:
+          - ZCON_ZSCLOUD
+          - ZCON_ZSCALER_THREE
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry on Ubuntu
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20 # Adjust as needed
+          command: |
+            make test:integration:zcon
+            make zconActivator
+        env:
+          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
+          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
+          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
+          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+    needs:
+      - zcon-beta-tests

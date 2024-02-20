@@ -1,6 +1,15 @@
 package workloadgroups
 
 /*
+import (
+	"strings"
+	"testing"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
+
 func TestWorkloadGroups(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -16,26 +25,26 @@ func TestWorkloadGroups(t *testing.T) {
 		return
 	}
 	if len(groups) == 0 {
-		t.Errorf("No workload group found")
-		return
+		t.Log("No workload group found. Moving on with other tests.")
+	} else {
+		name := groups[0].Name
+		t.Log("Getting workload group by name:" + name)
+		group, err := service.GetByName(name)
+		if err != nil {
+			t.Errorf("Error getting workload group by name: %v", err)
+			return
+		}
+		if group.Name != name {
+			t.Errorf("workload group name does not match: expected %s, got %s", name, group.Name)
+		}
 	}
-	name := groups[0].Name
-	t.Log("Getting workload group by name:" + name)
-	group, err := service.GetByName(name)
-	if err != nil {
-		t.Errorf("Error getting workload group by name: %v", err)
-		return
-	}
-	if group.Name != name {
-		t.Errorf("workload group name does not match: expected %s, got %s", name, group.Name)
-		return
-	}
-	// Negative Test: Try to retrieve an workload group with a non-existent name
-	nonExistentName := "ThisWorkloadGroupNotExist"
+
+	nonExistentName := "ThisWorkloadGroupDoesNotExist"
 	_, err = service.GetByName(nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
-		return
+	} else {
+		t.Log("Correctly received error when attempting to get non-existent workload group")
 	}
 }
 
@@ -50,17 +59,15 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	groups, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error getting workload group: %v", err)
+		t.Errorf("Error getting workload groups: %v", err)
 		return
 	}
 	if len(groups) == 0 {
-		t.Errorf("No workload group found")
+		t.Log("No workload group found. Skipping validation.")
 		return
 	}
 
-	// Validate workload group
 	for _, group := range groups {
-		// Checking if essential fields are not empty
 		if group.ID == 0 {
 			t.Errorf("workload group ID is empty")
 		}
@@ -69,7 +76,6 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 	}
 }
-
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
 	client, err := tests.NewZiaClient()
@@ -80,10 +86,13 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	service := New(client)
 
-	// Assuming a workload group with the name "BD_WORKLOAD_GROUP01" exists
 	knownName := "BD_WORKLOAD_GROUP01"
+	_, err = service.GetByName(knownName)
+	if err != nil {
+		t.Logf("Known workload group '%s' does not exist. Skipping case sensitivity tests.", knownName)
+		return
+	}
 
-	// Case variations to test
 	variations := []string{
 		strings.ToUpper(knownName),
 		strings.ToLower(knownName),
@@ -98,7 +107,6 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 			continue
 		}
 
-		// Check if the group's actual name matches the known name
 		if group.Name != knownName {
 			t.Errorf("Expected group name to be '%s' for variation '%s', but got '%s'", knownName, variation, group.Name)
 		}

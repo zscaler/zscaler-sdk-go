@@ -1,0 +1,99 @@
+name: ZDX Test
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+
+  # For systems with an upstream API that could drift unexpectedly (like most SaaS systems, etc.),
+  # we recommend testing at a regular interval not necessarily tied to code changes. This will
+  # ensure you are alerted to something breaking due to an API change, even if the code did not
+  # change.
+
+  schedule:
+    - cron: '0 14 * * 1-5' # UTC
+  workflow_dispatch:
+
+jobs:
+  zdx-zsbeta-tests:
+    environment: ZDX_BETA
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry on Ubuntu
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20 # Adjust as needed
+          command: |
+            make test:integration:zdx
+        env:
+          ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+          ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+
+  zdx-test-tenants:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.19", "1.20"]
+        environment:
+          - ZDX_ZS1
+          - ZDX_ZSCLOUD
+          - ZDX_ZS2
+          - ZDX_ZS3
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Pull external libraries
+        run: make vendor
+
+      - name: Run tests with retry on Ubuntu
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20 # Adjust as needed
+          command: |
+            make test:integration:zdx
+        env:
+          ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
+          ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+    needs:
+      - zdx-zsbeta-tests

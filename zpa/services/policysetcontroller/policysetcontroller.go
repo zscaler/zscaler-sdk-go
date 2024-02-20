@@ -63,6 +63,7 @@ type PolicyRule struct {
 	Conditions               []Conditions         `json:"conditions"`
 	AppServerGroups          []AppServerGroups    `json:"appServerGroups"`
 	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups"`
+	ServiceEdgeGroups        []ServiceEdgeGroups  `json:"serviceEdgeGroups"`
 }
 
 type Conditions struct {
@@ -94,6 +95,10 @@ type AppServerGroups struct {
 }
 
 type AppConnectorGroups struct {
+	ID string `json:"id,omitempty"`
+}
+
+type ServiceEdgeGroups struct {
 	ID string `json:"id,omitempty"`
 }
 
