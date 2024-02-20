@@ -266,7 +266,7 @@ func (c *Client) checkSession() error {
 	} else {
 		now := time.Now()
 		// Refresh if session has expire time (diff than -1)  & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
-		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).Before(now) {
+		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).After(now) {
 			err := c.refreshSession()
 			if err != nil {
 				c.Logger.Printf("[ERROR] failed to refresh session id: %v\n", err)
@@ -432,7 +432,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return true, nil
 	}
 
-	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict) {
+	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict || resp.StatusCode == http.StatusUnauthorized) {
 		apiRespErr := ApiErr{}
 		data, err := io.ReadAll(resp.Body)
 		resp.Body = io.NopCloser(bytes.NewBuffer(data))
@@ -440,7 +440,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			err = json.Unmarshal(data, &apiRespErr)
 			if err == nil {
 				if apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Failed during enter Org barrier" ||
-					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" {
+					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" {
 					return true, nil
 				}
 			}
