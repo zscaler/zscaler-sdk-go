@@ -5,9 +5,15 @@
 ## Notes
 - Golang: **v1.19**
 
-### Fixes
+### ZPA Additions
 
-- [PR #225](https://github.com/zscaler/zscaler-sdk-go/pull/225) - Fixed ZIA JSession authentication logic to use `after (now)` instead of `before (now)` to prevent specific JSessionID authentication edge cases.
+- Added `POST /emergencyAccess/user` to create an emergency acess user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+- Added `GET /emergencyAccess/user` to get all emergency acess users for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+- Added `GET /emergencyAccess/user/{userId}` to get the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+- Added `PUT /emergencyAccess/user/{userId}`to update the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+- Added `PUT /emergencyAccess/user/{userId}/activate` to activate the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+- Added `PUT /emergencyAccess/user/{userId}/deactivate` to deactivate the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
+
 
 # 2.3.9 (February 12, 2024)
 
