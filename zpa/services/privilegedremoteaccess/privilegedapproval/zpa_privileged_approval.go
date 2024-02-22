@@ -1,25 +1,25 @@
 package privilegedapproval
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"time"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
 	mgmtConfig                 = "/mgmtconfig/v1/admin/customers/"
-	privilegedApprovalEndpoint = "/privilegedApproval"
+	privilegedApprovalEndpoint = "/approval"
 )
 
 type PrivilegedApproval struct {
-	ID           string         `json:"id,omitempty"`
-	EmailIDs     []string       `json:"emailIds,omitempty"`
-	StartTime    time.Time      `json:"startTime,omitempty"`
-	EndTime      time.Time      `json:"endTime,omitempty"`
+	ID        string   `json:"id,omitempty"`
+	EmailIDs  []string `json:"emailIds,omitempty"`
+	StartTime string   `json:"startTime,omitempty"`
+	// StartTime    time.Time      `json:"startTime,omitempty"`
+	// EndTime      time.Time      `json:"endTime,omitempty"`
+	EndTime      string         `json:"endTime,omitempty"`
 	Status       string         `json:"status,omitempty"`
 	CreationTime string         `json:"creationTime,omitempty"`
 	ModifiedBy   string         `json:"modifiedBy,omitempty"`
@@ -34,14 +34,18 @@ type Applications struct {
 }
 
 type WorkingHours struct {
-	Days          []string       `json:"days,omitempty"`
-	EndTime       time.Time      `json:"endTime,omitempty"`
-	StartTime     time.Time      `json:"startTime,omitempty"`
-	EndTimeCron   string         `json:"endTimeCron,omitempty"`
-	StartTimeCron string         `json:"startTimeCron,omitempty"`
-	TimeZone      *time.Location `json:"timeZone,omitempty"`
+	Days []string `json:"days,omitempty"`
+	// EndTime       time.Time `json:"endTime,omitempty"`
+	// StartTime     time.Time `json:"startTime,omitempty"`
+	EndTime       string `json:"endTime,omitempty"`
+	StartTime     string `json:"startTime,omitempty"`
+	EndTimeCron   string `json:"endTimeCron,omitempty"`
+	StartTimeCron string `json:"startTimeCron,omitempty"`
+	TimeZone      string `json:"timeZone,omitempty"`
+	// TimeZone *time.Location `json:"timeZone,omitempty"`
 }
 
+/*
 // UnmarshalJSON customizes the unmarshalling process to handle the epoch time.
 func (p *PrivilegedApproval) UnmarshalJSON(data []byte) error {
 	type Alias PrivilegedApproval
@@ -65,26 +69,28 @@ func (p *PrivilegedApproval) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+*/
 
-func (w *WorkingHours) UnmarshalJSON(data []byte) error {
-	type Alias WorkingHours
-	auxiliary := &struct {
-		TimeZoneStr string `json:"timeZone"`
-		*Alias
-	}{
-		Alias: (*Alias)(w),
+/*
+	func (w *WorkingHours) UnmarshalJSON(data []byte) error {
+		type Alias WorkingHours
+		auxiliary := &struct {
+			TimeZoneStr string `json:"timeZone"`
+			*Alias
+		}{
+			Alias: (*Alias)(w),
+		}
+		if err := json.Unmarshal(data, &auxiliary); err != nil {
+			return err
+		}
+		loc, err := time.LoadLocation(auxiliary.TimeZoneStr)
+		if err != nil {
+			return err
+		}
+		w.TimeZone = loc
+		return nil
 	}
-	if err := json.Unmarshal(data, &auxiliary); err != nil {
-		return err
-	}
-	loc, err := time.LoadLocation(auxiliary.TimeZoneStr)
-	if err != nil {
-		return err
-	}
-	w.TimeZone = loc
-	return nil
-}
-
+*/
 func (service *Service) Get(approvalID string) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, approvalID)
@@ -95,22 +101,21 @@ func (service *Service) Get(approvalID string) (*PrivilegedApproval, *http.Respo
 	return v, resp, nil
 }
 
-/*
-// Need to implement search by Email ID
 func (service *Service) GetByEmailID(emailID string) (*PrivilegedApproval, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + privilegedApprovalEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PrivilegedApproval](service.Client, relativeURL, emailID)
+	list, resp, err := common.GetAllPagesGeneric[PrivilegedApproval](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, app := range list {
-		if strings.EqualFold(app.EmailIDs[], emailID) {
-			return &app, resp, nil
+		for _, appEmailID := range app.EmailIDs {
+			if strings.EqualFold(appEmailID, emailID) {
+				return &app, resp, nil
+			}
 		}
 	}
-	return nil, resp, fmt.Errorf("no application named '%s' was found", emailID)
+	return nil, resp, fmt.Errorf("no application with emailID '%s' was found", emailID)
 }
-*/
 
 func (service *Service) Create(privilegedApproval *PrivilegedApproval) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)

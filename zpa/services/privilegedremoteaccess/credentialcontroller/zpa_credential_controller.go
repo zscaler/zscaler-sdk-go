@@ -85,7 +85,7 @@ func (service *Service) Delete(credentialID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]Credential, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + credentialEndpoint
-	list, resp, err := common.GetAllPagesGeneric[Credential](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}

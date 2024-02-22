@@ -72,11 +72,11 @@ func TestPRAPortal(t *testing.T) {
 	}
 	service := New(client)
 
-	sraPortalController := SRAPortal{
+	sraPortalController := PRAPortal{
 		Name:                    name,
 		Description:             name,
 		Enabled:                 true,
-		Domain:                  "portal.securitygeek.io",
+		Domain:                  "portal.bd-hashicorp.com",
 		UserNotification:        "Test",
 		UserNotificationEnabled: true,
 		CertificateID:           baCertList[0].ID,
