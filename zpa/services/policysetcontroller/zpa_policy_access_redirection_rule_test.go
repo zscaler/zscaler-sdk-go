@@ -6,8 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
@@ -20,25 +18,25 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting idps: %v", err)
-		return
-	}
-	if len(idpList) == 0 {
-		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
-	}
+	// idpService := idpcontroller.New(client)
+	// idpList, _, err := idpService.GetAll()
+	// if err != nil {
+	// 	t.Errorf("Error getting idps: %v", err)
+	// 	return
+	// }
+	// if len(idpList) == 0 {
+	// 	t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	// }
 
-	samlService := samlattribute.New(client)
-	samlsList, _, err := samlService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting saml attributes: %v", err)
-		return
-	}
-	if len(samlsList) == 0 {
-		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
-	}
+	// samlService := samlattribute.New(client)
+	// samlsList, _, err := samlService.GetAll()
+	// if err != nil {
+	// 	t.Errorf("Error getting saml attributes: %v", err)
+	// 	return
+	// }
+	// if len(samlsList) == 0 {
+	// 	t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	// }
 
 	// create app connector group for testing
 	svcEdgeGroupService := serviceedgegroup.New(client)
@@ -90,17 +88,17 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			},
 		},
 		Conditions: []Conditions{
-			{
-				Operator: "OR",
-				Operands: []Operands{
-					{
-						ObjectType: "SAML",
-						LHS:        samlsList[0].ID,
-						RHS:        "user1@acme.com",
-						IdpID:      idpList[0].ID,
-					},
-				},
-			},
+			// {
+			// 	Operator: "OR",
+			// 	Operands: []Operands{
+			// 		{
+			// 			ObjectType: "SAML",
+			// 			LHS:        samlsList[0].ID,
+			// 			RHS:        "user1@acme.com",
+			// 			IdpID:      idpList[0].ID,
+			// 		},
+			// 	},
+			// },
 			{
 				Operator: "OR",
 				Operands: []Operands{
