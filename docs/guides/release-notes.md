@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.8``
+``Last updated: v2.3.10``
 
 ---
+
+# 2.3.10 (February 22, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #225](https://github.com/zscaler/zscaler-sdk-go/pull/225) - Fixed ZIA JSession authentication logic to use `after (now)` instead of `before (now)` to prevent specific JSessionID authentication edge cases.
 
 # 2.3.9 (February 12, 2024)
 

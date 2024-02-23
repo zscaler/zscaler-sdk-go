@@ -11,7 +11,6 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.32.0
 	github.com/okta/okta-sdk-golang/v2 v2.20.0
 	github.com/stretchr/testify v1.8.4
-	github.com/zscaler/zscaler-sdk-go v1.7.0
 	golang.org/x/text v0.14.0
 )
 
@@ -27,9 +26,14 @@ require (
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
+<<<<<<< HEAD
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
+=======
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
+>>>>>>> master
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/patrickmn/go-cache v0.0.0-20180815053127-5633e0862627 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
