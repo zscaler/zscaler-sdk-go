@@ -133,7 +133,7 @@ type WebDLPRules struct {
 	SourceIpGroups []common.IDNameExtensions `json:"sourceIpGroups,omitempty"`
 
 	// The list of preconfigured workload groups to which the policy must be applied.
-	WorkloadGroups []common.IDNameExtensions `json:"workloadGroups,omitempty"`
+	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
 
 	// Indicates the severity selected for the DLP rule violation
 	Severity string `json:"severity,omitempty"`

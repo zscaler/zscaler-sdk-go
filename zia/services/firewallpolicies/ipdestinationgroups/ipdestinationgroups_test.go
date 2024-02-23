@@ -209,22 +209,31 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
-		if getErr != nil {
-			if strings.Contains(getErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
-				log.Printf("Resource %d already deleted.", createdResource.ID)
-				return nil
-			}
-			return fmt.Errorf("Error retrieving resource %d: %v", createdResource.ID, getErr)
-		}
+		// First, attempt to delete the resource
 		_, delErr := service.Delete(createdResource.ID)
 		if delErr != nil {
 			if strings.Contains(delErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
+				// If we get a RESOURCE_NOT_FOUND error during deletion, it's already deleted.
 				log.Printf("Resource %d already deleted.", createdResource.ID)
 				return nil
 			}
+			// If deletion returns another error, return that error.
+			return delErr
 		}
-		return delErr
+
+		// Confirm deletion by trying to get the deleted resource.
+		_, getErr := service.Get(createdResource.ID)
+		if getErr != nil {
+			if strings.Contains(getErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
+				// If we get a RESOURCE_NOT_FOUND error, it confirms successful deletion.
+				return nil
+			}
+			// If the get operation returns another error, return that error.
+			return getErr
+		}
+
+		// If get operation does not return an error, it means deletion was not successful.
+		return fmt.Errorf("Resource %d was not deleted", createdResource.ID)
 	})
 	if err != nil {
 		t.Fatalf("Unexpected error during deletion: %v", err)

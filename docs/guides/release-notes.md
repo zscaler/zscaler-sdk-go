@@ -13,11 +13,42 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.7``
+``Last updated: v2.3.10``
 
 ---
 
-# 2.3.7 (January 22, 2024)
+# 2.3.10 (February 22, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #225](https://github.com/zscaler/zscaler-sdk-go/pull/225) - Fixed ZIA JSession authentication logic to use `after (now)` instead of `before (now)` to prevent specific JSessionID authentication edge cases.
+
+# 2.3.9 (February 12, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #224](https://github.com/zscaler/zscaler-sdk-go/pull/224) - Added support to ZPA Policy Access Redirection resource.
+  - **NOTE** This feature is in limited availability. Contact Zscaler Support to enable this feature for your organization.
+
+# 2.3.8 (January 31, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #221](https://github.com/zscaler/zscaler-sdk-go/pull/221) - Fixed new `workloadGroups` attribute for the following resources:
+  - ``Cloud Firewall Rules``
+  - ``DLP Web Rules``
+  - ``URL Filtering Rules``
+
+# 2.3.7 (January 26, 2024)
 
 ## Notes
 - Golang: **v1.19**
@@ -25,8 +56,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 ### Enhacements
 
 - [PR #215](https://github.com/zscaler/zscaler-sdk-go/pull/215) - Added new ZPA attributes for application segment.
-  - `matchStyle`
-  - `inconsistentConfigDetails`
+  - matchStyle
+  - inconsistentConfigDetails
+
+- [PR #217](https://github.com/zscaler/zscaler-sdk-go/pull/217) - Added support for ZIA Workload Groups Tagging
 
 # 2.3.6 (January 15, 2024)
 

@@ -122,6 +122,16 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
 	}
 
+	// workloadGroup := workloadgroups.New(client)
+	// groupList, err := workloadGroup.GetAll()
+	// if err != nil {
+	// 	t.Errorf("Error getting workload group: %v", err)
+	// 	return
+	// }
+	// if len(groupList) == 0 {
+	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
+	// }
+
 	rule := URLFilteringRule{
 		Name:           name,
 		Description:    name,
@@ -133,13 +143,18 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		Protocols:      []string{"HTTPS_RULE", "HTTP_RULE"},
 		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
 		UserAgentTypes: []string{"OPERA", "FIREFOX", "MSIE", "MSEDGE", "CHROME", "SAFARI", "MSCHREDGE"},
-		CBIProfileID:   91223046,
 		CBIProfile: CBIProfile{
 			ProfileSeq: 0,
 			ID:         cbiProfileList[0].ID,
 			Name:       cbiProfileList[0].Name,
 			URL:        cbiProfileList[0].URL,
 		},
+		// WorkloadGroups: []common.IDName{
+		// 	{
+		// 		ID:   groupList[0].ID,
+		// 		Name: groupList[0].Name,
+		// 	},
+		// },
 	}
 
 	// Create a URL Filtering Rule

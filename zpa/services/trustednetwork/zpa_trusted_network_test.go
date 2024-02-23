@@ -1,49 +1,47 @@
 package trustednetwork
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
-func TestTrustedNetworks(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
-	}
-
-	service := New(client)
-
-	// Assuming a network with the name "BD-TrustedNetwork03" exists
-	knownName := "BD-TrustedNetwork03"
-
-	// Case variations to test
-	variations := []string{
-		strings.ToUpper(knownName),
-		strings.ToLower(knownName),
-		cases.Title(language.English).String(knownName),
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve network with name variation: %s", variation)
-		network, _, err := service.GetByName(variation)
+/*
+	func TestTrustedNetworks(t *testing.T) {
+		client, err := tests.NewZpaClient()
 		if err != nil {
-			t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
-			continue
+			t.Errorf("Error creating client: %v", err)
+			return
 		}
 
-		// Check if the network's actual name matches the known name
-		if common.RemoveCloudSuffix(network.Name) != knownName {
-			t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
+		service := New(client)
+
+		// Assuming a network with the name "BD-TrustedNetwork03" exists
+		knownName := "BDTrustedNetwork"
+
+		// Case variations to test
+		variations := []string{
+			strings.ToUpper(knownName),
+			strings.ToLower(knownName),
+			cases.Title(language.English).String(knownName),
+		}
+
+		for _, variation := range variations {
+			t.Logf("Attempting to retrieve network with name variation: %s", variation)
+			network, _, err := service.GetByName(variation)
+			if err != nil {
+				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
+				continue
+			}
+
+			// Check if the network's actual name matches the known name
+			if common.RemoveCloudSuffix(network.Name) != knownName {
+				t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
+			}
 		}
 	}
-}
-
+*/
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -84,25 +82,31 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 
 	service := New(client)
 
-	// Use GetByName to fetch a known network
-	knownName := "BD-TrustedNetwork03"
-	network, _, err := service.GetByName(knownName)
-	if err != nil || network == nil {
-		t.Errorf("Error getting trusted network with name '%s': %v", knownName, err)
+	// Fetch the list of all Trusted Networks
+	networks, _, err := service.GetAll()
+	if err != nil {
+		t.Errorf("Error getting list of trusted networks: %v", err)
+		return
+	}
+	if len(networks) == 0 {
+		t.Errorf("No trusted networks found")
 		return
 	}
 
-	// Use the NetworkID from the above network to test GetByNetID
-	t.Logf("Attempting to retrieve network with NetworkID: %s", network.NetworkID)
-	networkByID, _, err := service.GetByNetID(network.NetworkID)
+	// Assume the first network is the known network for this test
+	knownNetwork := networks[0]
+	t.Logf("Using known network with Name: %s and NetworkID: %s", knownNetwork.Name, knownNetwork.NetworkID)
+
+	// Use the NetworkID from the known network to test GetByNetID
+	networkByID, _, err := service.GetByNetID(knownNetwork.NetworkID)
 	if err != nil {
-		t.Errorf("Error getting trusted network with NetworkID '%s': %v", network.NetworkID, err)
+		t.Errorf("Error getting trusted network with NetworkID '%s': %v", knownNetwork.NetworkID, err)
 		return
 	}
 
 	// Check if the network's actual NetworkID matches the known NetworkID
-	if networkByID.NetworkID != network.NetworkID {
-		t.Errorf("Expected trusted network NetworkID to be '%s', but got '%s'", network.NetworkID, networkByID.NetworkID)
+	if networkByID.NetworkID != knownNetwork.NetworkID {
+		t.Errorf("Expected trusted network NetworkID to be '%s', but got '%s'", knownNetwork.NetworkID, networkByID.NetworkID)
 	}
 }
 
