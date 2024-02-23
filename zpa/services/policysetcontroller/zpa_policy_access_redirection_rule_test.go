@@ -124,11 +124,6 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 						LHS:        "id",
 						RHS:        "zpn_client_type_zapp",
 					},
-					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_zapp_partner",
-					},
 				},
 			},
 		},
