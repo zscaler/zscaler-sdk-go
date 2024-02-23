@@ -2,15 +2,17 @@ package policysetcontroller
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
-func TestAccessTimeoutPolicy(t *testing.T) {
-	policyType := "TIMEOUT_POLICY"
+func TestAccessRedirectionPolicy(t *testing.T) {
+	policyType := "REDIRECTION_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -27,6 +29,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	if len(idpList) == 0 {
 		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
 	}
+
 	samlService := samlattribute.New(client)
 	samlsList, _, err := samlService.GetAll()
 	if err != nil {
@@ -36,29 +39,60 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
+
+	// create app connector group for testing
+	svcEdgeGroupService := serviceedgegroup.New(client)
+	svcEdgeGroup, _, err := svcEdgeGroupService.Create(serviceedgegroup.ServiceEdgeGroup{
+		Name:                   name,
+		Description:            name,
+		Enabled:                true,
+		Latitude:               "37.3861",
+		Longitude:              "-122.0839",
+		Location:               "Mountain View, CA",
+		IsPublic:               "TRUE",
+		UpgradeDay:             "SUNDAY",
+		UpgradeTimeInSecs:      "66600",
+		OverrideVersionProfile: true,
+		VersionProfileName:     "Default",
+		VersionProfileID:       "0",
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating service edge group for testing server group: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := svcEdgeGroupService.Get(svcEdgeGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := svcEdgeGroupService.Delete(svcEdgeGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting service edge group: %v", err)
+			}
+		}
+	}()
+
 	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access timeout policy set: %v", err)
+		t.Errorf("Error getting access forwarding policy set: %v", err)
 		return
 	}
-	accessPolicyRule := PolicyRule{
-		Name:              name,
-		Description:       "New application segment",
-		RuleOrder:         "1",
-		PolicySetID:       accessPolicySet.ID,
-		Action:            "RE_AUTH",
-		ReauthIdleTimeout: "600",
-		ReauthTimeout:     "172800",
+	redirectionPolicyRule := PolicyRule{
+		Name:        name,
+		Description: name,
+		PolicySetID: accessPolicySet.ID,
+		Action:      "REDIRECT_PREFERRED",
+		ServiceEdgeGroups: []ServiceEdgeGroups{
+			{
+				ID: svcEdgeGroup.ID,
+			},
+		},
 		Conditions: []Conditions{
 			{
 				Operator: "OR",
 				Operands: []Operands{
-					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_exporter",
-					},
 					{
 						ObjectType: "SAML",
 						LHS:        samlsList[0].ID,
@@ -67,10 +101,40 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 					},
 				},
 			},
+			{
+				Operator: "OR",
+				Operands: []Operands{
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_machine_tunnel",
+					},
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_branch_connector",
+					},
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_edge_connector",
+					},
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_zapp",
+					},
+					{
+						ObjectType: "CLIENT_TYPE",
+						LHS:        "id",
+						RHS:        "zpn_client_type_zapp_partner",
+					},
+				},
+			},
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.CreateRule(&accessPolicyRule)
+	createdResource, _, err := service.CreateRule(&redirectionPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)

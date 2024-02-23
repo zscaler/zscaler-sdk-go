@@ -77,7 +77,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.CreateRuleV1(&accessPolicyRule)
+	createdResource, _, err := service.CreateRule(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -102,7 +102,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.UpdateRuleV1(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.UpdateRule(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
@@ -221,7 +221,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.CreateRuleV1(&accessPolicyRule)
+	createdResource, _, err := service.CreateRule(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -246,7 +246,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.UpdateRuleV1(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.UpdateRule(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
