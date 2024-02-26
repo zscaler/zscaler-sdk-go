@@ -77,8 +77,5 @@ func (service *Service) GetAll() ([]CBICertificate, *http.Response, error) {
 	if err != nil {
 		return nil, resp, err
 	}
-	if err != nil {
-		return nil, nil, err
-	}
 	return list, resp, nil
 }
