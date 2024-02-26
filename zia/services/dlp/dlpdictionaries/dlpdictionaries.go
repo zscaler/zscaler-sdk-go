@@ -179,12 +179,37 @@ func (service *Service) Update(dlpDictionariesID int, dlpDictionaries *DlpDictio
 	return updatedDlpDictionary, nil, nil
 }
 
-func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
+// func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Response, error) {
+// 	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return nil, nil
+// }
+
+func (service *Service) DeleteDlpDictionary(engineID int) (*http.Response, error) {
+	// First, get the DLP engine to check if it's custom
+	dlpEngine, err := service.Get(engineID)
 	if err != nil {
+		// Handle error from the Get function
 		return nil, err
 	}
 
+	// Check if the DLP engine is custom
+	if !dlpEngine.Custom {
+		// If not custom, return an error indicating it cannot be deleted
+		return nil, fmt.Errorf("DLP Dictionary deletion failed. Predefined DLP Dictionary cannot be deleted")
+	}
+
+	// Proceed with deletion if the engine is custom
+	err = service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, engineID))
+	if err != nil {
+		// Handle deletion error
+		return nil, err
+	}
+
+	// Return nil if deletion is successful
 	return nil, nil
 }
 

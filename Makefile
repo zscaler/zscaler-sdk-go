@@ -1,6 +1,7 @@
 COLOR_OK=\\x1b[0;32m
 COLOR_NONE=\x1b[0m
 COLOR_ERROR=\x1b[31;01m
+COLOR_DESTROY=\033[31m # Red
 COLOR_WARNING=\x1b[33;05m
 COLOR_ZSCALER=\x1B[34;01m
 GOFMT := gofumpt
@@ -67,6 +68,15 @@ coverage: test
 	@echo "✓ Opening coverage for unit tests ..."
 	@go tool cover -html=coverage.txt
 
+sweep\:zpa:
+	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
+	ZPA_SDK_TEST_SWEEP=true go test ./zpa/sweep -v -sweep=true
+
+sweep\:zia:
+	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
+	ZIA_SDK_TEST_SWEEP=true go test ./zia/sweep -v -sweep=true
+
+
 test:
 	make test:all
 
@@ -127,7 +137,6 @@ test\:unit\all:
 	go test -race ./tests/unit/zdx -test.v
 	go test -race ./tests/unit/zia -test.v
 	go test -race ./tests/unit/zpa -test.v
-
 
 ziaActivator: GOOS=$(shell go env GOOS)
 ziaActivator: GOARCH=$(shell go env GOARCH)

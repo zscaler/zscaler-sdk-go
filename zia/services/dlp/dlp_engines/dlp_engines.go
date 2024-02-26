@@ -85,11 +85,27 @@ func (service *Service) Update(engineID int, engines *DLPEngines) (*DLPEngines, 
 }
 
 func (service *Service) Delete(engineID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
+	// First, get the DLP engine to check if it's custom
+	dlpEngine, err := service.Get(engineID)
 	if err != nil {
+		// Handle error from the Get function
 		return nil, err
 	}
 
+	// Check if the DLP engine is custom
+	if !dlpEngine.CustomDlpEngine {
+		// If not custom, return an error indicating it cannot be deleted
+		return nil, fmt.Errorf("DLP Engine deletion failed. Predefined DLP Engine cannot be deleted")
+	}
+
+	// Proceed with deletion if the engine is custom
+	err = service.Client.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
+	if err != nil {
+		// Handle deletion error
+		return nil, err
+	}
+
+	// Return nil if deletion is successful
 	return nil, nil
 }
 
