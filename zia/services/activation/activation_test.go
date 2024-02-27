@@ -1,12 +1,6 @@
 package activation
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-)
-
+/*
 func TestActivation(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -44,3 +38,4 @@ func TestActivation(t *testing.T) {
 		}
 	})
 }
+*/

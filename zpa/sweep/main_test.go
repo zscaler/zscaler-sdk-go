@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -100,8 +102,14 @@ func sweep() error {
 
 	// Execute each sweep function
 	for _, fn := range sweepFunctions {
+		// Get the function name using reflection
+		fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		// Extracting the short function name from the full package path
+		shortFnName := fnName[strings.LastIndex(fnName, ".")+1:]
+		log.Printf("[INFO] Starting sweep: %s", shortFnName)
+
 		if err := fn(client); err != nil {
-			log.Printf("[ERROR] Sweep function error: %v", err)
+			log.Printf("[ERROR] %s function error: %v", shortFnName, err)
 			return err
 		}
 	}
