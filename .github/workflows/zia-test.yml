@@ -54,7 +54,6 @@ jobs:
             make sweep:zia
             make test:integration:zia
             make ziaActivator
-            make sweep:zia
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
@@ -65,7 +64,7 @@ jobs:
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+          ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
 
   zia-test-tenants:
     runs-on: ubuntu-latest
@@ -106,7 +105,6 @@ jobs:
             make sweep:zia
             make test:integration:zia
             make ziaActivator
-            make sweep:zia
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
           ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
@@ -117,6 +115,6 @@ jobs:
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+          ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
     needs:
       - zia-zsbeta-tests

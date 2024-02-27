@@ -56,7 +56,6 @@ jobs:
             make test:unit:zpa
             make sweep:zpa
             make test:integration:zpa
-            make sweep:zpa
         env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
@@ -101,7 +100,6 @@ jobs:
             make test:unit:zpa
             make sweep:zpa
             make test:integration:zpa
-            make sweep:zpa
         env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
@@ -145,7 +143,6 @@ jobs:
             make test:unit:zpa
             make sweep:zpa
             make test:integration:zpa
-            make sweep:zpa
         env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
@@ -192,7 +189,6 @@ jobs:
             make test:unit:zpa
             make sweep:zpa
             make test:integration:zpa
-            make sweep:zpa
         env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
