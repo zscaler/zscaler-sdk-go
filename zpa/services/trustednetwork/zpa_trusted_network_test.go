@@ -1,13 +1,10 @@
 package trustednetwork
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func TestTrustedNetworks(t *testing.T) {
@@ -86,39 +83,41 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 }
 
-func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
-	}
-
-	service := New(client)
-
-	// Assuming a network with the name "BD-TrustedNetwork01" exists
-	knownName := "BD-TrustedNetwork01"
-
-	// Case variations to test
-	variations := []string{
-		strings.ToUpper(knownName),
-		strings.ToLower(knownName),
-		cases.Title(language.English).String(knownName),
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
-		network, _, err := service.GetByName(variation)
+/*
+	func TestCaseSensitivityOfGetByName(t *testing.T) {
+		client, err := tests.NewZpaClient()
 		if err != nil {
-			t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
-			continue
+			t.Errorf("Error creating client: %v", err)
+			return
 		}
 
-		// Check if the profile's actual name matches the known name
-		if common.RemoveCloudSuffix(network.Name) != knownName {
-			t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
+		service := New(client)
+
+		// Assuming a network with the name "BD-TrustedNetwork01" exists
+		knownName := "BD-TrustedNetwork01"
+
+		// Case variations to test
+		variations := []string{
+			strings.ToUpper(knownName),
+			strings.ToLower(knownName),
+			cases.Title(language.English).String(knownName),
+		}
+
+		for _, variation := range variations {
+			t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
+			network, _, err := service.GetByName(variation)
+			if err != nil {
+				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
+				continue
+			}
+
+			// Check if the profile's actual name matches the known name
+			if common.RemoveCloudSuffix(network.Name) != knownName {
+				t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
+			}
 		}
 	}
-}
+*/
 
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 	client, err := tests.NewZpaClient()

@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.3.10``
+``Last updated: v2.3.11``
 
 ---
+
+# 2.3.11 (February 26, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhacements
+
+- [PR #230](https://github.com/zscaler/zscaler-sdk-go/pull/230) - Implemented centralized sweep for ZIA and ZPA packages.
 
 # 2.3.10 (February 22, 2024)
 
