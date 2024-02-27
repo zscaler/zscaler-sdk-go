@@ -156,8 +156,8 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = service.GetByName("non_existent_name")
 	if err == nil {
-		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+		t.Error("Expected error retrieving resource by non_existent_name name, but got nil")
 	}
 }

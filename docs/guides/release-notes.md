@@ -13,29 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.4.0``
+``Last updated: v2.3.11``
 
 ---
 
-# Changelog
-
-# 2.4.0 (February xx, 2024) - Unpublished
+# 2.3.11 (February 26, 2024)
 
 ## Notes
 - Golang: **v1.19**
 
-## ZPA Additions
+### Enhacements
 
-### ZPA Emergency Access Users
-- Added `POST /emergencyAccess/user` to create an emergency acess user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-- Added `GET /emergencyAccess/user` to get all emergency acess users for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-- Added `GET /emergencyAccess/user/{userId}` to get the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-- Added `PUT /emergencyAccess/user/{userId}`to update the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-- Added `PUT /emergencyAccess/user/{userId}/activate` to activate the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-- Added `PUT /emergencyAccess/user/{userId}/deactivate` to deactivate the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
-
-### ZPA Access Policy Set Controller v2
-- Added `POST and PUT /mgmtconfig/v2/admin/customers/{customerId}/policySet/{policySetId}/rule` Added support for new v2 policy access rule endpoint which introduces a new payload structure and is designed to support larger number of chars in the requestBody [PR #228](https://github.com/zscaler/zscaler-sdk-go/pull/228) - Added support to ZPA 
+- [PR #230](https://github.com/zscaler/zscaler-sdk-go/pull/230) - Implemented centralized sweep for ZIA and ZPA packages.
 
 # 2.3.10 (February 22, 2024)
 

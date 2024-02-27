@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentinspection"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/browseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
@@ -25,8 +28,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/lssconfigcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/microtenants"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/credentialcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praconsole"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/provisioningkey"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
@@ -80,6 +81,7 @@ func sweep() error {
 		sweepApplicationSegmentInspection,
 		sweepApplicationSegmentPRA,
 		sweepApplicationSegmentBrowserAccess,
+		sweepBaCertificateController,
 		sweepCBIBannerController,
 		sweepCBICertificateController,
 		sweepCBIProfileController,
@@ -92,16 +94,22 @@ func sweep() error {
 		sweepServiceEdgeGroup,
 		sweepProvisioningKey,
 		sweepPolicySetController,
-		sweepCredentialController,
+		// sweepCredentialController,
 		// sweepPRAConsole,
-		sweepPRAPortal,
-		sweepPrivilegedApproval,
+		// sweepPRAPortal,
+		// sweepPrivilegedApproval,
 	}
 
 	// Execute each sweep function
 	for _, fn := range sweepFunctions {
+		// Get the function name using reflection
+		fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		// Extracting the short function name from the full package path
+		shortFnName := fnName[strings.LastIndex(fnName, ".")+1:]
+		log.Printf("[INFO] Starting sweep: %s", shortFnName)
+
 		if err := fn(client); err != nil {
-			log.Printf("[ERROR] Sweep function error: %v", err)
+			log.Printf("[ERROR] %s function error: %v", shortFnName, err)
 			return err
 		}
 	}
@@ -231,6 +239,27 @@ func sweepApplicationSegmentBrowserAccess(client *zpa.Client) error {
 		_, err := service.Delete(r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment browser access with ID: %s, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepBaCertificateController(client *zpa.Client) error {
+	service := bacertificate.New(client)
+	resources, _, err := service.GetAll()
+	if err != nil {
+		log.Printf("[ERROR] Failed to get browser access certificate: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, err := service.Delete(r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete browser access certificate with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 	return nil
@@ -507,6 +536,7 @@ func sweepPolicySetController(client *zpa.Client) error {
 	return nil
 }
 
+/*
 func sweepCredentialController(client *zpa.Client) error {
 	service := credentialcontroller.New(client)
 	resources, _, err := service.GetAll()
@@ -527,7 +557,7 @@ func sweepCredentialController(client *zpa.Client) error {
 	}
 	return nil
 }
-
+*/
 /*
 	func sweepPRAConsole(client *zpa.Client) error {
 		service := praconsole.New(client)
@@ -550,6 +580,7 @@ func sweepCredentialController(client *zpa.Client) error {
 		return nil
 	}
 */
+/*
 func sweepPRAPortal(client *zpa.Client) error {
 	service := praconsole.New(client)
 	resources, _, err := service.GetAll()
@@ -570,7 +601,8 @@ func sweepPRAPortal(client *zpa.Client) error {
 	}
 	return nil
 }
-
+*/
+/*
 func sweepPrivilegedApproval(client *zpa.Client) error {
 	service := praconsole.New(client)
 	resources, _, err := service.GetAll()
@@ -591,3 +623,4 @@ func sweepPrivilegedApproval(client *zpa.Client) error {
 	}
 	return nil
 }
+*/

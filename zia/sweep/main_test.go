@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -22,8 +24,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkapplicationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/forwarding_rules"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/location/locationmanagement"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/rule_labels"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/sandbox/sandbox_settings"
@@ -72,7 +72,7 @@ func sweep() error {
 	log.Println("[INFO] Sweeping ZIA test resources")
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		log.Printf("[ERROR] Failed to instantiate ZIAPA client: %v", err)
+		log.Printf("[ERROR] Failed to instantiate ZIA client: %v", err)
 		return err
 	}
 
@@ -89,8 +89,8 @@ func sweep() error {
 		sweepNetworkAplicationGroups,
 		sweepNetworkServiceGroups,
 		sweepNetworkServices,
-		sweepForwardingControlRules,
-		sweepZPAGateways,
+		// sweepForwardingControlRules,
+		// sweepZPAGateways,
 		sweepLocationManagement,
 		sweepRuleLabels,
 		sweepGRETunnels,
@@ -106,8 +106,14 @@ func sweep() error {
 
 	// Execute each sweep function
 	for _, fn := range sweepFunctions {
+		// Get the function name using reflection
+		fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		// Extracting the short function name from the full package path
+		shortFnName := fnName[strings.LastIndex(fnName, ".")+1:]
+		log.Printf("[INFO] Starting sweep: %s", shortFnName)
+
 		if err := fn(client); err != nil {
-			log.Printf("[ERROR] Sweep function error: %v", err)
+			log.Printf("[ERROR] %s function error: %v", shortFnName, err)
 			return err
 		}
 	}
@@ -347,6 +353,7 @@ func sweepNetworkServices(client *zia.Client) error {
 	return nil
 }
 
+/*
 func sweepForwardingControlRules(client *zia.Client) error {
 	service := forwarding_rules.New(client)
 	resources, err := service.GetAll()
@@ -367,7 +374,9 @@ func sweepForwardingControlRules(client *zia.Client) error {
 	}
 	return nil
 }
+*/
 
+/*
 func sweepZPAGateways(client *zia.Client) error {
 	service := zpa_gateways.New(client)
 	resources, err := service.GetAll()
@@ -388,6 +397,7 @@ func sweepZPAGateways(client *zia.Client) error {
 	}
 	return nil
 }
+*/
 
 func sweepLocationManagement(client *zia.Client) error {
 	service := locationmanagement.New(client)
