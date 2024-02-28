@@ -295,13 +295,13 @@ func sweepCBICertificateController(client *zpa.Client) error {
 	}
 
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
-		if err != nil {
-			log.Printf("[ERROR] Failed to delete cbi certificate controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
+		// Check if the resource's name starts with "tests-" or "updated-"
+		if strings.HasPrefix(r.Name, "tests-") || strings.HasPrefix(r.Name, "updated-") {
+			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete cbi certificate controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
+			}
 		}
 	}
 	return nil
