@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.3.12 (February 28, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #231](https://github.com/zscaler/zscaler-sdk-go/pull/231) - Fixed ZPA Application Segment PRA changed attribute change from `sraPortal` to `praApps`.
+
 # 2.3.11 (February 26, 2024)
 
 ## Notes
