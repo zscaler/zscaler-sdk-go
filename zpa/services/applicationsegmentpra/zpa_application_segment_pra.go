@@ -50,7 +50,7 @@ type AppSegmentPRA struct {
 	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	SRAAppsDto                []SRAAppsDto             `json:"sraApps,omitempty"`
+	SRAAppsDto                []SRAAppsDto             `json:"praApps"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
 }
