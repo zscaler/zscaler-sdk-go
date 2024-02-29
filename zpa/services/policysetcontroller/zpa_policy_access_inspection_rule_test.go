@@ -77,7 +77,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(&accessPolicyRule)
+	createdResource, _, err := service.CreateRule(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -102,7 +102,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.UpdateRule(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
@@ -116,6 +116,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
 	if err != nil {
@@ -127,6 +128,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAllByType(policyType)
 	if err != nil {
@@ -219,7 +221,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(&accessPolicyRule)
+	createdResource, _, err := service.CreateRule(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -244,7 +246,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.UpdateRule(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}

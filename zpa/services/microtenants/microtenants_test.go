@@ -16,6 +16,7 @@ func TestMicrotenants(t *testing.T) {
 		"144124981675032576.zpa-customer.com",
 		"public-api-sdk-testing1.com",
 		"bd-hashicorp.com",
+		"bd-redhat.com",
 		"216199618143191040.zpa-customer.com",
 		"securitygeek.io",
 		"72058304855015424.zpa-customer.com",
