@@ -1,55 +1,12 @@
 package microtenants
 
 import (
-	"log"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
 
 func TestMicrotenants(t *testing.T) {
 	// Define the list of all possible domain names
