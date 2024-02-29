@@ -14,5 +14,7 @@
     "go.useCodeSnippetsOnFunctionSuggest": true,
     "go.useCodeSnippetsOnFunctionSuggestWithoutType": true,
     "go.goroot": "/opt/homebrew/opt/go/libexec",
-    "editor.indentSize": "tabSize"
+    "editor.indentSize": "tabSize",
+    "window.zoomLevel": 2,
+    "window.zoomPerWindow": true
 }
