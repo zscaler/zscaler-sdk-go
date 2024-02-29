@@ -82,7 +82,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := service.Create(&accessPolicyRule)
+		createdResource, _, err := service.CreateRule(&accessPolicyRule)
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 		}
