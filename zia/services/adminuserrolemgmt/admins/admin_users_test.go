@@ -2,7 +2,6 @@ package admins
 
 import (
 	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -39,52 +38,6 @@ func retryOnConflict(operation func() error) error {
 		return lastErr
 	}
 	return lastErr
-}
-
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAllAdminUsers()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.UserName, "tests-") {
-			_, err := service.DeleteAdminUser(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
 }
 
 func TestUserManagement(t *testing.T) {

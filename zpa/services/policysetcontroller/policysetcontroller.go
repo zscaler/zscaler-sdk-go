@@ -129,7 +129,7 @@ func (service *Service) GetPolicyRule(policySetID, ruleId string) (*PolicyRule, 
 }
 
 // POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
-func (service *Service) Create(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
+func (service *Service) CreateRule(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
 	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.microTenantID}, &rule, v)
@@ -140,7 +140,7 @@ func (service *Service) Create(rule *PolicyRule) (*PolicyRule, *http.Response, e
 }
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func (service *Service) Update(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+func (service *Service) UpdateRule(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
 	} else {

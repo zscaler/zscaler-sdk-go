@@ -7,8 +7,84 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
+func TestTrustedNetworks(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Test to retrieve all profiles
+	profiles, _, err := service.GetAll()
+	if err != nil {
+		t.Errorf("Error getting trusted networks: %v", err)
+		return
+	}
+	if len(profiles) == 0 {
+		t.Errorf("No trusted networks found")
+		return
+	}
+	// Test to retrieve a profile by its name
+	name := profiles[0].Name
+	adaptedName := common.RemoveCloudSuffix(name)
+	t.Log("Getting trusted network by name:" + adaptedName)
+	profile, _, err := service.GetByName(adaptedName)
+	if err != nil {
+		t.Errorf("Error getting trusted network by name: %v", err)
+		return
+	}
+	if common.RemoveCloudSuffix(profile.Name) != adaptedName {
+		t.Errorf("trusted network name does not match: expected %s, got %s", adaptedName, profile.Name)
+		return
+	}
+
+	// Negative Test: Try to retrieve a profile with a non-existent name
+	nonExistentName := "ThisTrustedNetworkNameDoesNotExist"
+	_, _, err = service.GetByName(nonExistentName)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
+}
+
+func TestResponseFormatValidation(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	networks, _, err := service.GetAll()
+	if err != nil {
+		t.Errorf("Error getting trusted networks: %v", err)
+		return
+	}
+	if len(networks) == 0 {
+		t.Errorf("No trusted network found")
+		return
+	}
+
+	// Validate each network
+	for _, network := range networks {
+		// Checking if essential fields are not empty
+		if network.ID == "" {
+			t.Errorf("Trusted network ID is empty")
+		}
+		if network.Name == "" {
+			t.Errorf("Trusted network Name is empty")
+		}
+		if network.NetworkID == "" {
+			t.Errorf("Trusted network UDID is empty")
+		}
+	}
+}
+
 /*
-	func TestTrustedNetworks(t *testing.T) {
+	func TestCaseSensitivityOfGetByName(t *testing.T) {
 		client, err := tests.NewZpaClient()
 		if err != nil {
 			t.Errorf("Error creating client: %v", err)
@@ -17,8 +93,8 @@ import (
 
 		service := New(client)
 
-		// Assuming a network with the name "BD-TrustedNetwork03" exists
-		knownName := "BDTrustedNetwork"
+		// Assuming a network with the name "BD-TrustedNetwork01" exists
+		knownName := "BD-TrustedNetwork01"
 
 		// Case variations to test
 		variations := []string{
@@ -28,20 +104,21 @@ import (
 		}
 
 		for _, variation := range variations {
-			t.Logf("Attempting to retrieve network with name variation: %s", variation)
+			t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
 			network, _, err := service.GetByName(variation)
 			if err != nil {
 				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
 				continue
 			}
 
-			// Check if the network's actual name matches the known name
+			// Check if the profile's actual name matches the known name
 			if common.RemoveCloudSuffix(network.Name) != knownName {
 				t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
 			}
 		}
 	}
 */
+
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -117,7 +194,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = service.GetByName("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
