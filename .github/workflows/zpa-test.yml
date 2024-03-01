@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19"]
+        goVersion: ["1.21"]
         environment:
           - ZPA_QA_TENANT01
           - ZPA_QA_TENANT02
@@ -62,13 +62,15 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
   zpa-qa2-tenants:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19"]
+        goVersion: ["1.21"]
         environment:
           - ZPA_QA2_TENANT01
           # - ZPA_QA2_TENANT02
@@ -106,13 +108,15 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
   zpa-beta-tenants:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19"]
+        goVersion: ["1.21"]
         environment:
           - ZPA_BETA_TENANT01
     environment: ${{ matrix.environment }}
@@ -149,6 +153,8 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
     needs:
       - zpa-qa1-tenants
       - zpa-qa2-tenants
@@ -158,7 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19"]
+        goVersion: ["1.21"]
         environment:
           - ZPA_PROD_TENANT01
     environment: ${{ matrix.environment }}
@@ -195,6 +201,8 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
     needs:
       - zpa-qa1-tenants
       - zpa-qa2-tenants
