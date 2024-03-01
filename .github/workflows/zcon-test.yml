@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.21", "1.20"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.19", "1.20"]
+        goVersion: ["1.21", "1.20"]
         environment:
           - ZCON_ZSCLOUD
           - ZCON_ZSCALER_THREE
