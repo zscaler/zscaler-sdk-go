@@ -33,6 +33,25 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - Added `POST and PUT /mgmtconfig/v2/admin/customers/{customerId}/policySet/{policySetId}/rule` endpoints for access policy rule creation. This endpoint allows for larger payload submission. [PR #228](https://github.com/zscaler/zscaler-sdk-go/pull/228) - Added support to ZPA 
 
+# 2.3.11 (February 28, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #230](https://github.com/zscaler/zscaler-sdk-go/pull/230) - Implemented centralized sweep for ZIA and ZPA packages.
+- [PR #231](https://github.com/zscaler/zscaler-sdk-go/pull/231) - Fixed ZPA Application Segment PRA changed attribute change from `sraPortal` to `praApps`.
+
+# 2.3.10 (February 22, 2024)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #225](https://github.com/zscaler/zscaler-sdk-go/pull/225) - Fixed ZIA JSession authentication logic to use `after (now)` instead of `before (now)` to prevent specific JSessionID authentication edge cases.
+
 # 2.3.9 (February 12, 2024)
 
 ## Notes
