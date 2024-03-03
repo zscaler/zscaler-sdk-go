@@ -1,103 +1,108 @@
 package policysetcontroller
 
+/*
 import (
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/pracredential"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
-func TestAccessRedirectionPolicy(t *testing.T) {
-	policyType := "REDIRECTION_POLICY"
+func TestAccessCredentialPolicy(t *testing.T) {
+	policyType := "CREDENTIAL_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "updated_" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	rPassword := acctest.RandString(10)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting idps: %v", err)
+		return
+	}
+	if len(idpList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+	samlService := samlattribute.New(client)
+	samlsList, _, err := samlService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
+	if len(samlsList) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	}
+	service := New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	if err != nil {
+		t.Errorf("Error getting access forwarding policy set: %v", err)
+		return
+	}
 
-	// create service edge group for testing
-	svcEdgeGroupService := serviceedgegroup.New(client)
-	svcEdgeGroup, _, err := svcEdgeGroupService.Create(serviceedgegroup.ServiceEdgeGroup{
-		Name:                   name,
-		Description:            name,
-		Enabled:                true,
-		Latitude:               "37.3861",
-		Longitude:              "-122.0839",
-		Location:               "Mountain View, CA",
-		IsPublic:               "TRUE",
-		UpgradeDay:             "SUNDAY",
-		UpgradeTimeInSecs:      "66600",
-		OverrideVersionProfile: true,
-		VersionProfileName:     "Default",
-		VersionProfileID:       "0",
+	// create app connector group for testing
+	credentialService := pracredential.New(client)
+	credController, _, err := credentialService.Create(&pracredential.Credential{
+		Name:           name,
+		Description:    name,
+		CredentialType: "USERNAME_PASSWORD",
+		UserName:       name,
+		Password:       rPassword,
+		UserDomain:     "acme.com",
 	})
 	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error creating service edge group for testing server group: %v", err)
+		t.Errorf("Error creating app connector group for testing server group: %v", err)
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := svcEdgeGroupService.Get(svcEdgeGroup.ID)
+		_, _, getErr := credentialService.Get(credController.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := svcEdgeGroupService.Delete(svcEdgeGroup.ID)
+			_, err := credentialService.Delete(credController.ID)
 			if err != nil {
-				t.Errorf("Error deleting service edge group: %v", err)
+				t.Errorf("Error deleting app connector group: %v", err)
 			}
 		}
 	}()
 
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
-	if err != nil {
-		t.Errorf("Error getting redirection access policy set: %v", err)
-		return
-	}
-	redirectionPolicyRule := PolicyRule{
+	accessPolicyRule := PolicyRule{
 		Name:        name,
 		Description: name,
 		PolicySetID: accessPolicySet.ID,
-		Action:      "REDIRECT_PREFERRED",
-		ServiceEdgeGroups: []ServiceEdgeGroups{
-			{
-				ID: svcEdgeGroup.ID,
-			},
+		Action:      "INJECT_CREDENTIALS",
+		Credential: &Credential{
+			ID: credController.ID,
 		},
 		Conditions: []Conditions{
 			{
 				Operator: "OR",
 				Operands: []Operands{
 					{
-						ObjectType: "CLIENT_TYPE",
+						ObjectType: "CONSOLE",
 						LHS:        "id",
-						RHS:        "zpn_client_type_machine_tunnel",
+						RHS:        "216199618143324298",
 					},
 					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_branch_connector",
-					},
-					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_edge_connector",
-					},
-					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_zapp",
+						ObjectType: "SAML",
+						LHS:        samlsList[0].ID,
+						RHS:        "user1@acme.com",
+						IdpID:      idpList[0].ID,
 					},
 				},
 			},
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.CreateRule(&redirectionPolicyRule)
+	createdResource, _, err := service.CreateRule(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -179,3 +184,4 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/

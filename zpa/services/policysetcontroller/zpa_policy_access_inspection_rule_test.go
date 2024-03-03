@@ -14,7 +14,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	policyType := "INSPECTION_POLICY"
 	inspectionProfileID := "BD_SA_Profile1"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "updated_" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

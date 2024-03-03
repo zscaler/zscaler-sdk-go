@@ -79,12 +79,12 @@ func TestCredentialController(t *testing.T) {
 		DomainNames:     []string{"rdp_pra.example.com", "ssh_pra.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "3389",
-				To:   "3389",
+				From: "3390",
+				To:   "3390",
 			},
 			{
-				From: "22",
-				To:   "22",
+				From: "2222",
+				To:   "2222",
 			},
 		},
 		CommonAppsDto: applicationsegmentpra.CommonAppsDto{
@@ -94,7 +94,7 @@ func TestCredentialController(t *testing.T) {
 					Description:         name,
 					Enabled:             true,
 					AppTypes:            []string{"SECURE_REMOTE_ACCESS"},
-					ApplicationPort:     "3389",
+					ApplicationPort:     "3390",
 					ApplicationProtocol: "RDP",
 					ConnectionSecurity:  "ANY",
 					Domain:              "rdp_pra.example.com",
@@ -104,7 +104,7 @@ func TestCredentialController(t *testing.T) {
 					Description:         name,
 					Enabled:             true,
 					AppTypes:            []string{"SECURE_REMOTE_ACCESS"},
-					ApplicationPort:     "22",
+					ApplicationPort:     "2222",
 					ApplicationProtocol: "SSH",
 					Domain:              "ssh_pra.example.com",
 				},

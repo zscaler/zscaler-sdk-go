@@ -310,39 +310,3 @@ func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Res
 	}
 	return list, resp, nil
 }
-
-/*
-func (pc PrivilegedCapabilities) ConvertToSlice() []string {
-	capabilities := []string{}
-
-	if pc.FileUpload {
-		capabilities = append(capabilities, "FILE_UPLOAD")
-	}
-	if pc.FileDownload {
-		capabilities = append(capabilities, "FILE_DOWNLOAD")
-	}
-	if pc.InspectFileUpload {
-		capabilities = append(capabilities, "INSPECT_FILE_UPLOAD")
-	}
-	if pc.InspectFileDownload {
-		capabilities = append(capabilities, "INSPECT_FILE_DOWNLOAD")
-	}
-	if pc.ClipboardCopy {
-		capabilities = append(capabilities, "CLIPBOARD_COPY")
-	}
-	if pc.ClipboardPaste {
-		capabilities = append(capabilities, "CLIPBOARD_PASTE")
-	}
-	if pc.RecordSession {
-		capabilities = append(capabilities, "RECORD_SESSION")
-	}
-	if pc.ShareSession {
-		capabilities = append(capabilities, "SHARE_SESSION")
-	}
-	if pc.MonitorSession {
-		capabilities = append(capabilities, "MONITOR_SESSION")
-	}
-
-	return capabilities
-}
-*/
