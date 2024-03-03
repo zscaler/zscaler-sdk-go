@@ -1,56 +1,12 @@
 package praportal
 
 import (
-	"log"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
 
 func TestPRAPortal(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -166,5 +122,56 @@ func TestPRAPortal(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+}
 
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Get("non_existent_id")
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete("non_existent_id")
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update("non_existent_id", &PRAPortal{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non_existent_name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }

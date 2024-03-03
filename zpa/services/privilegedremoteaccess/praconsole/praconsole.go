@@ -15,27 +15,46 @@ const (
 )
 
 type PRAConsole struct {
-	ID              string         `json:"id,omitempty"`
-	Name            string         `json:"name,omitempty"`
-	Description     string         `json:"description,omitempty"`
-	Enabled         bool           `json:"enabled"`
-	IconText        string         `json:"iconText,omitempty"`
-	CreationTime    string         `json:"creationTime,omitempty"`
-	ModifiedBy      string         `json:"modifiedBy,omitempty"`
+	// The unique identifier of the privileged console
+	ID string `json:"id,omitempty"`
+
+	// The name of the privileged console.
+	Name string `json:"name,omitempty"`
+
+	// The description of the privileged console.
+	Description string `json:"description,omitempty"`
+
+	// Whether or not the privileged console is enabled.
+	Enabled bool `json:"enabled"`
+
+	// The privileged console icon. The icon image is converted to base64 encoded text format.
+	IconText string `json:"iconText,omitempty"`
+
+	// The time the privileged console is created.
+	CreationTime string `json:"creationTime,omitempty"`
+
+	// The tenant who modified the privileged console.
+	ModifiedBy string `json:"modifiedBy,omitempty"`
+
+	// The time the privileged console is modified.
 	ModifiedTime    string         `json:"modifiedTime,omitempty"`
 	MicroTenantID   string         `json:"microtenantId,omitempty"`
 	MicroTenantName string         `json:"microtenantName,omitempty"`
-	PRAApplication  PRAApplication `json:"praApplication"` // Renamed to match JSON payload
-	PRAPortals      []PRAPortals   `json:"praPortals"`     // Renamed to match JSON payload
+	PRAApplication  PRAApplication `json:"praApplication"`
+	PRAPortals      []PRAPortals   `json:"praPortals"`
 }
 
 type PRAApplication struct {
-	ID   string `json:"id"`
-	Name string `json:"name"` // Assuming you might have similar structure, even though it's not shown in JSON payload
+	// The unique identifier of the Privileged Remote Access-enabled application.
+	ID string `json:"id"`
+	// The name of the Privileged Remote Access-enabled application.
+	Name string `json:"name"`
 }
 
 type PRAPortals struct {
-	ID   string `json:"id"`
+	// The unique identifier of the privileged portal.
+	ID string `json:"id"`
+	// The name of the privileged portal.
 	Name string `json:"name"`
 }
 

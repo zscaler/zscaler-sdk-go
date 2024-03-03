@@ -1,4 +1,4 @@
-package credentialcontroller
+package pracredential
 
 import (
 	"fmt"
@@ -14,22 +14,58 @@ const (
 )
 
 type Credential struct {
-	ID                      string `json:"id,omitempty"`
-	Name                    string `json:"name,omitempty"`
-	Description             string `json:"description,omitempty"`
+	// The unique identifier of the privileged credential
+	ID string `json:"id,omitempty"`
+
+	//The name of the privileged credential.
+	Name string `json:"name,omitempty"`
+
+	// The description of the privileged credential.
+	Description string `json:"description,omitempty"`
+
+	// The time the privileged credential was last reset.
 	LastCredentialResetTime string `json:"lastCredentialResetTime,omitempty"`
-	CredentialType          string `json:"credentialType,omitempty"`
-	Passphrase              string `json:"passphrase,omitempty"`
-	Password                string `json:"password,omitempty"`
-	PrivateKey              string `json:"privateKey,omitempty"`
-	UserDomain              string `json:"userDomain,omitempty"`
-	UserName                string `json:"userName,omitempty"`
-	CreationTime            string `json:"creationTime,omitempty"`
-	ModifiedBy              string `json:"modifiedBy,omitempty"`
-	ModifiedTime            string `json:"modifiedTime,omitempty"`
-	MicroTenantID           string `json:"microtenantId,omitempty"`
-	MicroTenantName         string `json:"microtenantName,omitempty"`
-	TargetMicrotenantId     string `json:"targetMicrotenantId,omitempty"`
+
+	// The protocol type that was designated for that particular privileged credential.
+	// The protocol type options are SSH, RDP, and VNC. Each protocol type has its own credential requirements.
+	CredentialType string `json:"credentialType,omitempty"`
+
+	// The password that is used to protect the SSH private key. This field is optional.
+	Passphrase string `json:"passphrase,omitempty"`
+
+	// The password associated with the username for the login you want to use for the privileged credential.
+	Password string `json:"password,omitempty"`
+
+	// The SSH private key associated with the username for the login you want to use for the privileged credential.
+	PrivateKey string `json:"privateKey,omitempty"`
+
+	// The domain name associated with the username.
+	// You can also include the domain name as part of the username.
+	// The domain name only needs to be specified with logging in to an RDP console that is connected to an Active Directory Domain.
+	UserDomain string `json:"userDomain,omitempty"`
+
+	// The username for the login you want to use for the privileged credential.
+	UserName string `json:"userName,omitempty"`
+
+	// The time the privileged credential is created.
+	CreationTime string `json:"creationTime,omitempty"`
+
+	// The unique identifier of the tenant who modified the privileged credential.
+	ModifiedBy string `json:"modifiedBy,omitempty"`
+
+	// The time the privileged credential is modified.
+	ModifiedTime string `json:"modifiedTime,omitempty"`
+
+	// The unique identifier of the Microtenant for the ZPA tenant.
+	// If you are within the Default Microtenant, pass microtenantId as 0 when making requests to retrieve data from the Default Microtenant.
+	// Pass microtenantId as null to retrieve data from all customers associated with the tenant.
+	MicroTenantID string `json:"microtenantId,omitempty"`
+
+	// The name of the Microtenant.
+	MicroTenantName string `json:"microtenantName,omitempty"`
+
+	// The unique identifier of the target Microtenant that the privileged credential is being moved to.
+	TargetMicrotenantId string `json:"targetMicrotenantId,omitempty"`
 }
 
 func (service *Service) Get(credentialID string) (*Credential, *http.Response, error) {

@@ -92,7 +92,7 @@ func TestBACertificates(t *testing.T) {
 
 	// Test 2: Retrieve Non-Existent Certificate
 	t.Run("TestRetrieveNonExistentCert", func(t *testing.T) {
-		_, _, err := service.Get("non-existent-id")
+		_, _, err := service.Get("non_existent_id")
 		if err == nil {
 			t.Errorf("Expected error while retrieving non-existent certificate, got nil")
 		}

@@ -1,4 +1,4 @@
-package credentialcontroller
+package pracredential
 
 import (
 	"testing"
@@ -8,8 +8,8 @@ import (
 )
 
 func TestCredentialController(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	rPassword := acctest.RandString(10)
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -112,4 +112,56 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Get("non_existent_id")
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete("non_existent_id")
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update("non_existent_id", &Credential{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.GetByName("non_existent_name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }

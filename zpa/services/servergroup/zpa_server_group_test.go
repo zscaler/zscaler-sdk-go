@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 )
 
 func TestServerGroup(t *testing.T) {
@@ -58,43 +57,15 @@ func TestServerGroup(t *testing.T) {
 		}
 	}()
 
-	// create app server for testing
-	appServerService := appservercontroller.New(client)
-	appServer, _, err := appServerService.Create(appservercontroller.ApplicationServer{
-		Name:        name,
-		Description: name,
-		Address:     "192.168.1.1",
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating app server for testing server group: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appServerService.Get(appServer.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := appServerService.Delete(appServer.ID)
-			if err != nil {
-				t.Errorf("Error deleting app server: %v", err)
-			}
-		}
-	}()
-
 	service := New(client)
 
 	appGroup := ServerGroup{
-		Name:        name,
-		Description: name,
+		Name:             name,
+		Description:      name,
+		DynamicDiscovery: true,
 		AppConnectorGroups: []AppConnectorGroups{
 			{
 				ID: appConnGroup.ID,
-			},
-		},
-		Servers: []ApplicationServer{
-			{
-				ID: appServer.ID,
 			},
 		},
 	}
@@ -151,6 +122,7 @@ func TestServerGroup(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAll()
 	if err != nil {
@@ -203,7 +175,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.Get("non-existent-id")
+	_, _, err = service.Get("non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -216,7 +188,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Delete("non-existent-id")
+	_, err = service.Delete("non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -229,7 +201,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update("non-existent-id", &ServerGroup{})
+	_, err = service.Update("non_existent_id", &ServerGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -242,7 +214,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = service.GetByName("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

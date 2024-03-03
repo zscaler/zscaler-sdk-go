@@ -41,8 +41,6 @@ type PolicyRuleResource struct {
 	Description              string                         `json:"description,omitempty"`
 	Action                   string                         `json:"action,omitempty"`
 	ActionID                 string                         `json:"actionId,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
-	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	CreationTime             string                         `json:"creationTime,omitempty"`
 	ModifiedBy               string                         `json:"modifiedBy,omitempty"`
 	ModifiedTime             string                         `json:"modifiedTime,omitempty"`
@@ -61,6 +59,10 @@ type PolicyRuleResource struct {
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
+	Credential               *Credential                    `json:"credential,omitempty"`
+	PrivilegedCapabilities   PrivilegedCapabilities         `json:"privilegedCapabilities,omitempty"`
 }
 
 type Conditions struct {
@@ -117,6 +119,8 @@ type PolicyRule struct {
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
+	Credential               *Credential                    `json:"credential,omitempty"`
+	PrivilegedCapabilities   PrivilegedCapabilities         `json:"privilegedCapabilities,omitempty"`
 }
 
 type PolicyRuleResourceConditions struct {
@@ -148,15 +152,32 @@ type OperandsResourceLHSRHSValue struct {
 }
 
 type AppServerGroups struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type AppConnectorGroups struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type ServiceEdgeGroups struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type Credential struct {
+	ID   string `json:"id"`
+	Name string `json:"name,omitempty"`
+}
+
+type PrivilegedCapabilities struct {
+	ID            string   `json:"id"`
+	CreationTime  string   `json:"creationTime,omitempty"`
+	ModifiedBy    string   `json:"modifiedBy,omitempty"`
+	ModifiedTime  string   `json:"modifiedTime,omitempty"`
+	MicroTenantID string   `json:"microtenantId,omitempty"`
+	Capabilities  []string `json:"capabilities,omitempty"`
 }
 
 func (service *Service) GetByPolicyType(policyType string) (*PolicySet, *http.Response, error) {

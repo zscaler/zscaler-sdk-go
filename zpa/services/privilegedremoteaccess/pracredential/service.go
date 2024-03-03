@@ -1,4 +1,4 @@
-package privilegedapproval
+package pracredential
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"

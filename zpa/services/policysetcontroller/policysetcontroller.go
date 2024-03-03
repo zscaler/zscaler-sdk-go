@@ -32,38 +32,40 @@ type PolicySet struct {
 }
 
 type PolicyRule struct {
-	Action                   string               `json:"action,omitempty"`
-	ActionID                 string               `json:"actionId,omitempty"`
-	BypassDefaultRule        bool                 `json:"bypassDefaultRule"`
-	CreationTime             string               `json:"creationTime,omitempty"`
-	CustomMsg                string               `json:"customMsg,omitempty"`
-	DefaultRule              bool                 `json:"defaultRule,omitempty"`
-	DefaultRuleName          string               `json:"defaultRuleName,omitempty"`
-	Description              string               `json:"description,omitempty"`
-	ID                       string               `json:"id,omitempty"`
-	IsolationDefaultRule     bool                 `json:"isolationDefaultRule"`
-	ModifiedBy               string               `json:"modifiedBy,omitempty"`
-	ModifiedTime             string               `json:"modifiedTime,omitempty"`
-	Name                     string               `json:"name,omitempty"`
-	Operator                 string               `json:"operator,omitempty"`
-	PolicySetID              string               `json:"policySetId"`
-	PolicyType               string               `json:"policyType,omitempty"`
-	Priority                 string               `json:"priority,omitempty"`
-	ReauthDefaultRule        bool                 `json:"reauthDefaultRule"`
-	ReauthIdleTimeout        string               `json:"reauthIdleTimeout,omitempty"`
-	ReauthTimeout            string               `json:"reauthTimeout,omitempty"`
-	RuleOrder                string               `json:"ruleOrder"`
-	LSSDefaultRule           bool                 `json:"lssDefaultRule"`
-	ZpnCbiProfileID          string               `json:"zpnCbiProfileId,omitempty"`
-	ZpnIsolationProfileID    string               `json:"zpnIsolationProfileId,omitempty"`
-	ZpnInspectionProfileID   string               `json:"zpnInspectionProfileId,omitempty"`
-	ZpnInspectionProfileName string               `json:"zpnInspectionProfileName,omitempty"`
-	MicroTenantID            string               `json:"microtenantId,omitempty"`
-	MicroTenantName          string               `json:"microtenantName,omitempty"`
-	Conditions               []Conditions         `json:"conditions"`
-	AppServerGroups          []AppServerGroups    `json:"appServerGroups"`
-	AppConnectorGroups       []AppConnectorGroups `json:"appConnectorGroups"`
-	ServiceEdgeGroups        []ServiceEdgeGroups  `json:"serviceEdgeGroups"`
+	Action                   string                 `json:"action,omitempty"`
+	ActionID                 string                 `json:"actionId,omitempty"`
+	BypassDefaultRule        bool                   `json:"bypassDefaultRule"`
+	CreationTime             string                 `json:"creationTime,omitempty"`
+	CustomMsg                string                 `json:"customMsg,omitempty"`
+	DefaultRule              bool                   `json:"defaultRule,omitempty"`
+	DefaultRuleName          string                 `json:"defaultRuleName,omitempty"`
+	Description              string                 `json:"description,omitempty"`
+	ID                       string                 `json:"id,omitempty"`
+	IsolationDefaultRule     bool                   `json:"isolationDefaultRule"`
+	ModifiedBy               string                 `json:"modifiedBy,omitempty"`
+	ModifiedTime             string                 `json:"modifiedTime,omitempty"`
+	Name                     string                 `json:"name,omitempty"`
+	Operator                 string                 `json:"operator,omitempty"`
+	PolicySetID              string                 `json:"policySetId"`
+	PolicyType               string                 `json:"policyType,omitempty"`
+	Priority                 string                 `json:"priority,omitempty"`
+	ReauthDefaultRule        bool                   `json:"reauthDefaultRule"`
+	ReauthIdleTimeout        string                 `json:"reauthIdleTimeout,omitempty"`
+	ReauthTimeout            string                 `json:"reauthTimeout,omitempty"`
+	RuleOrder                string                 `json:"ruleOrder"`
+	LSSDefaultRule           bool                   `json:"lssDefaultRule"`
+	ZpnCbiProfileID          string                 `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID    string                 `json:"zpnIsolationProfileId,omitempty"`
+	ZpnInspectionProfileID   string                 `json:"zpnInspectionProfileId,omitempty"`
+	ZpnInspectionProfileName string                 `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID            string                 `json:"microtenantId,omitempty"`
+	MicroTenantName          string                 `json:"microtenantName,omitempty"`
+	Conditions               []Conditions           `json:"conditions"`
+	AppServerGroups          []AppServerGroups      `json:"appServerGroups"`
+	AppConnectorGroups       []AppConnectorGroups   `json:"appConnectorGroups"`
+	ServiceEdgeGroups        []ServiceEdgeGroups    `json:"serviceEdgeGroups"`
+	Credential               *Credential            `json:"credential,omitempty"`
+	PrivilegedCapabilities   PrivilegedCapabilities `json:"privilegedCapabilities,omitempty"`
 }
 
 type Conditions struct {
@@ -91,15 +93,31 @@ type Operands struct {
 }
 
 type AppServerGroups struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type AppConnectorGroups struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type ServiceEdgeGroups struct {
 	ID string `json:"id,omitempty"`
+}
+
+type Credential struct {
+	ID   string `json:"id"`
+	Name string `json:"name,omitempty"`
+}
+
+type PrivilegedCapabilities struct {
+	ID            string   `json:"id"`
+	CreationTime  string   `json:"creationTime,omitempty"`
+	ModifiedBy    string   `json:"modifiedBy,omitempty"`
+	ModifiedTime  string   `json:"modifiedTime,omitempty"`
+	MicroTenantID string   `json:"microtenantId,omitempty"`
+	Capabilities  []string `json:"capabilities,omitempty"`
 }
 
 type Count struct {
@@ -292,3 +310,39 @@ func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Res
 	}
 	return list, resp, nil
 }
+
+/*
+func (pc PrivilegedCapabilities) ConvertToSlice() []string {
+	capabilities := []string{}
+
+	if pc.FileUpload {
+		capabilities = append(capabilities, "FILE_UPLOAD")
+	}
+	if pc.FileDownload {
+		capabilities = append(capabilities, "FILE_DOWNLOAD")
+	}
+	if pc.InspectFileUpload {
+		capabilities = append(capabilities, "INSPECT_FILE_UPLOAD")
+	}
+	if pc.InspectFileDownload {
+		capabilities = append(capabilities, "INSPECT_FILE_DOWNLOAD")
+	}
+	if pc.ClipboardCopy {
+		capabilities = append(capabilities, "CLIPBOARD_COPY")
+	}
+	if pc.ClipboardPaste {
+		capabilities = append(capabilities, "CLIPBOARD_PASTE")
+	}
+	if pc.RecordSession {
+		capabilities = append(capabilities, "RECORD_SESSION")
+	}
+	if pc.ShareSession {
+		capabilities = append(capabilities, "SHARE_SESSION")
+	}
+	if pc.MonitorSession {
+		capabilities = append(capabilities, "MONITOR_SESSION")
+	}
+
+	return capabilities
+}
+*/

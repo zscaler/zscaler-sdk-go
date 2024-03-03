@@ -193,7 +193,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Get("non-existent-id")
+	_, err = service.Get("non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -206,7 +206,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.DeleteURLCategories("non-existent-id")
+	_, err = service.DeleteURLCategories("non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -219,7 +219,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.UpdateURLCategories("non-existent-id", &URLCategory{})
+	_, _, err = service.UpdateURLCategories("non_existent_id", &URLCategory{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -232,7 +232,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.GetCustomURLCategories("non-existent-name")
+	_, err = service.GetCustomURLCategories("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

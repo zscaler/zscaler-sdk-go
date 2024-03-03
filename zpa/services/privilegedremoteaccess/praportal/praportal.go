@@ -14,19 +14,49 @@ const (
 )
 
 type PRAPortal struct {
-	ID                      string `json:"id,omitempty"`
-	Name                    string `json:"name,omitempty"`
-	Description             string `json:"description,omitempty"`
-	Enabled                 bool   `json:"enabled"`
-	CName                   string `json:"cName,omitempty"`
-	Domain                  string `json:"domain,omitempty"`
-	CertificateID           string `json:"certificateId,omitempty"`
-	CertificateName         string `json:"certificateName,omitempty"`
-	CreationTime            string `json:"creationTime,omitempty"`
-	ModifiedBy              string `json:"modifiedBy,omitempty"`
-	ModifiedTime            string `json:"modifiedTime,omitempty"`
-	UserNotification        string `json:"userNotification"`
-	UserNotificationEnabled bool   `json:"userNotificationEnabled"`
+	// The unique identifier of the privileged portal.
+	ID string `json:"id,omitempty"`
+
+	// The name of the privileged portal.
+	Name string `json:"name,omitempty"`
+
+	// The description of the privileged portal.
+	Description string `json:"description,omitempty"`
+
+	// Whether or not the privileged portal is enabled.
+	Enabled bool `json:"enabled"`
+
+	// The canonical name (CNAME DNS records) associated with the privileged portal.
+	CName string `json:"cName,omitempty"`
+
+	// The domain of the privileged portal.
+	Domain string `json:"domain,omitempty"`
+
+	// The unique identifier of the certificate.
+	CertificateID string `json:"certificateId,omitempty"`
+
+	// The name of the certificate.
+	CertificateName string `json:"certificateName,omitempty"`
+
+	// The time the privileged portal is created.
+	CreationTime string `json:"creationTime,omitempty"`
+
+	// The unique identifier of the tenant who modified the privileged portal.
+	ModifiedBy string `json:"modifiedBy,omitempty"`
+
+	// The time the privileged portal is modified.
+	ModifiedTime string `json:"modifiedTime,omitempty"`
+
+	// The notification message displayed in the banner of the privileged portallink, if enabled.
+	UserNotification string `json:"userNotification"`
+
+	// Indicates if the Notification Banner is enabled (true) or disabled (false).
+	UserNotificationEnabled bool `json:"userNotificationEnabled"`
+
+	MicroTenantID string `json:"microtenantId,omitempty"`
+
+	// The name of the Microtenant.
+	MicroTenantName string `json:"microtenantName,omitempty"`
 }
 
 func (service *Service) Get(portalID string) (*PRAPortal, *http.Response, error) {
