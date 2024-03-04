@@ -237,28 +237,35 @@ func (client *Client) getRequest(method, urlPath string, options, body interface
 		}
 	}
 
-	// Join the path to the base-url
-	u := *client.Config.BaseURL
-	unescaped, err := url.PathUnescape(urlPath)
+	// Parse the URL path to separate the path from any query string
+	parsedPath, err := url.Parse(urlPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the encoded path data
-	u.RawPath = u.Path + urlPath
-	u.Path = u.Path + unescaped
+	// Join the parsed path with the base URL
+	u := client.Config.BaseURL.ResolveReference(parsedPath)
 
-	// Set the query parameters
+	// Handle query parameters from options and any additional logic
 	if options == nil {
 		options = struct{}{}
 	}
-	// Set the query parameters
-
 	q, err := query.Values(options)
 	if err != nil {
 		return nil, err
 	}
+	// Here, injectMicrotenantID or any similar function should ensure
+	// it's not duplicating query parameters that may already be present in urlPath
 	q = client.injectMicrotentantID(body, q)
+
+	// Merge query params from urlPath and options. Avoid overwriting any existing params.
+	for key, values := range parsedPath.Query() {
+		for _, value := range values {
+			q.Add(key, value)
+		}
+	}
+
+	// Set the final query string
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(method, u.String(), buf)
