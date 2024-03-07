@@ -151,6 +151,7 @@ func TestApplicationSegmentPRA(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {

@@ -148,3 +148,26 @@ func (service *Service) GetAll() ([]MicroTenant, *http.Response, error) {
 	}
 	return list, resp, nil
 }
+
+func (service *Service) GetMicrotenantSummary() ([]MicroTenant, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + microtenantsEndpoint + "/summary"
+
+	var list []MicroTenant // This will be used to decode the response
+
+	// Since you're performing a GET request, the body is nil. The last parameter is also nil,
+	// assuming it's for optional parameters or headers that aren't needed here.
+	// Adjust this call if your service.Client.NewRequestDo method requires a different setup for headers or options.
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, &list, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, resp, fmt.Errorf("API request error: %s", resp.Status)
+	}
+
+	// The response is already decoded into list by NewRequestDo, so no need to decode it again.
+
+	return list, resp, nil
+}
