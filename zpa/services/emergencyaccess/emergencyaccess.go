@@ -35,6 +35,7 @@ func (service *Service) Get(profileID string) (*EmergencyAccess, *http.Response,
 	return v, resp, nil
 }
 
+// TODO: NEEDS FIXING WITH THE SEARCH MECHANISM
 // func (service *Service) GetByEmailID(emailID string) (*EmergencyAccess, *http.Response, error) {
 // 	// Use the GetAll function to retrieve all EmergencyAccess records
 // 	list, resp, err := service.GetAll()

@@ -1,6 +1,6 @@
 # Changelog
 
-# 2.4.0 (March xx, 2024)
+# 2.4.0 (March 1, 2024)
 
 ## Notes
 - Golang: **v1.19**
@@ -15,6 +15,7 @@
 - Added `PUT /emergencyAccess/user/{userId}/deactivate` to deactivate the emergency access user for the specified customer. [PR #226](https://github.com/zscaler/zscaler-sdk-go/pull/226) - Added support to ZPA 
 
 - Added `POST and PUT /mgmtconfig/v2/admin/customers/{customerId}/policySet/{policySetId}/rule` endpoints for access policy rule creation. This endpoint allows for larger payload submission. [PR #228](https://github.com/zscaler/zscaler-sdk-go/pull/228) - Added support to ZPA 
+
 
 # 2.3.11 (February 28, 2024)
 

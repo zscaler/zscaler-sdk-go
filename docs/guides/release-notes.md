@@ -17,7 +17,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-# 2.4.0 (March xx, 2024)
+# 2.4.0 (March 1, 2024)
 
 ## Notes
 - Golang: **v1.19**

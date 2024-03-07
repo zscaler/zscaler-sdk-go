@@ -87,8 +87,8 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 // deleteUserInOkta deletes a user (or users) in Okta based on provided user IDs
 func deleteUserInOkta(t *testing.T, userIDs []string) {
 	// Fetch Okta domain and API token from environment variables
-	oktaDomain := os.Getenv("OKTA_DOMAIN")
-	apiToken := os.Getenv("OKTA_API_TOKEN")
+	oktaDomain := os.Getenv("OKTA_CLIENT_ORGURL")
+	apiToken := os.Getenv("OKTA_CLIENT_TOKEN")
 
 	// Initialize Okta client with environment variables
 	ctx, client, err := okta.NewClient(
