@@ -1,8 +1,10 @@
 package praapproval
 
 import (
+	"math/rand"
 	"net/http"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -13,6 +15,51 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 )
 
+// getCurrentEpochTime returns the current time in epoch format.
+func getCurrentEpochTime() int64 {
+	return time.Now().Unix()
+}
+
+func getStartTime() string {
+	startTime := getCurrentEpochTime() - (60 * 60) // Subtracting 3600 seconds (1 hour)
+	return strconv.FormatInt(startTime, 10)
+}
+
+func getEndTime() string {
+	endTime := getCurrentEpochTime() + (364 * 24 * 60 * 60) // Adding 31536000 seconds (365 days)
+	return strconv.FormatInt(endTime, 10)
+}
+
+// A sample list of IANA Time Zones.
+// Extend this list based on your requirements.
+var timeZones = []string{
+	"America/New_York",
+	"America/Chicago",
+	"America/Denver",
+	"America/Los_Angeles",
+	"America/Vancouver",
+	"Europe/London",
+	"Europe/Berlin",
+	"Asia/Tokyo",
+	"Asia/Shanghai",
+	"Asia/Kolkata",
+	"Australia/Sydney",
+}
+
+// randTimeZone selects a random time zone from the timeZones slice.
+func randTimeZone() string {
+	rand.Seed(time.Now().UnixNano()) // Ensure different output for each program run
+	return timeZones[rand.Intn(len(timeZones))]
+}
+
+// getRandomTimeZone ensures the randomly selected time zone is valid by trying to load it.
+func getRandomTimeZone() (string, error) {
+	tz := randTimeZone()
+	if _, err := time.LoadLocation(tz); err != nil {
+		return "", err
+	}
+	return tz, nil
+}
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	//updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
@@ -22,21 +69,6 @@ func TestCredentialController(t *testing.T) {
 		return
 	}
 	service := New(client)
-	// Adjusting StartTime and EndTime
-	// startTime, err := time.Parse("15:04", "10:00") // Assuming you want 10:00 as start time
-	// if err != nil {
-	// 	t.Fatalf("Failed to parse start time: %v", err)
-	// }
-	// endTime, err := time.Parse("15:04", "17:00") // Assuming you want 17:00 as end time
-	// if err != nil {
-	// 	t.Fatalf("Failed to parse end time: %v", err)
-	// }
-
-	// Adjusting TimeZone
-	// loc, err := time.LoadLocation("Asia/Calcutta")
-	// if err != nil {
-	// 	t.Fatalf("Failed to load location: %v", err)
-	// }
 
 	// create segment group for testing
 	segGroupService := segmentgroup.New(client)
@@ -136,14 +168,20 @@ func TestCredentialController(t *testing.T) {
 			}
 		}
 	}()
+	// Attempt to get a random but valid time zone
+	tz, err := getRandomTimeZone()
+	if err != nil {
+		t.Fatalf("Failed to load random time zone: %v", err)
+	}
+
 	credController := PrivilegedApproval{
 		EmailIDs:  []string{"wxiiqedzjo@bd-hashicorp.com"},
-		StartTime: "1709596800",
-		EndTime:   "1741132800",
+		StartTime: getStartTime(), // Dynamically generate valid start time
+		EndTime:   getEndTime(),   // Dynamically generate valid end time
 		Status:    "ACTIVE",
 		WorkingHours: &WorkingHours{
 			Days:          []string{"MON", "TUE", "WED", "THU", "FRI"},
-			TimeZone:      "America/Vancouver",
+			TimeZone:      tz,
 			StartTime:     "09:00",
 			EndTime:       "17:00",
 			StartTimeCron: "0 0 17 ? * MON,TUE,WED,THU,FRI",

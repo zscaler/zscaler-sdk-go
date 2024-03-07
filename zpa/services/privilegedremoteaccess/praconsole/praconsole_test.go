@@ -148,17 +148,17 @@ func TestPRAConsole(t *testing.T) {
 	var praConsoles []PRAConsole
 
 	// Assuming retrievedpraAppSeg.SRAAppsDto correctly holds a slice of SRAAppsDto objects
-	if len(retrievedpraAppSeg.SRAAppsDto) >= 2 {
+	if len(retrievedpraAppSeg.PRAApps) >= 2 {
 		// Example to address the indexing issue based on your setup
-		for i := 0; i < len(retrievedpraAppSeg.SRAAppsDto); i += 2 {
+		for i := 0; i < len(retrievedpraAppSeg.PRAApps); i += 2 {
 			// Ensure there's at least one more element for the second console
-			if i+1 < len(retrievedpraAppSeg.SRAAppsDto) {
+			if i+1 < len(retrievedpraAppSeg.PRAApps) {
 				praConsole1 := PRAConsole{
 					Name:        name + "_rdp_pra.example.com",
 					Description: name + "_rdp_pra.example.com",
 					Enabled:     true,
 					PRAApplication: PRAApplication{
-						ID: retrievedpraAppSeg.SRAAppsDto[i].ID, // Properly using indexing on the slice
+						ID: retrievedpraAppSeg.PRAApps[i].ID, // Properly using indexing on the slice
 					},
 					PRAPortals: []PRAPortals{
 						{ID: praPortalIDs[0]},
@@ -171,7 +171,7 @@ func TestPRAConsole(t *testing.T) {
 					Description: name + "_ssh_pra.example.com",
 					Enabled:     true,
 					PRAApplication: PRAApplication{
-						ID: retrievedpraAppSeg.SRAAppsDto[i+1].ID, // Properly using indexing on the slice
+						ID: retrievedpraAppSeg.PRAApps[i+1].ID, // Properly using indexing on the slice
 					},
 					PRAPortals: []PRAPortals{
 						{ID: praPortalIDs[0]},

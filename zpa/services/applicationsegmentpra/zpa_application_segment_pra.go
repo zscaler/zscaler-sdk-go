@@ -51,7 +51,7 @@ type AppSegmentPRA struct {
 	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	SRAAppsDto                []SRAAppsDto             `json:"praApps"`
+	PRAApps                   []PRAApps                `json:"praApps"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
 }
@@ -92,7 +92,7 @@ type AppsConfig struct {
 	Portal              bool     `json:"portal,omitempty"`
 }
 
-type SRAAppsDto struct {
+type PRAApps struct {
 	ID                  string `json:"id"`
 	AppID               string `json:"appId"`
 	Name                string `json:"name,omitempty"`
@@ -165,9 +165,9 @@ func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	return diff
 }
 
-func mapSraApp(SRAAppsDto []SRAAppsDto) []AppsConfig {
+func mapSraApp(PRAApps []PRAApps) []AppsConfig {
 	result := []AppsConfig{}
-	for _, app := range SRAAppsDto {
+	for _, app := range PRAApps {
 		result = append(result, AppsConfig{
 			Name:   app.Name,
 			Domain: app.Domain,
@@ -191,7 +191,7 @@ func (service *Service) Update(id string, appSegmentPra *AppSegmentPRA) (*http.R
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapSraApp(existingResource.SRAAppsDto)
+	existingApps := mapSraApp(existingResource.PRAApps)
 	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
 	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
 	appSegmentPra.CommonAppsDto.AppsConfig = newApps
