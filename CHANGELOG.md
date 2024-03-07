@@ -23,43 +23,43 @@
 #### Privileged Remote Access Approval
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/approval` endpoint to get all PRA Approval resources for a specified customer
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/approval/{id}` endpoint to get a specific PRA Approval resources for a specified customer
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/approval` endpoint to add PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/approval/{id}` endpoint to update a specific PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/approval/{id}` endpoint to delete a specific PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/approval/expired` endpoint to delete all PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/approval` endpoint to add PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/approval/{id}` endpoint to update a specific PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/approval/{id}` endpoint to delete a specific PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/approval/expired` endpoint to delete all PRA Approval resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
 
 #### Privileged Remote Access Console
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/console` endpoint to get all PRA Console resources for a specified customer
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/console/{id}` endpoint to get a specific PRA Console resources for a specified customer
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/console/praPortal/{portalId}` endpoint to get privileged consoles for a specified privileged portal.
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/console` endpoint to add PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233)
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/console/bulk` endpoint to create a list of PRA Console resources to a specified privileged portal and customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/console/{id}` endpoint to update a specific PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/console/{id}` endpoint to delete a specific PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/console` endpoint to add PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235)
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/console/bulk` endpoint to create a list of PRA Console resources to a specified privileged portal and customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/console/{id}` endpoint to update a specific PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/console/{id}` endpoint to delete a specific PRA Console resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
 
 #### Privileged Remote Access Portal
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/praPortal` endpoint to get all PRA Portal resources for a specified customer
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/praPortal/{id}` endpoint to get a specific PRA Portal resources for a specified customer
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/praPortal` endpoint to add PRA Portal resource for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233)
-- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/praPortal/{id}` endpoint to update a specific PRA Portal resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/praPortal/{id}` endpoint to delete a specific PRA Portal resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/praPortal` endpoint to add PRA Portal resource for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235)
+- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/praPortal/{id}` endpoint to update a specific PRA Portal resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/praPortal/{id}` endpoint to delete a specific PRA Portal resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
 
 #### Privileged Remote Access Credential
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/credential` endpoint to get all PRA Credential resources for a specified customer
 - Added `GET /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to get a specific PRA Credential resources for a specified customer
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/credential` endpoint to add PRA Credential resource for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233)
-- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/credential/move` endpoint to move PRA Credentials from one microtenant to another microtenant. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233)
-- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to update a specific PRA Credential resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
-- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to delete a specific PRA Credential resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/credential` endpoint to add PRA Credential resource for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235)
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/credential/move` endpoint to move PRA Credentials from one microtenant to another microtenant. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235)
+- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to update a specific PRA Credential resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
+- Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to delete a specific PRA Credential resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
 
 #### Application Segment
-[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) Included new application segment attribute `matchStyle` to support `Exact Match` vs. `Multimatch` configuration. [Learn More Here ](https://help.zscaler.com/zpa/using-app-segment-multimatch)
+[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) Included new application segment attribute `matchStyle` to support `Exact Match` vs. `Multimatch` configuration. [Learn More Here ](https://help.zscaler.com/zpa/using-app-segment-multimatch)
 
 ### Acceptance Tests
-[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) - Implemented centralized ZIA and ZPA sweep facility for tenant cleanup pre and post integration tests.
+[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) - Implemented centralized ZIA and ZPA sweep facility for tenant cleanup pre and post integration tests.
 
 ### Fixes
-[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) - Fixed ZPA API client HTTP request to prevent undesired URL encoding or special characters.
+[PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) - Fixed ZPA API client HTTP request to prevent undesired URL encoding or special characters.
 
 # 2.3.11 (February 28, 2024)
 
