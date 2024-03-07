@@ -40,27 +40,38 @@ type PRAConsole struct {
 	ModifiedTime    string         `json:"modifiedTime,omitempty"`
 	MicroTenantID   string         `json:"microtenantId,omitempty"`
 	MicroTenantName string         `json:"microtenantName,omitempty"`
-	PRAApplication  PRAApplication `json:"praApplication"`
+	PRAApplication  PRAApplication `json:"praApplication,omitempty"`
 	PRAPortals      []PRAPortals   `json:"praPortals"`
 }
 
 type PRAApplication struct {
 	// The unique identifier of the Privileged Remote Access-enabled application.
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// The name of the Privileged Remote Access-enabled application.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 
 type PRAPortals struct {
 	// The unique identifier of the privileged portal.
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// The name of the privileged portal.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 
 func (service *Service) Get(consoleID string) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, consoleID)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v, resp, nil
+}
+
+func (service *Service) GetPraPortal(portalID string) (*PRAConsole, *http.Response, error) {
+	v := new(PRAConsole)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint+"/praPortal", portalID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err

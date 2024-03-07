@@ -28,6 +28,7 @@ type AppSegmentPRA struct {
 	BypassType                string                   `json:"bypassType,omitempty"`
 	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
 	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
+	MatchStyle                string                   `json:"matchStyle,omitempty"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
 	IpAnchored                bool                     `json:"ipAnchored"`
@@ -75,8 +76,8 @@ type CommonAppsDto struct {
 }
 
 type AppsConfig struct {
-	ID                  string   `json:"id,omitempty"`
-	AppID               string   `json:"appId,omitempty"`
+	ID                  string   `json:"id"`
+	AppID               string   `json:"appId"`
 	Name                string   `json:"name,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	Enabled             bool     `json:"enabled,omitempty"`
@@ -92,9 +93,9 @@ type AppsConfig struct {
 }
 
 type SRAAppsDto struct {
-	ID                  string `json:"id,omitempty"`
+	ID                  string `json:"id"`
+	AppID               string `json:"appId"`
 	Name                string `json:"name,omitempty"`
-	AppID               string `json:"appId,omitempty"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
 	CertificateID       string `json:"certificateId,omitempty"`

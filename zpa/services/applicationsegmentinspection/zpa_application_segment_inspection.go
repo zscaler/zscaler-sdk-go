@@ -28,6 +28,7 @@ type AppSegmentInspection struct {
 	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
 	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled,omitempty"`
 	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
+	MatchStyle                string                   `json:"matchStyle,omitempty"`
 	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`

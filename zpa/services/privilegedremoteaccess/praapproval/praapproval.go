@@ -90,52 +90,6 @@ type WorkingHours struct {
 	// TimeZone *time.Location `json:"timeZone,omitempty"`
 }
 
-/*
-// UnmarshalJSON customizes the unmarshalling process to handle the epoch time.
-func (p *PrivilegedApproval) UnmarshalJSON(data []byte) error {
-	type Alias PrivilegedApproval
-	auxiliary := &struct {
-		StartTime string `json:"startTime"`
-		EndTime   string `json:"endTime"`
-		*Alias
-	}{
-		Alias: (*Alias)(p),
-	}
-	if err := json.Unmarshal(data, &auxiliary); err != nil {
-		return err
-	}
-	startTimeInt, err := strconv.ParseInt(auxiliary.StartTime, 10, 64)
-	if err == nil {
-		p.StartTime = time.Unix(startTimeInt, 0)
-	}
-	endTimeInt, err := strconv.ParseInt(auxiliary.EndTime, 10, 64)
-	if err == nil {
-		p.EndTime = time.Unix(endTimeInt, 0)
-	}
-	return nil
-}
-*/
-
-/*
-	func (w *WorkingHours) UnmarshalJSON(data []byte) error {
-		type Alias WorkingHours
-		auxiliary := &struct {
-			TimeZoneStr string `json:"timeZone"`
-			*Alias
-		}{
-			Alias: (*Alias)(w),
-		}
-		if err := json.Unmarshal(data, &auxiliary); err != nil {
-			return err
-		}
-		loc, err := time.LoadLocation(auxiliary.TimeZoneStr)
-		if err != nil {
-			return err
-		}
-		w.TimeZone = loc
-		return nil
-	}
-*/
 func (service *Service) Get(approvalID string) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, approvalID)
@@ -146,7 +100,6 @@ func (service *Service) Get(approvalID string) (*PrivilegedApproval, *http.Respo
 	return v, resp, nil
 }
 
-// TODO: NEED TO REVIEW THIS FUNCTION TO OPTIMIZE SEARCH PARAMETERS
 func (service *Service) GetByEmailID(emailID string) (*PrivilegedApproval, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + privilegedApprovalEndpoint
 	list, resp, err := common.GetAllPagesGeneric[PrivilegedApproval](service.Client, relativeURL, "")
@@ -191,7 +144,6 @@ func (service *Service) Delete(approvalID string) (*http.Response, error) {
 }
 
 func (service *Service) DeleteExpired() (*http.Response, error) {
-	// Correctly format the endpoint path
 	path := fmt.Sprintf("%s%s%s/expired", mgmtConfig, service.Client.Config.CustomerID, privilegedApprovalEndpoint)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
