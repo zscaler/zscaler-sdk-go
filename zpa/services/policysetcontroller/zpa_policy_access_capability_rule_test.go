@@ -1,6 +1,5 @@
 package policysetcontroller
 
-/*
 import (
 	"testing"
 
@@ -148,4 +147,3 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-*/

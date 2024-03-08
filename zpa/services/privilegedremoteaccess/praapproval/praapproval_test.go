@@ -176,7 +176,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	credController := PrivilegedApproval{
-		EmailIDs:  []string{"wxiiqedzjo@bd-hashicorp.com"},
+		EmailIDs:  []string{"carol.kirk@bd-hashicorp.com"},
 		StartTime: getStartTime(), // Dynamically generate valid start time
 		EndTime:   getEndTime(),   // Dynamically generate valid end time
 		Status:    "ACTIVE",
