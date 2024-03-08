@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	mgmtConfig            = "/mgmtconfig/v1/admin/customers/"
-	appSegmentPraEndpoint = "/application"
+	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
+	appSegmentPraEndpoint   = "/application"
+	applicationTypeEndpoint = "/application/getAppsByType"
 )
 
 type AppSegmentPRA struct {
@@ -50,7 +51,7 @@ type AppSegmentPRA struct {
 	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
 	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	SRAAppsDto                []SRAAppsDto             `json:"praApps"`
+	PRAApps                   []PRAApps                `json:"praApps"`
 	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
 }
@@ -91,7 +92,7 @@ type AppsConfig struct {
 	Portal              bool     `json:"portal,omitempty"`
 }
 
-type SRAAppsDto struct {
+type PRAApps struct {
 	ID                  string `json:"id,omitempty"`
 	Name                string `json:"name,omitempty"`
 	AppID               string `json:"appId,omitempty"`
@@ -137,6 +138,23 @@ func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response
 	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
 }
 
+func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]AppSegmentPRA, *http.Response, error) {
+	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
+		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
+	}
+	// Constructing the query parameters as part of the URL
+	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
+		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
+	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
+
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return list, resp, nil
+}
+
 func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
 	v := new(AppSegmentPRA)
 	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, common.Filter{MicroTenantID: service.microTenantID}, appSegmentPra, &v)
@@ -164,9 +182,9 @@ func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	return diff
 }
 
-func mapSraApp(SRAAppsDto []SRAAppsDto) []AppsConfig {
+func mapSraApp(PRAApps []PRAApps) []AppsConfig {
 	result := []AppsConfig{}
-	for _, app := range SRAAppsDto {
+	for _, app := range PRAApps {
 		result = append(result, AppsConfig{
 			Name:   app.Name,
 			Domain: app.Domain,
@@ -190,7 +208,7 @@ func (service *Service) Update(id string, appSegmentPra *AppSegmentPRA) (*http.R
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapSraApp(existingResource.SRAAppsDto)
+	existingApps := mapSraApp(existingResource.PRAApps)
 	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
 	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
 	appSegmentPra.CommonAppsDto.AppsConfig = newApps

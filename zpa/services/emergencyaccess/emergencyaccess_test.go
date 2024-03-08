@@ -37,6 +37,15 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 		t.Fatalf("Failed to create emergency user: %v", err)
 	}
 
+	// *** New Step: Test GetByEmailID ***
+	searchedResource, _, err := service.GetByEmailID(createdResource.EmailID)
+	if err != nil {
+		t.Errorf("Failed to get emergency user by EmailID: %v", err)
+	} else {
+		assert.Equal(t, createdResource.EmailID, searchedResource.EmailID, "EmailID does not match")
+		t.Logf("Successfully found emergency access record by email ID: %s", searchedResource.EmailID)
+	}
+
 	// Test Get
 	gotResource, _, err := service.Get(createdResource.UserID)
 	if err != nil {
@@ -58,6 +67,26 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 		t.Errorf("Failed to get updated emergency user: %v", err)
 	}
 	assert.Equal(t, randomName, updated.FirstName, "FirstName was not updated")
+
+	// Test resources retrieval
+	resources, _, err := service.GetAll()
+	if err != nil {
+		t.Errorf("Error retrieving resources: %v", err)
+	}
+	if len(resources) == 0 {
+		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
+	}
+	//check if the created resource is in the list
+	found := false
+	for _, resource := range resources {
+		if resource.EmailID == createdResource.EmailID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.EmailID)
+	}
 
 	// Test Emergency Access User Deactivation
 	_, err = service.Deactivate(createdResource.UserID)

@@ -12,33 +12,14 @@ import (
 func TestAccessRedirectionPolicy(t *testing.T) {
 	policyType := "REDIRECTION_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "updated_" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// idpService := idpcontroller.New(client)
-	// idpList, _, err := idpService.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting idps: %v", err)
-	// 	return
-	// }
-	// if len(idpList) == 0 {
-	// 	t.Error("Expected retrieved idps to be non-empty, but got empty slice")
-	// }
 
-	// samlService := samlattribute.New(client)
-	// samlsList, _, err := samlService.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting saml attributes: %v", err)
-	// 	return
-	// }
-	// if len(samlsList) == 0 {
-	// 	t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
-	// }
-
-	// create app connector group for testing
+	// create service edge group for testing
 	svcEdgeGroupService := serviceedgegroup.New(client)
 	svcEdgeGroup, _, err := svcEdgeGroupService.Create(serviceedgegroup.ServiceEdgeGroup{
 		Name:                   name,
@@ -74,7 +55,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access forwarding policy set: %v", err)
+		t.Errorf("Error getting redirection access policy set: %v", err)
 		return
 	}
 	redirectionPolicyRule := PolicyRule{
@@ -88,17 +69,6 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			},
 		},
 		Conditions: []Conditions{
-			// {
-			// 	Operator: "OR",
-			// 	Operands: []Operands{
-			// 		{
-			// 			ObjectType: "SAML",
-			// 			LHS:        samlsList[0].ID,
-			// 			RHS:        "user1@acme.com",
-			// 			IdpID:      idpList[0].ID,
-			// 		},
-			// 	},
-			// },
 			{
 				Operator: "OR",
 				Operands: []Operands{

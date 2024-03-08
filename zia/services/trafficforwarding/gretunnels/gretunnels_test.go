@@ -105,7 +105,7 @@ func TestGRETunnel(t *testing.T) {
 	// Inside TestZPAGateways function
 	createdResource, _, err := service.CreateGreTunnels(&greTunnel)
 	if err != nil {
-		t.Fatalf("Error creating ZPAGateways resource: %v", err)
+		t.Fatalf("Error creating GRE Tunnel resource: %v", err)
 	}
 
 	defer func() {

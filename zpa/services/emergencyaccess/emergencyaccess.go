@@ -1,8 +1,13 @@
 package emergencyaccess
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 const (
@@ -35,33 +40,26 @@ func (service *Service) Get(profileID string) (*EmergencyAccess, *http.Response,
 	return v, resp, nil
 }
 
-// TODO: NEEDS FIXING WITH THE SEARCH MECHANISM
-// func (service *Service) GetByEmailID(emailID string) (*EmergencyAccess, *http.Response, error) {
-// 	// Use the GetAll function to retrieve all EmergencyAccess records
-// 	list, resp, err := service.GetAll()
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
+func (service *Service) GetByEmailID(emailID string) (*EmergencyAccess, *http.Response, error) {
+	// Use the GetAll function to retrieve all EmergencyAccess records
+	list, resp, err := service.GetAll()
+	if err != nil {
+		return nil, nil, err
+	}
 
-// 	// Filter the retrieved list for the specific emailID
-// 	for _, emgAccess := range list {
-// 		if strings.EqualFold(emgAccess.EmailId, emailID) {
-// 			return &emgAccess, resp, nil
-// 		}
-// 	}
-
-// 	// If no matching record is found, return an error
-// 	return nil, resp, fmt.Errorf("no emergency access record found with email ID '%s'", emailID)
-// }
+	// Filter the retrieved list for the specific emailID
+	for _, emgAccess := range list {
+		if strings.EqualFold(emgAccess.EmailID, emailID) {
+			return &emgAccess, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no emergency access record found with email ID '%s'", emailID)
+}
 
 func (service *Service) Create(emergencyAccess *EmergencyAccess) (*EmergencyAccess, *http.Response, error) {
-	// Constructing the relative URL correctly
-	emergencyAccess.ActivateNow = false // Ensure this parameter is set as intended
-	// Constructing the relative URL correctly
+	emergencyAccess.ActivateNow = false
 	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint)
 	v := new(EmergencyAccess)
-
-	// Making the request without common.Filter
 	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, emergencyAccess, v)
 	if err != nil {
 		return nil, nil, err
@@ -82,8 +80,6 @@ func (service *Service) Update(userID string, emergencyAccess *EmergencyAccess) 
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/activate
 func (service *Service) Activate(userID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s/activate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-
-	// Making the request without common.Filter
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -94,8 +90,6 @@ func (service *Service) Activate(userID string) (*http.Response, error) {
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/deactivate
 func (service *Service) Deactivate(userID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s/deactivate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-
-	// Making the request without common.Filter
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -103,63 +97,61 @@ func (service *Service) Deactivate(userID string) (*http.Response, error) {
 	return resp, nil
 }
 
-// func (service *Service) GetAll() ([]EmergencyAccess, *http.Response, error) {
-// 	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint+"s") // Correct endpoint
-// 	pageSize := 20                                                                                                  // Define the pageSize as needed
-// 	initialPageId := ""                                                                                             // Start without a pageId or as required
+func (service *Service) GetAll() ([]EmergencyAccess, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint+"s") // Correct endpoint
+	pageSize := 500                                                                                                 // Define the pageSize as needed
+	initialPageId := ""                                                                                             // Start without a pageId or as required
 
-// 	return GetAllEmergencyAccessUsers(service.Client, relativeURL, pageSize, initialPageId)
-// }
+	return GetAllEmergencyAccessUsers(service.Client, relativeURL, pageSize, initialPageId)
+}
 
-// func fetchEmergencyAccessUsersPage(client *zpa.Client, fullURL string) (*http.Response, error) {
-// 	// Directly use the fullURL, which is expected to be correctly formatted beforehand
-// 	return client.NewRequestDo("GET", fullURL, nil, nil, nil)
-// }
+func fetchEmergencyAccessUsersPage(client *zpa.Client, fullURL string) (*http.Response, error) {
+	return client.NewRequestDo("GET", fullURL, nil, nil, nil)
+}
 
-// func GetAllEmergencyAccessUsers(client *zpa.Client, baseRelativeURL string, pageSize int, initialPageId string) ([]EmergencyAccess, *http.Response, error) {
-// 	var allUsers []EmergencyAccess
-// 	var lastResponse *http.Response
-// 	pageId := initialPageId
+func GetAllEmergencyAccessUsers(client *zpa.Client, baseRelativeURL string, pageSize int, initialPageId string) ([]EmergencyAccess, *http.Response, error) {
+	var allUsers []EmergencyAccess
+	var lastResponse *http.Response
+	pageId := initialPageId
 
-// 	for {
-// 		// Construct the URL for each request to avoid duplication and encoding issues
-// 		var fullURL string
-// 		if pageId != "" {
-// 			fullURL = fmt.Sprintf("%s?pageSize=%d&pageId=%s", baseRelativeURL, pageSize, pageId)
-// 		} else {
-// 			fullURL = fmt.Sprintf("%s?pageSize=%d", baseRelativeURL, pageSize)
-// 		}
+	for {
+		// Construct the URL for each request to avoid duplication and encoding issues
+		var fullURL string
+		if pageId != "" {
+			fullURL = fmt.Sprintf("%s?pageSize=%d&pageId=%s", baseRelativeURL, pageSize, pageId)
+		} else {
+			fullURL = fmt.Sprintf("%s?pageSize=%d", baseRelativeURL, pageSize)
+		}
 
-// 		resp, err := fetchEmergencyAccessUsersPage(client, fullURL)
-// 		if err != nil {
-// 			return nil, lastResponse, err
-// 		}
+		resp, err := fetchEmergencyAccessUsersPage(client, fullURL)
+		if err != nil {
+			return nil, lastResponse, err
+		}
+		// Assume this struct matches the expected JSON response structure
+		var pageData struct {
+			Items    []EmergencyAccess `json:"items"`
+			NextPage string            `json:"nextPage"`
+		}
 
-// 		// Assume this struct matches the expected JSON response structure
-// 		var pageData struct {
-// 			Items    []EmergencyAccess `json:"items"`
-// 			NextPage string            `json:"nextPage"`
-// 		}
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close() // Ensure the body is always closed after reading
+		if err != nil {
+			return nil, resp, fmt.Errorf("error reading response body: %w", err)
+		}
 
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		resp.Body.Close() // Ensure the body is always closed after reading
-// 		if err != nil {
-// 			return nil, resp, fmt.Errorf("error reading response body: %w", err)
-// 		}
+		if err := json.Unmarshal(bodyBytes, &pageData); err != nil {
+			return nil, resp, fmt.Errorf("error unmarshalling response: %w", err)
+		}
 
-// 		if err := json.Unmarshal(bodyBytes, &pageData); err != nil {
-// 			return nil, resp, fmt.Errorf("error unmarshalling response: %w", err)
-// 		}
+		allUsers = append(allUsers, pageData.Items...)
+		if pageData.NextPage == "" {
+			break // Exit the loop if there are no more pages
+		}
 
-// 		allUsers = append(allUsers, pageData.Items...)
-// 		if pageData.NextPage == "" {
-// 			break // Exit the loop if there are no more pages
-// 		}
+		// Update pageId for the next iteration
+		pageId = pageData.NextPage
+		lastResponse = resp
+	}
 
-// 		// Update pageId for the next iteration
-// 		pageId = pageData.NextPage
-// 		lastResponse = resp
-// 	}
-
-// 	return allUsers, lastResponse, nil
-// }
+	return allUsers, lastResponse, nil
+}

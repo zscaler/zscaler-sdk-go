@@ -211,7 +211,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.GetNetworkApplicationGroupsByName("non-existent-name")
+	_, err = service.GetNetworkApplicationGroupsByName("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

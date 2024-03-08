@@ -2,8 +2,10 @@ package sweep
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"reflect"
 	"runtime"
@@ -28,6 +30,9 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/lssconfigcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/microtenants"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praapproval"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praconsole"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/pracredential"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/provisioningkey"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
@@ -94,10 +99,10 @@ func sweep() error {
 		sweepServiceEdgeGroup,
 		sweepProvisioningKey,
 		sweepPolicySetController,
-		// sweepCredentialController,
-		// sweepPRAConsole,
-		// sweepPRAPortal,
-		// sweepPrivilegedApproval,
+		sweeppracredential,
+		sweepPRAConsole,
+		sweepPRAPortal,
+		sweepPrivilegedApproval,
 	}
 
 	// Execute each sweep function
@@ -536,9 +541,8 @@ func sweepPolicySetController(client *zpa.Client) error {
 	return nil
 }
 
-/*
-func sweepCredentialController(client *zpa.Client) error {
-	service := credentialcontroller.New(client)
+func sweeppracredential(client *zpa.Client) error {
+	service := pracredential.New(client)
 	resources, _, err := service.GetAll()
 	if err != nil {
 		log.Printf("[ERROR] Failed to get credential controller: %v", err)
@@ -557,30 +561,28 @@ func sweepCredentialController(client *zpa.Client) error {
 	}
 	return nil
 }
-*/
-/*
-	func sweepPRAConsole(client *zpa.Client) error {
-		service := praconsole.New(client)
-		resources, _, err := service.GetAll()
-		if err != nil {
-			log.Printf("[ERROR] Failed to get pra console: %v", err)
-			return err
-		}
 
-		for _, r := range resources {
-			if !strings.HasPrefix(r.Name, "tests-") {
-				continue
-			}
-			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete pra console with ID: %s, Name: %s: %v", r.ID, r.Name, err)
-			}
-		}
-		return nil
+func sweepPRAConsole(client *zpa.Client) error {
+	service := praconsole.New(client)
+	resources, _, err := service.GetAll()
+	if err != nil {
+		log.Printf("[ERROR] Failed to get pra console: %v", err)
+		return err
 	}
-*/
-/*
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
+		_, err := service.Delete(r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete pra console with ID: %s, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
 func sweepPRAPortal(client *zpa.Client) error {
 	service := praconsole.New(client)
 	resources, _, err := service.GetAll()
@@ -601,26 +603,20 @@ func sweepPRAPortal(client *zpa.Client) error {
 	}
 	return nil
 }
-*/
-/*
+
 func sweepPrivilegedApproval(client *zpa.Client) error {
-	service := praconsole.New(client)
-	resources, _, err := service.GetAll()
+	service := praapproval.New(client)
+
+	// Instead of getting all resources and filtering them, directly call DeleteExpired
+	resp, err := service.DeleteExpired()
 	if err != nil {
-		log.Printf("[ERROR] Failed to get privileged approval: %v", err)
+		log.Printf("[ERROR] Failed to delete expired privileged approvals: %v", err)
 		return err
+	} else if resp.StatusCode != http.StatusOK {
+		log.Printf("[ERROR] Unexpected status code when deleting expired privileged approvals: %d", resp.StatusCode)
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
-		if err != nil {
-			log.Printf("[ERROR] Failed to delete privileged approval with ID: %s, Name: %s: %v", r.ID, r.Name, err)
-		}
-	}
+	log.Printf("[INFO] Successfully deleted expired privileged approvals")
 	return nil
 }
-*/

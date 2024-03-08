@@ -1,7 +1,6 @@
 package policysetcontrollerv2
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -29,8 +28,8 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 	samlService := samlattribute.New(client)
 	postureService := postureprofile.New(client)
 	trustedNwService := trustednetwork.New(client)
-	policyService := policysetcontroller.New(client) // For GetByPolicyType, GetPolicyRule, and Delete
-	policyServiceV2 := New(client)                   // For CreateRule and UpdateRule
+	policyService := policysetcontroller.New(client)
+	policyServiceV2 := New(client)
 
 	idpList, _, err := idpService.GetAll()
 	if err != nil {
@@ -172,10 +171,10 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
-		if err == nil {
-			jsonBytes, _ := json.Marshal(createdResource)
-			fmt.Println(string(jsonBytes)) // This prints the JSON response
-		}
+		// if err == nil {
+		// 	jsonBytes, _ := json.Marshal(createdResource)
+		// 	fmt.Println(string(jsonBytes)) // This prints the JSON response
+		// }
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
@@ -198,8 +197,8 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
 		// Print the updated resource as JSON
-		updatedJson, _ := json.Marshal(updatedResource)
-		fmt.Println(string(updatedJson))
+		// updatedJson, _ := json.Marshal(updatedResource)
+		// fmt.Println(string(updatedJson))
 
 		// Introduce a delay to prevent rate limit issues
 		time.Sleep(10 * time.Second)
