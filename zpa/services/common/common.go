@@ -30,8 +30,10 @@ type Filter struct {
 	Search          string  `url:"search,omitempty"`
 	MicroTenantID   *string `url:"microtenantId,omitempty"`
 	MicroTenantName *string `url:"-,omitempty"`
-	SortBy          string  `url:"sortBy,omitempty"`    // New field for sorting by attribute
-	SortOrder       string  `url:"sortOrder,omitempty"` // New field for the sort order (ASC or DESC)
+	SortBy          string  `url:"sortBy,omitempty"`          // New field for sorting by attribute
+	SortOrder       string  `url:"sortOrder,omitempty"`       // New field for the sort order (ASC or DESC)
+	ApplicationType string  `url:"applicationType,omitempty"` // New field for filtering by application type
+	ExpandAll       bool    `url:"expandAll,omitempty"`       // New field for deciding whether to expand all attributes
 }
 
 type DeleteApplicationQueryParams struct {

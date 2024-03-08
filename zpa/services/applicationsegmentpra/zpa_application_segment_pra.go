@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	mgmtConfig            = "/mgmtconfig/v1/admin/customers/"
-	appSegmentPraEndpoint = "/application"
+	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
+	appSegmentPraEndpoint   = "/application"
+	applicationTypeEndpoint = "/application/getAppsByType"
 )
 
 type AppSegmentPRA struct {
@@ -28,7 +29,6 @@ type AppSegmentPRA struct {
 	BypassType                string                   `json:"bypassType,omitempty"`
 	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
 	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
-	MatchStyle                string                   `json:"matchStyle,omitempty"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
 	IpAnchored                bool                     `json:"ipAnchored"`
@@ -76,8 +76,8 @@ type CommonAppsDto struct {
 }
 
 type AppsConfig struct {
-	ID                  string   `json:"id"`
-	AppID               string   `json:"appId"`
+	ID                  string   `json:"id,omitempty"`
+	AppID               string   `json:"appId,omitempty"`
 	Name                string   `json:"name,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	Enabled             bool     `json:"enabled,omitempty"`
@@ -93,9 +93,9 @@ type AppsConfig struct {
 }
 
 type PRAApps struct {
-	ID                  string `json:"id"`
-	AppID               string `json:"appId"`
+	ID                  string `json:"id,omitempty"`
 	Name                string `json:"name,omitempty"`
+	AppID               string `json:"appId,omitempty"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
 	CertificateID       string `json:"certificateId,omitempty"`
@@ -136,6 +136,23 @@ func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response
 		}
 	}
 	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
+}
+
+func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]AppSegmentPRA, *http.Response, error) {
+	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
+		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
+	}
+	// Constructing the query parameters as part of the URL
+	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
+		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
+	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
+
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return list, resp, nil
 }
 
 func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {

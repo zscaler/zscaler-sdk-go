@@ -11,7 +11,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 )
 
-func TestApplicationSegment(t *testing.T) {
+func TestBaApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -101,6 +101,25 @@ func TestApplicationSegment(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
+	// // *** New step to use GetByApplicationType function ***
+	// // Search for application segments of type SECURE_REMOTE_ACCESS
+	// applicationType := "BROWSER_ACCESS"
+	// expandAll := false // Set based on your requirement
+	// resourcesByType, _, err := service.GetByApplicationType(applicationType, expandAll)
+	// if err != nil {
+	// 	t.Errorf("Error retrieving resources by application type %s: %v", applicationType, err)
+	// } else {
+	// 	found := false
+	// 	for _, resource := range resourcesByType {
+	// 		if resource.ID == createdResource.ID {
+	// 			found = true
+	// 			break
+	// 		}
+	// 	}
+	// 	if !found {
+	// 		t.Errorf("Expected resource with ID '%s' to be found in resources of type '%s'", createdResource.ID, applicationType)
+	// 	}
+	// }
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
@@ -181,7 +200,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = service.Get("non-existent-id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -194,7 +213,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = service.Delete("non-existent-id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -207,7 +226,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update("non_existent_id", &BrowserAccess{})
+	_, err = service.Update("non-existent-id", &BrowserAccess{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -220,7 +239,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = service.GetByName("non-existent-name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

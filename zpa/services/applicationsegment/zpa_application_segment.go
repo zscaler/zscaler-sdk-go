@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	mgmtConfig         = "/mgmtconfig/v1/admin/customers/"
-	appSegmentEndpoint = "/application"
+	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
+	appSegmentEndpoint      = "/application"
+	applicationTypeEndpoint = "/application/getAppsByType"
 )
 
 type ApplicationSegmentResource struct {
@@ -57,25 +58,8 @@ type ApplicationSegmentResource struct {
 	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
 	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`
 	ClientlessApps            []browseraccess.ClientlessApps      `json:"clientlessApps,omitempty"`
+	ShareToMicrotenants       []string                            `json:"shareToMicrotenants"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails            `json:"sharedMicrotenantDetails,omitempty"`
-	InconsistentConfigDetails InconsistentConfigDetails           `json:"inconsistentConfigDetails,omitempty"`
-}
-
-type InconsistentConfigDetails struct {
-	Application          []common.CommonConfigDetails `json:"application,omitempty"`
-	SegmentGroup         []common.CommonConfigDetails `json:"segmentGroup,omitempty"`
-	BaCertificate        []common.CommonConfigDetails `json:"baCertificate,omitempty"`
-	BranchConnectorGroup []common.CommonConfigDetails `json:"branchConnectorGroup,omitempty"`
-	CloudConnectorGroup  []common.CommonConfigDetails `json:"cloudConnectorGroup,omitempty"`
-	IDP                  []common.CommonConfigDetails `json:"idp,omitempty"`
-	Location             []common.CommonConfigDetails `json:"location,omitempty"`
-	MachineGroup         []common.CommonConfigDetails `json:"machineGroup,omitempty"`
-	PostureProfile       []common.CommonConfigDetails `json:"postureProfile,omitempty"`
-	SamlAttributes       []common.CommonConfigDetails `json:"samlAttributes,omitempty"`
-	ScimAttributes       []common.CommonConfigDetails `json:"scimAttributes,omitempty"`
-	ServerGroup          []common.CommonConfigDetails `json:"serverGroup,omitempty"`
-	SRAApplication       []common.CommonConfigDetails `json:"sraApplication,omitempty"`
-	TrustedNetwork       []common.CommonConfigDetails `json:"trustedNetwork,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -91,6 +75,12 @@ type SharedFromMicrotenant struct {
 type SharedToMicrotenant struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+type MicrotenantMove struct {
+	TargetSegmentGroupId string `json:"targetSegmentGroupId,omitempty"`
+	TargetMicrotenantId  string `json:"targetMicrotenantId,omitempty"`
+	TargetServerGroupId  string `json:"targetServerGroupId,omitempty"`
 }
 
 type AppServerGroups struct {
@@ -128,6 +118,23 @@ func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, 
 		}
 	}
 	return nil, resp, fmt.Errorf("no application segment named '%s' was found", appName)
+}
+
+func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]ApplicationSegmentResource, *http.Response, error) {
+	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
+		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
+	}
+	// Constructing the query parameters as part of the URL
+	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
+		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
+	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
+
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return list, resp, nil
 }
 
 func (service *Service) Create(appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {
@@ -174,4 +181,32 @@ func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, 
 		}
 	}
 	return result, resp, nil
+}
+
+func (service *Service) AppSegmentMicrotenantShare(applicationID string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
+	// Corrected URL format to include the applicationID before /share
+	relativeURL := fmt.Sprintf("%s%s%s/%s/share",
+		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
+
+	// Since microtenantId is being passed via an environment variable, it's not explicitly included in the URL.
+	// Ensure the NewRequestDo method or the infrastructure around it appropriately injects the microtenantId.
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{}, appSegmentRequest, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// Move Application Segments from parent to another Microtenant Is Allowed
+// Application Segments can be moved from local microtenant to parent
+// Application Segments CANNOT be moved in between local microtenants.
+func (service *Service) AppSegmentMicrotenantMove(applicationID string, move MicrotenantMove) (*http.Response, error) {
+	// Corrected URL format to include the applicationID before /move
+	relativeURL := fmt.Sprintf("%s%s%s/%s/move",
+		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{}, move, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

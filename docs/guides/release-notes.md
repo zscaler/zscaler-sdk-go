@@ -70,7 +70,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - Added `DELETE /mgmtconfig/v1/admin/customers/{customerId}/credential/{id}` endpoint to delete a specific PRA Credential resources for a specified customer. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) 
 
 #### Application Segment
+- Added `POST /mgmtconfig/v1/admin/customers/{customerId}/application/move` to move application segments from one microtenant to another. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
+- Added `PUT /mgmtconfig/v1/admin/customers/{customerId}/application/share` to share application segments between microtenants. [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/233) 
 [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) Included new application segment attribute `matchStyle` to support `Exact Match` vs. `Multimatch` configuration. [Learn More Here ](https://help.zscaler.com/zpa/using-app-segment-multimatch)
+ment 
 
 ### Acceptance Tests
 [PR #233](https://github.com/zscaler/zscaler-sdk-go/pull/235) - Implemented centralized ZIA and ZPA sweep facility for tenant cleanup pre and post integration tests.
