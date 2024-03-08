@@ -53,6 +53,8 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 	assert.Equal(t, createdResource.UserID, gotResource.UserID, "UserID does not match")
 
+	time.Sleep(10 * time.Second)
+
 	//Test Update
 	updatedResource := *createdResource
 	updatedResource.FirstName = randomName
@@ -93,6 +95,9 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to deactivate emergency user: %v", err)
 	}
+
+	// Wait 5 seconds before Activating the user again.
+	time.Sleep(5 * time.Second)
 
 	// Test Emergency Access User Activate
 	_, err = service.Activate(createdResource.UserID)
