@@ -21,7 +21,8 @@ func getCurrentEpochTime() int64 {
 }
 
 func getStartTime() string {
-	startTime := getCurrentEpochTime() - (60 * 60) // Subtracting 3600 seconds (1 hour)
+	// Adjusting the start time to be 5 minutes into the future.
+	startTime := getCurrentEpochTime() + 5*60 // Adding 300 seconds (5 minutes)
 	return strconv.FormatInt(startTime, 10)
 }
 

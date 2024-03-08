@@ -102,6 +102,9 @@ func TestPRAConsole(t *testing.T) {
 		return
 	}
 
+	// Adding a delay to ensure that the resource is fully processed and available
+	time.Sleep(5 * time.Second) // Adjust the duration according to the expected processing time
+
 	// Assuming the praSegmentService.Get correctly returns the payload as described
 	retrievedpraAppSeg, _, err := praSegmentService.Get(createdpraAppSeg.ID)
 	if err != nil {
