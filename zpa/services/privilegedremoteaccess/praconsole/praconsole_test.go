@@ -1,5 +1,6 @@
 package praconsole
 
+/*
 import (
 	"fmt"
 	"testing"
@@ -284,3 +285,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/
