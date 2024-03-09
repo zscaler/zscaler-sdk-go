@@ -27,6 +27,7 @@ type AppSegmentPRA struct {
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	Applications              string                   `json:"applications,omitempty"`
 	BypassType                string                   `json:"bypassType,omitempty"`
+	MatchStyle                string                   `json:"matchStyle,omitempty"`
 	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
 	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
 	HealthCheckType           string                   `json:"healthCheckType,omitempty"`

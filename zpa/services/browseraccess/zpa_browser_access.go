@@ -23,6 +23,7 @@ type BrowserAccess struct {
 	BypassType                string                   `json:"bypassType,omitempty"`
 	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
 	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
+	MatchStyle                string                   `json:"matchStyle,omitempty"`
 	ConfigSpace               string                   `json:"configSpace,omitempty"`
 	DomainNames               []string                 `json:"domainNames,omitempty"`
 	Enabled                   bool                     `json:"enabled"`
