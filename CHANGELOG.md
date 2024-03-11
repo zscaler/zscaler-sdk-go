@@ -1,9 +1,36 @@
 # Changelog
 
+# 2.4.21 (March 11, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #237](https://github.com/zscaler/zscaler-sdk-go/pull/237) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `CONSOLE` objectType
+
+# 2.4.2 (March 9, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `CLIENT_TYPE` objectType
+
+# 2.4.1 (March 9, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- Added new ZPA `matchStyle` attribute to all application segment resources
+
 # 2.4.0 (March 7, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### ZPA Additions
 
@@ -67,7 +94,7 @@ ment
 # 2.3.11 (February 28, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### Fixes
 
@@ -86,7 +113,7 @@ ment
 # 2.3.9 (February 12, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### Fixes
 
