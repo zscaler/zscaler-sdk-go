@@ -61,6 +61,7 @@ type PolicyRuleResource struct {
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
 	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
+	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Credential               *Credential                    `json:"credential,omitempty"`
 	PrivilegedCapabilities   PrivilegedCapabilities         `json:"privilegedCapabilities,omitempty"`
 }
