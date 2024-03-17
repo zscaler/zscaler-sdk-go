@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.4.21``
+``Last updated: v2.4.22``
 
 ---
+
+# 2.4.22 (March 16, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #238](https://github.com/zscaler/zscaler-sdk-go/pull/238) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `ZpnIsolationProfileID` attribute
 
 # 2.4.21 (March 11, 2024)
 
