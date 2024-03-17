@@ -54,6 +54,7 @@ type PolicyRuleResource struct {
 	ReauthTimeout            string                         `json:"reauthTimeout,omitempty"`
 	RuleOrder                string                         `json:"ruleOrder,omitempty"`
 	ZpnCbiProfileID          string                         `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
@@ -364,14 +365,15 @@ func (service *Service) GetAllByType(policyType string) ([]PolicyRuleResource, *
 // ConvertV1ResponseToV2Request converts a PolicyRuleResource (API v1 response) to a PolicyRule (API v2 request) with aggregated values.
 func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 	v2Request := PolicyRule{
-		ID:          v1Response.ID,
-		Name:        v1Response.Name,
-		Description: v1Response.Description,
-		Action:      v1Response.Action,
-		PolicySetID: v1Response.PolicySetID,
-		Operator:    v1Response.Operator,
-		CustomMsg:   v1Response.CustomMsg,
-		Conditions:  make([]PolicyRuleResourceConditions, 0),
+		ID:                    v1Response.ID,
+		Name:                  v1Response.Name,
+		Description:           v1Response.Description,
+		Action:                v1Response.Action,
+		PolicySetID:           v1Response.PolicySetID,
+		Operator:              v1Response.Operator,
+		CustomMsg:             v1Response.CustomMsg,
+		ZpnIsolationProfileID: v1Response.ZpnIsolationProfileID,
+		Conditions:            make([]PolicyRuleResourceConditions, 0),
 	}
 
 	for _, condition := range v1Response.Conditions {
