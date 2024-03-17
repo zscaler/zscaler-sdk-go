@@ -1,15 +1,6 @@
 # Changelog
 
-# 2.4.22 (March 16, 2024)
-
-## Notes
-- Golang: **v1.21**
-
-### Fixes
-
-- [PR #238](https://github.com/zscaler/zscaler-sdk-go/pull/238) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `ZpnIsolationProfileID` attribute
-
-# 2.4.21 (March 11, 2024)
+# 2.4.31 (March 16, 2024)
 
 ## Notes
 - Golang: **v1.21**
@@ -17,6 +8,16 @@
 ### Fixes
 
 - [PR #237](https://github.com/zscaler/zscaler-sdk-go/pull/237) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `CONSOLE` objectType
+- [PR #238](https://github.com/zscaler/zscaler-sdk-go/pull/238) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `ZpnIsolationProfileID` attribute
+
+# 2.4.3 (March 13, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- Added ZPA ``serviceEdgeGroups`` missing attribute to policy set controller v1
 
 # 2.4.2 (March 9, 2024)
 
