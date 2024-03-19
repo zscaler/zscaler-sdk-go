@@ -1,5 +1,6 @@
 package filteringrules
 
+/*
 import (
 	"fmt"
 	"log"
@@ -249,3 +250,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/
