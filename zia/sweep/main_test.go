@@ -18,7 +18,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_web_rules"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlpdictionaries"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/filteringrules"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/ipsourcegroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkapplicationgroups"
@@ -83,7 +82,7 @@ func sweep() error {
 		sweepDLPNotificationTemplates,
 		sweepADLPWebRules,
 		sweepDLPDictionaries,
-		sweepFirewallFilteringRules,
+		// sweepFirewallFilteringRules,
 		sweepIPDestinationGroup,
 		sweepIPSourceGroup,
 		sweepNetworkAplicationGroups,
@@ -227,27 +226,28 @@ func sweepDLPDictionaries(client *zia.Client) error {
 	return nil
 }
 
-func sweepFirewallFilteringRules(client *zia.Client) error {
-	service := filteringrules.New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+/*
+	func sweepFirewallFilteringRules(client *zia.Client) error {
+		service := filteringrules.New(client)
+		resources, err := service.GetAll()
 		if err != nil {
-			log.Printf("[ERROR] Failed to delete Firewall filtering rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
+			return err
 		}
-	}
-	return nil
-}
 
+		for _, r := range resources {
+			if !strings.HasPrefix(r.Name, "tests-") {
+				continue
+			}
+			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete Firewall filtering rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			}
+		}
+		return nil
+	}
+*/
 func sweepIPDestinationGroup(client *zia.Client) error {
 	service := ipdestinationgroups.New(client)
 	resources, err := service.GetAll()
