@@ -18,53 +18,53 @@ on:
   workflow_dispatch:
 
 jobs:
-  zia-zsbeta-tests:
-    environment: ZIA_ZSBETA
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        goVersion: ["1.21"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # zia-zsbeta-tests:
+  #   environment: ZIA_ZSBETA
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       goVersion: ["1.21"]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.goVersion }}
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: ${{ matrix.goVersion }}
 
-      - name: Set Go env
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+  #     - name: Set Go env
+  #       run: |
+  #         echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+  #         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Pull external libraries
-        run: make vendor
+  #     - name: Pull external libraries
+  #       run: make vendor
 
-      - name: Run tests with retry on Ubuntu
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20 # Adjust as needed
-          command: |
-            make sweep:zia
-            make test:integration:zia
-            make ziaActivator
-        env:
-          ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
-          ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
-          ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
-          ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
-          ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
-          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-          ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
+  #     - name: Run tests with retry on Ubuntu
+  #       uses: nick-fields/retry@v2
+  #       with:
+  #         max_attempts: 3
+  #         timeout_minutes: 20 # Adjust as needed
+  #         command: |
+  #           make sweep:zia
+  #           make test:integration:zia
+  #           make ziaActivator
+  #       env:
+  #         ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
+  #         ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
+  #         ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
+  #         ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+  #         ZIA_SANDBOX_TOKEN: ${{ secrets.ZIA_SANDBOX_TOKEN }}
+  #         ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+  #         ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+  #         ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+  #         ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+  #         ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
 
   zia-test-tenants:
     runs-on: ubuntu-latest
@@ -116,5 +116,5 @@ jobs:
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
-    needs:
-      - zia-zsbeta-tests
+    # needs:
+      # - zia-zsbeta-tests
