@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.4.32 (March 27, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #239](https://github.com/zscaler/zscaler-sdk-go/pull/239) - Added function `GetByIP` in the ZIA `vpncredentials` package 
+
 # 2.4.31 (March 16, 2024)
 
 ## Notes
