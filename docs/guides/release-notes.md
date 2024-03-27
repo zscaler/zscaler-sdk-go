@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.4.31``
+``Last updated: v2.4.32``
 
 ---
+
+# 2.4.32 (March 27, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #239](https://github.com/zscaler/zscaler-sdk-go/pull/239) - Added function `GetByIP` in the ZIA `vpncredentials` package 
 
 # 2.4.31 (March 16, 2024)
 
