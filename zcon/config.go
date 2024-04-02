@@ -296,11 +296,15 @@ func (c *Client) GetContentType() string {
 }
 
 func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
-	if s, ok := resp.Header["Retry-After"]; ok {
-		if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+	if s := resp.Header.Get("Retry-After"); s != "" {
+		if sleep, err := strconv.ParseInt(s, 10, 64); err == nil {
 			l.Printf("[INFO] got Retry-After from header:%s\n", s)
 			return time.Second * time.Duration(sleep)
 		} else {
+			dur, err := time.ParseDuration(s)
+			if err == nil {
+				return dur
+			}
 			l.Printf("[INFO] error getting Retry-After from header:%s\n", err)
 		}
 	}
