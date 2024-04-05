@@ -26,6 +26,10 @@ type IDName struct {
 	Name string `json:"name,omitempty"`
 }
 
+type IDCustom struct {
+	ID int `json:"id,omitempty"`
+}
+
 type ZPAAppSegments struct {
 	// A unique identifier assigned to the Application Segment
 	ID int `json:"id"`
