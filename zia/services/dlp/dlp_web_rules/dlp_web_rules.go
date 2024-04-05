@@ -76,16 +76,16 @@ type WebDLPRules struct {
 	ExternalAuditorEmail string `json:"externalAuditorEmail,omitempty"`
 
 	// The auditor to which the DLP policy rule must be applied.
-	Auditor *common.IDNameExtensions `json:"auditor,omitempty"`
+	Auditor *common.IDCustom `json:"auditor,omitempty"`
 
 	// The admin that modified the DLP policy rule last.
 	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
 
 	// The template used for DLP notification emails.
-	NotificationTemplate *common.IDNameExtensions `json:"notificationTemplate,omitempty"`
+	NotificationTemplate *common.IDCustom `json:"notificationTemplate,omitempty"`
 
 	// The DLP server, using ICAP, to which the transaction content is forwarded.
-	IcapServer *common.IDNameExtensions `json:"icapServer,omitempty"`
+	IcapServer *common.IDCustom `json:"icapServer,omitempty"`
 
 	// The Name-ID pairs of locations to which the DLP policy rule must be applied.
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
