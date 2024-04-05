@@ -96,9 +96,6 @@ func TestDLPWebRule(t *testing.T) {
 				ID: engineList.ID,
 			},
 		},
-		IcapServer: &common.IDCustom{
-			ID: 1493,
-		},
 		// WorkloadGroups: []common.IDName{
 		// 	{
 		// 		ID:   groupList[0].ID,
