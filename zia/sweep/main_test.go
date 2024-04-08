@@ -588,10 +588,10 @@ func sweepVPNCredentials(client *zia.Client) error {
 	}
 
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Comments, "tests-") {
+		if !strings.HasPrefix(r.FQDN, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Comments)
+		log.Printf("Deleting resource with ID: %d, FQDN: %s", r.ID, r.FQDN)
 		err := service.Delete(r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete vpn credentials with ID: %d, Name: %s: %v", r.ID, r.Comments, err)

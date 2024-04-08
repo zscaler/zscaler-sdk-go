@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.4.34 (April 8, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #242](https://github.com/zscaler/zscaler-sdk-go/pull/242) - Fixed ZPA `bacertificate` package by adding missing attributes `publicKey`
+
 # 2.4.33 (April 5, 2024)
 
 ## Notes
