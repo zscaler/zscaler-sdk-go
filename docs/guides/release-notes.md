@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.4.34``
+``Last updated: v2.4.35``
 
 ---
+
+# 2.4.35 (April 12, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #243](https://github.com/zscaler/zscaler-sdk-go/pull/243) - Added custom error handling to ZIA `MakeAuthRequestZIA` function for more clarity during authentication failures.
 
 # 2.4.34 (April 8, 2024)
 

@@ -140,7 +140,7 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 	return &cli, nil
 }
 
-// MakeAuthRequestZIA ...
+// MakeAuthRequestZIA authenticates using the provided credentials and returns the session or an error.
 func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Client, userAgent string) (*Session, error) {
 	if credentials == nil {
 		return nil, fmt.Errorf("empty credentials")
@@ -150,38 +150,49 @@ func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Clien
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest("POST", url+ziaAPIAuthURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", contentTypeJSON)
 	if userAgent != "" {
 		req.Header.Add("User-Agent", userAgent)
 	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("un-successful request with status code: %v", resp.Status)
-	}
-
 	defer resp.Body.Close()
+
+	// Read the response body for use in error messages
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
-	var session Session
-	err = json.Unmarshal(body, &session)
-	if err != nil {
-		return nil, err
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var session Session
+		if err = json.Unmarshal(body, &session); err != nil {
+			return nil, fmt.Errorf("error unmarshalling response: %v", err)
+		}
+		session.JSessionID, err = extractJSessionIDFromHeaders(resp.Header)
+		if err != nil {
+			return nil, err
+		}
+		return &session, nil
+	case http.StatusBadRequest:
+		return nil, fmt.Errorf("HTTP 400 Bad Request: %s", string(body))
+	case http.StatusUnauthorized:
+		return nil, fmt.Errorf("HTTP 401 Unauthorized: %s", string(body))
+	case http.StatusForbidden:
+		return nil, fmt.Errorf("HTTP 403 Forbidden: %s", string(body))
+	default:
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	// We get the whole string match as session ID
-	session.JSessionID, err = extractJSessionIDFromHeaders(resp.Header)
-	if err != nil {
-		return nil, err
-	}
-	return &session, nil
 }
 
 func extractJSessionIDFromHeaders(header http.Header) (string, error) {
