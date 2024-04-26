@@ -25,25 +25,34 @@ jobs:
   #     fail-fast: false
   #     matrix:
   #       goVersion: ["1.21"]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  # steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #     with:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  #   - name: Setup Go
+  #     uses: actions/setup-go@v5
+  #     with:
+  #       go-version: ${{ matrix.goVersion }}
 
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v5
-  #       with:
-  #         go-version: ${{ matrix.goVersion }}
+  #   - name: Cache Go modules
+  #     uses: actions/cache@v4
+  #     with:
+  #       path: |
+  #         ~/go/pkg/mod
+  #         ~/.cache/go-build
+  #       key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #       restore-keys: |
+  #         ${{ runner.os }}-go-
 
-  #     - name: Set Go env
-  #       run: |
-  #         echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-  #         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+  #   - name: Set Go env
+  #     run: |
+  #       echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+  #       echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-  #     - name: Pull external libraries
-  #       run: make vendor
+  #   - name: Install dependencies
+  #     run: go mod download
 
   #     - name: Run tests with retry on Ubuntu
   #       uses: nick-fields/retry@v2
@@ -82,19 +91,31 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
 
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Pull external libraries
-        run: make vendor
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run tests with retry on Ubuntu
         uses: nick-fields/retry@v2
