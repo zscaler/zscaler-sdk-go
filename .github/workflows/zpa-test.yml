@@ -8,7 +8,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 14 * * 1-5' # UTC
+    - cron: '0 11 * * 1-5' # UTC
   workflow_dispatch:
 
 jobs:
@@ -26,12 +26,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+              token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
+
+      - name: Clean existing Go modules
+        run: go clean -modcache
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -84,8 +87,9 @@ jobs:
   #   - name: Checkout code
   #     uses: actions/checkout@v4
   #     with:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-
+  #           token: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Clean existing Go modules
+  #     run: go clean -modcache
   #   - name: Setup Go
   #     uses: actions/setup-go@v5
   #     with:
@@ -141,12 +145,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
+
+      - name: Clean existing Go modules
+        run: go clean -modcache
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -201,12 +208,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
+
+      - name: Clean existing Go modules
+        run: go clean -modcache
 
       - name: Cache Go modules
         uses: actions/cache@v4
