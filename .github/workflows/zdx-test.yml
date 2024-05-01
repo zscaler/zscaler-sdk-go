@@ -76,6 +76,7 @@ jobs:
 
   zdx-test-tenants:
     runs-on: ubuntu-latest
+    needs: [zdx-zsbeta-tests]
     strategy:
       fail-fast: false
       matrix:
@@ -123,8 +124,6 @@ jobs:
         env:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
-    needs:
-      - zdx-zsbeta-tests
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4

@@ -69,6 +69,7 @@ jobs:
           fail_ci_if_error: true
 
   zcon-tests-tenants:
+    needs: [zcon-beta-tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -119,11 +120,10 @@ jobs:
           ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-    needs:
-      - zcon-beta-tests
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+

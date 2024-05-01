@@ -139,6 +139,7 @@ jobs:
   #       OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
   zpa-beta-tenants:
+    needs: [zpa-qa1-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -197,8 +198,6 @@ jobs:
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
-    needs:
-      - zpa-qa1-tenants
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4
@@ -207,6 +206,7 @@ jobs:
           fail_ci_if_error: true
 
   zpa-prod-tenants:
+    needs: [zpa-qa1-tenants, zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -265,10 +265,6 @@ jobs:
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
-    needs:
-      - zpa-qa1-tenants
-      # - zpa-qa2-tenants
-      - zpa-beta-tenants
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4
