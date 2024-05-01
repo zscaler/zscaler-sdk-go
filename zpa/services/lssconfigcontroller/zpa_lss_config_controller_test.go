@@ -9,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
 )
 
 func TestLSSConfigController(t *testing.T) {
+	policyType := "SIEM_POLICY"
 	ipAddress, _ := acctest.RandIpAddress("192.168.0.0/24")
 	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -20,7 +22,12 @@ func TestLSSConfigController(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
+	service := policysetcontroller.New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	if err != nil {
+		t.Errorf("Error getting access inspection policy set: %v", err)
+		return
+	}
 	// create app connector group for testing
 	appConnGroupService := appconnectorgroup.New(client)
 	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
@@ -60,7 +67,7 @@ func TestLSSConfigController(t *testing.T) {
 		}
 	}()
 
-	service := New(client)
+	lssService := New(client)
 	lssConfig := &LSSResource{
 		LSSConfig: &LSSConfig{
 			Name:          name,
@@ -192,7 +199,8 @@ func TestLSSConfigController(t *testing.T) {
 		PolicyRuleResource: &PolicyRuleResource{
 			Name:        name,
 			Description: name,
-			Action:      "ALLOW",
+			Action:      "LOG",
+			PolicySetID: accessPolicySet.ID,
 			Conditions: []PolicyRuleResourceConditions{
 				{
 					Negated:  false,
@@ -204,28 +212,40 @@ func TestLSSConfigController(t *testing.T) {
 						},
 						{
 							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_machine_tunnel"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_ip_anchoring"},
 						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_edge_connector"},
+						},
+						// {
+						// 	ObjectType: "CLIENT_TYPE",
+						// 	Values:     []string{"zpn_client_type_vdi"},
+						// },
 						{
 							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_zapp"},
 						},
 						{
 							ObjectType: "CLIENT_TYPE",
-							Values:     []string{"zpn_client_type_edge_connector"},
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
-							Values:     []string{"zpn_client_type_machine_tunnel"},
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
-							Values:     []string{"zpn_client_type_browser_isolation"},
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_slogger"},
 						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_zapp_partner"},
+						},
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_branch_connector"},
+						},
+						// {
+						// 	ObjectType: "CLIENT_TYPE",
+						// 	Values:     []string{"zpn_client_type_browser_isolation"},
+						// },
 					},
 				},
 			},
@@ -233,7 +253,7 @@ func TestLSSConfigController(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(lssConfig)
+	createdResource, _, err := lssService.Create(lssConfig)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -246,7 +266,7 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.LSSConfig.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := lssService.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -258,11 +278,11 @@ func TestLSSConfigController(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.LSSConfig.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = lssService.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := lssService.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -274,7 +294,7 @@ func TestLSSConfigController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = lssService.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -285,7 +305,7 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.LSSConfig.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := lssService.GetAll()
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -304,14 +324,14 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = lssService.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	retrievedAfterDelete, _, err := service.Get(createdResource.ID)
+	retrievedAfterDelete, _, err := lssService.Get(createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
 		// Note: This is a basic check.
