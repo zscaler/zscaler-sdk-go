@@ -68,6 +68,12 @@ jobs:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
 
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
   zdx-test-tenants:
     runs-on: ubuntu-latest
     strategy:
@@ -119,3 +125,9 @@ jobs:
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
     needs:
       - zdx-zsbeta-tests
+
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
