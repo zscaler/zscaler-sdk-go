@@ -77,6 +77,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
           fail_ci_if_error: true
 
   # zpa-qa2-tenants:
@@ -203,6 +204,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
           fail_ci_if_error: true
 
   zpa-prod-tenants:
@@ -270,4 +272,5 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
           fail_ci_if_error: true
