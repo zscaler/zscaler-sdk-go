@@ -8,110 +8,139 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 14 * * 1-5' # UTC
+    - cron: '0 11 * * 1-5' # UTC
   workflow_dispatch:
 
 jobs:
-  zpa-qa1-tenants:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        goVersion: ["1.21"]
-        environment:
-          - ZPA_QA_TENANT01
-          - ZPA_QA_TENANT02
-    environment: ${{ matrix.environment }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # zpa-qa1-tenants:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       goVersion: ["1.21"]
+  #       environment:
+  #         - ZPA_QA_TENANT01
+  #         - ZPA_QA_TENANT02
+  #   environment: ${{ matrix.environment }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #             token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Adjust for Test Concurrency
-        run: |
-          if [ "${{ matrix.goVersion }}" = "1.20" ]; then
-            echo "Introducing delay for Go 1.20 tests to avoid conflicts..."
-            sleep 10 # Adjust the sleep duration as needed
-          fi
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: ${{ matrix.goVersion }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.goVersion }}
+  #     - name: Clean existing Go modules
+  #       run: go clean -modcache
 
-      - name: Set Go env
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+  #     - name: Cache Go modules
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/go/pkg/mod
+  #           ~/.cache/go-build
+  #         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-go-
 
-      - name: Pull external libraries
-        run: make vendor
+  #     - name: Set Go env
+  #       run: |
+  #         echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+  #         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Run tests with retry
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20
-          command: |
-            make test:unit
-            make test:unit:zpa
-            make sweep:zpa
-            make test:integration:zpa
-        env:
-          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-          ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
-          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
-          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
+  #     - name: Install dependencies
+  #       run: go mod download
 
-  zpa-qa2-tenants:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        goVersion: ["1.21"]
-        environment:
-          - ZPA_QA2_TENANT01
-          # - ZPA_QA2_TENANT02
-    environment: ${{ matrix.environment }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #     - name: Run tests with retry
+  #       uses: nick-fields/retry@v2
+  #       with:
+  #         max_attempts: 3
+  #         timeout_minutes: 20
+  #         command: |
+  #           make test:unit
+  #           make test:unit:zpa
+  #           make sweep:zpa
+  #           make test:integration:zpa
+  #       env:
+  #         ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+  #         ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+  #         ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+  #         ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+  #         ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+  #         OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+  #         OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.goVersion }}
+  #     - name: Publish test coverage
+  #       uses: codecov/codecov-action@v4
+  #       with:
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         file: ./coverage.out 
+  #         fail_ci_if_error: true
 
-      - name: Set Go env
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+  # zpa-qa2-tenants:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       goVersion: ["1.21"]
+  #       environment:
+  #         - ZPA_QA2_TENANT01
+  #         # - ZPA_QA2_TENANT02
+  #   environment: ${{ matrix.environment }}
+  # steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #     with:
+  #           token: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Clean existing Go modules
+  #     run: go clean -modcache
+  #   - name: Setup Go
+  #     uses: actions/setup-go@v5
+  #     with:
+  #       go-version: ${{ matrix.goVersion }}
 
-      - name: Pull external libraries
-        run: make vendor
+  #   - name: Cache Go modules
+  #     uses: actions/cache@v4
+  #     with:
+  #       path: |
+  #         ~/go/pkg/mod
+  #         ~/.cache/go-build
+  #       key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #       restore-keys: |
+  #         ${{ runner.os }}-go-
 
-      - name: Run tests with retry
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20
-          command: |
-            make test:unit
-            make test:unit:zpa
-            make sweep:zpa
-            make test:integration:zpa
-        env:
-          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
-          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
-          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
-          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-          ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
-          OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
-          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
+  #   - name: Set Go env
+  #     run: |
+  #       echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+  #       echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+  #   - name: Install dependencies
+  #     run: go mod download
+
+  #   - name: Run tests with retry
+  #     uses: nick-fields/retry@v2
+  #     with:
+  #       max_attempts: 3
+  #       timeout_minutes: 20
+  #       command: |
+  #         make test:unit
+  #         make test:unit:zpa
+  #         make sweep:zpa
+  #         make test:integration:zpa
+  #     env:
+  #       ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+  #       ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+  #       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+  #       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+  #       ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
+  #       OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
+  #       OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
   zpa-beta-tenants:
+    # needs: [zpa-qa1-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -123,19 +152,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
 
+      - name: Clean existing Go modules
+        run: go clean -modcache
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Pull external libraries
-        run: make vendor
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run tests with retry
         uses: nick-fields/retry@v2
@@ -155,11 +199,16 @@ jobs:
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
-    needs:
-      - zpa-qa1-tenants
-      - zpa-qa2-tenants
+
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
+          fail_ci_if_error: true
 
   zpa-prod-tenants:
+    needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -171,19 +220,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
 
+      - name: Clean existing Go modules
+        run: go clean -modcache
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Pull external libraries
-        run: make vendor
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run tests with retry
         uses: nick-fields/retry@v2
@@ -203,7 +267,10 @@ jobs:
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
-    needs:
-      - zpa-qa1-tenants
-      - zpa-qa2-tenants
-      - zpa-beta-tenants
+
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
+          fail_ci_if_error: true

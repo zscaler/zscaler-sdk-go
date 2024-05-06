@@ -23,3 +23,5 @@ go-test
 /go-test
 .vscode
 zpacoverage.txt
+zpacoverage.html
+zpacoverage.out

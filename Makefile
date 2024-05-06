@@ -23,15 +23,14 @@ help:
 	@echo "$(COLOR_OK)  make [command]$(COLOR_NONE)"
 	@echo ""
 	@echo "$(COLOR_WARNING)Available commands:$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  build                 Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  build                 	Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:all              Run all tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zcon        	Run only zcon integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zdx        	Run only zdx integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zia        	Run only zia integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:zpa        	Run only zpa integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:integration      Run only unit tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:unit             Run only unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:all              	Run all tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zcon        	Run only zcon integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit             			Run only unit tests$(COLOR_NONE)"
 
 
 default: build
@@ -76,10 +75,6 @@ sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
 	ZIA_SDK_TEST_SWEEP=true go test ./zia/sweep -v -sweep=true
 
-
-test:
-	make test:all
-
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
 	@make test:integration:zcon
@@ -89,27 +84,24 @@ test\:all:
 
 test\:integration\:zcon:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zcon/... -race -coverprofile zconcoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
-	go tool cover -func zconcoverage.txt | grep total:
-	rm -rf zconcoverage.txt
+	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zcon/... -parallel 20 -timeout 60m
+	go tool cover -html=zconcoverage.out -o zconcoverage.html
 
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zdx/... -race -coverprofile zdxcoverage.txt -covermode=atomic -v -parallel 4 -timeout 30m
-	go tool cover -func zdxcoverage.txt | grep total:
-	rm -rf zdxcoverage.txt
+	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
+	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zpa/... -race -coverprofile zpacoverage.txt -covermode=atomic -v -parallel 20 -timeout 120m
-	go tool cover -func zpacoverage.txt | grep total:
-	rm -rf zpacoverage.txt
+	@go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zpa/... -parallel 20 -timeout 60m
+	@go tool cover -html=zpacoverage.out -o zpacoverage.html
+
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	go test -failfast -race ./zia/... -race -coverprofile ziacoverage.txt -covermode=atomic -v -parallel 10 -timeout 120m
-	go tool cover -func ziacoverage.txt | grep total:
-	rm -rf ziacoverage.txt
+	go test -v -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... -parallel 10 -timeout 60m
+	go tool cover -html=ziacoverage.out -o ziacoverage.html
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
@@ -169,10 +161,6 @@ zconActivator:
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/zconActivator ./zcon/services/activation_cli/zconActivator.go
 	zconActivator
-
-.PHONY: fmt
-fmt: check-fmt # Format the code
-	@$(GOFMT) -l -w $$(find . -name '*.go' |grep -v vendor) > /dev/null
 
 check-fmt:
 	@which $(GOFMT) > /dev/null || GO111MODULE=on go install mvdan.cc/gofumpt@latest
