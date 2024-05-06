@@ -1,13 +1,40 @@
 # Changelog
 
-# 2.4.33 (April xx, 2024)
+# 2.5.0 (May 6, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #240](https://github.com/zscaler/zscaler-sdk-go/pull/240) - Added new `Retry-After` header to ZPA API Client. Please see API Developer's documentation [here](https://help.zscaler.com/zpa/understanding-rate-limiting) for details.
+
+# 2.4.35 (April 12, 2024)
 
 ## Notes
 - Golang: **v1.21**
 
 ### Fixes
 
-- [PR #240](https://github.com/zscaler/zscaler-sdk-go/pull/240) - Implemented `Retry-After` to ZPA API config client using `resp.Header.Get("Retry-After")` which is case-insensitive, aligning with the HTTP specification and ensuring the header is correctly identified regardless of its case.
+- [PR #243](https://github.com/zscaler/zscaler-sdk-go/pull/243) - Added custom error handling to ZIA `MakeAuthRequestZIA` function for more clarity during authentication failures.
+
+# 2.4.34 (April 8, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #242](https://github.com/zscaler/zscaler-sdk-go/pull/242) - Fixed ZPA `bacertificate` package by adding missing attributes `publicKey`
+
+# 2.4.33 (April 5, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #241](https://github.com/zscaler/zscaler-sdk-go/pull/241) - Fixed DLP Web Rule attributes `auditor`, `icapServer`, and `notificationTemplate` to use a common struct type `IDName`
 
 # 2.4.32 (March 27, 2024)
 

@@ -10,7 +10,7 @@ import (
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	rPassword := acctest.RandString(10)
+	rPassword := acctest.RandString(60)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

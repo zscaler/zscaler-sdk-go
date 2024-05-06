@@ -9,7 +9,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: "0 14 * * 1-5" # UTC
+    - cron: "0 11 * * 1-5" # UTC
   workflow_dispatch:
 
 jobs:
@@ -21,24 +21,31 @@ jobs:
       matrix:
         goVersion: ["1.21"]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.goVersion }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Clean existing Go modules
+        run: go clean -modcache
+  
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+  
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Pull external libraries
-        run: make vendor
+  
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run tests with retry on Ubuntu
         uses: nick-fields/retry@v2
@@ -55,7 +62,15 @@ jobs:
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
 
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
+          fail_ci_if_error: true
+
   zcon-tests-tenants:
+    needs: [zcon-beta-tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -68,19 +83,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.goVersion }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Clean existing Go modules
+        run: go clean -modcache
+  
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+  
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Pull external libraries
-        run: make vendor
+  
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run tests with retry on Ubuntu
         uses: nick-fields/retry@v2
@@ -96,5 +121,11 @@ jobs:
           ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-    needs:
-      - zcon-beta-tests
+
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
+          fail_ci_if_error: true
+

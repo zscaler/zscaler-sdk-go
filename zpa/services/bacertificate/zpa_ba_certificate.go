@@ -22,6 +22,7 @@ type BaCertificate struct {
 	CertChain           string   `json:"certChain,omitempty"`
 	CertBlob            string   `json:"certBlob,omitempty"`
 	Certificate         string   `json:"certificate,omitempty"`
+	PublicKey           string   `json:"publicKey,omitempty"`
 	CreationTime        string   `json:"creationTime,omitempty"`
 	IssuedBy            string   `json:"issuedBy,omitempty"`
 	IssuedTo            string   `json:"issuedTo,omitempty"`

@@ -17,11 +17,8 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentinspection"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/browseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiprofilecontroller"
@@ -80,12 +77,12 @@ func sweep() error {
 
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zpa.Client) error{
+		sweepPrivilegedApproval,
+		sweepApplicationSegment,
+		sweepSegmentGroup,
+		sweepServerGroup,
 		sweepAppConnectorGroups,
 		sweepApplicationServers,
-		sweepApplicationSegment,
-		sweepApplicationSegmentInspection,
-		sweepApplicationSegmentPRA,
-		sweepApplicationSegmentBrowserAccess,
 		sweepBaCertificateController,
 		sweepCBIBannerController,
 		sweepCBICertificateController,
@@ -94,15 +91,12 @@ func sweep() error {
 		sweepInspectionProfile,
 		sweepLSSController,
 		sweepMicrotenants,
-		sweepSegmentGroup,
-		sweepServerGroup,
 		sweepServiceEdgeGroup,
 		sweepProvisioningKey,
 		sweepPolicySetController,
 		sweeppracredential,
 		sweepPRAConsole,
 		sweepPRAPortal,
-		sweepPrivilegedApproval,
 	}
 
 	// Execute each sweep function
@@ -181,69 +175,6 @@ func sweepApplicationSegment(client *zpa.Client) error {
 		_, err := service.Delete(r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment with ID: %s, Name: %s: %v", r.ID, r.Name, err)
-		}
-	}
-	return nil
-}
-
-func sweepApplicationSegmentInspection(client *zpa.Client) error {
-	service := applicationsegmentinspection.New(client)
-	resources, _, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get application segment inspection: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
-		if err != nil {
-			log.Printf("[ERROR] Failed to delete application segment inspection with ID: %s, Name: %s: %v", r.ID, r.Name, err)
-		}
-	}
-	return nil
-}
-
-func sweepApplicationSegmentPRA(client *zpa.Client) error {
-	service := applicationsegmentpra.New(client)
-	resources, _, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get application segment pra: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
-		if err != nil {
-			log.Printf("[ERROR] Failed to delete application segment pra with ID: %s, Name: %s: %v", r.ID, r.Name, err)
-		}
-	}
-	return nil
-}
-
-func sweepApplicationSegmentBrowserAccess(client *zpa.Client) error {
-	service := browseraccess.New(client)
-	resources, _, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get application segment browser access: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
-		if err != nil {
-			log.Printf("[ERROR] Failed to delete application segment browser access with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 	return nil
@@ -607,16 +538,26 @@ func sweepPRAPortal(client *zpa.Client) error {
 func sweepPrivilegedApproval(client *zpa.Client) error {
 	service := praapproval.New(client)
 
-	// Instead of getting all resources and filtering them, directly call DeleteExpired
-	resp, err := service.DeleteExpired()
+	// Retrieve all privileged approvals
+	approvals, _, err := service.GetAll()
 	if err != nil {
-		log.Printf("[ERROR] Failed to delete expired privileged approvals: %v", err)
+		log.Printf("[ERROR] Failed to get all privileged approvals: %v", err)
 		return err
-	} else if resp.StatusCode != http.StatusOK {
-		log.Printf("[ERROR] Unexpected status code when deleting expired privileged approvals: %d", resp.StatusCode)
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	log.Printf("[INFO] Successfully deleted expired privileged approvals")
+	// Delete each privileged approval by ID
+	for _, approval := range approvals {
+		log.Printf("Deleting privileged approval with ID: %s", approval.ID)
+		resp, err := service.Delete(approval.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete privileged approval with ID: %s: %v", approval.ID, err)
+			return err
+		} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			log.Printf("[ERROR] Unexpected status code when deleting privileged approval with ID: %s: %d", approval.ID, resp.StatusCode)
+			return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		}
+	}
+
+	log.Printf("[INFO] Successfully deleted all privileged approvals")
 	return nil
 }
