@@ -1,4 +1,4 @@
-package publicapi
+package get_password
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"

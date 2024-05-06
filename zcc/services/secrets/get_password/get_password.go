@@ -1,4 +1,4 @@
-package publicapi
+package get_password
 
 const (
 	getPasswordsEndpoint = "/public/v1/getPasswords"

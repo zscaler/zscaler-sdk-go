@@ -1,6 +1,7 @@
 package applicationsegment
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -163,6 +164,53 @@ func TestApplicationSegment(t *testing.T) {
 	_, _, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+func TestGetByApplicationType(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	// Define the valid application types to test
+	applicationTypes := []string{"BROWSER_ACCESS", "SECURE_REMOTE_ACCESS", "INSPECT"}
+
+	for _, appType := range applicationTypes {
+		t.Run(fmt.Sprintf("ApplicationType=%s", appType), func(t *testing.T) {
+			// Retrieve the resources by application type
+			resources, _, err := service.GetByApplicationType(appType, true)
+
+			// Check for errors while retrieving resources for this application type
+			if err != nil {
+				t.Errorf("Unexpected error for application type '%s': %v", appType, err)
+				return
+			}
+
+			// If no resources are found, log a message and continue
+			if len(resources) == 0 {
+				t.Logf("No resources found for application type '%s'", appType)
+			} else {
+				t.Logf("Found %d resources for application type '%s'", len(resources), appType)
+			}
+		})
+	}
+
+	// Testing with invalid application types to ensure proper error handling
+	invalidApplicationTypes := []string{"INVALID_TYPE", "", "UNKNOWN"}
+	for _, invalidType := range invalidApplicationTypes {
+		t.Run(fmt.Sprintf("InvalidApplicationType=%s", invalidType), func(t *testing.T) {
+			// Attempt to retrieve resources using an invalid application type
+			_, _, err := service.GetByApplicationType(invalidType, false)
+
+			// Verify that an error occurs as expected
+			if err == nil {
+				t.Errorf("Expected error for invalid application type '%s', but got nil", invalidType)
+			} else {
+				t.Logf("Correctly received an error for invalid application type '%s': %v", invalidType, err)
+			}
+		})
 	}
 }
 

@@ -1,4 +1,4 @@
-package publicapi
+package get_otp
 
 const (
 	getOtpEndpoint = "/public/v1/getOtp"

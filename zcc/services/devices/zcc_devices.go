@@ -1,11 +1,9 @@
-package publicapi
+package devices
 
 import "github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 
 const (
-	getDevicesEndpoint        = "/public/v1/getDevices"
-	softRemoveDevicesEndpoint = "/public/v1/removeDevices"
-	forceRemoveDevicesEndpoin = "/public/v1/forceRemoveDevices"
+	getDevicesEndpoint = "/public/v1/getDevices"
 )
 
 type GetDevices struct {
@@ -36,18 +34,6 @@ type GetDevices struct {
 	ZappArch                string `json:"zappArch"`
 }
 
-type RemoveDevicesRequest struct {
-	ClientConnectorVersion []string `json:"clientConnectorVersion,omitempty"`
-	OsType                 int      `json:"osType,omitempty"`
-	Udids                  []string `json:"udids,omitempty"`
-	UserName               string   `json:"userName,omitempty"`
-}
-
-type RemoveDevicesResponse struct {
-	DevicesRemoved int    `json:"devicesRemoved,omitempty"`
-	ErrorMsg       string `json:"errorMsg,omitempty"`
-}
-
 func (service *Service) GetAll() ([]GetDevices, error) {
 	var devices []GetDevices
 	_, err := service.Client.NewRequestDo("GET", getDevicesEndpoint, common.Pagination{PageSize: common.DefaultPageSize}, nil, &devices)
@@ -55,22 +41,4 @@ func (service *Service) GetAll() ([]GetDevices, error) {
 		return nil, err
 	}
 	return devices, err
-}
-
-func (service *Service) SoftRemoveDevices(request RemoveDevicesRequest) (*RemoveDevicesResponse, error) {
-	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", softRemoveDevicesEndpoint, common.Pagination{PageSize: common.DefaultPageSize}, &request, &response)
-	if err != nil {
-		return nil, err
-	}
-	return &response, err
-}
-
-func (service *Service) ForceRemoveDevices(request RemoveDevicesRequest) (*RemoveDevicesResponse, error) {
-	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", forceRemoveDevicesEndpoin, common.Pagination{PageSize: common.DefaultPageSize}, &request, &response)
-	if err != nil {
-		return nil, err
-	}
-	return &response, err
 }
