@@ -208,7 +208,7 @@ jobs:
           fail_ci_if_error: true
 
   zpa-prod-tenants:
-    needs: [zpa-qa1-tenants]
+    needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
