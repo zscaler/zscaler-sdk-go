@@ -1,14 +1,5 @@
 # Changelog
 
-# 2.5.1 (May 7, 2024)
-
-## Notes
-- Golang: **v1.21**
-
-### Enhancements
-
-- [PR #241](https://github.com/zscaler/zscaler-sdk-go/pull/241) - Added new ZIA URL Filtering Rule attribute `source_ip_groups`
-
 # 2.5.0 (May 6, 2024)
 
 ## Notes
@@ -17,6 +8,7 @@
 ### Enhancements
 
 - [PR #240](https://github.com/zscaler/zscaler-sdk-go/pull/240) - Added new `Retry-After` header to ZPA API Client. Please see API Developer's documentation [here](https://help.zscaler.com/zpa/understanding-rate-limiting) for details.
+- [PR #241](https://github.com/zscaler/zscaler-sdk-go/pull/241) - Added new ZIA URL Filtering Rule attribute `source_ip_groups`
 
 # 2.4.35 (April 12, 2024)
 
