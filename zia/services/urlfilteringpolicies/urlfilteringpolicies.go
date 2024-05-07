@@ -114,6 +114,10 @@ type URLFilteringRule struct {
 	// Name-ID pairs of users for which rule must be applied
 	Users []common.IDNameExtensions `json:"users,omitempty"`
 
+	// Source IP address groups for which the rule is applicable.
+	// If not set, the rule is not restricted to a specific source IP address group.
+	SourceIPGroups []common.IDNameExtensions `json:"sourceIpGroups,omitempty"`
+
 	// Name-ID pairs of time interval during which rule must be enforced.
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 

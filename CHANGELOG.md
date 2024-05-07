@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.5.1 (May 7, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #241](https://github.com/zscaler/zscaler-sdk-go/pull/241) - Added new ZIA URL Filtering Rule attribute `source_ip_groups`
+
 # 2.5.0 (May 6, 2024)
 
 ## Notes
