@@ -47,11 +47,12 @@ func TestBaApplicationSegment(t *testing.T) {
 	baCertificateService := bacertificate.New(client)
 	certificateList, _, err := baCertificateService.GetAll()
 	if err != nil {
-		t.Errorf("Error getting saml attributes: %v", err)
+		t.Errorf("Error getting certificates: %v", err)
 		return
 	}
 	if len(certificateList) == 0 {
-		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+		t.Error("Expected retrieved certificates to be non-empty, but got empty slice")
+		return
 	}
 	service := New(client)
 
@@ -92,8 +93,8 @@ func TestBaApplicationSegment(t *testing.T) {
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
+		return
 	}
-
 	if createdResource.ID == "" {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
@@ -101,35 +102,32 @@ func TestBaApplicationSegment(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
-	// // *** New step to use GetByApplicationType function ***
-	// // Search for application segments of type SECURE_REMOTE_ACCESS
-	// applicationType := "BROWSER_ACCESS"
-	// expandAll := false // Set based on your requirement
-	// resourcesByType, _, err := service.GetByApplicationType(applicationType, expandAll)
-	// if err != nil {
-	// 	t.Errorf("Error retrieving resources by application type %s: %v", applicationType, err)
-	// } else {
-	// 	found := false
-	// 	for _, resource := range resourcesByType {
-	// 		if resource.ID == createdResource.ID {
-	// 			found = true
-	// 			break
-	// 		}
-	// 	}
-	// 	if !found {
-	// 		t.Errorf("Expected resource with ID '%s' to be found in resources of type '%s'", createdResource.ID, applicationType)
-	// 	}
-	// }
+	// *** New step to use GetByApplicationType function ***
+	// Search for application segments of type BROWSER_ACCESS
+	applicationType := "BROWSER_ACCESS"
+	expandAll := true // Set based on your requirement
+	resourcesByType, _, err := service.GetByApplicationType(applicationType, expandAll)
+	if err != nil {
+		t.Errorf("Error retrieving resources by application type %s: %v", applicationType, err)
+	} else {
+		// Log the retrieved resources
+		t.Logf("Resources by application type: %+v\n", resourcesByType)
+	}
+
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
+		return
 	}
+	// Log retrieved resource
+	t.Logf("Retrieved resource: %+v\n", retrievedResource)
+
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
 	retrievedResource.Name = updateName
 
