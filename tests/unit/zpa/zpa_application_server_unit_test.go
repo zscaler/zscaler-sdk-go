@@ -73,7 +73,7 @@ func TestApplicationServer_Create(t *testing.T) {
 }
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
-/*
+
 func TestApplicationServer_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
@@ -115,7 +115,7 @@ func TestApplicationServer_GetByName(t *testing.T) {
 		t.Errorf("Expected group name 'Server1', but got '%s'", appServer.Name)
 	}
 }
-*/
+
 func TestApplicationServer_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()

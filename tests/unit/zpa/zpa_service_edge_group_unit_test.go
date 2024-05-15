@@ -71,7 +71,6 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 }
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
-/*
 func TestServiceEdgeGroup_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
@@ -113,7 +112,7 @@ func TestServiceEdgeGroup_GetByName(t *testing.T) {
 		t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
 	}
 }
-*/
+
 func TestServiceEdgeGroup_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
