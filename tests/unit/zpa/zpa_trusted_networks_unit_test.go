@@ -11,7 +11,7 @@ import (
 func TestTrustedNetworks_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/network/123", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/network/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "trustedNetwork 1"}`))

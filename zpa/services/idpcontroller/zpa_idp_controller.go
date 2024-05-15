@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	mgmtConfig            = "/mgmtconfig/v2/admin/customers/"
 	mgmtConfigV1          = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2          = "/mgmtconfig/v2/admin/customers/"
 	idpControllerEndpoint = "/idp"
 )
 
@@ -73,7 +73,7 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 }
 
 func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -87,7 +87,7 @@ func (service *Service) GetByName(idpName string) (*IdpController, *http.Respons
 }
 
 func (service *Service) GetAll() ([]IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
