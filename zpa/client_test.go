@@ -28,10 +28,12 @@ var (
 
 const (
 	getResponse  = `{"id": 1234,"name":"name with &amp;amp;, &amp;lt; and &amp;gt;","description":"description with &amp;amp;, &amp;lt; and &amp;gt;"}`
+	postResponse = `{"id": 1235,"name":"new name","description":"new description"}`
 	authResponse = `{
 	"token_type": "token_type",
 	"access_token": "access_token"
 }`
+	errorResponse = `{"error":"bad request"}`
 )
 
 func TestClient_NewRequestDo(t *testing.T) {
@@ -79,6 +81,60 @@ func TestClient_NewRequestDo(t *testing.T) {
 				Description: "description with &, < and >",
 			},
 		},
+		{
+			name: "POST happy path",
+			args: struct {
+				method string
+				url    string
+				body   interface{}
+				v      interface{}
+			}{
+				method: "POST",
+				url:    "/test",
+				body:   &dummyStruct{Name: "new name", Description: "new description"},
+				v:      new(dummyStruct),
+			},
+			muxHandler: func(w http.ResponseWriter, r *http.Request) {
+				_, err := w.Write([]byte(postResponse))
+				w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantResp: &http.Response{
+				StatusCode: 200, // The expected status should match the actual response
+			},
+			wantVal: &dummyStruct{
+				ID:          1235,
+				Name:        "new name",
+				Description: "new description",
+			},
+		},
+		{
+			name: "Error response 400",
+			args: struct {
+				method string
+				url    string
+				body   interface{}
+				v      interface{}
+			}{
+				method: "GET",
+				url:    "/error",
+				body:   nil,
+				v:      new(dummyStruct),
+			},
+			muxHandler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusBadRequest)
+				_, err := w.Write([]byte(errorResponse))
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantResp: &http.Response{
+				StatusCode: 400,
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,11 +149,11 @@ func TestClient_NewRequestDo(t *testing.T) {
 				return
 			}
 
-			if tt.wantResp.StatusCode != res.StatusCode {
-				t.Errorf("Client.NewRequestDo() = %v, want %v", res, tt.wantResp)
+			if tt.wantResp != nil && res != nil && res.StatusCode != tt.wantResp.StatusCode {
+				t.Errorf("Client.NewRequestDo() = %v, want %v", res.StatusCode, tt.wantResp.StatusCode)
 			}
 
-			if !reflect.DeepEqual(tt.args.v, tt.wantVal) {
+			if !tt.wantErr && !reflect.DeepEqual(tt.args.v, tt.wantVal) {
 				t.Errorf("returned %#v; want %#v", tt.args.v, tt.wantVal)
 			}
 		})
@@ -142,6 +198,21 @@ func TestNewClient(t *testing.T) {
 				BaseURL: &url.URL{
 					Scheme: "https",
 					Host:   "config.private.zscaler.com",
+				},
+				ClientID:     "ClientID",
+				ClientSecret: "ClientSecret",
+				CustomerID:   "CustomerID",
+				UserAgent:    "userAgent",
+			},
+		},
+		{
+			name:  "ZPA Two Production cloud support",
+			args:  struct{ config *Config }{config: nil},
+			cloud: "zpaTwo",
+			wantC: &Config{
+				BaseURL: &url.URL{
+					Scheme: "https",
+					Host:   "config.zpatwo.net",
 				},
 				ClientID:     "ClientID",
 				ClientSecret: "ClientSecret",
@@ -282,6 +353,29 @@ func TestNewClient(t *testing.T) {
 			assert.Equal(t, gotC.Config.ClientID, tt.wantC.ClientID)
 			assert.Equal(t, gotC.Config.ClientSecret, tt.wantC.ClientSecret)
 		})
+	}
+}
+
+func TestClient_WithFreshCache(t *testing.T) {
+	client := NewClient(setupMuxConfig())
+	client.WithFreshCache()
+	if !client.Config.freshCache {
+		t.Error("expected freshCache to be true")
+	}
+}
+
+func TestClient_Authenticate(t *testing.T) {
+	client := NewClient(setupMuxConfig())
+	err := client.authenticate()
+	if err != nil {
+		t.Errorf("unexpected error during authentication: %v", err)
+	}
+
+	// Simulate an expired token scenario
+	client.Config.AuthToken.AccessToken = "expired_token"
+	err = client.authenticate()
+	if err != nil {
+		t.Errorf("unexpected error during re-authentication: %v", err)
 	}
 }
 
