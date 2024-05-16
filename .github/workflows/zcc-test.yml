@@ -25,50 +25,50 @@ jobs:
       fail-fast: false
       matrix:
         goVersion: ["1.21"]
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.goVersion }}
-
-    - name: Clean existing Go modules
-      run: go clean -modcache
-
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/go/pkg/mod
-          ~/.cache/go-build
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
-    - name: Set Go env
-      run: |
-        echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-        echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: go mod download
-
-      - name: Run tests with retry on Ubuntu
-        uses: nick-fields/retry@v2
+    steps:
+        - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          max_attempts: 3
-          timeout_minutes: 20 # Adjust as needed
-          command: |
-            make test:integration:zcc
-        env:
-          ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
-          ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
-          ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
-            
+            token: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+            go-version: ${{ matrix.goVersion }}
+
+        - name: Clean existing Go modules
+        run: go clean -modcache
+
+        - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+            path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            restore-keys: |
+            ${{ runner.os }}-go-
+
+        - name: Set Go env
+        run: |
+            echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+            echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+        - name: Install dependencies
+        run: go mod download
+
+        - name: Run tests with retry on Ubuntu
+            uses: nick-fields/retry@v2
+            with:
+            max_attempts: 3
+            timeout_minutes: 20 # Adjust as needed
+            command: |
+                make test:integration:zcc
+            env:
+            ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
+            ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
+            ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
+                
   zcc-test-tenants:
     runs-on: ubuntu-latest
     strategy:
