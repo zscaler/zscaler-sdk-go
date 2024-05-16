@@ -68,14 +68,7 @@ jobs:
           ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
           ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
           ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
-
-    - name: Publish test coverage
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.out 
-        fail_ci_if_error: true
-
+            
   zcc-test-tenants:
     runs-on: ubuntu-latest
     strategy:
