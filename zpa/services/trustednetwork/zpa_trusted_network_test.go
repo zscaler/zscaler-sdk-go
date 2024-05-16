@@ -16,18 +16,31 @@ func TestTrustedNetworks(t *testing.T) {
 
 	service := New(client)
 
-	// Test to retrieve all profiles
-	profiles, _, err := service.GetAll()
+	// Test to retrieve all networks
+	networks, _, err := service.GetAll()
 	if err != nil {
 		t.Errorf("Error getting trusted networks: %v", err)
 		return
 	}
-	if len(profiles) == 0 {
+	if len(networks) == 0 {
 		t.Errorf("No trusted networks found")
 		return
 	}
+
+	// Additional step: Use the ID of the first certificate to test the Get function
+	firstNetworkID := networks[0].ID
+	t.Run("Get by ID for first network", func(t *testing.T) {
+		networkByID, _, err := service.Get(firstNetworkID)
+		if err != nil {
+			t.Fatalf("Error getting network by ID %s: %v", firstNetworkID, err)
+		}
+		if networkByID.ID != firstNetworkID {
+			t.Errorf("Enrollment network ID does not match: expected %s, got %s", firstNetworkID, networkByID.ID)
+		}
+	})
+
 	// Test to retrieve a profile by its name
-	name := profiles[0].Name
+	name := networks[0].Name
 	adaptedName := common.RemoveCloudSuffix(name)
 	t.Log("Getting trusted network by name:" + adaptedName)
 	profile, _, err := service.GetByName(adaptedName)

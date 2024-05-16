@@ -88,6 +88,23 @@ func TestCBICertificates(t *testing.T) {
 		t.Fatalf("Error uploading certificate: %v", err)
 	}
 
+	// Test: Verify the certificate is present in the GetAll list
+	t.Run("TestGetAllCertificates", func(t *testing.T) {
+		allCerts, _, err := service.GetAll()
+		if err != nil {
+			t.Fatalf("Error retrieving all certificates: %v", err)
+		}
+		found := false
+		for _, cert := range allCerts {
+			if cert.ID == createdCert.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Certificate not found in GetAll response")
+		}
+	})
 	// Test for updating the certificate name
 	t.Run("TestCertificateUpdate", func(t *testing.T) {
 		// Generate a new random name for updating the certificate

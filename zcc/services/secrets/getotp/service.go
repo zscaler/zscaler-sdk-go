@@ -1,4 +1,4 @@
-package publicapi
+package getotp
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"

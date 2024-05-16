@@ -28,6 +28,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 		t.Errorf("No customer version profile found")
 		return
 	}
+
 	name := profiles[0].Name
 	t.Log("Getting customer version profile by name:" + name)
 	profile, _, err := service.GetByName(name)

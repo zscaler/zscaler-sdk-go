@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	mgmtConfig             = "/mgmtconfig/v2/admin/customers/"
+	mgmtConfigV1           = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2           = "/mgmtconfig/v2/admin/customers/"
 	postureProfileEndpoint = "/posture"
 )
 
@@ -35,7 +36,7 @@ type PostureProfile struct {
 
 func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) {
 	v := new(PostureProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+postureProfileEndpoint, id)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+postureProfileEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -45,7 +46,7 @@ func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) 
 }
 
 func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -60,7 +61,7 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 
 func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: adaptedPostureName} // Using the adapted posture name for searching
@@ -81,7 +82,7 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 }
 
 func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

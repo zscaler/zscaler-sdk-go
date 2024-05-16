@@ -165,7 +165,7 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 		if err == nil {
 			return nil, resp, err
 		}
-		if err == nil && mt != nil {
+		if mt != nil {
 			filters.MicroTenantID = &mt.ID
 		}
 	}

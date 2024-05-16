@@ -14,7 +14,7 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"id": "123", "name": "Group_1"}`))
+		w.Write([]byte(`{"id": "123", "name": "Group1"}`))
 	})
 	service := &appconnectorgroup.Service{
 		Client: client,
@@ -31,8 +31,8 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 	if group.ID != "123" {
 		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
 	}
-	if group.Name != "Group_1" {
-		t.Errorf("Expected group name 'Group_1', but got '%s'", group.Name)
+	if group.Name != "Group1" {
+		t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
 	}
 }
 
@@ -42,7 +42,7 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"id": "123", "name": "Group_1"}`))
+		w.Write([]byte(`{"id": "123", "name": "Group1"}`))
 	})
 
 	service := &appconnectorgroup.Service{
@@ -51,8 +51,8 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	// Create a sample group
 	group := appconnectorgroup.AppConnectorGroup{
 		ID:                       "123",
-		Name:                     "Group_1",
-		Description:              "Group_1",
+		Name:                     "Group1",
+		Description:              "Group1",
 		Enabled:                  true,
 		CityCountry:              "San Jose, US",
 		Latitude:                 "37.3382082",
@@ -82,56 +82,55 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	if createdGroup.ID != "123" {
 		t.Errorf("Expected created group ID '123', but got '%s'", createdGroup.ID)
 	}
-	if createdGroup.Name != "Group_1" {
-		t.Errorf("Expected created group name 'Group_1', but got '%s'", createdGroup.Name)
+	if createdGroup.Name != "Group1" {
+		t.Errorf("Expected created group name 'Group1', but got '%s'", createdGroup.Name)
 	}
 }
 
-/*
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 
-	func TestAppConnectorGroup_GetByName(t *testing.T) {
-		client, mux, server := tests.NewZpaClientMock()
-		defer server.Close()
-		mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
-			// Get the query parameter "name" from the request
-			query := r.URL.Query()
-			name := query.Get("search")
+func TestAppConnectorGroup_GetByName(t *testing.T) {
+	client, mux, server := tests.NewZpaClientMock()
+	defer server.Close()
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
+		// Get the query parameter "name" from the request
+		query := r.URL.Query()
+		name := query.Get("search")
 
-			// Check if the name matches the expected value
-			if name == "Group_1" {
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{
+		// Check if the name matches the expected value
+		if name == "Group1" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{
 					"list":[
-						{"id": "123", "name": "Group_1"}
+						{"id": "123", "name": "Group1"}
 					],
 					"totalPages":1
 					}`))
-			} else {
-				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(`{"error": "Group not found"}`))
-			}
-		})
-		service := &appconnectorgroup.Service{
-			Client: client,
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"error": "Group not found"}`))
 		}
-
-		// Make the GetByName request
-		group, _, err := service.GetByName("Group_1")
-		// Check if the request was successful
-		if err != nil {
-			t.Errorf("Error making GetByName request: %v", err)
-		}
-
-		// Check if the group ID and name match the expected values
-		if group.ID != "123" {
-			t.Errorf("Expected group ID '123', but got '%s'", group.ID)
-		}
-		if group.Name != "Group1" {
-			t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
-		}
+	})
+	service := &appconnectorgroup.Service{
+		Client: client,
 	}
-*/
+
+	// Make the GetByName request
+	group, _, err := service.GetByName("Group1")
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error making GetByName request: %v", err)
+	}
+
+	// Check if the group ID and name match the expected values
+	if group.ID != "123" {
+		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
+	}
+	if group.Name != "Group1" {
+		t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
+	}
+}
+
 func TestAppConnectorGroup_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
@@ -145,7 +144,7 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 	}
 	group := appconnectorgroup.AppConnectorGroup{
 		ID:                       "123",
-		Name:                     "Group_1",
+		Name:                     "Group1",
 		Description:              "Group_1",
 		Enabled:                  true,
 		CityCountry:              "San Jose, US",
@@ -159,10 +158,10 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 		VersionProfileID:         "2",
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
+		WAFDisabled:              false,
+		TCPQuickAckApp:           false,
+		TCPQuickAckAssistant:     false,
+		TCPQuickAckReadAssistant: false,
 	}
 
 	// Make the Update request
@@ -199,7 +198,7 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
 			"list":[
-				{"id": "123", "name": "Group_1"},
+				{"id": "123", "name": "Group1"},
 				{"id": "456", "name": "Group_2"}
 			],
 			"totalPages":1
@@ -218,7 +217,7 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 
 	// Check the returned groups
 	expectedGroups := []*appconnectorgroup.AppConnectorGroup{
-		{ID: "123", Name: "Group_1"},
+		{ID: "123", Name: "Group1"},
 		{ID: "456", Name: "Group_2"},
 	}
 	if len(groups) != len(expectedGroups) {

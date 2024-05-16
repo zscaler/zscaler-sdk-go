@@ -56,6 +56,18 @@ func TestEnrollmentCert(t *testing.T) {
 			}
 		})
 	}
+
+	// Additional step: Use the ID of the first certificate to test the Get function
+	firstCertID := certificates[0].ID
+	t.Run("Get by ID for first certificate", func(t *testing.T) {
+		certificateByID, _, err := service.Get(firstCertID)
+		if err != nil {
+			t.Fatalf("Error getting enrollment certificate by ID %s: %v", firstCertID, err)
+		}
+		if certificateByID.ID != firstCertID {
+			t.Errorf("Enrollment certificate ID does not match: expected %s, got %s", firstCertID, certificateByID.ID)
+		}
+	})
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {

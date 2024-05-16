@@ -50,7 +50,6 @@ func (service *Service) Get(machineGroupID string) (*MachineGroup, *http.Respons
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return v, resp, nil
 }
 

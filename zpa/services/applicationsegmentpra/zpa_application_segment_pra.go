@@ -2,7 +2,9 @@ package applicationsegmentpra
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
@@ -140,19 +142,27 @@ func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response
 }
 
 func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]AppSegmentPRA, *http.Response, error) {
-	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
-		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
+	if applicationType != "SECURE_REMOTE_ACCESS" {
+		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'SECURE_REMOTE_ACCESS'", applicationType)
 	}
-	// Constructing the query parameters as part of the URL
-	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
-		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
-	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
-
+	baseURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint)
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to parse base URL: %w", err)
+	}
+	query := parsedURL.Query()
+	query.Set("applicationType", applicationType)
+	query.Set("expandAll", fmt.Sprintf("%t", expandAll))
+	parsedURL.RawQuery = query.Encode()
+	relativeURL := parsedURL.String()
+	log.Printf("Constructed URL: %s\n", relativeURL)
+	filter := common.Filter{}
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, filter)
 	if err != nil {
+		log.Printf("Error fetching resources: %v\n", err)
 		return nil, nil, err
 	}
-
+	log.Printf("Fetched resources: %+v\n", list)
 	return list, resp, nil
 }
 

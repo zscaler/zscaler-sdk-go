@@ -1,4 +1,4 @@
-package provisioning
+package api_keys
 
 import "github.com/zscaler/zscaler-sdk-go/v2/zcon"
 

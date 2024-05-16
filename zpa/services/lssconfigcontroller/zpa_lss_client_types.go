@@ -9,7 +9,6 @@ const (
 )
 
 type LSSClientTypes struct {
-	// ID                         string `json:"id"`
 	ZPNClientTypeExporter      string `json:"zpn_client_type_exporter"`
 	ZPNClientTypeMachineTunnel string `json:"zpn_client_type_machine_tunnel"`
 	ZPNClientTypeIPAnchoring   string `json:"zpn_client_type_ip_anchoring"`

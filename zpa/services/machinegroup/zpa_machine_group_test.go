@@ -42,6 +42,18 @@ func TestMachineGroup(t *testing.T) {
 		return
 	}
 
+	// Additional step: Use the ID of the first machine group to test the Get function
+	t.Log("Getting machine group by ID:" + groups[0].ID)
+	groupByID, _, err := service.Get(groups[0].ID)
+	if err != nil {
+		t.Errorf("Error getting machine group by ID: %v", err)
+		return
+	}
+	if groupByID.ID != groups[0].ID {
+		t.Errorf("Machine group ID does not match: expected %s, got %s", groups[0].ID, groupByID.ID)
+		return
+	}
+
 	// Negative Test: Try to retrieve a group with a non-existent name
 	nonExistentName := "ThisMachineGroupNameDoesNotExist"
 	_, _, err = service.GetByName(nonExistentName)

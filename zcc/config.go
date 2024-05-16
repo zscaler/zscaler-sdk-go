@@ -84,6 +84,7 @@ By default it will try to read the access and te secret from the environment var
 // TODO Add healthCheck method to NewConfig.
 func NewConfig(clientID, clientSecret, cloud, userAgent string) (*Config, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
+	logger.Printf("[DEBUG] Initializing new config")
 	// if creds not provided in TF config, try loading from env vars
 	if clientID == "" || clientSecret == "" || cloud == "" || userAgent == "" {
 		clientID = os.Getenv(ZCC_CLIENT_ID)
@@ -104,7 +105,9 @@ func NewConfig(clientID, clientSecret, cloud, userAgent string) (*Config, error)
 	baseURL, err := url.Parse(fmt.Sprintf("https://mobileadmin.%s.net/papi", cloud))
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
+		return nil, err
 	}
+	logger.Printf("[DEBUG] Config initialized successfully with baseURL: %s", baseURL.String())
 	return &Config{
 		BaseURL:      baseURL,
 		Logger:       logger,

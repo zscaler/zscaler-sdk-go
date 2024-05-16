@@ -1,4 +1,4 @@
-package provisioning
+package api_keys
 
 import (
 	"errors"

@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
-	appSegmentEndpoint      = "/application"
-	applicationTypeEndpoint = "/application/getAppsByType"
+	mgmtConfig         = "/mgmtconfig/v1/admin/customers/"
+	appSegmentEndpoint = "/application"
 )
 
 type ApplicationSegmentResource struct {
@@ -118,23 +117,6 @@ func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, 
 		}
 	}
 	return nil, resp, fmt.Errorf("no application segment named '%s' was found", appName)
-}
-
-func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]ApplicationSegmentResource, *http.Response, error) {
-	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
-		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
-	}
-	// Constructing the query parameters as part of the URL
-	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
-		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
-	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
-
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, filter)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return list, resp, nil
 }
 
 func (service *Service) Create(appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {

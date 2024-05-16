@@ -32,6 +32,7 @@ type IsolationProfile struct {
 	Certificates     []Certificates    `json:"certificates,omitempty"`
 	CertificateIDs   []string          `json:"certificateIds,omitempty"`
 	Banner           *Banner           `json:"banner,omitempty"`
+	DebugMode        *DebugMode        `json:"debugMode,omitempty"`
 }
 
 type Certificates struct {
@@ -45,13 +46,25 @@ type Banner struct {
 }
 
 type UserExperience struct {
-	SessionPersistence  bool `json:"sessionPersistence,omitempty"`
-	BrowserInBrowser    bool `json:"browserInBrowser,omitempty"`
-	PersistIsolationBar bool `json:"persistIsolationBar,omitempty"`
+	SessionPersistence  bool          `json:"sessionPersistence,omitempty"`
+	BrowserInBrowser    bool          `json:"browserInBrowser,omitempty"`
+	PersistIsolationBar bool          `json:"persistIsolationBar,omitempty"`
+	ForwardToZia        *ForwardToZia `json:"forwardToZia,omitempty"`
+}
+
+type ForwardToZia struct {
+	Enabled        bool   `json:"enabled,omitempty"`
+	OrganizationID bool   `json:"organizationId,omitempty"`
+	CloudName      string `json:"cloudName,omitempty"`
+	PacFileUrl     string `json:"pacFileUrl,omitempty"`
 }
 
 type Watermark struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled       bool `json:"enabled,omitempty"`
+	ShowUserID    bool `json:"showUserId,omitempty"`
+	ShowTimestamp bool `json:"showTimestamp,omitempty"`
+	ShowMessage   bool `json:"showMessage,omitempty"`
+	Message       bool `json:"message,omitempty"`
 }
 type SecurityControls struct {
 	DocumentViewer     bool      `json:"documentViewer,omitempty"`
@@ -66,6 +79,11 @@ type SecurityControls struct {
 type Regions struct {
 	Name string `json:"name,omitempty"`
 	ID   string `json:"id,omitempty"`
+}
+
+type DebugMode struct {
+	Allowed      bool   `json:"allowed,omitempty"`
+	FilePassword string `json:"filePassword,omitempty"`
 }
 
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {

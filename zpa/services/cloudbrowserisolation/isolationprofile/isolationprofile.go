@@ -26,23 +26,6 @@ type IsolationProfile struct {
 	IsolationURL       string `json:"isolationUrl"`
 }
 
-func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
-	// First get all the profiles
-	profiles, resp, err := service.GetAll()
-	if err != nil {
-		return nil, resp, err
-	}
-
-	// Loop through the profiles and find the one with the matching ID
-	for _, profile := range profiles {
-		if profile.ID == profileID {
-			return &profile, resp, nil
-		}
-	}
-
-	return nil, resp, fmt.Errorf("no isolation profile with ID '%s' was found", profileID)
-}
-
 func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
 

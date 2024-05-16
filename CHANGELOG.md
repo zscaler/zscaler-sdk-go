@@ -1,5 +1,23 @@
 # Changelog
 
+# 2.5.1 (May xx, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #246](https://github.com/zscaler/zscaler-sdk-go/pull/246) - Added ZPA Cloud Browser Isolation External Profile new attributes:
+  * `forwardToZia`
+    * `enabled`
+    * `organizationId`
+    * `cloudName`
+    * `pacFileUrl`
+
+  * `debugMode`
+    * `allowed`
+    * `filePassword`
+
 # 2.5.0 (May 6, 2024)
 
 ## Notes

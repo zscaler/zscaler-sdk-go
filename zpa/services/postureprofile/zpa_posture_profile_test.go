@@ -43,6 +43,17 @@ func TestPostureProfiles(t *testing.T) {
 		t.Errorf("posture profile name does not match: expected %s, got %s", adaptedName, profile.Name)
 		return
 	}
+	// Additional step: Use the ID of the first profile to test the Get function
+	firstProfileID := profiles[0].ID
+	t.Run("Get by ID for first profile", func(t *testing.T) {
+		profileByID, _, err := service.Get(firstProfileID)
+		if err != nil {
+			t.Fatalf("Error getting profile by ID %s: %v", firstProfileID, err)
+		}
+		if profileByID.ID != firstProfileID {
+			t.Errorf("Enrollment profile ID does not match: expected %s, got %s", firstProfileID, profileByID.ID)
+		}
+	})
 
 	// Negative Test: Try to retrieve a profile with a non-existent name
 	nonExistentName := "ThisPostureProfileNameDoesNotExist"

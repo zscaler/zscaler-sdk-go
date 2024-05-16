@@ -32,13 +32,16 @@ func NewClient(config *Config) (c *Client) {
 }
 
 func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
+	client.Config.Logger.Printf("[DEBUG] Creating new request: method=%s, url=%s", method, url)
 	return client.newRequestDoCustom(method, url, options, body, v)
 }
 
 func (client *Client) authenticate() error {
 	client.Config.Lock()
 	defer client.Config.Unlock()
+	client.Config.Logger.Printf("[DEBUG] Authenticating client: clientID=%s", client.Config.ClientID)
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
+		client.Config.Logger.Printf("[DEBUG] No valid auth token found, performing authentication")
 		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
 			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s and %s environment variables.\n", ZCC_CLIENT_ID, ZCC_CLIENT_SECRET)
 			return errors.New("no client credentials were provided")
@@ -74,7 +77,7 @@ func (client *Client) authenticate() error {
 			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 		if resp.StatusCode >= 300 {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
+			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%d response body:%s\n", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
 			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s", ZCC_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
 		}
 		var a AuthToken
@@ -83,6 +86,7 @@ func (client *Client) authenticate() error {
 			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZCC_CLIENT_ID, client.Config.ClientID, err)
 			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
+		client.Config.Logger.Printf("[DEBUG] Authentication successful, token received")
 		// we need keep auth token for future http request
 		client.Config.AuthToken = &a
 	}
@@ -90,13 +94,16 @@ func (client *Client) authenticate() error {
 }
 
 func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
+	client.Config.Logger.Printf("[DEBUG] newRequestDoCustom called with method=%s, urlStr=%s", method, urlStr)
 	err := client.authenticate()
 	if err != nil {
+		client.Config.Logger.Printf("[ERROR] Authentication failed: %v", err)
 		return nil, err
 	}
 
 	req, err := client.newRequest(method, urlStr, options, body)
 	if err != nil {
+		client.Config.Logger.Printf("[ERROR] Failed to create new request: %v", err)
 		return nil, err
 	}
 	start := time.Now()
@@ -104,18 +111,22 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	logger.LogRequest(client.Config.Logger, req, reqID, nil, true)
 	resp, err := client.do(req, v, start, reqID)
 	if err != nil {
+		client.Config.Logger.Printf("[ERROR] Request failed: %v", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		client.Config.Logger.Printf("[WARN] Unauthorized or forbidden response, retrying authentication")
 		err := client.authenticate()
 		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Re-authentication failed: %v", err)
 			return nil, err
 		}
 
 		resp, err := client.do(req, v, start, reqID)
 		if err != nil {
+			client.Config.Logger.Printf("[ERROR] Request failed after re-authentication: %v", err)
 			return nil, err
 		}
 		resp.Body.Close()
@@ -184,18 +195,24 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 		return resp, err
 	}
 
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return resp, err
+	}
+
+	// Log the raw response body for debugging
+	client.Config.Logger.Printf("[DEBUG] Raw response body: %s", string(bodyBytes))
+
 	if v != nil {
-		if err := decodeJSON(resp, v); err != nil {
+		// Decode JSON from the raw response body
+		if err := json.Unmarshal(bodyBytes, v); err != nil {
+			client.Config.Logger.Printf("[ERROR] Failed to parse JSON response: %v", err)
 			return resp, err
 		}
 	}
 	logger.LogResponse(client.Config.Logger, resp, start, reqID)
 	unescapeHTML(v)
 	return resp, nil
-}
-
-func decodeJSON(res *http.Response, v interface{}) error {
-	return json.NewDecoder(res.Body).Decode(&v)
 }
 
 func unescapeHTML(entity interface{}) {

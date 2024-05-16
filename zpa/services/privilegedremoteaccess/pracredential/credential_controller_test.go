@@ -10,7 +10,6 @@ import (
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	rPassword := acctest.RandString(60)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -23,7 +22,7 @@ func TestCredentialController(t *testing.T) {
 		Description:    name,
 		CredentialType: "USERNAME_PASSWORD",
 		UserName:       name,
-		Password:       rPassword,
+		Password:       tests.TestPassword(10), // Ensuring the password length is within constraints
 		UserDomain:     "acme.com",
 	}
 
@@ -41,6 +40,7 @@ func TestCredentialController(t *testing.T) {
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
@@ -50,10 +50,13 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
+	retrievedResource.Password = tests.TestPassword(10) // Ensure the password is not being reset during update
+
 	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
@@ -80,6 +83,7 @@ func TestCredentialController(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAll()
 	if err != nil {
@@ -88,7 +92,8 @@ func TestCredentialController(t *testing.T) {
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
+
+	// Check if the created resource is in the list
 	found := false
 	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
@@ -99,6 +104,7 @@ func TestCredentialController(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
@@ -111,7 +117,6 @@ func TestCredentialController(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
