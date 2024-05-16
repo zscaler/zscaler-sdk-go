@@ -1,6 +1,10 @@
 package remove_devices
 
-import "github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
+import (
+	"fmt"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/common"
+)
 
 const (
 	softRemoveDevicesEndpoint  = "/public/v1/removeDevices"
@@ -19,18 +23,26 @@ type RemoveDevicesRequest struct {
 	UserName               string   `json:"userName,omitempty"`
 }
 
-func (service *Service) SoftRemoveDevices(request RemoveDevicesRequest) (*RemoveDevicesResponse, error) {
+// SoftRemoveDevices soft removes the enrolled devices from the portal
+func (service *Service) SoftRemoveDevices(request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+	pagination := common.NewPagination(pageSize)
+	fullURL := fmt.Sprintf("%s?pageSize=%d", softRemoveDevicesEndpoint, pagination.PageSize)
+
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", softRemoveDevicesEndpoint, common.Pagination{PageSize: common.DefaultPageSize}, &request, &response)
+	_, err := service.Client.NewRequestDo("POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}
 	return &response, err
 }
 
-func (service *Service) ForceRemoveDevices(request RemoveDevicesRequest) (*RemoveDevicesResponse, error) {
+// ForceRemoveDevices force removes the enrolled devices from the portal
+func (service *Service) ForceRemoveDevices(request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+	pagination := common.NewPagination(pageSize)
+	fullURL := fmt.Sprintf("%s?pageSize=%d", forceRemoveDevicesEndpoint, pagination.PageSize)
+
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", forceRemoveDevicesEndpoint, common.Pagination{PageSize: common.DefaultPageSize}, &request, &response)
+	_, err := service.Client.NewRequestDo("POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}

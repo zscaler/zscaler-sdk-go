@@ -1,4 +1,4 @@
-package download_devices
+package downloaddevices
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"

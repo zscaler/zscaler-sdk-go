@@ -1,7 +1,5 @@
 package devices
 
-import "github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
-
 const (
 	getDevicesEndpoint = "/public/v1/getDevices"
 )
@@ -34,9 +32,18 @@ type GetDevices struct {
 	ZappArch                string `json:"zappArch"`
 }
 
-func (service *Service) GetAll() ([]GetDevices, error) {
+type GetDevicesQueryParams struct {
+	Username string `url:"username,omitempty"`
+	OsType   string `url:"osType,omitempty"`
+}
+
+func (service *Service) GetAll(username, osType string) ([]GetDevices, error) {
 	var devices []GetDevices
-	_, err := service.Client.NewRequestDo("GET", getDevicesEndpoint, common.Pagination{PageSize: common.DefaultPageSize}, nil, &devices)
+	queryParams := GetDevicesQueryParams{
+		Username: username,
+		OsType:   osType,
+	}
+	_, err := service.Client.NewRequestDo("GET", getDevicesEndpoint, queryParams, nil, &devices)
 	if err != nil {
 		return nil, err
 	}

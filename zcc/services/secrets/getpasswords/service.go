@@ -1,4 +1,4 @@
-package get_otp
+package getpasswords
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"
