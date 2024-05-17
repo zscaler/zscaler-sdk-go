@@ -13,11 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.5.1``
+``Last updated: v2.5.2``
 
 ---
 
-# 2.5.1 (May xx, 2024)
+# 2.5.2 (May 16, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #248](https://github.com/zscaler/zscaler-sdk-go/pull/248) - Added getAppsByType endpoint - Get all configured `BROWSER_ACCESS`, `INSPECT`, `SECURE_REMOTE_ACCESS` application segments.
+
+# 2.5.1 (May 16, 2024)
 
 ## Notes
 - Golang: **v1.21**
@@ -34,6 +43,8 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
   * `debugMode`
     * `allowed`
     * `filePassword`
+
+- [PR #247](https://github.com/zscaler/zscaler-sdk-go/pull/247) - Added getAppsByType endpoint - Get all configured `BROWSER_ACCESS`, `INSPECT`, `SECURE_REMOTE_ACCESS` application segments.
     
 # 2.5.0 (May 6, 2024)
 
