@@ -2,9 +2,7 @@ package applicationsegmentpra
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
@@ -139,31 +137,6 @@ func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response
 		}
 	}
 	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
-}
-
-func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]AppSegmentPRA, *http.Response, error) {
-	if applicationType != "SECURE_REMOTE_ACCESS" {
-		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'SECURE_REMOTE_ACCESS'", applicationType)
-	}
-	baseURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint)
-	parsedURL, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse base URL: %w", err)
-	}
-	query := parsedURL.Query()
-	query.Set("applicationType", applicationType)
-	query.Set("expandAll", fmt.Sprintf("%t", expandAll))
-	parsedURL.RawQuery = query.Encode()
-	relativeURL := parsedURL.String()
-	log.Printf("Constructed URL: %s\n", relativeURL)
-	filter := common.Filter{}
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, filter)
-	if err != nil {
-		log.Printf("Error fetching resources: %v\n", err)
-		return nil, nil, err
-	}
-	log.Printf("Fetched resources: %+v\n", list)
-	return list, resp, nil
 }
 
 func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {

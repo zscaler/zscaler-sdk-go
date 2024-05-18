@@ -102,18 +102,6 @@ func TestBaApplicationSegment(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
-	// *** New step to use GetByApplicationType function ***
-	// Search for application segments of type BROWSER_ACCESS
-	applicationType := "BROWSER_ACCESS"
-	expandAll := true // Set based on your requirement
-	resourcesByType, _, err := service.GetByApplicationType(applicationType, expandAll)
-	if err != nil {
-		t.Errorf("Error retrieving resources by application type %s: %v", applicationType, err)
-	} else {
-		// Log the retrieved resources
-		t.Logf("Resources by application type: %+v\n", resourcesByType)
-	}
-
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
