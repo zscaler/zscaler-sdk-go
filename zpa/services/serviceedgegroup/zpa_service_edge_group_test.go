@@ -32,6 +32,9 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		OverrideVersionProfile: true,
 		VersionProfileName:     "Default",
 		VersionProfileID:       "0",
+		GraceDistanceEnabled:   true,
+		GraceDistanceValue:     "10",
+		GraceDistanceValueUnit: "MILES",
 	})
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
