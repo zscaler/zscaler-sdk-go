@@ -145,9 +145,13 @@ type WebDLPRules struct {
 	// The list of exception rules added to a parent rule.
 	// All attributes within the WebDlpRule model are applicable to the sub-rules.
 	// Values for each rule are specified by using the WebDlpRule object.
-	SubRules []string `json:"subRules,omitempty"`
+	SubRules []SubRule `json:"subRules,omitempty"`
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
+}
+
+type SubRule struct {
+	ID int `json:"id,omitempty"`
 }
 
 func (service *Service) Get(ruleID int) (*WebDLPRules, error) {

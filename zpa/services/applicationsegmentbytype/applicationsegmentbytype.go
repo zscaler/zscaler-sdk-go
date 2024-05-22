@@ -2,6 +2,7 @@ package applicationsegmentbytype
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -49,7 +50,7 @@ func (service *Service) GetByApplicationType(appName, applicationType string, ex
 	}
 
 	constructedURL := relativeURL + "?" + query.Encode()
-	// log.Printf("Constructed URL: %s\n", constructedURL)
+	log.Printf("Constructed URL: %s\n", constructedURL)
 
 	// Construct the filter
 	filter := common.Filter{
