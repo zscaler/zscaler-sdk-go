@@ -51,12 +51,6 @@ func (service *Service) GetByName(nwApplicationName, locale string) (*NetworkApp
 	return nil, fmt.Errorf("no network application found with name: %s", nwApplicationName)
 }
 
-// func (service *Service) GetAll() ([]NetworkApplications, error) {
-// 	var networkApplications []NetworkApplications
-// 	err := common.ReadAllPages(service.Client, networkApplicationsEndpoint, &networkApplications)
-// 	return networkApplications, err
-// }
-
 func (service *Service) GetAll(locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint

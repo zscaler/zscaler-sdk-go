@@ -17,17 +17,6 @@ type ApplicationServicesLite struct {
 	NameL10nTag bool   `json:"nameL10nTag"`
 }
 
-func (service *Service) Get(serviceID int) (*ApplicationServicesLite, error) {
-	var appServicesLite ApplicationServicesLite
-	err := service.Client.Read(fmt.Sprintf("%s/%d", appServicesLiteEndpoint, serviceID), &appServicesLite)
-	if err != nil {
-		return nil, err
-	}
-
-	service.Client.Logger.Printf("[DEBUG]Returning application services from Get: %d", appServicesLite.ID)
-	return &appServicesLite, nil
-}
-
 func (service *Service) GetByName(serviceName string) (*ApplicationServicesLite, error) {
 	var appServicesLite []ApplicationServicesLite
 	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServicesLite)

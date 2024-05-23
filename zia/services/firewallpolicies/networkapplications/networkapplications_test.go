@@ -30,26 +30,26 @@ func TestNetworkApplications(t *testing.T) {
 	}
 
 	// Selecting one application to test GetByName
-	nwApplicationName := nwApplications[0].ID
+	nwApplicationID := nwApplications[0].ID
 	locale := "en-US" // Replace with the desired locale
-	t.Log("Getting network application by name: " + nwApplicationName)
+	t.Log("Getting network application by ID: " + nwApplicationID)
 
-	// Testing GetByName with the selected application and locale
-	nwApplication, err := service.GetByName(nwApplicationName, locale)
+	// Testing GetNetworkApplication with the selected application ID and locale
+	nwApplication, err := service.GetNetworkApplication(nwApplicationID, locale)
 	if err != nil {
-		t.Errorf("Error getting network application by name: %v", err)
+		t.Errorf("Error getting network application by ID: %v", err)
 		return
 	}
-	if nwApplication.ID != nwApplicationName {
-		t.Errorf("Network application ID does not match: expected %s, got %s", nwApplicationName, nwApplication.ID)
+	if nwApplication.ID != nwApplicationID {
+		t.Errorf("Network application ID does not match: expected %s, got %s", nwApplicationID, nwApplication.ID)
 		return
 	}
 
-	// Negative Test: Try to retrieve a network application with a non-existent name
-	nonExistentName := "ThisApplicationDoesNotExist"
-	_, err = service.GetByName(nonExistentName, locale)
+	// Negative Test: Try to retrieve a network application with a non-existent ID
+	nonExistentID := "ThisApplicationDoesNotExist"
+	_, err = service.GetNetworkApplication(nonExistentID, locale)
 	if err == nil {
-		t.Errorf("Expected error when getting by non-existent name, got nil")
+		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
 	}
 }

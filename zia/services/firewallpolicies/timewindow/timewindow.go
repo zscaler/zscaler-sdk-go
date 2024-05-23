@@ -19,17 +19,6 @@ type TimeWindow struct {
 	DayOfWeek []string `json:"dayOfWeek,omitempty"`
 }
 
-func (service *Service) GetTimeWindow(timeWindowID int) (*TimeWindow, error) {
-	var timeWindow TimeWindow
-	err := service.Client.Read(fmt.Sprintf("%s/%d", timeWindowEndpoint, timeWindowID), &timeWindow)
-	if err != nil {
-		return nil, err
-	}
-
-	service.Client.Logger.Printf("[DEBUG]Returning time window from Get: %d", timeWindow.ID)
-	return &timeWindow, nil
-}
-
 func (service *Service) GetTimeWindowByName(timeWindowName string) (*TimeWindow, error) {
 	var timeWindow []TimeWindow
 	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
