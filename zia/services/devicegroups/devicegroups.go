@@ -69,17 +69,6 @@ type Devices struct {
 	HostName string `json:"hostName,omitempty"`
 }
 
-func (service *Service) GetDeviceGroups(deviceGroupId int) (*DeviceGroups, error) {
-	var group DeviceGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", deviceGroupEndpoint, deviceGroupId), &group)
-	if err != nil {
-		return nil, err
-	}
-
-	service.Client.Logger.Printf("[DEBUG]Returning firewall rule from Get: %d", group.ID)
-	return &group, nil
-}
-
 func (service *Service) GetDeviceGroupByName(deviceGroupName string) (*DeviceGroups, error) {
 	var deviceGroups []DeviceGroups
 	err := service.Client.Read(deviceGroupEndpoint, &deviceGroups)
@@ -94,15 +83,43 @@ func (service *Service) GetDeviceGroupByName(deviceGroupName string) (*DeviceGro
 	return nil, fmt.Errorf("no device group found with name: %s", deviceGroupName)
 }
 
+func (service *Service) GetIncludeDeviceInfo(includeDeviceInfo, includePseudoGroups bool) ([]DeviceGroups, error) {
+	queryParams := url.Values{}
+	if includeDeviceInfo {
+		queryParams.Set("includeDeviceInfo", "true")
+	}
+	if includePseudoGroups {
+		queryParams.Set("includePseudoGroups", "true")
+	}
+
+	endpoint := fmt.Sprintf("%s?%s", deviceGroupEndpoint, queryParams.Encode())
+	var deviceInfos []DeviceGroups
+	err := service.Client.Read(endpoint, &deviceInfos)
+	if err != nil {
+		return nil, err
+	}
+	return deviceInfos, nil
+}
+
+func (service *Service) GetAllDevicesGroups() ([]DeviceGroups, error) {
+	var owners []DeviceGroups
+	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
+	return owners, err
+}
+
 func (service *Service) GetDevicesByID(deviceId int) (*Devices, error) {
-	var device Devices
-	err := service.Client.Read(fmt.Sprintf("%s/%d", devicesEndpoint, deviceId), &device)
+	devices, err := service.GetAllDevices()
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning device from Get: %d", device.ID)
-	return &device, nil
+	for _, device := range devices {
+		if device.ID == deviceId {
+			return &device, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no device found with ID: %d", deviceId)
 }
 
 // Get Devices by Name.
@@ -180,11 +197,5 @@ func (service *Service) GetDevicesByOSVersion(osVersionName string) (*Devices, e
 func (service *Service) GetAllDevices() ([]Devices, error) {
 	var owners []Devices
 	err := common.ReadAllPages(service.Client, devicesEndpoint, &owners)
-	return owners, err
-}
-
-func (service *Service) GetAllDevicesGroups() ([]DeviceGroups, error) {
-	var owners []DeviceGroups
-	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
 	return owners, err
 }

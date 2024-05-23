@@ -24,6 +24,8 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkapplicationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/forwarding_rules"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/location/locationmanagement"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/rule_labels"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/sandbox/sandbox_settings"
@@ -78,26 +80,26 @@ func sweep() error {
 
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zia.Client) error{
+		sweepFirewallFilteringRules,
+		sweepURLFilteringPolicies,
+		sweepLocationManagement,
 		sweepAdminUsers,
 		sweepDLPEngines,
 		sweepDLPNotificationTemplates,
 		sweepADLPWebRules,
 		sweepDLPDictionaries,
-		sweepFirewallFilteringRules,
 		sweepIPDestinationGroup,
 		sweepIPSourceGroup,
 		sweepNetworkAplicationGroups,
 		sweepNetworkServiceGroups,
 		sweepNetworkServices,
-		// sweepForwardingControlRules,
-		// sweepZPAGateways,
-		sweepLocationManagement,
+		sweepForwardingControlRules,
+		sweepZPAGateways,
 		sweepRuleLabels,
 		sweepGRETunnels,
 		sweepStaticIP,
 		sweepVPNCredentials,
 		sweepURLCategories,
-		sweepURLFilteringPolicies,
 		sweepUserManagement,
 		sweepSandboxSettings,
 		sweepSecurityPolicySettings,
@@ -353,7 +355,6 @@ func sweepNetworkServices(client *zia.Client) error {
 	return nil
 }
 
-/*
 func sweepForwardingControlRules(client *zia.Client) error {
 	service := forwarding_rules.New(client)
 	resources, err := service.GetAll()
@@ -374,9 +375,7 @@ func sweepForwardingControlRules(client *zia.Client) error {
 	}
 	return nil
 }
-*/
 
-/*
 func sweepZPAGateways(client *zia.Client) error {
 	service := zpa_gateways.New(client)
 	resources, err := service.GetAll()
@@ -397,7 +396,6 @@ func sweepZPAGateways(client *zia.Client) error {
 	}
 	return nil
 }
-*/
 
 func sweepLocationManagement(client *zia.Client) error {
 	service := locationmanagement.New(client)

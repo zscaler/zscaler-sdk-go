@@ -85,6 +85,40 @@ func TestGetById(t *testing.T) {
 	}
 }
 
+func TestGetByLiteID(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	service := New(client)
+
+	// Retrieve all DLP engines
+	engines, err := service.GetAllEngineLite()
+	if err != nil {
+		t.Fatalf("Error getting all DLP engines: %v", err)
+	}
+	if len(engines) == 0 {
+		t.Log("No DLP engines found")
+		return
+	}
+
+	// Use the first engine for testing
+	firstEngine := engines[0]
+
+	// Test GetEngineLiteID
+	t.Run("GetEngineLiteID", func(t *testing.T) {
+		engineByID, err := service.GetEngineLiteID(firstEngine.ID)
+		if err != nil {
+			t.Errorf("Error getting DLP engine by ID: %v", err)
+			return
+		}
+		if engineByID == nil || engineByID.ID != firstEngine.ID {
+			t.Errorf("DLP engine ID does not match: expected %d, got %d", firstEngine.ID, engineByID.ID)
+		}
+	})
+}
+
 func TestResponseFormatValidation(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
