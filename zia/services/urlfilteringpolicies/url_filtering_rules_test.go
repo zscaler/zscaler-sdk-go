@@ -1,6 +1,7 @@
 package urlfilteringpolicies
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"testing"
@@ -41,14 +42,14 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func tryRetrieveResource(service *Service, id int) (*URLFilteringRule, error) {
-	var resource *URLFilteringRule
+func retryGetByName(service *Service, name string) (*URLFilteringRule, error) {
+	var rule *URLFilteringRule
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = service.Get(id)
+		rule, err = service.GetByName(name)
 		if err == nil {
-			return resource, nil
+			return rule, nil
 		}
 		time.Sleep(retryInterval)
 	}
@@ -56,14 +57,15 @@ func tryRetrieveResource(service *Service, id int) (*URLFilteringRule, error) {
 }
 
 func TestURLFilteringRuleIsolation(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
 	service := New(client)
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-updated-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	cbiService := cloudbrowserisolation.New(client)
 	cbiProfileList, err := cbiService.GetAll()
@@ -74,16 +76,6 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	if len(cbiProfileList) == 0 {
 		t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
 	}
-
-	// workloadGroup := workloadgroups.New(client)
-	// groupList, err := workloadGroup.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting workload group: %v", err)
-	// 	return
-	// }
-	// if len(groupList) == 0 {
-	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
-	// }
 
 	rule := URLFilteringRule{
 		Name:           name,
@@ -102,46 +94,123 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 			Name:       cbiProfileList[0].Name,
 			URL:        cbiProfileList[0].URL,
 		},
-		// WorkloadGroups: []common.IDName{
-		// 	{
-		// 		ID:   groupList[0].ID,
-		// 		Name: groupList[0].Name,
-		// 	},
-		// },
 	}
 
-	// Create a URL Filtering Rule
-	createdResource, err := createURLFilteringRule(t, service, &rule)
+	var createdResource *URLFilteringRule
+
+	// Test resource creation
+	err = retryOnConflict(func() error {
+		createdResource, err = service.Create(&rule)
+		return err
+	})
 	if err != nil {
-		t.Fatalf("Error creating URL Filtering Rule: %v", err)
+		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	defer cleanupURLFilteringRule(t, service, createdResource.ID)
+	// Other assertions based on the creation result
+	if createdResource.ID == 0 {
+		t.Fatal("Expected created resource ID to be non-empty, but got ''")
+	}
+	if createdResource.Name != name {
+		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+	}
 
-	// Retrieve and check the URL Filtering Rule
+	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving URL Filtering Rule: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
+	}
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected name '%s', got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved rule '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
-	// Update the URL Filtering Rule
+	// Test resource update
 	retrievedResource.Name = updateName
-	err = updateURLFilteringRule(t, service, retrievedResource)
+	err = retryOnConflict(func() error {
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		return err
+	})
 	if err != nil {
-		t.Fatalf("Error updating URL Filtering Rule: %v", err)
+		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	// Retrieve and check the updated URL Filtering Rule
 	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving updated URL Filtering Rule: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
+	}
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
 	if updatedResource.Name != updateName {
-		t.Errorf("Expected updated name '%s', got '%s'", updateName, updatedResource.Name)
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
+	// Test resource retrieval by name with retry mechanism
+	retrievedByNameResource, err := retryGetByName(service, updateName)
+	if err != nil {
+		t.Fatalf("Error retrieving resource by name: %v", err)
+	}
+	if retrievedByNameResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
+	}
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+	}
+
+	// Test resources retrieval
+	allResources, err := service.GetAll()
+	if err != nil {
+		t.Fatalf("Error retrieving resources: %v", err)
+	}
+	if len(allResources) == 0 {
+		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
+	}
+
+	// Check if the created resource is in the list
+	found := false
+	for _, resource := range allResources {
+		if resource.ID == createdResource.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
+	}
+
+	// Introduce a delay before deleting
+	time.Sleep(5 * time.Second) // Sleep for 5 seconds
+
+	// Test resource removal
+	err = retryOnConflict(func() error {
+		_, getErr := service.Get(createdResource.ID)
+		if getErr != nil {
+			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
+		}
+		_, delErr := service.Delete(createdResource.ID)
+		return delErr
+	})
+	_, err = service.Get(createdResource.ID)
+	if err == nil {
+		t.Fatalf("Expected error retrieving deleted resource, but got nil")
+	}
+}
+
+func tryRetrieveResource(service *Service, id int) (*URLFilteringRule, error) {
+	var resource *URLFilteringRule
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		resource, err = service.Get(id)
+		if err == nil {
+			return resource, nil
+		}
+		time.Sleep(retryInterval)
+	}
+	return nil, err
 }
 
 // / Testing URL Filtering Rule with BLOCK action
