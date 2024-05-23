@@ -1,9 +1,7 @@
 package locationgroups
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -135,39 +133,19 @@ func (service *Service) GetLocationGroupByName(locationGroupName string) (*Locat
 	return nil, fmt.Errorf("no location group found with name: %s", locationGroupName)
 }
 
-func (service *Service) CreateLocationGroup(locationGroups *LocationGroup) (*LocationGroup, error) {
-	resp, err := service.Client.Create(locationGroupEndpoint, *locationGroups)
+// GetGroupType queries the location group by its type
+func (service *Service) GetGroupType(gType string) (*LocationGroup, error) {
+	var groupTypes []LocationGroup
+	err := service.Client.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
 	if err != nil {
 		return nil, err
 	}
-
-	createdLocationGroup, ok := resp.(*LocationGroup)
-	if !ok {
-		return nil, errors.New("object returned from api was not a location group pointer")
+	for _, locationGroup := range groupTypes {
+		if strings.EqualFold(locationGroup.GroupType, gType) {
+			return &locationGroup, nil
+		}
 	}
-
-	service.Client.Logger.Printf("[DEBUG]returning location group from create: %d", createdLocationGroup.ID)
-	return createdLocationGroup, nil
-}
-
-func (service *Service) UpdateLocationGroup(groupID int, locationGroups *LocationGroup) (*LocationGroup, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), *locationGroups)
-	if err != nil {
-		return nil, nil, err
-	}
-	updatedLocationGroup, _ := resp.(*LocationGroup)
-
-	service.Client.Logger.Printf("[DEBUG]returning location group from update: %d", updatedLocationGroup.ID)
-	return updatedLocationGroup, nil, nil
-}
-
-func (service *Service) DeleteLocationGroup(groupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID))
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+	return nil, fmt.Errorf("no group type found with name: %s", gType)
 }
 
 func (service *Service) GetAll() ([]LocationGroup, error) {

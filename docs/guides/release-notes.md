@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.5.2``
+``Last updated: v2.5.21``
 
 ---
+
+# 2.5.21 (May 22, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #251](https://github.com/zscaler/zscaler-sdk-go/pull/251) - Fixed attribute `subRules` within the ZIA package to support `array`[object]. The attribute is now in its dedicated Struct.
 
 # 2.5.2 (May 16, 2024)
 

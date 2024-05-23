@@ -9,6 +9,102 @@ import (
 	"golang.org/x/text/language"
 )
 
+func TestDevices_data(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := New(client)
+
+	// Retrieve all devices
+	devices, err := service.GetAllDevices()
+	if err != nil {
+		t.Errorf("Error getting devices: %v", err)
+		return
+	}
+	if len(devices) == 0 {
+		t.Log("No devices found")
+		return
+	}
+
+	// Use the first device for testing
+	firstDevice := devices[0]
+
+	// Test GetDevicesByID
+	t.Run("GetDevicesByID", func(t *testing.T) {
+		deviceByID, err := service.GetDevicesByID(firstDevice.ID)
+		if err != nil {
+			t.Errorf("Error getting device by ID: %v", err)
+			return
+		}
+		if deviceByID == nil || deviceByID.ID != firstDevice.ID {
+			t.Errorf("Device ID does not match: expected %d, got %d", firstDevice.ID, deviceByID.ID)
+		}
+	})
+
+	// Test GetDevicesByName
+	t.Run("GetDevicesByName", func(t *testing.T) {
+		deviceByName, err := service.GetDevicesByName(firstDevice.Name)
+		if err != nil {
+			t.Errorf("Error getting device by name: %v", err)
+			return
+		}
+		if deviceByName == nil || deviceByName.Name != firstDevice.Name {
+			t.Errorf("Device name does not match: expected %s, got %s", firstDevice.Name, deviceByName.Name)
+		}
+	})
+
+	// Test GetDevicesByModel
+	t.Run("GetDevicesByModel", func(t *testing.T) {
+		deviceByModel, err := service.GetDevicesByModel(firstDevice.DeviceModel)
+		if err != nil {
+			t.Errorf("Error getting device by model: %v", err)
+			return
+		}
+		if deviceByModel == nil || deviceByModel.DeviceModel != firstDevice.DeviceModel {
+			t.Errorf("Device model does not match: expected %s, got %s", firstDevice.DeviceModel, deviceByModel.DeviceModel)
+		}
+	})
+
+	// Test GetDevicesByOwner
+	t.Run("GetDevicesByOwner", func(t *testing.T) {
+		deviceByOwner, err := service.GetDevicesByOwner(firstDevice.OwnerName)
+		if err != nil {
+			t.Errorf("Error getting device by owner: %v", err)
+			return
+		}
+		if deviceByOwner == nil || deviceByOwner.OwnerName != firstDevice.OwnerName {
+			t.Errorf("Device owner does not match: expected %s, got %s", firstDevice.OwnerName, deviceByOwner.OwnerName)
+		}
+	})
+
+	// Test GetDevicesByOSType
+	t.Run("GetDevicesByOSType", func(t *testing.T) {
+		deviceByOSType, err := service.GetDevicesByOSType(firstDevice.OSType)
+		if err != nil {
+			t.Errorf("Error getting device by OS type: %v", err)
+			return
+		}
+		if deviceByOSType == nil || deviceByOSType.OSType != firstDevice.OSType {
+			t.Errorf("Device OS type does not match: expected %s, got %s", firstDevice.OSType, deviceByOSType.OSType)
+		}
+	})
+
+	// Test GetDevicesByOSVersion
+	t.Run("GetDevicesByOSVersion", func(t *testing.T) {
+		deviceByOSVersion, err := service.GetDevicesByOSVersion(firstDevice.OSVersion)
+		if err != nil {
+			t.Errorf("Error getting device by OS version: %v", err)
+			return
+		}
+		if deviceByOSVersion == nil || deviceByOSVersion.OSVersion != firstDevice.OSVersion {
+			t.Errorf("Device OS version does not match: expected %s, got %s", firstDevice.OSVersion, deviceByOSVersion.OSVersion)
+		}
+	})
+}
+
 func TestDeviceGroup_data(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -38,12 +134,60 @@ func TestDeviceGroup_data(t *testing.T) {
 		t.Errorf("device group name does not match: expected %s, got %s", name, server.Name)
 		return
 	}
-	// Negative Test: Try to retrieve an device group with a non-existent name
+	// Negative Test: Try to retrieve a device group with a non-existent name
 	nonExistentName := "ThisDeviceGroupDoesNotExist"
 	_, err = service.GetDeviceGroupByName(nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
+	}
+
+	// Test the GetIncludeDeviceInfo function with includeDeviceInfo=true and includePseudoGroups=false
+	deviceInfos, err := service.GetIncludeDeviceInfo(true, false)
+	if err != nil {
+		t.Errorf("Error getting device info with includeDeviceInfo=true: %v", err)
+		return
+	}
+	if len(deviceInfos) == 0 {
+		t.Log("No device info found with includeDeviceInfo=true")
+	} else {
+		t.Logf("Found %d device infos with includeDeviceInfo=true", len(deviceInfos))
+	}
+
+	// Test the GetIncludeDeviceInfo function with includeDeviceInfo=false and includePseudoGroups=true
+	deviceInfos, err = service.GetIncludeDeviceInfo(false, true)
+	if err != nil {
+		t.Errorf("Error getting device info with includePseudoGroups=true: %v", err)
+		return
+	}
+	if len(deviceInfos) == 0 {
+		t.Log("No device info found with includePseudoGroups=true")
+	} else {
+		t.Logf("Found %d device infos with includePseudoGroups=true", len(deviceInfos))
+	}
+
+	// Test the GetIncludeDeviceInfo function with both includeDeviceInfo and includePseudoGroups set to true
+	deviceInfos, err = service.GetIncludeDeviceInfo(true, true)
+	if err != nil {
+		t.Errorf("Error getting device info with both includeDeviceInfo and includePseudoGroups=true: %v", err)
+		return
+	}
+	if len(deviceInfos) == 0 {
+		t.Log("No device info found with both includeDeviceInfo and includePseudoGroups=true")
+	} else {
+		t.Logf("Found %d device infos with both includeDeviceInfo and includePseudoGroups=true", len(deviceInfos))
+	}
+
+	// Test the GetIncludeDeviceInfo function with both includeDeviceInfo and includePseudoGroups set to false
+	deviceInfos, err = service.GetIncludeDeviceInfo(false, false)
+	if err != nil {
+		t.Errorf("Error getting device info with both includeDeviceInfo and includePseudoGroups=false: %v", err)
+		return
+	}
+	if len(deviceInfos) == 0 {
+		t.Log("No device info found with both includeDeviceInfo and includePseudoGroups=false")
+	} else {
+		t.Logf("Found %d device infos with both includeDeviceInfo and includePseudoGroups=false", len(deviceInfos))
 	}
 }
 
