@@ -28,16 +28,52 @@ func TestAdminRoles_data(t *testing.T) {
 		return
 	}
 	name := roles[0].Name
-	t.Log("Getting admin roles by name:" + name)
+	t.Log("Getting admin roles by name: " + name)
+
+	// Test GetByName function
 	role, err := service.GetByName(name)
 	if err != nil {
-		t.Errorf("Error getting admin roles by name: %v", err)
+		t.Errorf("Error getting admin role by name: %v", err)
 		return
 	}
 	if role.Name != name {
-		t.Errorf("admin role name does not match: expected %s, got %s", name, role.Name)
+		t.Errorf("Admin role name does not match: expected %s, got %s", name, role.Name)
 		return
 	}
+
+	// Test GetAPIRole function with includeApiRole=true
+	apiRole, err := service.GetAPIRole(name, "true")
+	if err != nil {
+		t.Errorf("Error getting API role: %v", err)
+		return
+	}
+	if apiRole.Name != name {
+		t.Errorf("API role name does not match: expected %s, got %s", name, apiRole.Name)
+		return
+	}
+
+	// Test GetAuditorRole function with includeAuditorRole=true
+	auditorRole, err := service.GetAuditorRole(name, "true")
+	if err != nil {
+		t.Errorf("Error getting Auditor role: %v", err)
+		return
+	}
+	if auditorRole.Name != name {
+		t.Errorf("Auditor role name does not match: expected %s, got %s", name, auditorRole.Name)
+		return
+	}
+
+	// Test GetPartnerRole function with includePartnerRole=true
+	partnerRole, err := service.GetPartnerRole(name, "true")
+	if err != nil {
+		t.Errorf("Error getting Partner role: %v", err)
+		return
+	}
+	if partnerRole.Name != name {
+		t.Errorf("Partner role name does not match: expected %s, got %s", name, partnerRole.Name)
+		return
+	}
+
 	// Negative Test: Try to retrieve an admin role with a non-existent name
 	nonExistentName := "ThisAdminRoleDoesNotExist"
 	_, err = service.GetByName(nonExistentName)
