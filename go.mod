@@ -8,7 +8,7 @@ require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/hashicorp/go-retryablehttp v0.7.6
+	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/okta/okta-sdk-golang/v2 v2.20.0
