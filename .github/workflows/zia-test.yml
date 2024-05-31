@@ -132,6 +132,7 @@ jobs:
           command: |
             make sweep:zia
             make test:integration:zia
+            make sweep:zia
             make ziaActivator
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}

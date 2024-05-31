@@ -236,10 +236,6 @@ func TestLSSConfigController(t *testing.T) {
 						},
 						{
 							ObjectType: "CLIENT_TYPE",
-							Values:     []string{"zpn_client_type_zapp_partner"},
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_branch_connector"},
 						},
 						// {

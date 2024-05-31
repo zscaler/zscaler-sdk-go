@@ -302,6 +302,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
+
+		// ET-66174: https://jira.corp.zscaler.com/browse/ET-66174
+		// DOC-51102: https://jira.corp.zscaler.com/browse/DOC-51102
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "api.concurrent.access.error" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
