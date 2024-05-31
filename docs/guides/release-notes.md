@@ -30,6 +30,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
   "id" : "api.concurrent.access.error",
   "reason" : "Unable to modify the resource due to concurrent change requests. Try again"
 ```
+- [PR #253](https://github.com/zscaler/zscaler-sdk-go/pull/253) - Adjusted several ZPA integration tests to cover new use cases.
 
 # 2.5.21 (May 22, 2024)
 
