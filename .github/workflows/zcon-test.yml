@@ -61,6 +61,7 @@ jobs:
           ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
+          ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4
@@ -121,7 +122,8 @@ jobs:
           ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
           ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
-
+          ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
+          
       - name: Publish test coverage
         uses: codecov/codecov-action@v4
         with:
