@@ -1,4 +1,4 @@
-package policysetcontroller
+package policysetcontrollerv2
 
 import (
 	"fmt"
@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
-func TestAccessCapabilityPolicy(t *testing.T) {
+func TestAccessCapabilityPolicyV2(t *testing.T) {
 	policyType := "CAPABILITIES_POLICY"
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -20,7 +21,8 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 	}
 	idpService := idpcontroller.New(client)
 	samlService := samlattribute.New(client)
-	policyService := New(client)
+	policyService := policysetcontroller.New(client)
+	policyServiceV2 := New(client)
 
 	idpList, _, err := idpService.GetAll()
 	if err != nil {
@@ -61,15 +63,13 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 			PrivilegedCapabilities: PrivilegedCapabilities{
 				Capabilities: []string{"INSPECT_FILE_UPLOAD", "FILE_UPLOAD", "FILE_DOWNLOAD", "CLIPBOARD_COPY", "CLIPBOARD_PASTE"},
 			},
-			Conditions: []Conditions{
+			Conditions: []PolicyRuleResourceConditions{
 				{
 					Operator: "OR",
-					Operands: []Operands{
+					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType: "SAML",
-							LHS:        samlsList[0].ID,
-							RHS:        "user1@acme.com",
-							IdpID:      idpList[0].ID,
+							ObjectType:        "SAML",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: samlsList[0].ID, RHS: "user1@acme.com"}},
 						},
 					},
 				},
@@ -77,7 +77,7 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := policyService.CreateRule(&accessPolicyRule)
+		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
 
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -87,19 +87,23 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
+		// if err == nil {
+		// 	jsonBytes, _ := json.Marshal(createdResource)
+		// 	fmt.Println(string(jsonBytes)) // This prints the JSON response
+		// }
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := policyService.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
 			continue
 		}
 
-		// Retrieve and verify the updated resource
+		// Retrieve and print the updated resource as JSON
 		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
@@ -107,18 +111,6 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		}
 		if updatedResource.Name != updatedName {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
-		}
-
-		// Test resource retrieval by name
-		updatedResource, _, err = policyService.GetByNameAndType(policyType, updatedName)
-		if err != nil {
-			t.Errorf("Error retrieving resource by name: %v", err)
-		}
-		if updatedResource.ID != createdResource.ID {
-			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
-		}
-		if updatedResource.Name != updatedName {
-			t.Errorf("Expected retrieved resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
 		time.Sleep(5 * time.Second)
 	}

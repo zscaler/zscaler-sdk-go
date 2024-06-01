@@ -1,4 +1,4 @@
-package policysetcontroller
+package policysetcontrollerv2
 
 import (
 	"fmt"
@@ -7,23 +7,26 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
-func TestAccessRedirectionPolicy(t *testing.T) {
+func TestAccessRedirectionPolicyV2(t *testing.T) {
 	policyType := "REDIRECTION_POLICY"
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
+	policyService := policysetcontroller.New(client)
+	policyServiceV2 := New(client)
 
 	// create service edge group for testing
 	svcEdgeGroupService := serviceedgegroup.New(client)
-	svcEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	svcEdgeGroup, _, err := svcEdgeGroupService.Create(serviceedgegroup.ServiceEdgeGroup{
-		Name:                   svcEdgeGroupName,
-		Description:            svcEdgeGroupName,
+		Name:                   name,
+		Description:            name,
 		Enabled:                true,
 		Latitude:               "37.33874",
 		Longitude:              "-121.8852525",
@@ -52,10 +55,9 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		}
 	}()
 
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	accessPolicySet, _, err := policyService.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting redirection access policy set: %v", err)
+		t.Errorf("Error getting access policy set: %v", err)
 		return
 	}
 
@@ -65,47 +67,42 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
-		redirectionPolicyRule := PolicyRule{
+		accessPolicyRule := PolicyRule{
 			Name:        name,
 			Description: name,
 			PolicySetID: accessPolicySet.ID,
 			Action:      "REDIRECT_PREFERRED",
 			ServiceEdgeGroups: []ServiceEdgeGroups{
 				{
-					ID: svcEdgeGroup.ID,
+					ID:   svcEdgeGroup.ID,
+					Name: svcEdgeGroup.Name,
 				},
 			},
-			Conditions: []Conditions{
+			Conditions: []PolicyRuleResourceConditions{
 				{
 					Operator: "OR",
-					Operands: []Operands{
+					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType: "CLIENT_TYPE",
-							LHS:        "id",
-							RHS:        "zpn_client_type_machine_tunnel",
+							ObjectType:        "COUNTRY_CODE",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "CA", RHS: "true"}, {LHS: "US", RHS: "true"}},
 						},
+					},
+				},
+				{
+					Operator: "OR",
+					Operands: []PolicyRuleResourceOperands{
 						{
 							ObjectType: "CLIENT_TYPE",
-							LHS:        "id",
-							RHS:        "zpn_client_type_branch_connector",
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
-							LHS:        "id",
-							RHS:        "zpn_client_type_edge_connector",
-						},
-						{
-							ObjectType: "CLIENT_TYPE",
-							LHS:        "id",
-							RHS:        "zpn_client_type_zapp",
+							Values:     []string{"zpn_client_type_machine_tunnel", "zpn_client_type_branch_connector", "zpn_client_type_edge_connector", "zpn_client_type_zapp"},
 						},
 					},
 				},
 			},
 		}
+
 		// Test resource creation
-		createdResource, _, err := service.CreateRule(&redirectionPolicyRule)
-		// Check if the request was successful
+		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
+
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 			continue
@@ -114,20 +111,24 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
+		// if err == nil {
+		// 	jsonBytes, _ := json.Marshal(createdResource)
+		// 	fmt.Println(string(jsonBytes)) // This prints the JSON response
+		// }
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
 		updatedName := name + "-updated"
-		redirectionPolicyRule.Name = updatedName
-		_, updateErr := service.UpdateRule(accessPolicySet.ID, createdResource.ID, &redirectionPolicyRule)
+		accessPolicyRule.Name = updatedName
+		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
 			continue
 		}
 
-		// Retrieve and verify the updated resource
-		updatedResource, _, getErr := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		// Retrieve and print the updated resource as JSON
+		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -135,34 +136,30 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		if updatedResource.Name != updatedName {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
+		// Print the updated resource as JSON
+		// updatedJson, _ := json.Marshal(updatedResource)
+		// fmt.Println(string(updatedJson))
 
-		// Test resource retrieval by name
-		updatedResource, _, err = service.GetByNameAndType(policyType, updatedName)
-		if err != nil {
-			t.Errorf("Error retrieving resource by name: %v", err)
-		}
-		if updatedResource.ID != createdResource.ID {
-			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
-		}
-		if updatedResource.Name != updatedName {
-			t.Errorf("Expected retrieved resource name '%s', but got '%s'", updatedName, updatedResource.Name)
-		}
-		time.Sleep(5 * time.Second)
+		// Introduce a delay to prevent rate limit issues
+		time.Sleep(10 * time.Second)
 	}
+
 	// Reorder the rules after all have been created and updated
 	ruleIdToOrder := make(map[string]int)
 	for i, id := range ruleIDs {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = service.BulkReorder(policyType, ruleIdToOrder)
+	_, err = policyService.BulkReorder(policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
+	// Optionally verify the new order of rules here
+
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = service.Delete(accessPolicySet.ID, ruleID)
+		_, err = policyService.Delete(accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

@@ -1,5 +1,20 @@
 # Changelog
 
+# 2.5.22 (May 31, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #253](https://github.com/zscaler/zscaler-sdk-go/pull/253) - Implemented new ZPA error handling to retry on new `400` and `409` error format message:
+
+```json
+  "id" : "api.concurrent.access.error",
+  "reason" : "Unable to modify the resource due to concurrent change requests. Try again"
+```
+- [PR #253](https://github.com/zscaler/zscaler-sdk-go/pull/253) - Adjusted several ZPA integration tests to cover new use cases.
+
 # 2.5.21 (May 22, 2024)
 
 ## Notes

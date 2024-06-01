@@ -147,6 +147,7 @@ func TestMicrotenants(t *testing.T) {
 			t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 		}
 	})
+
 	t.Run("TestResourceRemoval", func(t *testing.T) {
 		_, err := service.Delete(createdResource.ID)
 		if err != nil {
