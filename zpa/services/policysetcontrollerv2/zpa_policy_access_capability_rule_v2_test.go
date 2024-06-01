@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
@@ -21,7 +20,6 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 	}
 	idpService := idpcontroller.New(client)
 	samlService := samlattribute.New(client)
-	policyService := policysetcontroller.New(client)
 	policyServiceV2 := New(client)
 
 	idpList, _, err := idpService.GetAll()
@@ -43,7 +41,7 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	accessPolicySet, _, err := policyService.GetByPolicyType(policyType)
+	accessPolicySet, _, err := policyServiceV2.GetByPolicyType(policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -104,7 +102,7 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 		}
 
 		// Retrieve and print the updated resource as JSON
-		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := policyServiceV2.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -121,7 +119,7 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = policyService.BulkReorder(policyType, ruleIdToOrder)
+	_, err = policyServiceV2.BulkReorder(policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
@@ -130,7 +128,7 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = policyService.Delete(accessPolicySet.ID, ruleID)
+		_, err = policyServiceV2.Delete(accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}
