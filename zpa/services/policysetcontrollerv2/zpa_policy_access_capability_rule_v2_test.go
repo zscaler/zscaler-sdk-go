@@ -110,6 +110,18 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 		if updatedResource.Name != updatedName {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
+
+		// Test resource retrieval by name
+		updatedResource, _, err = policyServiceV2.GetByNameAndType(policyType, updatedName)
+		if err != nil {
+			t.Errorf("Error retrieving resource by name: %v", err)
+		}
+		if updatedResource.ID != createdResource.ID {
+			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
+		}
+		if updatedResource.Name != updatedName {
+			t.Errorf("Expected retrieved resource name '%s', but got '%s'", updatedName, updatedResource.Name)
+		}
 		time.Sleep(5 * time.Second)
 	}
 
