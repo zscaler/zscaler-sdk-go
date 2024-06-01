@@ -271,7 +271,7 @@ func containsInt(codes []int, code int) bool {
 // return empty slice to enable retry on all connection & server errors.
 // or return []int{429}  to retry on only TooManyRequests error
 func getRetryOnStatusCodes() []int {
-	return []int{http.StatusTooManyRequests}
+	return []int{http.StatusTooManyRequests, http.StatusConflict}
 }
 
 // Used to make http client retry on provided list of response status codes
@@ -281,6 +281,17 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return false, ctx.Err()
 	}
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
+		if resp.StatusCode == http.StatusConflict {
+			respMap := map[string]string{}
+			data, err := io.ReadAll(resp.Body)
+			resp.Body = io.NopCloser(bytes.NewBuffer(data))
+			if err == nil {
+				_ = json.Unmarshal(data, &respMap)
+				if errorID, ok := respMap["id"]; ok && (errorID == "api.concurrent.access.error") {
+					return true, nil
+				}
+			}
+		}
 		return true, nil
 	}
 	if resp != nil && resp.StatusCode == http.StatusBadRequest {

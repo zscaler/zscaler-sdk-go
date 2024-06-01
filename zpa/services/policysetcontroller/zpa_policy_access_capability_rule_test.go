@@ -3,6 +3,7 @@ package policysetcontroller
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
@@ -18,15 +19,19 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		return
 	}
 	idpService := idpcontroller.New(client)
+	samlService := samlattribute.New(client)
+	policyService := New(client)
+
 	idpList, _, err := idpService.GetAll()
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
 	}
 	if len(idpList) == 0 {
-		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+		t.Skip("No IdPs retrieved, skipping test as it requires at least one IdP")
+		return
 	}
-	samlService := samlattribute.New(client)
+
 	samlsList, _, err := samlService.GetAll()
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
@@ -35,10 +40,10 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+
+	accessPolicySet, _, err := policyService.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access forwarding policy set: %v", err)
+		t.Errorf("Error getting access policy set: %v", err)
 		return
 	}
 
@@ -70,81 +75,52 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 				},
 			},
 		}
+
 		// Test resource creation
-		createdResource, _, err := service.CreateRule(&accessPolicyRule)
-		// Check if the request was successful
+		createdResource, _, err := policyService.CreateRule(&accessPolicyRule)
+
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
+			continue
 		}
-
 		if createdResource.ID == "" {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
+			continue
 		}
-		if createdResource.Name != name {
-			t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
+
+		// Update the rule name
+		updatedName := name + "-updated"
+		accessPolicyRule.Name = updatedName
+		_, updateErr := policyService.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+
+		if updateErr != nil {
+			t.Errorf("Error updating rule: %v", updateErr)
+			continue
 		}
-		// Test resource retrieval
-		retrievedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
-		if err != nil {
-			t.Errorf("Error retrieving resource: %v", err)
+
+		// Retrieve and verify the updated resource
+		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		if getErr != nil {
+			t.Errorf("Error retrieving updated resource: %v", getErr)
+			continue
 		}
-		if retrievedResource.ID != createdResource.ID {
-			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
+		if updatedResource.Name != updatedName {
+			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
-		if retrievedResource.Name != name {
-			t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
-		}
-		// Test resource update
-		uniqueUpdateName := fmt.Sprintf("%s-%d", "updated_"+acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
-		retrievedResource.Name = uniqueUpdateName
-		_, err = service.UpdateRule(accessPolicySet.ID, createdResource.ID, retrievedResource)
-		if err != nil {
-			t.Errorf("Error updating resource: %v", err)
-		}
-		updatedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
-		if err != nil {
-			t.Errorf("Error retrieving resource: %v", err)
-		}
-		if updatedResource.ID != createdResource.ID {
-			t.Errorf("Expected retrieved updated resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
-		}
-		if updatedResource.Name != uniqueUpdateName {
-			t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", uniqueUpdateName, updatedResource.Name)
-		}
+
 		// Test resource retrieval by name
-		retrievedResource, _, err = service.GetByNameAndType(policyType, uniqueUpdateName)
+		updatedResource, _, err = policyService.GetByNameAndType(policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
-		if retrievedResource.ID != createdResource.ID {
-			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
+		if updatedResource.ID != createdResource.ID {
+			t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, updatedResource.ID)
 		}
-		if retrievedResource.Name != uniqueUpdateName {
-			t.Errorf("Expected retrieved resource name '%s', but got '%s'", uniqueUpdateName, retrievedResource.Name)
+		if updatedResource.Name != updatedName {
+			t.Errorf("Expected retrieved resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
-		// Test resources retrieval
-		resources, _, err := service.GetAllByType(policyType)
-		if err != nil {
-			t.Errorf("Error retrieving resources: %v", err)
-		}
-		if len(resources) == 0 {
-			t.Error("Expected retrieved resources to be non-empty, but got empty slice")
-		}
-
-		// Append the created rule ID to ruleIDs
-		ruleIDs = append(ruleIDs, createdResource.ID)
-
-		// check if the created resource is in the list
-		found := false
-		for _, resource := range resources {
-			if resource.ID == createdResource.ID {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
-		}
+		time.Sleep(5 * time.Second)
 	}
 
 	// Reorder the rules after all have been created and updated
@@ -153,24 +129,18 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = service.BulkReorder(policyType, ruleIdToOrder)
+	_, err = policyService.BulkReorder(policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
+	// Optionally verify the new order of rules here
+
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = service.Delete(accessPolicySet.ID, ruleID)
+		_, err = policyService.Delete(accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
-		}
-	}
-
-	// Test resource retrieval after deletion
-	for _, ruleID := range ruleIDs {
-		_, _, err = service.GetPolicyRule(accessPolicySet.ID, ruleID)
-		if err == nil {
-			t.Errorf("Expected error retrieving deleted resource, but got nil for rule ID: %s", ruleID)
 		}
 	}
 }

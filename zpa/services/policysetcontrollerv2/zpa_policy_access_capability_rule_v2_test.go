@@ -112,12 +112,7 @@ func TestAccessCapabilityPolicyV2(t *testing.T) {
 		if updatedResource.Name != updatedName {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
-		// Print the updated resource as JSON
-		// updatedJson, _ := json.Marshal(updatedResource)
-		// fmt.Println(string(updatedJson))
-
-		// Introduce a delay to prevent rate limit issues
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 
 	// Reorder the rules after all have been created and updated

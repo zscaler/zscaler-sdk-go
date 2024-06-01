@@ -3,6 +3,7 @@ package policysetcontroller
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
@@ -156,6 +157,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		if !found {
 			t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 		}
+		time.Sleep(5 * time.Second)
 	}
 
 	// Reorder the rules after all have been created and updated
