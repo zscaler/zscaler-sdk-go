@@ -1,14 +1,16 @@
-# Visit https://goreleaser.com for documentation on how to customize this
-# behavior.
+# GoReleaser configuration file for version 2
+
+version: 2
+
 builds:
   -
     skip: true
+
 release:
   github:
     owner: zscaler
     name: zscaler-sdk-go
-
-  draft: true
+    draft: true
 
 changelog:
   skip: true

@@ -44,7 +44,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: "~> v2"
+          version: '~> v2'
           args: release --clean  # Changed --rm-dist to --clean as per the deprecation notice
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
