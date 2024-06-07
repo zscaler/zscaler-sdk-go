@@ -271,6 +271,7 @@ jobs:
           ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4

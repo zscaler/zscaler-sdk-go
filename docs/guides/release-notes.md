@@ -13,9 +13,28 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.5.22``
+``Last updated: v2.6.0``
 
 ---
+
+# 2.6.0 (June 6, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #256](https://github.com/zscaler/zscaler-sdk-go/pull/256) - Refactored `applicationsegment` package by splitting the following endpoints into its own packages:
+  - POST - `application/{applicationId}/move` - Moves application from a parent tenant to a microtenant. An application segment can only be moved from a parent to a microtenant 
+  - PUT - `application/{applicationId}/share` - Share the Application Segment between microtenants. An application can only be shared between microtenants.
+To learn more about microtenants see: [About Microtenants](https://help.zscaler.com/zpa/about-microtenants)
+
+- [PR #256](https://github.com/zscaler/zscaler-sdk-go/pull/256) - Added support to Service Edge Scheduler to configure a ServiceEdge schedule frequency to delete inactive private brokers with configured frequency.
+  - GET - `serviceEdgeSchedule` - Get a Configured ServiceEdge schedule frequency.
+  - POST - `serviceEdgeSchedule` - Configure a ServiceEdge schedule frequency to delete the in active private broker with configured frequency.
+  - PUT - `serviceEdgeSchedule/{id}` - Modifies a ServiceEdge schedule frequency to delete the in active private broker with configured frequency.
+
+- [PR #256](https://github.com/zscaler/zscaler-sdk-go/pull/256) - Added support customer controller endpoint `authDomains` to retrieve authentication domains for the specified customer.
 
 # 2.5.22 (May 31, 2024)
 

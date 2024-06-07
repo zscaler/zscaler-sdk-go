@@ -1,6 +1,5 @@
-package appconnectorcontroller
+package serviceedgeschedule
 
-/*
 import (
 	"os"
 	"strings"
@@ -26,7 +25,7 @@ func TestAppConnectorSchedule(t *testing.T) {
 
 	// Test 1: CreateSchedule (without ID)
 	newSchedule := AssistantSchedule{
-		CustomerID:        customerID, // Replace with actual customer ID
+		CustomerID:        customerID,
 		DeleteDisabled:    true,
 		Enabled:           true,
 		Frequency:         "days",
@@ -55,6 +54,17 @@ func TestAppConnectorSchedule(t *testing.T) {
 		t.Fatal("Expected non-nil schedule with valid ID")
 	}
 	t.Logf("Got schedule: %+v", schedule)
+
+	// Ensure the schedule is enabled before updating
+	if !schedule.Enabled {
+		schedule.Enabled = true
+		schedule.FrequencyInterval = "5" // Set a valid interval when enabling
+		_, err = service.UpdateSchedule(schedule.ID, schedule)
+		if err != nil {
+			t.Fatalf("Error enabling schedule: %v", err)
+		}
+		t.Log("Schedule was disabled and has been enabled for the test.")
+	}
 
 	// Test 3: UpdateSchedule with various frequency intervals
 	intervals := []string{"7", "14", "30", "60", "90"}
@@ -96,8 +106,11 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 	// Temporarily disable the schedule for testing
 	schedule.Enabled = false
 	schedule.FrequencyInterval = "7"
+
+	// Check if update fails when the schedule is disabled
 	_, err = service.UpdateSchedule(schedule.ID, schedule)
 	require.Error(t, err, "Update should fail when Enabled is false")
+	require.Contains(t, err.Error(), "cannot update a disabled schedule", "Expected error message when updating a disabled schedule")
 }
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
@@ -145,4 +158,3 @@ func TestCustomerIDValidation(t *testing.T) {
 	_, _, err = service.CreateSchedule(schedule)
 	require.Error(t, err, "Schedule creation should fail with empty CustomerID")
 }
-*/
