@@ -32,6 +32,9 @@ checksum:
 
 dist: dist
 
+builds:
+  - skip: true
+
 source:
   name_template: '{{ .ProjectName }}-{{ .Version }}'
   format: tar.gz
