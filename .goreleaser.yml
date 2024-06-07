@@ -1,3 +1,5 @@
+version: 2
+
 project_name: zscaler-sdk-go
 
 release:
@@ -45,4 +47,4 @@ gomod:
 
 github_urls:
   download: https://github.com
-  api: https://api.github.com
+  api: https://api.github.com/
