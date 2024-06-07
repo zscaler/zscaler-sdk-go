@@ -1,16 +1,45 @@
-# GoReleaser configuration file for version 2
-
-version: 2
-
-builds:
-  -
-    skip: true
+project_name: zscaler-sdk-go
 
 release:
   github:
     owner: zscaler
     name: zscaler-sdk-go
-    draft: true
+  draft: true
+  name_template: '{{.Tag}}'
 
-changelog:
-  skip: true
+# No builds section needed as we are not building any binaries
+
+archives:
+  - id: default
+    name_template: '{{ .ProjectName }}_{{ .Version }}'
+    format: tar.gz
+    files:
+      - src: license*
+      - src: LICENSE*
+      - src: readme*
+      - src: README*
+      - src: changelog*
+      - src: CHANGELOG*
+      - src: "**/*.go"
+      - src: "**/*.md"
+
+snapshot:
+  name_template: '{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+  algorithm: sha256
+
+dist: dist
+
+source:
+  name_template: '{{ .ProjectName }}-{{ .Version }}'
+  format: tar.gz
+
+gomod:
+  proxy: true
+  gobinary: go
+
+github_urls:
+  download: https://github.com
+  api: https://api.github.com
