@@ -5,22 +5,9 @@ import (
 )
 
 type Service struct {
-	Client        *zpa.Client
-	microTenantID *string
+	Client *zpa.Client
 }
 
 func New(c *zpa.Client) *Service {
 	return &Service{Client: c}
-}
-
-func (service *Service) WithMicroTenant(microTenantID string) *Service {
-	var mid *string
-	if microTenantID != "" {
-		mid_ := microTenantID
-		mid = &mid_
-	}
-	return &Service{
-		Client:        service.Client,
-		microTenantID: mid,
-	}
 }
