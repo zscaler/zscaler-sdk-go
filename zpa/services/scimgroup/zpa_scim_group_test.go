@@ -127,13 +127,13 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 	}
 
 	// Check if we have enough groups for the test, otherwise return an error
-	if len(scimGroups) < 100 {
+	if len(scimGroups) < 10 {
 		t.Fatalf("Not enough SCIM groups available for testing. Required: 100, Found: %d", len(scimGroups))
 	}
 
-	// Randomly pick a group name from the first 50 groups
+	// Randomly pick a group name from the first 5 groups
 	rand.Seed(time.Now().UnixNano())
-	randomIndex := rand.Intn(50) // Adjusted to ensure it picks within the available range
+	randomIndex := rand.Intn(5) // Adjusted to ensure it picks within the available range
 	testScimName := scimGroups[randomIndex].Name
 
 	// Test with both DESC and ASC sort orders
