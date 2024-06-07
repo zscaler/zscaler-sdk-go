@@ -25,6 +25,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
+		Enabled:     true,
 	}
 	createdAppGroup, _, err := appGroupService.Create(&appGroup)
 	if err != nil {

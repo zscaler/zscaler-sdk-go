@@ -220,8 +220,6 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
-	// Optionally verify the new order of rules here
-
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
 		_, err = policyServiceV2.Delete(accessPolicySet.ID, ruleID)

@@ -14,19 +14,20 @@ const (
 )
 
 type MicroTenant struct {
-	ID                      string        `json:"id,omitempty"`
-	Name                    string        `json:"name,omitempty"`
-	Description             string        `json:"description,omitempty"`
-	Enabled                 bool          `json:"enabled"`
-	CriteriaAttribute       string        `json:"criteriaAttribute,omitempty"`
-	CriteriaAttributeValues []string      `json:"criteriaAttributeValues,omitempty"`
-	Operator                string        `json:"operator,omitempty"`
-	Priority                string        `json:"priority,omitempty"`
-	CreationTime            string        `json:"creationTime,omitempty"`
-	ModifiedBy              string        `json:"modifiedBy,omitempty"`
-	ModifiedTime            string        `json:"modifiedTime,omitempty"`
-	Roles                   []Roles       `json:"roles,omitempty"`
-	UserResource            *UserResource `json:"user,omitempty"`
+	ID                         string        `json:"id,omitempty"`
+	Name                       string        `json:"name,omitempty"`
+	Description                string        `json:"description,omitempty"`
+	Enabled                    bool          `json:"enabled"`
+	CriteriaAttribute          string        `json:"criteriaAttribute,omitempty"`
+	CriteriaAttributeValues    []string      `json:"criteriaAttributeValues,omitempty"`
+	PrivilegedApprovalsEnabled bool          `json:"privilegedApprovalsEnabled"`
+	Operator                   string        `json:"operator,omitempty"`
+	Priority                   string        `json:"priority,omitempty"`
+	CreationTime               string        `json:"creationTime,omitempty"`
+	ModifiedBy                 string        `json:"modifiedBy,omitempty"`
+	ModifiedTime               string        `json:"modifiedTime,omitempty"`
+	Roles                      []Roles       `json:"roles,omitempty"`
+	UserResource               *UserResource `json:"user,omitempty"`
 }
 
 type Roles struct {

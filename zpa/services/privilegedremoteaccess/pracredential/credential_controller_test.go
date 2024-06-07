@@ -1,10 +1,13 @@
 package pracredential
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/authdomain"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/microtenants"
 )
 
 func TestCredentialController(t *testing.T) {
@@ -168,5 +171,79 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	_, _, err = service.GetByName("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}
+
+// /////// Credential Move to Microtenant Test /////
+func TestPRACredentialMove(t *testing.T) {
+	// Generate base random strings
+	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	// Step 1: Create a new Microtenant
+	authDomainService := authdomain.New(client)
+	authDomainList, _, err := authDomainService.GetAllAuthDomains()
+	if err != nil {
+		t.Errorf("Error getting auth domains: %v", err)
+		return
+	}
+	if len(authDomainList.AuthDomains) == 0 {
+		t.Error("Expected retrieved auth domains to be non-empty, but got empty slice")
+		return
+	}
+
+	microtenantService := microtenants.New(client)
+	newMicrotenant := microtenants.MicroTenant{
+		Name:                       baseName + "-microtenant",
+		Description:                baseDescription + "-microtenant",
+		Enabled:                    true,
+		PrivilegedApprovalsEnabled: true,
+		CriteriaAttribute:          "AuthDomain",
+		CriteriaAttributeValues:    []string{authDomainList.AuthDomains[0]},
+	}
+	createdMicrotenant, _, err := microtenantService.Create(newMicrotenant)
+	if err != nil {
+		t.Fatalf("Failed to create microtenant: %v", err)
+	}
+
+	// Ensure the microtenant is deleted at the end of the test
+	defer func() {
+		_, err := microtenantService.Delete(createdMicrotenant.ID)
+		if err != nil {
+			t.Errorf("Error deleting microtenant: %v", err)
+		}
+	}()
+
+	microtenantID := createdMicrotenant.ID
+
+	// Step 2: Create a local credential
+	credentialService := New(client)
+	credController := Credential{
+		Name:           baseName + "-credential",
+		Description:    baseDescription + "-credential",
+		CredentialType: "USERNAME_PASSWORD",
+		UserName:       baseName + "-user",
+		Password:       tests.TestPassword(10), // Ensuring the password length is within constraints
+		UserDomain:     "acme.com",
+	}
+
+	createdCredential, _, err := credentialService.Create(&credController)
+	if err != nil {
+		t.Fatalf("Failed to create credential: %v", err)
+	}
+
+	// Step 3: Move the credential to the microtenant
+	resp, err := credentialService.CredentialMove(createdCredential.ID, microtenantID)
+	if err != nil {
+		t.Fatalf("Error moving credential to microtenant: %v", err)
+	}
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("Failed to move credential to microtenant, status code: %d", resp.StatusCode)
 	}
 }

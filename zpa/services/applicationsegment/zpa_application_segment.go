@@ -76,12 +76,6 @@ type SharedToMicrotenant struct {
 	Name string `json:"name,omitempty"`
 }
 
-type MicrotenantMove struct {
-	TargetSegmentGroupId string `json:"targetSegmentGroupId,omitempty"`
-	TargetMicrotenantId  string `json:"targetMicrotenantId,omitempty"`
-	TargetServerGroupId  string `json:"targetServerGroupId,omitempty"`
-}
-
 type AppServerGroups struct {
 	ConfigSpace      string `json:"configSpace,omitempty"`
 	CreationTime     string `json:"creationTime,omitempty"`
@@ -163,32 +157,4 @@ func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, 
 		}
 	}
 	return result, resp, nil
-}
-
-func (service *Service) AppSegmentMicrotenantShare(applicationID string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
-	// Corrected URL format to include the applicationID before /share
-	relativeURL := fmt.Sprintf("%s%s%s/%s/share",
-		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
-
-	// Since microtenantId is being passed via an environment variable, it's not explicitly included in the URL.
-	// Ensure the NewRequestDo method or the infrastructure around it appropriately injects the microtenantId.
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{}, appSegmentRequest, nil)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
-// Move Application Segments from parent to another Microtenant Is Allowed
-// Application Segments can be moved from local microtenant to parent
-// Application Segments CANNOT be moved in between local microtenants.
-func (service *Service) AppSegmentMicrotenantMove(applicationID string, move MicrotenantMove) (*http.Response, error) {
-	// Corrected URL format to include the applicationID before /move
-	relativeURL := fmt.Sprintf("%s%s%s/%s/move",
-		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{}, move, nil)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
 }

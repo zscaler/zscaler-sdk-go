@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
@@ -289,17 +288,6 @@ func (service *Service) BulkReorder(policySetType string, ruleIdToOrder map[stri
 	}
 
 	return resp, nil
-}
-
-func (service *Service) RulesCount() (int, *http.Response, error) {
-	v := new(Count)
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/GLOBAL_POLICY/count", service.Client.Config.CustomerID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, &v)
-	if err != nil {
-		return 0, nil, err
-	}
-	count, err := strconv.Atoi(v.Count)
-	return count, resp, err
 }
 
 func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Response, error) {
