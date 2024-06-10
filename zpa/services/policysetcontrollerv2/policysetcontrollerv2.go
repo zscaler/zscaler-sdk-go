@@ -60,7 +60,7 @@ type PolicyRuleResource struct {
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Credential               *Credential                    `json:"credential,omitempty"`
@@ -117,7 +117,7 @@ type PolicyRule struct {
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Version                  string                         `json:"version,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
