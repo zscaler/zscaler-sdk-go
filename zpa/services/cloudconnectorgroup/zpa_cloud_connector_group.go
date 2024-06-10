@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -43,7 +44,7 @@ type CloudConnectors struct {
 	MicroTenantName string                 `json:"microtenantName,omitempty"`
 }
 
-func (service *Service) Get(cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
+func Get(service *services.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
 	v := new(CloudConnectorGroup)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -54,7 +55,7 @@ func (service *Service) Get(cloudConnectorGroupID string) (*CloudConnectorGroup,
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
+func GetByName(service *services.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
@@ -68,7 +69,7 @@ func (service *Service) GetByName(cloudConnectorGroupName string) (*CloudConnect
 	return nil, resp, fmt.Errorf("no application named '%s' was found", cloudConnectorGroupName)
 }
 
-func (service *Service) GetAll() ([]CloudConnectorGroup, *http.Response, error) {
+func GetAll(service *services.Service) ([]CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {

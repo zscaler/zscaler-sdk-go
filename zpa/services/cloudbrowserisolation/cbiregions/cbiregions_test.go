@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -15,10 +16,10 @@ func TestGetAllRegions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// 1. First GetAll regions and ensure a response is returned.
-	regions, resp, err := service.GetAll()
+	regions, resp, err := GetAll(service)
 	if err != nil || resp.StatusCode >= 400 || len(regions) == 0 {
 		t.Fatalf("Failed to fetch regions: %v", err)
 	}
@@ -31,7 +32,7 @@ func TestGetAllRegions(t *testing.T) {
 
 	// 3. Test the GetByName method by querying the Name of any of the returned regions from GetAll.
 	firstRegionName := regions[0].Name
-	singleRegionByName, resp, err := service.GetByName(firstRegionName)
+	singleRegionByName, resp, err := GetByName(service, firstRegionName)
 	if err != nil || resp.StatusCode >= 400 || singleRegionByName == nil {
 		t.Errorf("Failed to fetch region by Name %s: %v", firstRegionName, err)
 	} else if singleRegionByName.Name != firstRegionName {
@@ -46,7 +47,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	requiredNames := []string{"Frankfurt", "Ireland", "Washington", "Singapore"}
 
@@ -62,7 +63,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve region with name variation: %s", variation)
-				region, _, err := service.GetByName(variation)
+				region, _, err := GetByName(service, variation)
 
 				if err != nil {
 					if strings.Contains(err.Error(), "no region named") {
@@ -95,9 +96,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

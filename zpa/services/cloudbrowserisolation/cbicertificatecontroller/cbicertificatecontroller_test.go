@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestCBICertificates(t *testing.T) {
@@ -64,7 +65,8 @@ func TestCBICertificates(t *testing.T) {
 	certName := fmt.Sprintf("test-rootCA %s", randomName)
 
 	// Create the certificate object
-	service := New(client)
+	service := services.New(client)
+
 	cbiCertificate := CBICertificate{
 		PEM:  string(rootCertPEM),
 		Name: certName,
@@ -76,21 +78,21 @@ func TestCBICertificates(t *testing.T) {
 			PEM:  "", // Invalid as it's empty
 			Name: "invalid-cert",
 		}
-		_, _, err := service.Create(&invalidCert)
+		_, _, err := Create(service, &invalidCert)
 		if err == nil {
 			t.Errorf("Expected error while uploading invalid certificate, got nil")
 		}
 	})
 
 	// Upload the certificate
-	createdCert, _, err := service.Create(&cbiCertificate)
+	createdCert, _, err := Create(service, &cbiCertificate)
 	if err != nil {
 		t.Fatalf("Error uploading certificate: %v", err)
 	}
 
 	// Test: Verify the certificate is present in the GetAll list
 	t.Run("TestGetAllCertificates", func(t *testing.T) {
-		allCerts, _, err := service.GetAll()
+		allCerts, _, err := GetAll(service)
 		if err != nil {
 			t.Fatalf("Error retrieving all certificates: %v", err)
 		}
@@ -116,13 +118,13 @@ func TestCBICertificates(t *testing.T) {
 
 		// Update the certificate with the new name
 		cbiCertificate.Name = updatedCertName
-		_, err = service.Update(createdCert.ID, &cbiCertificate)
+		_, err = Update(service, createdCert.ID, &cbiCertificate)
 		if err != nil {
 			t.Fatalf("Error updating certificate: %v", err)
 		}
 
 		// Verify the update by retrieving the certificate again
-		updatedCert, _, err := service.Get(createdCert.ID)
+		updatedCert, _, err := Get(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving updated certificate: %v", err)
 		}
@@ -131,14 +133,14 @@ func TestCBICertificates(t *testing.T) {
 		}
 	})
 	// Verify the upload by retrieving the certificate by ID
-	retrievedCert, _, err := service.Get(createdCert.ID)
+	retrievedCert, _, err := Get(service, createdCert.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving uploaded certificate: %v", err)
 	}
 	if retrievedCert.Name != cbiCertificate.Name {
 
 		// Verify the upload by retrieving the certificate by ID
-		retrievedCert, _, err := service.Get(createdCert.ID)
+		retrievedCert, _, err := Get(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate: %v", err)
 		}
@@ -147,7 +149,7 @@ func TestCBICertificates(t *testing.T) {
 		}
 
 		// Retrieve the certificate by name
-		retrievedCertByName, _, err := service.GetByName(createdCert.Name)
+		retrievedCertByName, _, err := GetByName(service, createdCert.Name)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
 		}
@@ -156,21 +158,21 @@ func TestCBICertificates(t *testing.T) {
 		}
 
 		// Delete the certificate
-		_, err = service.Delete(createdCert.ID)
+		_, err = Delete(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error deleting certificate: %v", err)
 		}
 
 		// Test 3: Attempt Retrieval After Deletion
 		t.Run("TestRetrieveAfterDeletion", func(t *testing.T) {
-			_, _, err := service.Get(createdCert.ID)
+			_, _, err := Get(service, createdCert.ID)
 			if err == nil {
 				t.Errorf("Expected error while retrieving deleted certificate, got nil")
 			}
 		})
 
 		// Verify deletion
-		_, _, err = service.Get(createdCert.ID)
+		_, _, err = Get(service, createdCert.ID)
 		if err == nil || !strings.Contains(err.Error(), "404") {
 			t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
 		}

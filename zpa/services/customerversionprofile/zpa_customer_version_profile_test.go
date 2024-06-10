@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -17,9 +18,9 @@ func TestCustomerVersionProfile(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	profiles, _, err := service.GetAll()
+	profiles, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting customer version profiles: %v", err)
 		return
@@ -31,7 +32,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 
 	name := profiles[0].Name
 	t.Log("Getting customer version profile by name:" + name)
-	profile, _, err := service.GetByName(name)
+	profile, _, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting customer version profile by name: %v", err)
 		return
@@ -49,7 +50,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	requiredNames := []string{"New Release", "Default", "Previous Default", "Default - el8"}
 	anyVariationSucceeded := false
@@ -66,7 +67,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
-				version, _, err := service.GetByName(variation)
+				version, _, err := GetByName(service, variation)
 				if err != nil {
 					errorMsg := fmt.Sprintf("Error getting customer version profile with name variation '%s': %v", variation, err)
 					errorMsgs = append(errorMsgs, errorMsg)

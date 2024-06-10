@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
@@ -69,27 +70,27 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// create segment group for testing
-	segGroupService := segmentgroup.New(client)
+	segGroupService := services.New(client)
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
 	}
-	createdSegGroup, _, err := segGroupService.Create(&appGroup)
+	createdSegGroup, _, err := segmentgroup.Create(segGroupService, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segGroupService.Get(createdSegGroup.ID)
+		_, _, getErr := segmentgroup.Get(segGroupService, createdSegGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segGroupService.Delete(createdSegGroup.ID)
+			_, err := segmentgroup.Delete(segGroupService, createdSegGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -97,7 +98,7 @@ func TestCredentialController(t *testing.T) {
 	}()
 
 	// create pra application segment for testing
-	praSegmentService := applicationsegmentpra.New(client)
+	praSegmentService := services.New(client)
 	praAppSeg := applicationsegmentpra.AppSegmentPRA{
 		Name:            name,
 		Description:     name,
@@ -144,14 +145,14 @@ func TestCredentialController(t *testing.T) {
 			},
 		},
 	}
-	createdpraAppSeg, _, err := praSegmentService.Create(praAppSeg)
+	createdpraAppSeg, _, err := applicationsegmentpra.Create(praSegmentService, praAppSeg)
 	if err != nil {
 		t.Errorf("Error creating pra application segment: %v", err)
 		return
 	}
 
 	// Assuming the praSegmentService.Get correctly returns the payload as described
-	retrievedpraAppSeg, _, err := praSegmentService.Get(createdpraAppSeg.ID)
+	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(praSegmentService, createdpraAppSeg.ID)
 	if err != nil {
 		t.Errorf("Error retrieving created pra application segment: %v", err)
 		return
@@ -159,11 +160,11 @@ func TestCredentialController(t *testing.T) {
 
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := praSegmentService.Get(createdpraAppSeg.ID)
+		_, _, getErr := applicationsegmentpra.Get(praSegmentService, createdpraAppSeg.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := praSegmentService.Delete(createdpraAppSeg.ID)
+			_, err := applicationsegmentpra.Delete(praSegmentService, createdpraAppSeg.ID)
 			if err != nil {
 				t.Errorf("Error deleting pra application segment: %v", err)
 			}
@@ -194,7 +195,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(&credController)
+	createdResource, _, err := Create(service, &credController)
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
@@ -203,7 +204,7 @@ func TestCredentialController(t *testing.T) {
 		t.Fatal("Expected created resource ID to be non-empty")
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -219,14 +220,14 @@ func TestCredentialController(t *testing.T) {
 	credController.WorkingHours.EndTimeCron = "0 0 1 ? * TUE,THU,SAT"
 
 	// Call the Update function with the modified 'credController' struct
-	_, err = service.Update(createdResource.ID, &credController)
+	_, err = Update(service, createdResource.ID, &credController)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 		return
 	}
 
 	// Retrieve the resource again to verify the update was successful
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving updated resource: %v", err)
 		return
@@ -238,7 +239,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -257,14 +258,14 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = Delete(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
+	_, _, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -275,9 +276,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -288,9 +289,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non_existent_id", &PrivilegedApproval{})
+	_, err = Update(service, "non_existent_id", &PrivilegedApproval{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -301,9 +302,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -314,9 +315,9 @@ func TestDeleteExpiredResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	resp, err := service.DeleteExpired()
+	resp, err := DeleteExpired(service)
 	if err != nil {
 		t.Errorf("Unexpected error when calling DeleteExpired: %v", err)
 	} else if resp.StatusCode != http.StatusOK {

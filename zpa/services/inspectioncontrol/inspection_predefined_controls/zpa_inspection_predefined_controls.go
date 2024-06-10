@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -51,7 +52,7 @@ type ControlsRequestFilters struct {
 
 // Get Predefined Controls by ID
 // https://help.zscaler.com/zpa/api-reference#/inspection-control-controller/getPredefinedControlById
-func (service *Service) Get(controlID string) (*PredefinedControls, *http.Response, error) {
+func Get(service *services.Service, controlID string) (*PredefinedControls, *http.Response, error) {
 	v := new(PredefinedControls)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+predControlsEndpoint, controlID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -62,7 +63,7 @@ func (service *Service) Get(controlID string) (*PredefinedControls, *http.Respon
 	return v, resp, nil
 }
 
-func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
+func GetAll(service *services.Service, version string) ([]PredefinedControls, error) {
 	v := []ControlGroupItem{}
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
 	_, err := service.Client.NewRequestDo("GET", relativeURL, struct {
@@ -78,7 +79,7 @@ func (service *Service) GetAll(version string) ([]PredefinedControls, error) {
 	return predefinedControls, nil
 }
 
-func (service *Service) GetByName(name, version string) (*PredefinedControls, *http.Response, error) {
+func GetByName(service *services.Service, name, version string) (*PredefinedControls, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
 	searchQuery := strings.TrimSpace(name)
 	searchQuery = strings.Split(searchQuery, " ")[0]
@@ -104,7 +105,7 @@ func (service *Service) GetByName(name, version string) (*PredefinedControls, *h
 	return nil, resp, fmt.Errorf("no predefined control named '%s' found", name)
 }
 
-func (service *Service) GetAllByGroup(version, groupName string) ([]PredefinedControls, error) {
+func GetAllByGroup(service *services.Service, version, groupName string) ([]PredefinedControls, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
 	var v []ControlGroupItem
 	_, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{

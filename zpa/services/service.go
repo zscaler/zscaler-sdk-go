@@ -1,4 +1,4 @@
-package pracredential
+package services
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
@@ -23,4 +23,8 @@ func (service *Service) WithMicroTenant(microTenantID string) *Service {
 		Client:        service.Client,
 		microTenantID: mid,
 	}
+}
+
+func (service *Service) MicroTenantID() *string {
+	return service.microTenantID
 }

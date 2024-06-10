@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/network/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "trustedNetwork 1"}`))
 	})
-	service := &trustednetwork.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	network, _, err := service.Get("123")
+	network, _, err := trustednetwork.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -40,6 +41,9 @@ func TestTrustedNetworks_Get(t *testing.T) {
 func TestTrustedNetworks_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/network", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
 		query := r.URL.Query()
@@ -59,12 +63,9 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "Trusted Network not found"}`))
 		}
 	})
-	service := &trustednetwork.Service{
-		Client: client,
-	}
 
 	// Make the GetByName request
-	network, _, err := service.GetByName("trustedNetwork1")
+	network, _, err := trustednetwork.GetByName(service, "trustedNetwork1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -82,6 +83,9 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 func TestTrustedNetworks_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/network", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -92,12 +96,9 @@ func TestTrustedNetworks_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &trustednetwork.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	networks, _, err := service.GetAll()
+	networks, _, err := trustednetwork.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

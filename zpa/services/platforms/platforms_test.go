@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestGetAllPlatforms(t *testing.T) {
@@ -12,9 +13,9 @@ func TestGetAllPlatforms(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	platforms, resp, err := service.GetAllPlatforms()
+	platforms, resp, err := GetAllPlatforms(service)
 	if err != nil {
 		t.Fatalf("Error getting all platforms: %v", err)
 	}

@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/machinegroup"
 )
 
 func TestMachineGroup_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/machineGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "machineGroup 1"}`))
 	})
-	service := &machinegroup.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	group, _, err := service.Get("123")
+	group, _, err := machinegroup.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -83,6 +84,9 @@ func TestMachineGroup_GetByName(t *testing.T) {
 func TestMachineGroup_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/machineGroup", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -93,12 +97,9 @@ func TestMachineGroup_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &machinegroup.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	groups, _, err := service.GetAll()
+	groups, _, err := machinegroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

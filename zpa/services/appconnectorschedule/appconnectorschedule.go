@@ -3,6 +3,8 @@ package appconnectorschedule
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -31,7 +33,7 @@ type AssistantSchedule struct {
 }
 
 // Get a Configured App Connector schedule frequency.
-func (service *Service) GetSchedule() (*AssistantSchedule, *http.Response, error) {
+func GetSchedule(service *services.Service) (*AssistantSchedule, *http.Response, error) {
 	v := new(AssistantSchedule)
 	path := fmt.Sprintf("%v", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
@@ -42,7 +44,7 @@ func (service *Service) GetSchedule() (*AssistantSchedule, *http.Response, error
 }
 
 // Configure a App Connector schedule frequency to delete the in active connectors with configured frequency.
-func (service *Service) CreateSchedule(assistantSchedule AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
+func CreateSchedule(service *services.Service, assistantSchedule AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
 	v := new(AssistantSchedule)
 	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint, nil, assistantSchedule, &v)
 	if err != nil {
@@ -52,7 +54,7 @@ func (service *Service) CreateSchedule(assistantSchedule AssistantSchedule) (*As
 	return v, resp, nil
 }
 
-func (service *Service) UpdateSchedule(schedulerID string, assistantSchedule *AssistantSchedule) (*http.Response, error) {
+func UpdateSchedule(service *services.Service, schedulerID string, assistantSchedule *AssistantSchedule) (*http.Response, error) {
 	// Validate FrequencyInterval
 	validIntervals := map[string]bool{"5": true, "7": true, "14": true, "30": true, "60": true, "90": true}
 	if _, valid := validIntervals[assistantSchedule.FrequencyInterval]; !valid {

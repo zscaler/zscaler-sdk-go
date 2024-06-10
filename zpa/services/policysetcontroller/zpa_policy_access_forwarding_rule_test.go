@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
@@ -18,9 +19,9 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	policyService := New(client)
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	service := services.New(client)
+
+	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -28,8 +29,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 	if len(idpList) == 0 {
 		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
 	}
-	samlService := samlattribute.New(client)
-	samlsList, _, err := samlService.GetAll()
+	samlsList, _, err := samlattribute.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -38,8 +38,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	accessPolicySet, _, err := GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access forwarding policy set: %v", err)
 		return
@@ -71,7 +70,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 			},
 		}
 		// Test resource creation
-		createdResource, _, err := service.CreateRule(&accessPolicyRule)
+		createdResource, _, err := CreateRule(service, &accessPolicyRule)
 		// Check if the request was successful
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -86,7 +85,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := policyService.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -94,7 +93,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		}
 
 		// Retrieve and verify the updated resource
-		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -104,7 +103,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = service.GetByNameAndType(policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -122,14 +121,14 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = policyService.BulkReorder(policyType, ruleIdToOrder)
+	_, err = BulkReorder(service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = policyService.Delete(accessPolicySet.ID, ruleID)
+		_, err = Delete(service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

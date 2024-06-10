@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestSAMLAttribute(t *testing.T) {
@@ -14,9 +15,9 @@ func TestSAMLAttribute(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	attributes, _, err := service.GetAll()
+	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -27,7 +28,7 @@ func TestSAMLAttribute(t *testing.T) {
 	}
 	name := attributes[0].Name
 	t.Log("Getting saml attribute by name:" + name)
-	attribute, _, err := service.GetByName(name)
+	attribute, _, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting saml attribute by name: %v", err)
 		return
@@ -45,9 +46,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	attributes, _, err := service.GetAll()
+	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -76,8 +77,8 @@ func TestNonExistentSAMLAttributeName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
-	_, _, err = service.GetByName("NonExistentName")
+	service := services.New(client)
+	_, _, err = GetByName(service, "NonExistentName")
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SAML attribute by name, got none")
 	}
@@ -90,8 +91,8 @@ func TestEmptyResponse(t *testing.T) {
 		return
 	}
 
-	service := New(client)
-	attributes, _, err := service.GetAll()
+	service := services.New(client)
+	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
 		return
@@ -109,8 +110,8 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 		return
 	}
 
-	service := New(client)
-	attributes, _, err := service.GetAll()
+	service := services.New(client)
+	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
 		return
@@ -122,7 +123,7 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	attribute, _, err := service.Get(specificID)
+	attribute, _, err := Get(service, specificID)
 	if err != nil {
 		t.Errorf("Error getting SAML attribute by ID: %v", err)
 		return
@@ -140,8 +141,8 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 		return
 	}
 
-	service := New(client)
-	attributes, _, err := service.GetAll()
+	service := services.New(client)
+	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
 		return
@@ -153,7 +154,7 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	attribute, _, err := service.Get(specificID)
+	attribute, _, err := Get(service, specificID)
 	if err != nil {
 		t.Errorf("Error getting SAML attribute by ID: %v", err)
 		return
@@ -184,8 +185,8 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 		return
 	}
 
-	service := New(client)
-	_, resp, err := service.GetAll()
+	service := services.New(client)
+	_, resp, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
 		return

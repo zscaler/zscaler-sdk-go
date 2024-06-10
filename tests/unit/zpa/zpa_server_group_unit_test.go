@@ -6,12 +6,16 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 func TestService_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup/groupID", func(w http.ResponseWriter, r *http.Request) {
 		// Write a mock response
 		response := `{
@@ -122,12 +126,9 @@ func TestService_Get(t *testing.T) {
 		w.Write([]byte(response))
 	})
 
-	// Create a service with the client
-	service := &servergroup.Service{Client: client}
-
 	// Call the Get method
 	groupID := "groupID"
-	serverGroup, resp, err := service.Get(groupID)
+	serverGroup, resp, err := servergroup.Get(service, groupID)
 	// Check the error
 	if err != nil {
 		t.Errorf("Error calling Get: %s", err)
@@ -306,6 +307,9 @@ func TestService_Get(t *testing.T) {
 func TestServerGroup_Create(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
@@ -324,10 +328,6 @@ func TestServerGroup_Create(t *testing.T) {
 		}`))
 	})
 
-	service := &servergroup.Service{
-		Client: client,
-	}
-
 	// Create a sample group
 	group := &servergroup.ServerGroup{
 		Name:    "Group1",
@@ -335,7 +335,7 @@ func TestServerGroup_Create(t *testing.T) {
 	}
 
 	// Make the Create request
-	createdGroup, _, err := service.Create(group)
+	createdGroup, _, err := servergroup.Create(service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Create request: %v", err)
@@ -353,6 +353,9 @@ func TestServerGroup_Create(t *testing.T) {
 func TestServerGroup_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
@@ -371,10 +374,6 @@ func TestServerGroup_Update(t *testing.T) {
 		}`))
 	})
 
-	service := &servergroup.Service{
-		Client: client,
-	}
-
 	// Create a sample group with updated description
 	group := &servergroup.ServerGroup{
 		ID:          "123",
@@ -384,7 +383,7 @@ func TestServerGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := service.Update("123", group)
+	_, err := servergroup.Update(service, "123", group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -394,17 +393,16 @@ func TestServerGroup_Update(t *testing.T) {
 func TestServerGroup_Delete(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	service := &servergroup.Service{
-		Client: client,
-	}
-
 	// Make the Delete request
-	_, err := service.Delete("123")
+	_, err := servergroup.Delete(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -414,6 +412,9 @@ func TestServerGroup_Delete(t *testing.T) {
 func TestServerGroup_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response with an array of server groups
 		w.WriteHeader(http.StatusOK)
@@ -450,12 +451,8 @@ func TestServerGroup_GetAll(t *testing.T) {
 		}`))
 	})
 
-	service := &servergroup.Service{
-		Client: client,
-	}
-
 	// Make the GetAll request
-	groups, _, err := service.GetAll()
+	groups, _, err := servergroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

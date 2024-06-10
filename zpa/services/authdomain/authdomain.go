@@ -1,6 +1,10 @@
 package authdomain
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+)
 
 const (
 	mgmtConfig         = "/mgmtconfig/v1/admin/customers/"
@@ -11,7 +15,7 @@ type AuthDomain struct {
 	AuthDomains []string `json:"authDomains"`
 }
 
-func (service *Service) GetAllAuthDomains() (*AuthDomain, *http.Response, error) {
+func GetAllAuthDomains(service *services.Service) (*AuthDomain, *http.Response, error) {
 	v := new(AuthDomain)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + authDomainEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

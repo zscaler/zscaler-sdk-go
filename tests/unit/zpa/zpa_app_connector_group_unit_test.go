@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 )
 
@@ -16,12 +17,11 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Group1"}`))
 	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+
+	service := services.New(client)
 
 	// Make the GET request
-	group, _, err := service.Get("123")
+	group, _, err := appconnectorgroup.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -45,9 +45,7 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 		w.Write([]byte(`{"id": "123", "name": "Group1"}`))
 	})
 
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+	service := services.New(client)
 	// Create a sample group
 	group := appconnectorgroup.AppConnectorGroup{
 		ID:                       "123",
@@ -72,7 +70,7 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdGroup, _, err := service.Create(group)
+	createdGroup, _, err := appconnectorgroup.Create(service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -86,8 +84,6 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 		t.Errorf("Expected created group name 'Group1', but got '%s'", createdGroup.Name)
 	}
 }
-
-// You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 
 func TestAppConnectorGroup_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
@@ -111,12 +107,11 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "Group not found"}`))
 		}
 	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+
+	service := services.New(client)
 
 	// Make the GetByName request
-	group, _, err := service.GetByName("Group1")
+	group, _, err := appconnectorgroup.GetByName(service, "Group1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -139,9 +134,8 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+
+	service := services.New(client)
 	group := appconnectorgroup.AppConnectorGroup{
 		ID:                       "123",
 		Name:                     "Group1",
@@ -165,7 +159,7 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := service.Update("123", &group)
+	_, err := appconnectorgroup.Update(service, "123", &group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -179,12 +173,11 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+
+	service := services.New(client)
 
 	// Make the Delete request
-	_, err := service.Delete("123")
+	_, err := appconnectorgroup.Delete(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -204,12 +197,11 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &appconnectorgroup.Service{
-		Client: client,
-	}
+
+	service := services.New(client)
 
 	// Make the GetAll request
-	groups, _, err := service.GetAll()
+	groups, _, err := appconnectorgroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

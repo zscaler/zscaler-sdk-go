@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -26,7 +27,7 @@ type TrustedNetwork struct {
 	ZscalerCloud     string `json:"zscalerCloud,omitempty"`
 }
 
-func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, error) {
+func Get(service *services.Service, networkID string) (*TrustedNetwork, *http.Response, error) {
 	v := new(TrustedNetwork)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+trustedNetworkEndpoint, networkID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -37,7 +38,7 @@ func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, 
 	return v, resp, nil
 }
 
-func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Response, error) {
+func GetByNetID(service *services.Service, netID string) (*TrustedNetwork, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
@@ -51,7 +52,7 @@ func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Respons
 	return nil, resp, fmt.Errorf("no trusted network with NetworkID '%s' was found", netID)
 }
 
-func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
+func GetByName(service *services.Service, trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
 	adaptedtrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
 
@@ -73,7 +74,7 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 	return nil, resp, fmt.Errorf("no trusted network named '%s' was found", trustedNetworkName)
 }
 
-func (service *Service) GetAll() ([]TrustedNetwork, *http.Response, error) {
+func GetAll(service *services.Service) ([]TrustedNetwork, *http.Response, error) {
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {

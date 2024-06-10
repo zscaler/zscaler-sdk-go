@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -58,10 +59,10 @@ type PRAPortals struct {
 	Name string `json:"name,omitempty"`
 }
 
-func (service *Service) Get(consoleID string) (*PRAConsole, *http.Response, error) {
+func Get(service *services.Service, consoleID string) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,10 +70,10 @@ func (service *Service) Get(consoleID string) (*PRAConsole, *http.Response, erro
 	return v, resp, nil
 }
 
-func (service *Service) GetPraPortal(portalID string) (*PRAConsole, *http.Response, error) {
+func GetPraPortal(service *services.Service, portalID string) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint+"/praPortal", portalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -80,9 +81,9 @@ func (service *Service) GetPraPortal(portalID string) (*PRAConsole, *http.Respon
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(consoleName string) (*PRAConsole, *http.Response, error) {
+func GetByName(service *services.Service, consoleName string) (*PRAConsole, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praConsoleEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{Search: consoleName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{Search: consoleName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,28 +95,28 @@ func (service *Service) GetByName(consoleName string) (*PRAConsole, *http.Respon
 	return nil, resp, fmt.Errorf("no pra  console named '%s' was found", consoleName)
 }
 
-func (service *Service) Create(praConsole *PRAConsole) (*PRAConsole, *http.Response, error) {
+func Create(service *services.Service, praConsole *PRAConsole) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, common.Filter{MicroTenantID: service.microTenantID}, praConsole, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) CreatePraBulk(praConsoles []PRAConsole) ([]PRAConsole, *http.Response, error) {
+func CreatePraBulk(service *services.Service, praConsoles []PRAConsole) ([]PRAConsole, *http.Response, error) {
 	var responseConsoles []PRAConsole
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praConsoleBulkEndpoint
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, praConsoles, &responseConsoles)
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsoles, &responseConsoles)
 	if err != nil {
 		return nil, nil, err
 	}
 	return responseConsoles, resp, nil
 }
 
-func (service *Service) Update(consoleID string, praConsole *PRAConsole) (*http.Response, error) {
+func Update(service *services.Service, consoleID string, praConsole *PRAConsole) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, praConsole, nil)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,18 +124,18 @@ func (service *Service) Update(consoleID string, praConsole *PRAConsole) (*http.
 	return resp, err
 }
 
-func (service *Service) Delete(consoleID string) (*http.Response, error) {
+func Delete(service *services.Service, consoleID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]PRAConsole, *http.Response, error) {
+func GetAll(service *services.Service) ([]PRAConsole, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praConsoleEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

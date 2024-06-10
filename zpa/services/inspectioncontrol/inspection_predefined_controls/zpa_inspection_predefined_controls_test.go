@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestInspectionPredefinedControls(t *testing.T) {
@@ -13,10 +14,10 @@ func TestInspectionPredefinedControls(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Corrected this line to include the version
-	controls, err := service.GetAll("OWASP_CRS/3.3.0")
+	controls, err := GetAll(service, "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined controls: %v", err)
 		return
@@ -28,7 +29,7 @@ func TestInspectionPredefinedControls(t *testing.T) {
 	name := controls[0].Name
 	t.Log("Getting predefined control by name:" + name)
 	// Corrected this line to include the version
-	control, _, err := service.GetByName(name, "OWASP_CRS/3.3.0")
+	control, _, err := GetByName(service, name, "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined control by name: %v", err)
 		return
@@ -45,12 +46,12 @@ func TestGetAllByGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	version := "OWASP_CRS/3.3.0"
 
 	// Call GetAll to retrieve all control groups
-	allControls, err := service.GetAll(version)
+	allControls, err := GetAll(service, version)
 	if err != nil {
 		t.Fatalf("Error getting all controls: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestGetAllByGroup(t *testing.T) {
 	// Now call GetAllByGroup for each unique controlGroup
 	for group := range controlGroups {
 		t.Logf("Fetching details for control group: %s", group)
-		controls, err := service.GetAllByGroup(version, group)
+		controls, err := GetAllByGroup(service, version, group)
 		if err != nil {
 			t.Fatalf("Error getting details for control group %s: %v", group, err)
 		}
@@ -85,12 +86,12 @@ func TestGetControlGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	version := "OWASP_CRS/3.3.0"
 	groupName := "Protocol Issues"
 
-	controls, err := service.GetAllByGroup(version, groupName)
+	controls, err := GetAllByGroup(service, version, groupName)
 	if err != nil {
 		t.Fatalf("Error getting details for control group %s: %v", groupName, err)
 	}

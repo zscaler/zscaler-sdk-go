@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -118,19 +119,19 @@ type ApplicationServer struct {
 	Name              string   `json:"name"`
 }
 
-func (service *Service) Get(groupID string) (*ServerGroup, *http.Response, error) {
+func Get(service *services.Service, groupID string) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.Response, error) {
+func GetByName(service *services.Service, serverGroupName string) (*ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{Search: serverGroupName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{Search: serverGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -142,36 +143,36 @@ func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.R
 	return nil, resp, fmt.Errorf("no server group named '%s' was found", serverGroupName)
 }
 
-func (service *Service) Create(serverGroup *ServerGroup) (*ServerGroup, *http.Response, error) {
+func Create(service *services.Service, serverGroup *ServerGroup) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, serverGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(groupId string, serverGroup *ServerGroup) (*http.Response, error) {
+func Update(service *services.Service, groupId string, serverGroup *ServerGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, serverGroup, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(groupId string) (*http.Response, error) {
+func Delete(service *services.Service, groupId string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
+func GetAll(service *services.Service) ([]ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestGetAllClientTypes(t *testing.T) {
@@ -12,9 +13,9 @@ func TestGetAllClientTypes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	clientTypes, resp, err := service.GetAllClientTypes()
+	clientTypes, resp, err := GetAllClientTypes(service)
 	if err != nil {
 		t.Fatalf("Failed to fetch client types: %v", err)
 	}

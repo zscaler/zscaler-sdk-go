@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
 )
 
 func TestBaCertificate_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/certificate/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Certificate 1"}`))
 	})
-	service := &bacertificate.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	certificate, _, err := service.Get("123")
+	certificate, _, err := bacertificate.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -83,6 +84,9 @@ func TestBaCertificate_GetByName(t *testing.T) {
 func TestBaCertificate_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/clientlessCertificate/issued", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -93,12 +97,9 @@ func TestBaCertificate_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &bacertificate.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	certificates, _, err := service.GetAll()
+	certificates, _, err := bacertificate.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

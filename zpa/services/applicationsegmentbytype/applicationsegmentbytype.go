@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -28,7 +29,7 @@ type AppSegmentBaseAppDto struct {
 	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
 
-func (service *Service) GetByApplicationType(appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
+func GetByApplicationType(service *services.Service, appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
 	validApplicationTypes := map[string]bool{
 		"BROWSER_ACCESS":       true,
 		"INSPECT":              true,
@@ -54,7 +55,7 @@ func (service *Service) GetByApplicationType(appName, applicationType string, ex
 
 	// Construct the filter
 	filter := common.Filter{
-		MicroTenantID: service.microTenantID,
+		MicroTenantID: service.MicroTenantID(),
 	}
 	if appName != "" {
 		filter.Search = appName

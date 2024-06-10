@@ -7,8 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_profile"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
@@ -20,11 +21,9 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	idpService := idpcontroller.New(client)
-	samlService := samlattribute.New(client)
-	policyServiceV2 := New(client)
+	service := services.New(client)
 
-	idpList, _, err := idpService.GetAll()
+	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -34,7 +33,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		return
 	}
 
-	samlsList, _, err := samlService.GetAll()
+	samlsList, _, err := samlattribute.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -43,14 +42,13 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	profile := inspection_profile.New(client)
-	profileID, _, err := profile.GetByName(inspectionProfileID)
+	profileID, _, err := postureprofile.GetByName(service, inspectionProfileID)
 	if err != nil {
 		t.Errorf("Error getting inspection profile id set: %v", err)
 		return
 	}
 
-	accessPolicySet, _, err := policyServiceV2.GetByPolicyType(policyType)
+	accessPolicySet, _, err := GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -99,7 +97,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
+		createdResource, _, err := CreateRule(service, &accessPolicyRule)
 
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -109,16 +107,13 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
-		// if err == nil {
-		// 	jsonBytes, _ := json.Marshal(createdResource)
-		// 	fmt.Println(string(jsonBytes)) // This prints the JSON response
-		// }
+
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -126,7 +121,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Retrieve and print the updated resource as JSON
-		updatedResource, _, getErr := policyServiceV2.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -136,7 +131,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = policyServiceV2.GetByNameAndType(policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -155,7 +150,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = policyServiceV2.BulkReorder(policyType, ruleIdToOrder)
+	_, err = BulkReorder(service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
@@ -164,7 +159,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = policyServiceV2.Delete(accessPolicySet.ID, ruleID)
+		_, err = Delete(service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}
