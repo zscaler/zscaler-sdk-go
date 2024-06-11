@@ -17,10 +17,9 @@ type Apps struct {
 }
 
 type MostImpactedGeo struct {
-	ID      int    `json:"id"`
+	ID      string `json:"id"`
 	City    string `json:"city,omitempty"`
 	Region  string `json:"region,omitempty"`
-	State   string `json:"state,omitempty"`
 	Country string `json:"country,omitempty"`
 	GeoType string `json:"geo_type,omitempty"`
 }
@@ -36,24 +35,22 @@ type Stats struct {
 // Lists all active applications configured for a tenant.
 // The endpoint gets each application's ZDX score (default for the last 2 hours), most impacted location, and the total number of users impacted.
 // To learn more, see About the ZDX Dashboard at https://help.zscaler.com/zdx/about-zdx-dashboard.
-func (service *Service) GetAllApps(filters GetAppsFilters) (*Apps, *http.Response, error) {
-	v := new(Apps)
+func (service *Service) GetAllApps(filters GetAppsFilters) ([]Apps, *http.Response, error) {
+	var apps []Apps
 	path := appsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &apps)
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	return apps, resp, nil
 }
 
-// Gets the application’s ZDX score (for the last 2 hours), most impacted locations, and the total number of users impacted.
-// To learn more, see About the ZDX Score at https://help.zscaler.com/zdx/about-zdx-score#user.
 func (service *Service) GetApp(appID string, filters GetAppsFilters) (*Apps, *http.Response, error) {
-	v := new(Apps)
+	var app Apps
 	path := appsEndpoint + "/" + appID
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &app)
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	return &app, resp, nil
 }
