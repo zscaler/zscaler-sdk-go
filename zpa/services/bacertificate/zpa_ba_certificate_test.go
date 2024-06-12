@@ -154,6 +154,36 @@ func TestBACertificates(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "400") {
 		t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
 	}
+
+	// Test for GetIssuedByName to cover the missed branch
+	t.Run("TestGetIssuedByNameNonExistent", func(t *testing.T) {
+		_, _, err := GetIssuedByName(service, "non_existent_cert")
+		if err == nil || !strings.Contains(err.Error(), "no issued certificate named 'non_existent_cert' was found") {
+			t.Errorf("Expected error while retrieving non-existent issued certificate, got nil or unexpected error: %v", err)
+		}
+	})
+
+	// Test for Create to cover the missed branch
+	t.Run("TestCreateWithError", func(t *testing.T) {
+		service.Client.Config.CustomerID = "invalid_customer_id" // Force an error
+		_, _, err := Create(service, baCertificate)
+		if err == nil {
+			t.Errorf("Expected error while creating certificate with invalid customer ID, got nil")
+		}
+		// Reset the customer ID to avoid affecting other tests
+		service.Client.Config.CustomerID = client.Config.CustomerID
+	})
+
+	// Test for Delete to cover the missed branch
+	t.Run("TestDeleteWithError", func(t *testing.T) {
+		service.Client.Config.CustomerID = "invalid_customer_id" // Force an error
+		_, err := Delete(service, createdCert.ID)
+		if err == nil {
+			t.Errorf("Expected error while deleting certificate with invalid customer ID, got nil")
+		}
+		// Reset the customer ID to avoid affecting other tests
+		service.Client.Config.CustomerID = client.Config.CustomerID
+	})
 }
 
 // generateRandomString generates a random string of the given length

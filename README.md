@@ -46,6 +46,136 @@ To install the Zscaler GO SDK in your project:
 * [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
 * [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
 
+## Authentication<a id="authentication"></a>
+
+Each Zscaler product has separate developer documentation and authentication methods. In this section you will find
+
+1. Credentials that are hard-coded into configuration arguments.
+
+   :warning: **Caution**: Zscaler does not recommend hard-coding credentials into arguments, as they can be exposed in plain text in version control systems. Use environment variables instead.
+
+### ZIA native authentication
+
+- For authentication via Zscaler Internet Access, you must provide `username`, `password`, `api_key` and `cloud`
+
+The ZIA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZIA_USERNAME`, `ZIA_PASSWORD`, `ZIA_API_KEY`, `ZIA_CLOUD` environment variables, representing your ZIA `username`, `password`, `api_key` and `cloud` respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |    
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZIA_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |   
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$zsapi.<Zscaler Cloud Name>/api/v1`.| `ZIA_CLOUD` |
+
+### ZPA native authentication
+
+For authentication via Zscaler Private Access, you must provide `client_id`, `client_secret`, `customer_id` and `cloud`
+
+The ZPA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `PRODUCTION`
+* `ZPATWO`
+* `BETA`
+* `GOV`
+* `GOVUS`
+
+### Environment variables
+
+You can provide credentials via the `ZPA_CLIENT_ID`, `ZPA_CLIENT_SECRET`, `ZPA_CUSTOMER_ID`, `ZPA_CLOUD` environment variables, representing your ZPA `client_id`, `client_secret`, `customer_id` and `cloud` of your ZPA account, respectively.
+
+~> **NOTE** `ZPA_CLOUD` environment variable is required, and is used to identify the correct API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |    
+| `client_secret`       | _(String)_ The ZPA API client secret generated from the ZPA console.| `ZPA_CLIENT_SECRET` |
+| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |   
+| `cloud`       | _(String)_ The Zscaler cloud for your tenancy.| `ZPA_CLOUD` |
+
+### ZCC native authentication
+
+For authentication via Zscaler Client Connector (Mobile Portal), you must provide `APIKey`, `SecretKey`, `cloudEnv`
+
+The ZCC Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZCC_CLIENT_ID`, `ZCC_CLIENT_SECRET`, `ZCC_CLOUD` environment variables, representing your ZCC `APIKey`, `SecretKey`, and `cloudEnv` of your ZCC account, respectively.
+
+~> **NOTE** `ZCC_CLOUD` environment variable is required, and is used to identify the correct API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |    
+| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` | 
+| `cloudEnv`       | _(String)_ The host and basePath for the ZCC cloud services API is `$mobileadmin.<Zscaler Cloud Name>/papi`.| `ZCC_CLOUD` |
+
+### ZCON native authentication
+
+- For authentication via Zscaler Cloud Connector, you must provide `username`, `password`, `api_key` and `cloud`
+
+The ZCON Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_KEY`, `ZCON_CLOUD` environment variables, representing your ZCON `username`, `password`, `api_key` and `cloud` respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |    
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZCON_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |   
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZCON_CLOUD` |
+
+### ZDX native authentication
+
+For authentication via Zscaler Digital Experience (ZDX), you must provide `APIKeyID`, `SecretKey`
+
+The ZDX Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to.
+
+### Environment variables
+
+You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environment variables, representing your ZDX `APIKey`, `SecretKey` of your ZDX account, respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |    
+| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` | 
+
 ## Initialize a Client
 
 ### ZPA Client Initialization
@@ -57,11 +187,11 @@ import (
 )
 
 func main() {
-	clientID := ""
-	clientSecret := ""
-	customerID := ""
-	cloudEnv := "" // Replace with "BETA", "PRODUCTION" or "ZPATWO")
-	userAgent := ""
+	clientID      := ""
+	clientSecret  := ""
+	customerID    := ""
+	cloudEnv      := ""
+	userAgent     := ""
 
 	config, err := zpa.NewConfig(clientID, clientSecret, customerID, cloudEnv, userAgent)
 	if err != nil {
@@ -74,18 +204,108 @@ func main() {
 }
 ```
 ### ZIA Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zia"
+)
+
+func main() {
+	username  := ""
+	password  := ""
+	apiKey    := ""
+	cloudEnv  := "" 
+
+	client, err := zia.NewClient(username, password, apiKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating client: %v\n", err)
+	}
+	ctx := context.TODO()
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
 
 ### ZCC Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zcc"
+)
 
+func main() {
+
+	APIKey    :=  "" 
+	SecretKey :=  ""
+	cloudEnv  :=  ""
+	userAgent :=  ""
+
+	config, err := zcc.NewConfig(APIKey, SecretKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zcc.NewClient(config)
+	ctx := context.TODO()
+
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
 ### ZDX Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zdx"
+)
+
+func main() {
+
+	APIKey    := ""
+	SecretKey := ""
+	cloudEnv  := ""
+
+	config, err := zdx.NewConfig(APIKey, SecretKey, cloudEnv)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zdx.NewClient(config)
+	ctx := context.TODO()
+
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
 
 ### ZCON Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zcon"
+)
+
+func main() {
+	username    := ""  
+	password    := ""  
+	apiKey      := ""    
+	cloudEnv    := "" 
+	userAgent   := "" 
+
+	client, err := zcon.NewClient(username, password, apiKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating client: %v\n", err)
+	}
+
+	ctx := context.TODO()
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
 
 Hard-coding any of the Zscaler API credentials works for quick tests, but for real
 projects you should use a more secure way of storing these values (such as
 environment variables). This library supports a few different configuration
-sources, covered in the [configuration reference](#configuration-reference)
-  section.
+sources, covered in the [configuration reference](#configuration-reference) section.
+
 ## Getting Started
 
 One can start using Zscaler Go SDK by initializing client and making a request.
