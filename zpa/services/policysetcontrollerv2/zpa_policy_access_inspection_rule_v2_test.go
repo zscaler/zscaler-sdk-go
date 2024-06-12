@@ -9,7 +9,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_profile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
@@ -42,7 +42,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	profileID, _, err := postureprofile.GetByName(service, inspectionProfileID)
+	profileID, _, err := inspection_profile.GetByName(service, inspectionProfileID)
 	if err != nil {
 		t.Errorf("Error getting inspection profile id set: %v", err)
 		return

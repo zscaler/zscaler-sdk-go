@@ -24,6 +24,8 @@ For more information about ZIA/ZPA APIs visit:
 * [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide)
 * [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
 * [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
+* [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
+* [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
 
 ## Need help?
 

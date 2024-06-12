@@ -105,45 +105,54 @@ func TestBACertificates(t *testing.T) {
 		t.Fatalf("Error retrieving uploaded certificate: %v", err)
 	}
 	if retrievedCert.Name != baCertificate.Name {
+		t.Errorf("Retrieved certificate name mismatch. Expected: %s, Got: %s", baCertificate.Name, retrievedCert.Name)
+	}
 
-		// Verify the upload by retrieving the certificate by ID
-		retrievedCert, _, err := Get(service, createdCert.ID)
+	// Retrieve the certificate by name
+	retrievedCertByName, _, err := GetIssuedByName(service, createdCert.Name)
+	if err != nil {
+		t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
+	}
+	if retrievedCertByName.Name != baCertificate.Name {
+		t.Errorf("Retrieved by name certificate name mismatch. Expected: %s, Got: %s", baCertificate.Name, retrievedCertByName.Name)
+	}
+
+	// Verify GetAll function
+	t.Run("TestGetAllCertificates", func(t *testing.T) {
+		certificates, _, err := GetAll(service)
 		if err != nil {
-			t.Fatalf("Error retrieving uploaded certificate: %v", err)
+			t.Fatalf("Error retrieving all certificates: %v", err)
 		}
-		if retrievedCert.Name != baCertificate.Name {
-			t.Errorf("Retrieved certificate name mismatch. Expected: %s, Got: %s", baCertificate.Name, retrievedCert.Name)
-		}
-
-		// Retrieve the certificate by name
-		retrievedCertByName, _, err := GetIssuedByName(service, createdCert.Name)
-		if err != nil {
-			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
-		}
-		if retrievedCertByName.Name != baCertificate.Name {
-			t.Errorf("Retrieved by name certificate name mismatch. Expected: %s, Got: %s", baCertificate.Name, retrievedCertByName.Name)
-		}
-
-		// Delete the certificate
-		_, err = Delete(service, createdCert.ID)
-		if err != nil {
-			t.Fatalf("Error deleting certificate: %v", err)
-		}
-
-		// Test 3: Attempt Retrieval After Deletion
-		t.Run("TestRetrieveAfterDeletion", func(t *testing.T) {
-			_, _, err := Get(service, createdCert.ID)
-			if err == nil {
-				t.Errorf("Expected error while retrieving deleted certificate, got nil")
+		found := false
+		for _, cert := range certificates {
+			if cert.ID == createdCert.ID {
+				found = true
+				break
 			}
-		})
-
-		// Verify deletion
-		_, _, err = Get(service, createdCert.ID)
-		if err == nil || !strings.Contains(err.Error(), "404") {
-			t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
 		}
+		if !found {
+			t.Errorf("Uploaded certificate not found in GetAll response")
+		}
+	})
 
+	// Delete the certificate
+	_, err = Delete(service, createdCert.ID)
+	if err != nil {
+		t.Fatalf("Error deleting certificate: %v", err)
+	}
+
+	// Test 3: Attempt Retrieval After Deletion
+	t.Run("TestRetrieveAfterDeletion", func(t *testing.T) {
+		_, _, err := Get(service, createdCert.ID)
+		if err == nil {
+			t.Errorf("Expected error while retrieving deleted certificate, got nil")
+		}
+	})
+
+	// Verify deletion
+	_, _, err = Get(service, createdCert.ID)
+	if err == nil || !strings.Contains(err.Error(), "404") {
+		t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
 	}
 }
 
