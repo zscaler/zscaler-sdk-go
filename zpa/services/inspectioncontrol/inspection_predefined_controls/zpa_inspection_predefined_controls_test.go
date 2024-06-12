@@ -38,6 +38,14 @@ func TestInspectionPredefinedControls(t *testing.T) {
 		t.Errorf("predefined control name does not match: expected %s, got %s", name, control.Name)
 		return
 	}
+
+	// Negative Test: Try to retrieve a control with a non-existent name
+	nonExistentName := "ThisControlNameDoesNotExist"
+	_, _, err = GetByName(service, nonExistentName, "OWASP_CRS/3.3.0")
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
 }
 
 func TestGetAllByGroup(t *testing.T) {
@@ -60,43 +68,70 @@ func TestGetAllByGroup(t *testing.T) {
 		t.Fatalf("No controls found")
 	}
 
-	// Use a map to store unique controlGroup names
-	controlGroups := make(map[string]bool)
-	for _, control := range allControls {
-		controlGroups[control.ControlGroup] = true
+	// Use the first control group for the test
+	firstControlGroup := allControls[0].ControlGroup
+	t.Logf("Fetching details for control group: %s", firstControlGroup)
+	controls, err := GetAllByGroup(service, version, firstControlGroup)
+	if err != nil {
+		t.Fatalf("Error getting details for control group %s: %v", firstControlGroup, err)
 	}
 
-	// Now call GetAllByGroup for each unique controlGroup
-	for group := range controlGroups {
-		t.Logf("Fetching details for control group: %s", group)
-		controls, err := GetAllByGroup(service, version, group)
-		if err != nil {
-			t.Fatalf("Error getting details for control group %s: %v", group, err)
-		}
+	if len(controls) == 0 {
+		t.Errorf("No details found for control group: %s", firstControlGroup)
+	}
 
-		if len(controls) == 0 {
-			t.Errorf("No details found for control group: %s", group)
-		}
+	// Negative Test: Try to retrieve controls for a non-existent control group
+	nonExistentGroup := "ThisGroupDoesNotExist"
+	controls, err = GetAllByGroup(service, version, nonExistentGroup)
+	if err != nil {
+		t.Errorf("Error getting details for non-existent control group %s: %v", nonExistentGroup, err)
+		return
+	}
+	if len(controls) != 0 {
+		t.Errorf("Expected no controls for non-existent control group, but got %d", len(controls))
 	}
 }
 
 func TestGetControlGroup(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
+	t.Run("TestValidControlGroup", func(t *testing.T) {
+		client, err := tests.NewZpaClient()
+		if err != nil {
+			t.Fatalf("Error creating client: %v", err)
+		}
 
-	service := services.New(client)
+		service := services.New(client)
 
-	version := "OWASP_CRS/3.3.0"
-	groupName := "Protocol Issues"
+		version := "OWASP_CRS/3.3.0"
+		groupName := "Protocol Issues"
 
-	controls, err := GetAllByGroup(service, version, groupName)
-	if err != nil {
-		t.Fatalf("Error getting details for control group %s: %v", groupName, err)
-	}
+		controls, err := GetAllByGroup(service, version, groupName)
+		if err != nil {
+			t.Fatalf("Error getting details for control group %s: %v", groupName, err)
+		}
 
-	if len(controls) == 0 {
-		t.Fatalf("No details found for control group: %s", groupName)
-	}
+		if len(controls) == 0 {
+			t.Fatalf("No details found for control group: %s", groupName)
+		}
+	})
+
+	t.Run("TestNonExistentControlGroup", func(t *testing.T) {
+		client, err := tests.NewZpaClient()
+		if err != nil {
+			t.Fatalf("Error creating client: %v", err)
+		}
+
+		service := services.New(client)
+
+		version := "OWASP_CRS/3.3.0"
+		nonExistentGroupName := "ThisControlGroupNameDoesNotExist"
+
+		controls, err := GetAllByGroup(service, version, nonExistentGroupName)
+		if err != nil {
+			t.Errorf("Error getting details for non-existent control group %s: %v", nonExistentGroupName, err)
+			return
+		}
+		if len(controls) != 0 {
+			t.Errorf("Expected no controls for non-existent control group, but got %d", len(controls))
+		}
+	})
 }

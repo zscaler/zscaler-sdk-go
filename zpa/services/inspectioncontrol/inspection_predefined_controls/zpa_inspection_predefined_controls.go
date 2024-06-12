@@ -79,33 +79,6 @@ func GetAll(service *services.Service, version string) ([]PredefinedControls, er
 	return predefinedControls, nil
 }
 
-/*
-	func GetByName(service *services.Service, name, version string) (*PredefinedControls, *http.Response, error) {
-		relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
-		searchQuery := strings.TrimSpace(name)
-		searchQuery = strings.Split(searchQuery, " ")[0]
-		searchQuery = strings.TrimSpace(searchQuery)
-		searchQuery = url.QueryEscape(searchQuery)
-		var v []ControlGroupItem
-		resp, err := service.Client.NewRequestDo("GET", relativeURL, ControlsRequestFilters{
-			Version: version,
-			Search:  searchQuery,
-		}, nil, &v)
-		if err != nil {
-			return nil, nil, err
-		}
-		for _, group := range v {
-			for _, control := range group.PredefinedInspectionControls {
-				if strings.EqualFold(control.Name, name) {
-					service.Client.Config.Logger.Printf("[INFO] got predefined controls:%#v", v)
-					return &control, resp, nil
-				}
-			}
-		}
-		service.Client.Config.Logger.Printf("[ERROR] no predefined control named '%s' found", name)
-		return nil, resp, fmt.Errorf("no predefined control named '%s' found", name)
-	}
-*/
 func GetByName(service *services.Service, name, version string) (*PredefinedControls, *http.Response, error) {
 	queryParams := url.Values{}
 	queryParams.Set("version", version)
