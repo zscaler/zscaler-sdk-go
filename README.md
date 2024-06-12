@@ -9,34 +9,22 @@
 
 -> **Disclaimer:** Please refer to our [General Support Statement](docs/guides/support.md) before proceeding with the use of this provider. You can also refer to our [troubleshooting guide](docs/guides/troubleshooting.md) for guidance on typical problems.
 
-# Zscaler SDK GO
+# Official Zscaler SDK GO Overview
 
+- [Getting Started](#getting-started)
 * [Need help?](#need-help)
 * [Getting started](#getting-started)
 * [Usage guide](#usage-guide)
 * [Contributing](#contributing)
 
-This repository contains the ZIA/ZPA/ZDX/ZCC SDK for Golang. This SDK can be
+This repository contains the ZIA/ZPA/ZDX/ZCC/ZCON SDK for Golang. This SDK can be
 used in your server-side code to interact with the Zscaler platform
 
-For more information about ZIA/ZPA APIs visit:
-
-* [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide)
-* [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
-* [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
-* [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
-* [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
-
-## Need help?
-
-If you run into problems using the SDK, you can
-
-* Refer to our [General Support Statement](/docs/guides/support.md)
-* Post [issues][github-issues] here on GitHub (for code errors)
-
-The latest release can always be found on the [releases page][github-releases].
+Each package is supportedd by an individual and robust HTTP client designed to handle failures on different levels by performing intelligent retries.
 
 ## Getting started
+
+The SDK is compatible with Go version 1.18.x and up. You must use [Go Modules](https://blog.golang.org/using-go-modules) to install the SDK.
 
 To install the Zscaler GO SDK in your project:
 
@@ -44,19 +32,52 @@ To install the Zscaler GO SDK in your project:
   - You can skip this step if you already use `go mod`
   - Run `go get github.com/zscaler/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"` or
-  - Before you begin, make sure you have an administrator account and API Keys in the ZIA and/or ZPA portals.
-  - For more information on to create API Keys for ZIA and/or ZPA see the following help guides:
+  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"`.
 
-  - [Getting Started ZIA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide).
-  - [Getting Started ZPA API](https://help.zscaler.com/zpa/getting-started-zpa-api)
-  - [Getting Started ZDX API](https://help.zscaler.com/zdx/about-zdx-api)
+### You'll also need
 
-## Installation
+*  An administrator account in whichiever one of the Zscaler products you want to interact with.
+* API Keys in the the respective Zscaler cloud products.
+* For more information on getting started with Zscaler APIs visit one of the following links:
 
-To download all packages in the repo with their dependencies, simply run
+* [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide)
+* [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
+* [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
+* [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
+* [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
 
-`go get github.com/zscaler/zscaler-sdk-go`
+## Initialize a Client
+
+### ZPA Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zpa"
+)
+
+func main() {
+  ctx, client, err := okta.NewClient(
+    context.TODO(),
+    okta.WithOrgUrl("https://{yourOktaDomain}"),
+    okta.WithToken("{apiToken}"),
+  )
+
+  if err != nil {
+    fmt.Printf("Error: %v\n", err)
+  }
+
+  fmt.Printf("Context: %+v\n Client: %+v\n",ctx, client)
+}
+```
+### ZIA Client Initialization
+
+### ZCC Client Initialization
+
+### ZDX Client Initialization
+
+### ZCON Client Initialization
+
 
 ## Getting Started
 

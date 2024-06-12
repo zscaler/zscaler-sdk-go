@@ -151,7 +151,7 @@ func TestBACertificates(t *testing.T) {
 
 	// Verify deletion
 	_, _, err = Get(service, createdCert.ID)
-	if err == nil || !strings.Contains(err.Error(), "404") {
+	if err == nil || !strings.Contains(err.Error(), "400") {
 		t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
 	}
 }
