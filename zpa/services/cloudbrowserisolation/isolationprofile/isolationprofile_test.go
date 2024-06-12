@@ -41,7 +41,7 @@ func TestIsolationProfile(t *testing.T) {
 		return
 	}
 	if profile.Name != name {
-		t.Errorf("isolation profile name does not match: expected %s, got %s", name, profile.Name)
+		t.Errorf("Isolation profile name does not match: expected %s, got %s", name, profile.Name)
 		return
 	}
 
@@ -52,6 +52,16 @@ func TestIsolationProfile(t *testing.T) {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
+
+	// Cover the GetAll function error
+	service.Client.Config.CustomerID = "invalid_id"
+	_, _, err = GetAll(service)
+	if err == nil {
+		t.Errorf("Expected error when getting all profiles with invalid CustomerID, got nil")
+		return
+	}
+	// Restore valid CustomerID for further tests
+	service.Client.Config.CustomerID = client.Config.CustomerID
 }
 
 func TestResponseFormatValidation(t *testing.T) {
@@ -109,16 +119,16 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
-				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
+				t.Logf("Attempting to retrieve isolation profile with name variation: %s", variation)
 				version, _, err := GetByName(service, variation)
 				if err != nil {
-					t.Errorf("Error getting customer version profile with name variation '%s': %v", variation, err)
+					t.Errorf("Error getting isolation profile with name variation '%s': %v", variation, err)
 					return
 				}
 
-				// Check if the customer version profile's actual name matches the known name
+				// Check if the isolation profile's actual name matches the known name
 				if version.Name != knownName {
-					t.Errorf("Expected customer version profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
+					t.Errorf("Expected isolation profile name to be '%s' for variation '%s', but got '%s'", knownName, variation, version.Name)
 				}
 			})
 		}

@@ -58,8 +58,9 @@ func TestCBIBannerController(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	_, err = Update(service, createdResource.ID, retrievedResource)
@@ -76,6 +77,7 @@ func TestCBIBannerController(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
@@ -87,6 +89,7 @@ func TestCBIBannerController(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := GetAll(service)
 	if err != nil {
@@ -95,7 +98,8 @@ func TestCBIBannerController(t *testing.T) {
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
+
+	// Check if the created resource is in the list
 	found := false
 	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
@@ -106,6 +110,7 @@ func TestCBIBannerController(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	_, err = Delete(service, createdResource.ID)
 	if err != nil {
@@ -119,57 +124,3 @@ func TestCBIBannerController(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-
-/*
-func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, _, err = service.Get("non_existent_id")
-	if err == nil {
-		t.Error("Expected error retrieving non-existent resource, but got nil")
-	}
-}
-
-func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Delete("non_existent_id")
-	if err == nil {
-		t.Error("Expected error deleting non-existent resource, but got nil")
-	}
-}
-
-
-func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Update("non_existent_id", &CBIBannerController{})
-	if err == nil {
-		t.Error("Expected error updating non-existent resource, but got nil")
-	}
-}
-
-func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, _, err = service.GetByName("non_existent_name")
-	if err == nil {
-		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-	}
-}*/
