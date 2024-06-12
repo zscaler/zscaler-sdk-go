@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
@@ -33,16 +34,36 @@ func TestCBIZPAProfile(t *testing.T) {
 
 	// Test to retrieve a profile by its name
 	name := profiles[0].Name
-	t.Log("Getting isolation profile by name:" + name)
+	t.Log("Getting isolation profile by name: " + name)
 	profile, _, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting isolation profile by name: %v", err)
 		return
 	}
 	if profile.Name != name {
-		t.Errorf("isolation profile name does not match: expected %s, got %s", name, profile.Name)
+		t.Errorf("Isolation profile name does not match: expected %s, got %s", name, profile.Name)
 		return
 	}
+
+	// Sleep for 1 second
+	time.Sleep(1 * time.Second)
+
+	// New test to retrieve a profile by its ID
+	t.Run("TestGetProfileByID", func(t *testing.T) {
+		id := profiles[0].ID
+		t.Log("Getting isolation profile by ID: " + id)
+		profileByID, _, err := Get(service, id)
+		if err != nil {
+			t.Errorf("Error getting isolation profile by ID: %v", err)
+			return
+		}
+		if profileByID.ID != id {
+			t.Errorf("Isolation profile ID does not match: expected %s, got %s", id, profileByID.ID)
+		}
+	})
+
+	// Sleep for 1 second
+	time.Sleep(1 * time.Second)
 
 	// Negative Test: Try to retrieve a profile with a non-existent name
 	nonExistentName := "ThisProfileNameDoesNotExist"
@@ -85,6 +106,9 @@ func TestResponseFormatValidation(t *testing.T) {
 			t.Errorf("IsolationProfile CBI URL is empty")
 		}
 	}
+
+	// Sleep for 1 second
+	time.Sleep(1 * time.Second)
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
@@ -121,6 +145,9 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 				}
 			})
 		}
+
+		// Sleep for 1 second
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -152,6 +179,9 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 		if profile.Name != variation {
 			t.Errorf("Expected profile name to be '%s' but got '%s'", variation, profile.Name)
 		}
+
+		// Sleep for 1 second
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -166,4 +196,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
+
+	// Sleep for 1 second
+	time.Sleep(1 * time.Second)
 }

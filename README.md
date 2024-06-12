@@ -57,17 +57,20 @@ import (
 )
 
 func main() {
-  ctx, client, err := okta.NewClient(
-    context.TODO(),
-    okta.WithOrgUrl("https://{yourOktaDomain}"),
-    okta.WithToken("{apiToken}"),
-  )
+	clientID := ""
+	clientSecret := ""
+	customerID := ""
+	cloudEnv := "" // Replace with "BETA", "PRODUCTION" or "ZPATWO")
+	userAgent := ""
 
-  if err != nil {
-    fmt.Printf("Error: %v\n", err)
-  }
+	config, err := zpa.NewConfig(clientID, clientSecret, customerID, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zpa.NewClient(config)
+	ctx := context.TODO()
 
-  fmt.Printf("Context: %+v\n Client: %+v\n",ctx, client)
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
 }
 ```
 ### ZIA Client Initialization
@@ -78,7 +81,11 @@ func main() {
 
 ### ZCON Client Initialization
 
-
+Hard-coding any of the Zscaler API credentials works for quick tests, but for real
+projects you should use a more secure way of storing these values (such as
+environment variables). This library supports a few different configuration
+sources, covered in the [configuration reference](#configuration-reference)
+  section.
 ## Getting Started
 
 One can start using Zscaler Go SDK by initializing client and making a request.

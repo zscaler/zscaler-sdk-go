@@ -90,7 +90,7 @@ func TestCBICertificates(t *testing.T) {
 		t.Fatalf("Error uploading certificate: %v", err)
 	}
 
-	// Test: Verify the certificate is present in the GetAll list
+	// Test 2: Verify the certificate is present in the GetAll list
 	t.Run("TestGetAllCertificates", func(t *testing.T) {
 		allCerts, _, err := GetAll(service)
 		if err != nil {
@@ -107,7 +107,8 @@ func TestCBICertificates(t *testing.T) {
 			t.Errorf("Certificate not found in GetAll response")
 		}
 	})
-	// Test for updating the certificate name
+
+	// Test 3: Update the certificate name
 	t.Run("TestCertificateUpdate", func(t *testing.T) {
 		// Generate a new random name for updating the certificate
 		updatedName, err := generateRandomString(10)
@@ -132,52 +133,31 @@ func TestCBICertificates(t *testing.T) {
 			t.Errorf("Updated certificate name mismatch. Expected: %s, Got: %s", updatedCertName, updatedCert.Name)
 		}
 	})
-	// Verify the upload by retrieving the certificate by ID
-	retrievedCert, _, err := Get(service, createdCert.ID)
-	if err != nil {
-		t.Fatalf("Error retrieving uploaded certificate: %v", err)
-	}
-	if retrievedCert.Name != cbiCertificate.Name {
 
-		// Verify the upload by retrieving the certificate by ID
-		retrievedCert, _, err := Get(service, createdCert.ID)
-		if err != nil {
-			t.Fatalf("Error retrieving uploaded certificate: %v", err)
-		}
-		if retrievedCert.Name != cbiCertificate.Name {
-			t.Errorf("Retrieved certificate name mismatch. Expected: %s, Got: %s", cbiCertificate.Name, retrievedCert.Name)
-		}
-
-		// Retrieve the certificate by name
-		retrievedCertByName, _, err := GetByName(service, createdCert.Name)
+	// Test 4: Retrieve the certificate by name
+	t.Run("TestGetByName", func(t *testing.T) {
+		retrievedCertByName, _, err := GetByName(service, cbiCertificate.Name)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
 		}
 		if retrievedCertByName.Name != cbiCertificate.Name {
 			t.Errorf("Retrieved by name certificate name mismatch. Expected: %s, Got: %s", cbiCertificate.Name, retrievedCertByName.Name)
 		}
+	})
 
-		// Delete the certificate
-		_, err = Delete(service, createdCert.ID)
+	// Test 5: Delete the certificate
+	t.Run("TestDeleteCertificate", func(t *testing.T) {
+		_, err := Delete(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error deleting certificate: %v", err)
 		}
 
-		// Test 3: Attempt Retrieval After Deletion
-		t.Run("TestRetrieveAfterDeletion", func(t *testing.T) {
-			_, _, err := Get(service, createdCert.ID)
-			if err == nil {
-				t.Errorf("Expected error while retrieving deleted certificate, got nil")
-			}
-		})
-
-		// Verify deletion
+		// Attempt Retrieval After Deletion
 		_, _, err = Get(service, createdCert.ID)
-		if err == nil || !strings.Contains(err.Error(), "404") {
-			t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
+		if err == nil || !strings.Contains(err.Error(), "resource.not.found") {
+			t.Errorf("Expected error while retrieving deleted certificate, got nil or unexpected error: %v", err)
 		}
-
-	}
+	})
 }
 
 // generateRandomString generates a random string of the given length

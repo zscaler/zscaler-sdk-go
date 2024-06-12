@@ -37,9 +37,9 @@ func GetByName(service *services.Service, certificateName string) (*CBICertifica
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, profile := range list {
-		if strings.EqualFold(profile.Name, certificateName) {
-			return &profile, resp, nil
+	for _, cert := range list {
+		if strings.EqualFold(cert.Name, certificateName) {
+			return &cert, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("no certificate named '%s' was found", certificateName)
