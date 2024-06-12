@@ -69,6 +69,15 @@ func TestEnrollmentCert(t *testing.T) {
 			t.Errorf("Enrollment certificate ID does not match: expected %s, got %s", firstCertID, certificateByID.ID)
 		}
 	})
+
+	// Negative Test: Try to retrieve a certificate with a non-existent ID
+	nonExistentID := "non_existent_id"
+	t.Run("Get by non-existent ID", func(t *testing.T) {
+		_, _, err := Get(service, nonExistentID)
+		if err == nil {
+			t.Errorf("Expected error when getting by non-existent ID, got nil")
+		}
+	})
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {

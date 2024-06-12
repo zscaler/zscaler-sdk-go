@@ -39,7 +39,7 @@ func TestMachineGroup(t *testing.T) {
 		return
 	}
 	if group.Name != name {
-		t.Errorf("machine group name does not match: expected %s, got %s", name, group.Name)
+		t.Errorf("Machine group name does not match: expected %s, got %s", name, group.Name)
 		return
 	}
 
@@ -60,6 +60,14 @@ func TestMachineGroup(t *testing.T) {
 	_, _, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
+
+	// Negative Test: Try to retrieve a group with a non-existent ID
+	nonExistentID := "non_existent_id"
+	_, _, err = Get(service, nonExistentID)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
 	}
 }
@@ -171,6 +179,6 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
-		t.Error("Expected error retrieving resource by non_existent_name name, but got nil")
+		t.Error("Expected error retrieving resource by non-existent_name name, but got nil")
 	}
 }

@@ -61,6 +61,15 @@ func TestTrustedNetworks(t *testing.T) {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
+
+	// Negative Test: Try to retrieve a network with a non-existent ID
+	nonExistentID := "non_existent_id"
+	t.Run("Get by non-existent ID", func(t *testing.T) {
+		_, _, err := Get(service, nonExistentID)
+		if err == nil {
+			t.Errorf("Expected error when getting by non-existent ID, got nil")
+		}
+	})
 }
 
 func TestResponseFormatValidation(t *testing.T) {
@@ -105,7 +114,7 @@ func TestResponseFormatValidation(t *testing.T) {
 			return
 		}
 
-		service := New(client)
+		service := services.New(client)
 
 		// Assuming a network with the name "BD-TrustedNetwork01" exists
 		knownName := "BD-TrustedNetwork01"
@@ -119,7 +128,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 		for _, variation := range variations {
 			t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
-			network, _, err := service.GetByName(variation)
+			network, _, err := GetByName(service, variation)
 			if err != nil {
 				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
 				continue
@@ -132,7 +141,6 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 	}
 */
-
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {

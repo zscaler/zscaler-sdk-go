@@ -58,6 +58,14 @@ func TestIdPController(t *testing.T) {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
+
+	// Negative Test: Try to retrieve an Idp with a non-existent ID
+	nonExistentID := "non_existent_id"
+	_, _, err = Get(service, nonExistentID)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent ID, got nil")
+		return
+	}
 }
 
 func TestResponseFormatValidation(t *testing.T) {
