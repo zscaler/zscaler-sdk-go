@@ -3,6 +3,8 @@ package alerts
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 )
 
 const (
@@ -64,7 +66,7 @@ type Group struct {
 }
 
 // GetOngoingAlerts retrieves ongoing alerts
-func (service *Service) GetOngoingAlerts() (*AlertsResponse, *http.Response, error) {
+func GetOngoingAlerts(service *services.Service) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
 	resp, err := service.Client.NewRequestDo("GET", ongoingEndpoint, nil, nil, &response)
 	if err != nil {
@@ -74,7 +76,7 @@ func (service *Service) GetOngoingAlerts() (*AlertsResponse, *http.Response, err
 }
 
 // GetHistoricalAlerts retrieves historical alerts
-func (service *Service) GetHistoricalAlerts() (*AlertsResponse, *http.Response, error) {
+func GetHistoricalAlerts(service *services.Service) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
 	resp, err := service.Client.NewRequestDo("GET", historicalEndpoint, nil, nil, &response)
 	if err != nil {
@@ -84,7 +86,7 @@ func (service *Service) GetHistoricalAlerts() (*AlertsResponse, *http.Response, 
 }
 
 // GetAlert retrieves a specific alert by ID
-func (service *Service) GetAlert(alertID string) (*Alert, *http.Response, error) {
+func GetAlert(service *services.Service, alertID string) (*Alert, *http.Response, error) {
 	var response Alert
 	path := fmt.Sprintf(alertEndpoint, alertID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
@@ -95,7 +97,7 @@ func (service *Service) GetAlert(alertID string) (*Alert, *http.Response, error)
 }
 
 // GetAffectedDevices retrieves the affected devices for a specific alert by ID
-func (service *Service) GetAffectedDevices(alertID string) (*AlertsResponse, *http.Response, error) {
+func GetAffectedDevices(service *services.Service, alertID string) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
 	path := fmt.Sprintf(affectedDevicesEndpoint, alertID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)

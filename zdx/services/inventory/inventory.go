@@ -1,6 +1,10 @@
 package inventory
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
+)
 
 const (
 	softwareEndpoint    = "v1/inventory/software"
@@ -41,7 +45,7 @@ type SoftwareUserList struct {
 	InstallDate     string `json:"install_date,omitempty"`
 }
 
-func (service *Service) GetSoftware(filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
+func GetSoftware(service *services.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
 	var response SoftwareOverviewResponse
 	path := softwareEndpoint
 	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
@@ -51,7 +55,7 @@ func (service *Service) GetSoftware(filters GetSoftwareFilters) ([]SoftwareOverv
 	return response.Software, response.NextOffset, resp, nil
 }
 
-func (service *Service) GetSoftwareKey(filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
+func GetSoftwareKey(service *services.Service, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
 	var response SoftwareKeyResponse
 	path := softwareKeyEndpoint
 	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)

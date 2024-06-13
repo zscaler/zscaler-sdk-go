@@ -3,6 +3,8 @@ package analysis
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 )
 
 const (
@@ -28,7 +30,7 @@ type Result struct {
 	Times      []int  `json:"times"`
 }
 
-func (service *Service) GetAnalysis(analysisID string) (*AnalysisResult, *http.Response, error) {
+func GetAnalysis(service *services.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
 	var response AnalysisResult
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
@@ -38,7 +40,7 @@ func (service *Service) GetAnalysis(analysisID string) (*AnalysisResult, *http.R
 	return &response, resp, nil
 }
 
-func (service *Service) CreateAnalysis(request AnalysisRequest) (*http.Response, error) {
+func CreateAnalysis(service *services.Service, request AnalysisRequest) (*http.Response, error) {
 	path := analysisEndpoint
 	resp, err := service.Client.NewRequestDo("POST", path, nil, request, nil)
 	if err != nil {
@@ -47,7 +49,7 @@ func (service *Service) CreateAnalysis(request AnalysisRequest) (*http.Response,
 	return resp, nil
 }
 
-func (service *Service) DeleteAnalysis(analysisID string) (*http.Response, error) {
+func DeleteAnalysis(service *services.Service, analysisID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {

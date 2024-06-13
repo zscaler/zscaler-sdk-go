@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"bytes"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -95,6 +97,10 @@ func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParam
 
 func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID string) {
 	if logger != nil && resp != nil {
+		// Read and reset response body
+		respBody, err := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewBuffer(respBody)) // Reset the response body
+
 		// Dump the entire response
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {
@@ -102,5 +108,8 @@ func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID stri
 		} else {
 			WriteLog(logger, logRespMsg, resp.Request.Method, resp.Request.URL, reqID, time.Since(start).String(), "Got error:"+err.Error())
 		}
+
+		// Log the response body separately
+		WriteLog(logger, "Response Body: %s", string(respBody))
 	}
 }

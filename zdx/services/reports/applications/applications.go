@@ -3,6 +3,7 @@ package applications
 import (
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
@@ -11,14 +12,15 @@ const (
 )
 
 type Apps struct {
-	ID              int              `json:"id"`
-	Name            string           `json:"name,omitempty"`
-	Score           float64          `json:"score,omitempty"`
-	MostImpactedGeo *MostImpactedGeo `json:"most_impacted_geo,omitempty"`
-	Stats           *Stats           `json:"stats,omitempty"`
+	ID                 int                 `json:"id"`
+	Name               string              `json:"name,omitempty"`
+	Score              float32             `json:"score"`
+	MostImpactedRegion *MostImpactedRegion `json:"most_impacted_region,omitempty"`
+	Stats              *Stats              `json:"stats,omitempty"`
+	TotalUsers         int                 `json:"total_users,omitempty"`
 }
 
-type MostImpactedGeo struct {
+type MostImpactedRegion struct {
 	ID      string `json:"id"`
 	City    string `json:"city,omitempty"`
 	Region  string `json:"region,omitempty"`
@@ -37,7 +39,7 @@ type Stats struct {
 // Lists all active applications configured for a tenant.
 // The endpoint gets each application's ZDX score (default for the last 2 hours), most impacted location, and the total number of users impacted.
 // To learn more, see About the ZDX Dashboard at https://help.zscaler.com/zdx/about-zdx-dashboard.
-func (service *Service) GetAllApps(filters common.GetFromToFilters) ([]Apps, *http.Response, error) {
+func GetAllApps(service *services.Service, filters common.GetFromToFilters) ([]Apps, *http.Response, error) {
 	var apps []Apps
 	path := appsEndpoint
 	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &apps)
@@ -47,7 +49,7 @@ func (service *Service) GetAllApps(filters common.GetFromToFilters) ([]Apps, *ht
 	return apps, resp, nil
 }
 
-func (service *Service) GetApp(appID string, filters common.GetFromToFilters) (*Apps, *http.Response, error) {
+func GetApp(service *services.Service, appID string, filters common.GetFromToFilters) (*Apps, *http.Response, error) {
 	var app Apps
 	path := appsEndpoint + "/" + appID
 	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &app)

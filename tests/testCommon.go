@@ -15,6 +15,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
@@ -159,4 +160,17 @@ func NewZccClient() (*zcc.Client, error) {
 	}
 	zccClient := zcc.NewClient(config)
 	return zccClient, nil
+}
+
+func NewZdxClient() (*zdx.Client, error) {
+	clientID := os.Getenv("ZDX_API_KEY_ID")
+	clientSecret := os.Getenv("ZDX_API_SECRET")
+	// cloud := os.Getenv("ZCC_CLOUD")
+	config, err := zdx.NewConfig(clientID, clientSecret, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating config failed: %v\n", err)
+		return nil, err
+	}
+	zdxClient := zdx.NewClient(config)
+	return zdxClient, nil
 }

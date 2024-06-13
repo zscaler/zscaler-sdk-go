@@ -112,7 +112,7 @@ func loadCredentialsFromConfig(logger logger.Logger) (*CredentialsConfig, error)
 	logger.Printf("[INFO]Loading configuration file at:%s", path)
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zpa_client_id, zpa_client_secret, zpa_customer_id, and zpa_cloud. " + err.Error())
+		return nil, errors.New("Could not open credentials file, needs to contain one json object with keys: zdx_api_key_id, zdx_api_secret, and zdx_cloud. " + err.Error())
 	}
 	configBytes, err := io.ReadAll(file)
 	if err != nil {

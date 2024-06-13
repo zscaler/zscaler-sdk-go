@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.61.0 (June 6, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Fixes
+
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZPA package to centralize the `service.go` client instantiation.
+
 # 2.6.0 (June 6, 2024)
 
 ## Notes

@@ -3,6 +3,8 @@ package deeptrace
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 )
 
 const (
@@ -41,7 +43,7 @@ type DeepTraceSessionPayload struct {
 	ProbeDevice          bool   `json:"probe_device"`
 }
 
-func (service *Service) GetDeepTraces(deviceID int) ([]DeepTraceSession, *http.Response, error) {
+func GetDeepTraces(service *services.Service, deviceID int) ([]DeepTraceSession, *http.Response, error) {
 	var response []DeepTraceSession
 	path := fmt.Sprintf("%s/%d/deeptraces", deepTracesEndpoint, deviceID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
@@ -51,7 +53,7 @@ func (service *Service) GetDeepTraces(deviceID int) ([]DeepTraceSession, *http.R
 	return response, resp, nil
 }
 
-func (service *Service) GetDeepTraceSession(deviceID int, traceID string) (*http.Response, error) {
+func GetDeepTraceSession(service *services.Service, deviceID int, traceID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%d/deeptraces/%s", deepTracesEndpoint, deviceID, traceID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, nil)
 	if err != nil {
@@ -60,7 +62,7 @@ func (service *Service) GetDeepTraceSession(deviceID int, traceID string) (*http
 	return resp, nil
 }
 
-func (service *Service) CreateDeepTraceSession(deviceID int, payload DeepTraceSessionPayload) (*DeepTraceSession, *http.Response, error) {
+func CreateDeepTraceSession(service *services.Service, deviceID int, payload DeepTraceSessionPayload) (*DeepTraceSession, *http.Response, error) {
 	var response DeepTraceSession
 	path := fmt.Sprintf("%s/%d/deeptraces", deepTracesEndpoint, deviceID)
 	resp, err := service.Client.NewRequestDo("POST", path, nil, payload, &response)
@@ -70,7 +72,7 @@ func (service *Service) CreateDeepTraceSession(deviceID int, payload DeepTraceSe
 	return &response, resp, nil
 }
 
-func (service *Service) DeleteDeepTraceSession(deviceID int, traceID string) (*http.Response, error) {
+func DeleteDeepTraceSession(service *services.Service, deviceID int, traceID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%d/deeptraces/%s", deepTracesEndpoint, deviceID, traceID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
