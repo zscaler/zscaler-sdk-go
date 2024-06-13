@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 const (
@@ -15,7 +17,7 @@ type DownloadDevicesQueryParams struct {
 	RegistrationTypes string `url:"registrationTypes,omitempty"`
 }
 
-func (service *Service) DownloadDevices(osTypes, registrationTypes string, writer io.Writer) error {
+func DownloadDevices(service *services.Service, osTypes, registrationTypes string, writer io.Writer) error {
 	queryParams := DownloadDevicesQueryParams{
 		OSTypes:           osTypes,
 		RegistrationTypes: registrationTypes,

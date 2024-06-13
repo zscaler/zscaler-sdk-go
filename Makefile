@@ -98,7 +98,8 @@ test\:integration\:zcon:
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
 	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
-	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	@go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	@go tool cover -func zdxcoverage.out | grep total:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"

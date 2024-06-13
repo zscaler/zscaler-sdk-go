@@ -3,6 +3,8 @@ package getotp
 import (
 	"fmt"
 	"net/url"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 const (
@@ -27,7 +29,7 @@ type GetOtpQuery struct {
 	Udid string `json:"udid,omitempty" url:"udid,omitempty"`
 }
 
-func (service *Service) GetOtp(udid string) (*OtpResponse, error) {
+func GetOtp(service *services.Service, udid string) (*OtpResponse, error) {
 	queryParams := url.Values{}
 	if udid != "" {
 		queryParams.Set("udid", udid)

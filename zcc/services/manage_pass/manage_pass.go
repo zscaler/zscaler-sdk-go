@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 const (
@@ -29,7 +31,7 @@ type ManagePassResponseContract struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-func (service *Service) UpdateManagePass(managePass *ManagePass) (*ManagePassResponseContract, error) {
+func UpdateManagePass(service *services.Service, managePass *ManagePass) (*ManagePassResponseContract, error) {
 	body, err := json.Marshal(managePass)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal manage pass request: %w", err)

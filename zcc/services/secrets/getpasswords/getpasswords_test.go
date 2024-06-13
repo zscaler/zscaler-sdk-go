@@ -1,23 +1,31 @@
 package getpasswords
 
 /*
+import (
+	"fmt"
+	"testing"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
+)
+
 func TestGetPasswords(t *testing.T) {
 	client, err := tests.NewZccClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZCC client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	testCases := []struct {
 		username string
 	}{
-		{""},                    // No filters
-		{"testuser"},            // Username only
+		{""},         // No filters
+		{"testuser"}, // Username only
 	}
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("username=%s", tc.username), func(t *testing.T) {
-			passwords, err := service.GetPasswords(tc.username, "")
+			passwords, err := GetPasswords(service, tc.username, "")
 			if err != nil {
 				t.Fatalf("Error retrieving passwords: %v", err)
 			}

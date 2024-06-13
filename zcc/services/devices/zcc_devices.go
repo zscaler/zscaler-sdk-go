@@ -1,5 +1,9 @@
 package devices
 
+import (
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
+)
+
 const (
 	getDevicesEndpoint = "/public/v1/getDevices"
 )
@@ -37,7 +41,7 @@ type GetDevicesQueryParams struct {
 	OsType   string `url:"osType,omitempty"`
 }
 
-func (service *Service) GetAll(username, osType string) ([]GetDevices, error) {
+func GetAll(service *services.Service, username, osType string) ([]GetDevices, error) {
 	var devices []GetDevices
 	queryParams := GetDevicesQueryParams{
 		Username: username,

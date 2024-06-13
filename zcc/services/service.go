@@ -1,4 +1,4 @@
-package getotp
+package services
 
 import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc"

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/devices"
 )
 
@@ -13,10 +14,9 @@ func TestGetOtp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZCC client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	deviceService := devices.New(client)
-	deviceList, err := deviceService.GetAll("", "")
+	deviceList, err := devices.GetAll(service, "", "")
 	if err != nil {
 		t.Errorf("Error getting devices: %v", err)
 		return
@@ -39,7 +39,7 @@ func TestGetOtp(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("udid=%s", tc.udid), func(t *testing.T) {
-			otpResponse, err := service.GetOtp(tc.udid)
+			otpResponse, err := GetOtp(service, tc.udid)
 			if err != nil {
 				t.Fatalf("Error retrieving OTP for UDID %s: %v", tc.udid, err)
 			}

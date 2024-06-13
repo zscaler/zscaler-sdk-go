@@ -3,6 +3,8 @@ package getpasswords
 import (
 	"fmt"
 	"net/url"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 const (
@@ -24,7 +26,7 @@ type GetPasswordsQueryParams struct {
 	OsType   string `url:"osType"`
 }
 
-func (service *Service) GetPasswords(username, osType string) (*Passwords, error) {
+func GetPasswords(service *services.Service, username, osType string) (*Passwords, error) {
 	queryParams := url.Values{}
 	if username != "" {
 		queryParams.Set("username", username)

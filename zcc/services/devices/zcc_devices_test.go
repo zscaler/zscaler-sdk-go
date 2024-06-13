@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/devices"
 )
 
@@ -13,7 +14,7 @@ func TestGetDevices(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZCC client: %v", err)
 	}
-	service := devices.New(client)
+	service := services.New(client)
 
 	// Define test cases
 	testCases := []struct {
@@ -28,7 +29,7 @@ func TestGetDevices(t *testing.T) {
 		t.Run(fmt.Sprintf("GetAll with filters - username: %s, osType: %s", tc.username, tc.osType), func(t *testing.T) {
 			t.Logf("Testing with filters - username: %s, osType: %s", tc.username, tc.osType)
 
-			devicesList, err := service.GetAll(tc.username, tc.osType)
+			devicesList, err := devices.GetAll(service, tc.username, tc.osType)
 			if err != nil {
 				t.Errorf("Error while getting devices with username=%s, osType=%s: %v", tc.username, tc.osType, err)
 				return
