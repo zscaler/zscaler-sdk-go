@@ -1,6 +1,5 @@
 package activation
 
-/*
 import (
 	"testing"
 
@@ -46,4 +45,3 @@ func TestActivation(t *testing.T) {
 		}
 	})
 }
-*/
