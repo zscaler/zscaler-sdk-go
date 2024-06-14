@@ -35,19 +35,27 @@ type DLPIDMProfileLite struct {
 }
 
 func GetDLPProfileLiteID(service *services.Service, ProfileLiteID int, activeOnly bool) (*DLPIDMProfileLite, error) {
-	endpoint := fmt.Sprintf("%s/%d", dlpIDMProfileLiteEndpoint, ProfileLiteID)
+	endpoint := dlpIDMProfileLiteEndpoint
 	if activeOnly {
 		endpoint += "?activeOnly=true"
+	} else {
+		endpoint += "?activeOnly=false"
 	}
 
-	var profileLite DLPIDMProfileLite
-	err := service.Client.Read(endpoint, &profileLite)
+	var profiles []DLPIDMProfileLite
+	err := service.Client.Read(endpoint, &profiles)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning idm profile template from Get: %d", profileLite.ProfileID)
-	return &profileLite, nil
+	for _, profile := range profiles {
+		if profile.ProfileID == ProfileLiteID {
+			service.Client.Logger.Printf("[DEBUG]returning idm profile template from Get: %d", profile.ProfileID)
+			return &profile, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no DLP profile found with ProfileLiteID: %d", ProfileLiteID)
 }
 
 func GetDLPProfileLiteByName(service *services.Service, profileLiteName string, activeOnly bool) (*DLPIDMProfileLite, error) {

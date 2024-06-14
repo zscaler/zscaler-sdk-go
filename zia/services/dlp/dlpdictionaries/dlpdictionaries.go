@@ -120,15 +120,6 @@ type IDMProfileMatchAccuracy struct {
 	MatchAccuracy string `json:"matchAccuracy,omitempty"`
 }
 
-type ValidateDLPDicPattern struct {
-	Status        string `json:"status,omitempty"`
-	ErrPosition   int    `json:"errPosition,omitempty"`
-	ErrMsg        string `json:"errMsg,omitempty"`
-	ErrParameter  string `json:"errParameter,omitempty"`
-	ErrSuggestion string `json:"errSuggestion,omitempty"`
-	IDList        []int  `json:"idList,omitempty"`
-}
-
 func Get(service *services.Service, dlpDictionariesID int) (*DlpDictionary, error) {
 	var dlpDictionary DlpDictionary
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
@@ -193,19 +184,4 @@ func GetAll(service *services.Service) ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err
-}
-
-func ValidateDLPPattern(service *services.Service, validatePattern *ValidateDLPDicPattern) (*ValidateDLPDicPattern, error) {
-	resp, err := service.Client.Create(validateDLPPatternEndpoint, validatePattern)
-	if err != nil {
-		return nil, err
-	}
-
-	createdDLPPattern, ok := resp.(*ValidateDLPDicPattern)
-	if !ok {
-		return nil, errors.New("object returned from api was not dlp pattern pointer")
-	}
-
-	service.Client.Logger.Printf("[DEBUG]returning new dlp pattern from create: %d", createdDLPPattern)
-	return createdDLPPattern, nil
 }

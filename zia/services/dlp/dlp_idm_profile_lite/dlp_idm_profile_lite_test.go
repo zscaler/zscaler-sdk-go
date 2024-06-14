@@ -40,6 +40,18 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 			t.Errorf("idm profile name does not match with activeOnly %t: expected %s, got %s", activeOnly, name, profile.TemplateName)
 			return
 		}
+
+		// Additional step to test GetDLPProfileLiteID
+		t.Run("GetDLPProfileLiteID", func(t *testing.T) {
+			profileLite, err := GetDLPProfileLiteID(service, profile.ProfileID, activeOnly)
+			if err != nil {
+				t.Errorf("Error getting DLP Profile Lite ID %d with activeOnly %t: %v", profile.ProfileID, activeOnly, err)
+				return
+			}
+			if profileLite.ProfileID != profile.ProfileID {
+				t.Errorf("DLP Profile Lite ID does not match with activeOnly %t: expected %d, got %d", activeOnly, profile.ProfileID, profileLite.ProfileID)
+			}
+		})
 	}
 
 	// Negative Test remains the same
