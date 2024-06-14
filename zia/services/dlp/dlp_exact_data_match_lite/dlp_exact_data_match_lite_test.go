@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,10 +17,10 @@ func TestDLPEDMLite(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := service.GetAllEDMSchema(activeOnly, true) // Assuming fetchTokens is relevant here
+		profiles, err := GetAllEDMSchema(service, activeOnly, true) // Assuming fetchTokens is relevant here
 		if err != nil {
 			t.Errorf("Error getting idm profiles with activeOnly %t: %v", activeOnly, err)
 			return
@@ -30,7 +31,7 @@ func TestDLPEDMLite(t *testing.T) {
 		}
 		schemaName := profiles[0].Schema.Name
 		t.Log("Getting idm profile by schema name:", schemaName, "with activeOnly:", activeOnly)
-		profileByName, err := service.GetBySchemaName(schemaName, activeOnly, true)
+		profileByName, err := GetBySchemaName(service, schemaName, activeOnly, true)
 		if err != nil {
 			t.Errorf("Error getting idm profile by schema name with activeOnly %t: %v", activeOnly, err)
 			return
@@ -42,7 +43,7 @@ func TestDLPEDMLite(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an edm template with a non-existent name
 	nonExistentName := "ThisEdmDoesNotExist"
-	profiles, err := service.GetBySchemaName(nonExistentName, false, true)
+	profiles, err := GetBySchemaName(service, nonExistentName, false, true)
 	if err != nil {
 		t.Errorf("Error when getting by non-existent name: %v", err)
 		return
@@ -61,10 +62,10 @@ func TestGetDLPProfileLiteById(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		templates, err := service.GetAllEDMSchema(activeOnly, true)
+		templates, err := GetAllEDMSchema(service, activeOnly, true)
 		if err != nil {
 			t.Fatalf("Error getting all EDM templates with activeOnly %t: %v", activeOnly, err)
 		}
@@ -90,10 +91,10 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		templates, err := service.GetAllEDMSchema(activeOnly, true)
+		templates, err := GetAllEDMSchema(service, activeOnly, true)
 		if err != nil {
 			t.Errorf("Error getting edm template with activeOnly %t: %v", activeOnly, err)
 			return
@@ -121,7 +122,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a edm template with the name "BD_EDM_TEMPLATE01" exists
 	knownName := "BD_EDM_TEMPLATE01"
@@ -136,7 +137,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	for _, activeOnly := range []bool{true, false} {
 		for _, variation := range variations {
 			t.Logf("Attempting to retrieve group with schema name variation: %s with activeOnly %t", variation, activeOnly)
-			profiles, err := service.GetBySchemaName(variation, activeOnly, true)
+			profiles, err := GetBySchemaName(service, variation, activeOnly, true)
 			if err != nil {
 				t.Errorf("Error getting idm profile with schema name variation '%s' and activeOnly %t: %v", variation, activeOnly, err)
 				continue
@@ -154,10 +155,10 @@ func TestEDMFields(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Retrieve all EDM profiles
-	edmProfiles, err := service.GetAllEDMSchema(true, false) // Assuming appropriate method name and parameters
+	edmProfiles, err := GetAllEDMSchema(service, true, false) // Assuming appropriate method name and parameters
 	if err != nil {
 		t.Fatalf("Error getting all EDM profiles: %v", err)
 	}

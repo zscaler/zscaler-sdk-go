@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -119,7 +120,7 @@ type IDMProfileMatchAccuracy struct {
 	MatchAccuracy string `json:"matchAccuracy,omitempty"`
 }
 
-type ValidateDLPPattern struct {
+type ValidateDLPDicPattern struct {
 	Status        string `json:"status,omitempty"`
 	ErrPosition   int    `json:"errPosition,omitempty"`
 	ErrMsg        string `json:"errMsg,omitempty"`
@@ -128,7 +129,7 @@ type ValidateDLPPattern struct {
 	IDList        []int  `json:"idList,omitempty"`
 }
 
-func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
+func Get(service *services.Service, dlpDictionariesID int) (*DlpDictionary, error) {
 	var dlpDictionary DlpDictionary
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
 	if err != nil {
@@ -139,7 +140,7 @@ func (service *Service) Get(dlpDictionariesID int) (*DlpDictionary, error) {
 	return &dlpDictionary, nil
 }
 
-func (service *Service) GetByName(dictionaryName string) (*DlpDictionary, error) {
+func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	if err != nil {
@@ -153,7 +154,7 @@ func (service *Service) GetByName(dictionaryName string) (*DlpDictionary, error)
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
 
-func (service *Service) Create(dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
 	resp, err := service.Client.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
 	if err != nil {
 		return nil, nil, err
@@ -168,7 +169,7 @@ func (service *Service) Create(dlpDictionariesID *DlpDictionary) (*DlpDictionary
 	return createdDlpDictionary, nil, nil
 }
 
-func (service *Service) Update(dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+func Update(service *services.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
 	if err != nil {
 		return nil, nil, err
@@ -179,7 +180,7 @@ func (service *Service) Update(dlpDictionariesID int, dlpDictionaries *DlpDictio
 	return updatedDlpDictionary, nil, nil
 }
 
-func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Response, error) {
+func DeleteDlpDictionary(service *services.Service, dlpDictionariesID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
 	if err != nil {
 		return nil, err
@@ -188,19 +189,19 @@ func (service *Service) DeleteDlpDictionary(dlpDictionariesID int) (*http.Respon
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]DlpDictionary, error) {
+func GetAll(service *services.Service) ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err
 }
 
-func (service *Service) ValidateDLPPattern(validatePattern *ValidateDLPPattern) (*ValidateDLPPattern, error) {
+func ValidateDLPPattern(service *services.Service, validatePattern *ValidateDLPDicPattern) (*ValidateDLPDicPattern, error) {
 	resp, err := service.Client.Create(validateDLPPatternEndpoint, validatePattern)
 	if err != nil {
 		return nil, err
 	}
 
-	createdDLPPattern, ok := resp.(*ValidateDLPPattern)
+	createdDLPPattern, ok := resp.(*ValidateDLPDicPattern)
 	if !ok {
 		return nil, errors.New("object returned from api was not dlp pattern pointer")
 	}

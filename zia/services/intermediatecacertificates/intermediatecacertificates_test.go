@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,10 +17,10 @@ func TestIntermediateCertificate_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Test 1: GetAll
-	certificates, err := service.GetAll()
+	certificates, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error getting intermediate certificates: %v", err)
 		return
@@ -32,7 +33,7 @@ func TestIntermediateCertificate_data(t *testing.T) {
 
 	// Test 2: GetByName
 	name := certificates[0].Name
-	certificateByName, err := service.GetByName(name)
+	certificateByName, err := GetByName(service, name)
 	if err != nil {
 		t.Fatalf("Error getting intermediate certificate by name %s: %v", name, err)
 		return
@@ -45,7 +46,7 @@ func TestIntermediateCertificate_data(t *testing.T) {
 
 	// Test 3: GetCertificate
 	certID := certificates[0].ID
-	certificateByID, err := service.GetCertificate(certID)
+	certificateByID, err := GetCertificate(service, certID)
 	if err != nil {
 		t.Fatalf("Error getting intermediate certificate by ID %d: %v", certID, err)
 		return
@@ -57,7 +58,7 @@ func TestIntermediateCertificate_data(t *testing.T) {
 	t.Logf("Successfully retrieved certificate by ID: %d", certID)
 
 	// Test 4: GetIntCAReadyToUse
-	readyToUseCerts, err := service.GetIntCAReadyToUse()
+	readyToUseCerts, err := GetIntCAReadyToUse(service)
 	if err != nil {
 		t.Fatalf("Error getting intermediate CA ready to use: %v", err)
 		return
@@ -76,7 +77,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a certificate with the name "Zscaler Intermediate CA Certificate" exists
 	knownName := "Zscaler Intermediate CA Certificate"
@@ -90,7 +91,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		certificate, err := service.GetByName(variation)
+		certificate, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting certificate with name variation '%s': %v", variation, err)
 			continue

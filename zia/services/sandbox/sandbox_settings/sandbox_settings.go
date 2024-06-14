@@ -1,5 +1,7 @@
 package sandbox_settings
 
+import "github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+
 const (
 	advancedSettingsEndpoint = "/behavioralAnalysisAdvancedSettings"
 	fileHashCountEndpoint    = "/fileHashCount"
@@ -14,7 +16,7 @@ type FileHashCount struct {
 	RemainingFileHashes    int `json:"remainingFileHashes,omitempty"`
 }
 
-func (service *Service) Get() (*BaAdvancedSettings, error) {
+func Get(service *services.Service) (*BaAdvancedSettings, error) {
 	var hashes BaAdvancedSettings
 	err := service.Client.Read(advancedSettingsEndpoint, &hashes)
 	if err != nil {
@@ -25,7 +27,7 @@ func (service *Service) Get() (*BaAdvancedSettings, error) {
 	return &hashes, nil
 }
 
-func (service *Service) Update(hashes BaAdvancedSettings) (*BaAdvancedSettings, error) {
+func Update(service *services.Service, hashes BaAdvancedSettings) (*BaAdvancedSettings, error) {
 	_, err := service.Client.UpdateWithPut(advancedSettingsEndpoint, hashes)
 	if err != nil {
 		return nil, err
@@ -35,7 +37,7 @@ func (service *Service) Update(hashes BaAdvancedSettings) (*BaAdvancedSettings, 
 	return &hashes, nil
 }
 
-func (service *Service) GetFileHashCount() (*FileHashCount, error) {
+func GetFileHashCount(service *services.Service) (*FileHashCount, error) {
 	var hashes FileHashCount
 	err := service.Client.Read(advancedSettingsEndpoint+fileHashCountEndpoint, &hashes)
 	if err != nil {

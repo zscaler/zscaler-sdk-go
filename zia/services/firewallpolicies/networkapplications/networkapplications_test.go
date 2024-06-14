@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestNetworkApplications(t *testing.T) {
@@ -16,10 +17,10 @@ func TestNetworkApplications(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Fetching the first page of network applications
-	nwApplications, err := service.GetFirstPage("")
+	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
 		t.Errorf("Error getting network applications: %v", err)
 		return
@@ -35,7 +36,7 @@ func TestNetworkApplications(t *testing.T) {
 	t.Log("Getting network application by ID: " + nwApplicationID)
 
 	// Testing GetNetworkApplication with the selected application ID and locale
-	nwApplication, err := service.GetNetworkApplication(nwApplicationID, locale)
+	nwApplication, err := GetNetworkApplication(service, nwApplicationID, locale)
 	if err != nil {
 		t.Errorf("Error getting network application by ID: %v", err)
 		return
@@ -47,7 +48,7 @@ func TestNetworkApplications(t *testing.T) {
 
 	// Negative Test: Try to retrieve a network application with a non-existent ID
 	nonExistentID := "ThisApplicationDoesNotExist"
-	_, err = service.GetNetworkApplication(nonExistentID, locale)
+	_, err = GetNetworkApplication(service, nonExistentID, locale)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
@@ -60,10 +61,10 @@ func TestFilteringByParentCategory(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Fetching only the first page of network applications
-	nwApplications, err := service.GetFirstPage("")
+	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
 		t.Fatalf("Error getting the first page of network applications: %v", err)
 	}
@@ -76,7 +77,7 @@ func TestFilteringByParentCategory(t *testing.T) {
 	locale := "en-US" // or any other locale you wish to use
 
 	// Fetching applications filtered by parentCategory
-	filteredApplication, err := service.GetByName(filterCategory, locale)
+	filteredApplication, err := GetByName(service, filterCategory, locale)
 	if err != nil {
 		t.Fatalf("Error fetching application by category: %v", err)
 	}
@@ -93,13 +94,13 @@ func TestLocaleSpecificResponse(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 	locales := []string{"en-US", "de-DE", "es-ES", "fr-FR", "ja-JP", "zh-CN"}
 
 	for _, locale := range locales {
 		t.Run("Locale: "+locale, func(t *testing.T) {
 			// Using GetFirstPage instead of GetAll
-			applications, err := service.GetFirstPage(locale)
+			applications, err := GetFirstPage(service, locale)
 			if err != nil {
 				t.Errorf("Error fetching applications for locale %s: %v", locale, err)
 				return
@@ -121,9 +122,9 @@ func TestDeprecatedApplications(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	nwApplications, err := service.GetFirstPage("")
+	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
 		t.Fatalf("Error getting network applications: %v", err)
 	}
@@ -148,9 +149,9 @@ func TestDescriptionField(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	nwApplications, err := service.GetFirstPage("")
+	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
 		t.Fatalf("Error getting network applications: %v", err)
 	}
@@ -168,12 +169,12 @@ func TestInvalidLocaleResponses(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	invalidLocales := []string{"abc", "xyz", "123"}
 	for _, locale := range invalidLocales {
 		t.Run("Invalid Locale: "+locale, func(t *testing.T) {
-			_, err := service.GetFirstPage(locale)
+			_, err := GetFirstPage(service, locale)
 			if err == nil {
 				t.Errorf("Expected error for invalid locale %s, but got none", locale)
 			}
@@ -187,13 +188,13 @@ func TestRandomizedLocaleSpecificResponse(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	locales := []string{"en-US", "de-DE", "es-ES", "fr-FR", "ja-JP", "zh-CN"}
 
 	for _, locale := range locales {
 		t.Run("Locale: "+locale, func(t *testing.T) {
-			applications, err := service.GetFirstPage(locale)
+			applications, err := GetFirstPage(service, locale)
 			if err != nil {
 				t.Errorf("Error fetching applications for locale %s: %v", locale, err)
 				return
@@ -221,10 +222,10 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Fetching only the first page of network applications
-	nwApplications, err := service.GetFirstPage("")
+	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
 		t.Errorf("Error getting the first page of network applications: %v", err)
 		return
@@ -244,7 +245,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 // GetFirstPage fetches the first page of network applications for a specific locale
-func (service *Service) GetFirstPage(locale string) ([]NetworkApplications, error) {
+func GetFirstPage(service *services.Service, locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint
 	if locale != "" {

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -33,7 +34,7 @@ type DLPIDMProfileLite struct {
 	ModifiedBy *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
-func (service *Service) GetDLPProfileLiteID(ProfileLiteID int, activeOnly bool) (*DLPIDMProfileLite, error) {
+func GetDLPProfileLiteID(service *services.Service, ProfileLiteID int, activeOnly bool) (*DLPIDMProfileLite, error) {
 	endpoint := fmt.Sprintf("%s/%d", dlpIDMProfileLiteEndpoint, ProfileLiteID)
 	if activeOnly {
 		endpoint += "?activeOnly=true"
@@ -49,7 +50,7 @@ func (service *Service) GetDLPProfileLiteID(ProfileLiteID int, activeOnly bool) 
 	return &profileLite, nil
 }
 
-func (service *Service) GetDLPProfileLiteByName(profileLiteName string, activeOnly bool) (*DLPIDMProfileLite, error) {
+func GetDLPProfileLiteByName(service *services.Service, profileLiteName string, activeOnly bool) (*DLPIDMProfileLite, error) {
 	queryParameters := url.Values{}
 	queryParameters.Set("name", profileLiteName)
 	if activeOnly {
@@ -70,7 +71,7 @@ func (service *Service) GetDLPProfileLiteByName(profileLiteName string, activeOn
 	return nil, fmt.Errorf("no idm profile template found with name: %s", profileLiteName)
 }
 
-func (service *Service) GetAll(activeOnly bool) ([]DLPIDMProfileLite, error) {
+func GetAll(service *services.Service, activeOnly bool) ([]DLPIDMProfileLite, error) {
 	endpoint := dlpIDMProfileLiteEndpoint
 	if activeOnly {
 		endpoint += "?activeOnly=true"

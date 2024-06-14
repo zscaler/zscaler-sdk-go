@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -84,7 +85,7 @@ type SystemSummaryDetail struct {
 	SignatureSources []string `json:"SignatureSources,omitempty"`
 }
 
-func (service *Service) GetRatingQuota() ([]RatingQuota, error) {
+func GetRatingQuota(service *services.Service) ([]RatingQuota, error) {
 	var quotas []RatingQuota
 	err := service.Client.Read(reportQuotaEndpoint, &quotas)
 	if err != nil {
@@ -96,7 +97,7 @@ func (service *Service) GetRatingQuota() ([]RatingQuota, error) {
 }
 
 // GetReportMD5Hash retrieves the sandbox report for a specific MD5 hash with either full or summary details.
-func (service *Service) GetReportMD5Hash(md5Hash, details string) (*ReportMD5Hash, error) {
+func GetReportMD5Hash(service *services.Service, md5Hash, details string) (*ReportMD5Hash, error) {
 	// Validate the 'details' parameter to ensure it is either "full" or "summary".
 	if details != "full" && details != "summary" {
 		return nil, fmt.Errorf("details parameter must be 'full' or 'summary'")

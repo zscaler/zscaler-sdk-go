@@ -2,6 +2,8 @@ package geo_coordinates
 
 import (
 	"fmt"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -40,7 +42,7 @@ type GeoCoordinates struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func (service *Service) GetByGeoCoordinates(latitude, longitude float64) (*GeoCoordinates, error) {
+func GetByGeoCoordinates(service *services.Service, latitude, longitude float64) (*GeoCoordinates, error) {
 	var region GeoCoordinates
 	queryParams := fmt.Sprintf("latitude=%f&longitude=%f", latitude, longitude)
 	fullEndpoint := fmt.Sprintf("%s?%s", geoCoordinatesEndpoint, queryParams)

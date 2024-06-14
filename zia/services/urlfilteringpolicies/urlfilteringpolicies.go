@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -145,7 +146,7 @@ type CBIProfile struct {
 	DefaultProfile bool `json:"defaultProfile"`
 }
 
-func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
+func Get(service *services.Service, ruleID int) (*URLFilteringRule, error) {
 	var urlFilteringPolicies URLFilteringRule
 	err := service.Client.Read(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
 	if err != nil {
@@ -156,7 +157,7 @@ func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
 	return &urlFilteringPolicies, nil
 }
 
-func (service *Service) GetByName(urlFilteringPolicyName string) (*URLFilteringRule, error) {
+func GetByName(service *services.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
 	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
@@ -170,7 +171,7 @@ func (service *Service) GetByName(urlFilteringPolicyName string) (*URLFilteringR
 	return nil, fmt.Errorf("no url filtering rule found with name: %s", urlFilteringPolicyName)
 }
 
-func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, error) {
+func Create(service *services.Service, ruleID *URLFilteringRule) (*URLFilteringRule, error) {
 	resp, err := service.Client.Create(urlFilteringPoliciesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
@@ -185,7 +186,7 @@ func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, err
 	return createdURLFilteringRule, nil
 }
 
-func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
+func Update(service *services.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
 	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
 	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
@@ -212,7 +213,7 @@ func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilterin
 	return updatedURLFilteringRule, nil, nil
 }
 
-func (service *Service) Delete(ruleID int) (*http.Response, error) {
+func Delete(service *services.Service, ruleID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
@@ -222,7 +223,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 }
 
 // GetAll returns the all rules.
-func (service *Service) GetAll() ([]URLFilteringRule, error) {
+func GetAll(service *services.Service) ([]URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
 	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
@@ -232,18 +233,18 @@ func (service *Service) GetAll() ([]URLFilteringRule, error) {
 }
 
 // RulesCount returns the number of rules.
-func (service *Service) RulesCount() int {
-	rules, _ := service.GetAll()
+func RulesCount(service *services.Service) int {
+	rules, _ := GetAll(service)
 	return len(rules)
 }
 
 // Reorder chanegs the order of the rule.
-func (service *Service) Reorder(ruleID, order int) (int, error) {
-	resp, err := service.Get(ruleID)
+func Reorder(service *services.Service, ruleID, order int) (int, error) {
+	resp, err := Get(service, ruleID)
 	if err != nil {
 		return 0, err
 	}
 	resp.Order = order
-	_, _, err = service.Update(ruleID, resp)
+	_, _, err = Update(service, ruleID, resp)
 	return order, err
 }

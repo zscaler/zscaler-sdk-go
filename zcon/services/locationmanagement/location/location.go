@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/common"
 )
 
@@ -237,7 +238,7 @@ type ManagedBy struct {
 }
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
-func (service *Service) GetLocation(locationID int) (*Locations, error) {
+func GetLocation(service *services.Service, locationID int) (*Locations, error) {
 	var location Locations
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
@@ -249,7 +250,7 @@ func (service *Service) GetLocation(locationID int) (*Locations, error) {
 }
 
 // GetLocationByName gets a location by its name.
-func (service *Service) GetLocationByName(locationName string) (*Locations, error) {
+func GetLocationByName(service *services.Service, locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
@@ -264,7 +265,7 @@ func (service *Service) GetLocationByName(locationName string) (*Locations, erro
 	return nil, fmt.Errorf("no location found with name: %s", locationName)
 }
 
-func (service *Service) Create(locations *Locations) (*Locations, error) {
+func Create(service *services.Service, locations *Locations) (*Locations, error) {
 	resp, err := service.Client.Create(locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
@@ -279,7 +280,7 @@ func (service *Service) Create(locations *Locations) (*Locations, error) {
 	return createdLocations, nil
 }
 
-func (service *Service) Update(locationID int, locations *Locations) (*Locations, *http.Response, error) {
+func Update(service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
@@ -290,7 +291,7 @@ func (service *Service) Update(locationID int, locations *Locations) (*Locations
 	return updatedLocations, nil, nil
 }
 
-func (service *Service) Delete(locationID int) (*http.Response, error) {
+func Delete(service *services.Service, locationID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
@@ -299,7 +300,7 @@ func (service *Service) Delete(locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]Locations, error) {
+func GetAll(service *services.Service) ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)

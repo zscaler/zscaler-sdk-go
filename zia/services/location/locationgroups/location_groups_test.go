@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestLocationGroups(t *testing.T) {
@@ -14,10 +15,10 @@ func TestLocationGroups(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -25,12 +26,12 @@ func TestLocationGroups(t *testing.T) {
 		return
 	}
 	name := resources[0].Name
-	resourceByName, err := service.GetLocationGroupByName(name)
+	resourceByName, err := GetLocationGroupByName(service, name)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 
-	_, err = service.GetLocationGroup(resourceByName.ID)
+	_, err = GetLocationGroup(service, resourceByName.ID)
 	if err != nil {
 		t.Errorf("expected resource to exist: %v", err)
 	}
@@ -39,11 +40,11 @@ func TestLocationGroups(t *testing.T) {
 	groupTypes := []string{"DYNAMIC_GROUP", "STATIC_GROUP"}
 	for _, gType := range groupTypes {
 		t.Run(fmt.Sprintf("GroupType-%s", gType), func(t *testing.T) {
-			resourceByType, err := service.GetGroupType(gType)
+			resourceByType, err := GetGroupType(service, gType)
 			if err != nil {
 				t.Errorf("Error retrieving resource by type '%s': %v", gType, err)
 			} else {
-				_, err = service.GetLocationGroup(resourceByType.ID)
+				_, err = GetLocationGroup(service, resourceByType.ID)
 				if err != nil {
 					t.Errorf("expected resource to exist for group type '%s': %v", gType, err)
 				}

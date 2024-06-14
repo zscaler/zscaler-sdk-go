@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -67,7 +68,7 @@ type Tags struct {
 	Value string `json:"value,omitempty"`
 }
 
-func (service *Service) Get(workloadID int) (*WorkloadGroup, error) {
+func Get(service *services.Service, workloadID int) (*WorkloadGroup, error) {
 	var workloadGroup WorkloadGroup
 	err := service.Client.Read(fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadID), &workloadGroup)
 	if err != nil {
@@ -78,7 +79,7 @@ func (service *Service) Get(workloadID int) (*WorkloadGroup, error) {
 	return &workloadGroup, nil
 }
 
-func (service *Service) GetByName(workloadName string) (*WorkloadGroup, error) {
+func GetByName(service *services.Service, workloadName string) (*WorkloadGroup, error) {
 	var workloadGroups []WorkloadGroup
 	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
 	if err != nil {
@@ -92,7 +93,7 @@ func (service *Service) GetByName(workloadName string) (*WorkloadGroup, error) {
 	return nil, fmt.Errorf("no workload group found with name: %s", workloadName)
 }
 
-func (service *Service) GetAll() ([]WorkloadGroup, error) {
+func GetAll(service *services.Service) ([]WorkloadGroup, error) {
 	var workloadGroups []WorkloadGroup
 	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
 	return workloadGroups, err

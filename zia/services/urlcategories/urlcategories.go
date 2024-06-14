@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -99,7 +100,7 @@ type URLKeywordCounts struct {
 	RetainParentKeywordCount int `json:"retainParentKeywordCount,omitempty"`
 }
 
-func (service *Service) Get(categoryID string) (*URLCategory, error) {
+func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
 	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
 	if err != nil {
@@ -110,7 +111,7 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func (service *Service) GetCustomURLCategories(customName string) (*URLCategory, error) {
+func GetCustomURLCategories(service *services.Service, customName string) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, "true"), &urlCategory)
 	if err != nil {
@@ -124,7 +125,7 @@ func (service *Service) GetCustomURLCategories(customName string) (*URLCategory,
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
-func (service *Service) GetIncludeOnlyUrlKeyWordCounts(customName string) (*URLCategory, error) {
+func GetIncludeOnlyUrlKeyWordCounts(service *services.Service, customName string) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	err := service.Client.Read(fmt.Sprintf("%s?includeOnlyUrlKeywordCounts=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
 	if err != nil {
@@ -138,7 +139,7 @@ func (service *Service) GetIncludeOnlyUrlKeyWordCounts(customName string) (*URLC
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
-func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory, error) {
+func CreateURLCategories(service *services.Service, category *URLCategory) (*URLCategory, error) {
 	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
 	if err != nil {
 		return nil, err
@@ -153,7 +154,7 @@ func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory
 	return createdUrlCategory, nil
 }
 
-func (service *Service) UpdateURLCategories(categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
+func UpdateURLCategories(service *services.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
 	if err != nil {
 		return nil, nil, err
@@ -163,7 +164,7 @@ func (service *Service) UpdateURLCategories(categoryID string, category *URLCate
 	return updatedUrlCategory, nil, nil
 }
 
-func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, error) {
+func DeleteURLCategories(service *services.Service, categoryID string) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
 	if err != nil {
 		return nil, err
@@ -172,7 +173,7 @@ func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, 
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]URLCategory, error) {
+func GetAll(service *services.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err

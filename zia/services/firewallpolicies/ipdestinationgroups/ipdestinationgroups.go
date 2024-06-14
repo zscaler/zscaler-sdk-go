@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -39,7 +40,7 @@ type IPDestinationGroups struct {
 	IsNonEditable bool `json:"isNonEditable,omitempty"`
 }
 
-func (service *Service) Get(ipGroupID int) (*IPDestinationGroups, error) {
+func Get(service *services.Service, ipGroupID int) (*IPDestinationGroups, error) {
 	var ipDestinationGroups IPDestinationGroups
 	err := service.Client.Read(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), &ipDestinationGroups)
 	if err != nil {
@@ -50,7 +51,7 @@ func (service *Service) Get(ipGroupID int) (*IPDestinationGroups, error) {
 	return &ipDestinationGroups, nil
 }
 
-func (service *Service) GetByName(ipDestinationGroupsName string) (*IPDestinationGroups, error) {
+func GetByName(service *services.Service, ipDestinationGroupsName string) (*IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
 	err := common.ReadAllPages(service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
 	if err != nil {
@@ -64,7 +65,7 @@ func (service *Service) GetByName(ipDestinationGroupsName string) (*IPDestinatio
 	return nil, fmt.Errorf("no ip destination group found with name: %s", ipDestinationGroupsName)
 }
 
-func (service *Service) Create(ipGroupID *IPDestinationGroups) (*IPDestinationGroups, error) {
+func Create(service *services.Service, ipGroupID *IPDestinationGroups) (*IPDestinationGroups, error) {
 	resp, err := service.Client.Create(ipDestinationGroupsEndpoint, *ipGroupID)
 	if err != nil {
 		return nil, err
@@ -79,7 +80,7 @@ func (service *Service) Create(ipGroupID *IPDestinationGroups) (*IPDestinationGr
 	return createdIPDestinationGroups, nil
 }
 
-func (service *Service) Update(ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
+func Update(service *services.Service, ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
 		return nil, nil, err
@@ -90,7 +91,7 @@ func (service *Service) Update(ipGroupID int, ipGroup *IPDestinationGroups) (*IP
 	return updatedIPDestinationGroups, nil, nil
 }
 
-func (service *Service) Delete(ipGroupID int) (*http.Response, error) {
+func Delete(service *services.Service, ipGroupID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID))
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func (service *Service) Delete(ipGroupID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]IPDestinationGroups, error) {
+func GetAll(service *services.Service) ([]IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
 	err := common.ReadAllPages(service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
 	return ipDestinationGroups, err

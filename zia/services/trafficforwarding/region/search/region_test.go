@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestRegionSearch(t *testing.T) {
@@ -11,7 +12,7 @@ func TestRegionSearch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// Define test cases with different prefix options
 	testCases := []struct {
@@ -38,7 +39,7 @@ func TestRegionSearch(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			regions, err := service.GetDatacenterRegion(tc.prefix)
+			regions, err := GetDatacenterRegion(service, tc.prefix)
 			if err != nil {
 				t.Errorf("Error in %v: %v", tc.name, err)
 				return

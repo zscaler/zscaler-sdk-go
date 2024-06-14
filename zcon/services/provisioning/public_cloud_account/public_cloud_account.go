@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/common"
 )
 
@@ -36,7 +37,7 @@ type PublicCloudAccountIDStatus struct {
 }
 
 // GetAccountID remains the same
-func (service *Service) GetAccountID(accountID int) (*PublicCloudAccountDetails, error) {
+func GetAccountID(service *services.Service, accountID int) (*PublicCloudAccountDetails, error) {
 	var cloudAccount PublicCloudAccountDetails
 	err := service.Client.Read(fmt.Sprintf("%s/%d", publicCloudEndpoint, accountID), &cloudAccount)
 	if err != nil {
@@ -48,7 +49,7 @@ func (service *Service) GetAccountID(accountID int) (*PublicCloudAccountDetails,
 }
 
 // GetLite returns all available accounts without filtering by ID
-func (service *Service) GetLite() ([]PublicCloudAccountDetails, error) {
+func GetLite(service *services.Service) ([]PublicCloudAccountDetails, error) {
 	var cloudAccounts []PublicCloudAccountDetails
 	err := service.Client.Read(publicCloudEndpointLite, &cloudAccounts)
 	if err != nil {
@@ -60,7 +61,7 @@ func (service *Service) GetLite() ([]PublicCloudAccountDetails, error) {
 }
 
 // GetAccountStatus returns a status payload directly
-func (service *Service) GetAccountStatus() (*PublicCloudAccountIDStatus, error) {
+func GetAccountStatus(service *services.Service) (*PublicCloudAccountIDStatus, error) {
 	var accountStatus PublicCloudAccountIDStatus
 	err := service.Client.Read(publicCloudAccountStatus, &accountStatus)
 	if err != nil {
@@ -71,7 +72,7 @@ func (service *Service) GetAccountStatus() (*PublicCloudAccountIDStatus, error) 
 	return &accountStatus, nil
 }
 
-func (service *Service) GetAll() ([]PublicCloudAccountDetails, error) {
+func GetAll(service *services.Service) ([]PublicCloudAccountDetails, error) {
 	var accounts []PublicCloudAccountDetails
 	err := common.ReadAllPages(service.Client, publicCloudEndpoint, &accounts)
 	return accounts, err

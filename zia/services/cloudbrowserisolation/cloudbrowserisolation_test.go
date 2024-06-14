@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestIsolationProfile(t *testing.T) {
@@ -18,10 +19,10 @@ func TestIsolationProfile(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Test to retrieve all profiles
-	profiles, err := service.GetAll()
+	profiles, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return
@@ -34,7 +35,7 @@ func TestIsolationProfile(t *testing.T) {
 	// Test to retrieve a profile by its name
 	name := profiles[0].Name
 	t.Log("Getting isolation profile by name:" + name)
-	profile, err := service.GetByName(name)
+	profile, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting isolation profile by name: %v", err)
 		return
@@ -46,7 +47,7 @@ func TestIsolationProfile(t *testing.T) {
 
 	// Negative Test: Try to retrieve a profile with a non-existent name
 	nonExistentName := "ThisProfileNameDoesNotExist"
-	_, err = service.GetByName(nonExistentName)
+	_, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -60,9 +61,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	profiles, err := service.GetAll()
+	profiles, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return
@@ -94,7 +95,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	requiredNames := []string{"BD_SA_Profile1_ZIA", "BD_SA_Profile2_ZIA", "BD SA Profile ZIA", "BD  SA Profile ZIA", "BD   SA   Profile  ZIA"}
 
@@ -109,7 +110,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
-				version, err := service.GetByName(variation)
+				version, err := GetByName(service, variation)
 				if err != nil {
 					t.Errorf("Error getting customer version profile with name variation '%s': %v", variation, err)
 					return
@@ -131,7 +132,7 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming that there are profiles with the following name variations
 	variations := []string{
@@ -142,7 +143,7 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve profile with name: %s", variation)
-		profile, err := service.GetByName(variation)
+		profile, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting isolation profile with name '%s': %v", variation, err)
 			continue
@@ -160,9 +161,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non_existent_name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

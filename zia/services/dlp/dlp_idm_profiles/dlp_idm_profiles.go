@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -76,7 +77,7 @@ type DLPIDMProfile struct {
 	ModifiedBy *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
-func (service *Service) Get(idmProfileID int) (*DLPIDMProfile, error) {
+func Get(service *services.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	var idmpProfile DLPIDMProfile
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
 	if err != nil {
@@ -87,7 +88,7 @@ func (service *Service) Get(idmProfileID int) (*DLPIDMProfile, error) {
 	return &idmpProfile, nil
 }
 
-func (service *Service) GetByName(idmProfileName string) (*DLPIDMProfile, error) {
+func GetByName(service *services.Service, idmProfileName string) (*DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
 	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	if err != nil {
@@ -101,7 +102,7 @@ func (service *Service) GetByName(idmProfileName string) (*DLPIDMProfile, error)
 	return nil, fmt.Errorf("no dlp icap server found with name: %s", idmProfileName)
 }
 
-func (service *Service) GetAll() ([]DLPIDMProfile, error) {
+func GetAll(service *services.Service) ([]DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
 	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	return idmpProfile, err

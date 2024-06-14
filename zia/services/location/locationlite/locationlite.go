@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -76,7 +77,7 @@ type LocationLite struct {
 	DigestAuthEnabled bool `json:"digestAuthEnabled,omitempty"`
 }
 
-func (service *Service) GetLocationLiteID(locationID int) (*LocationLite, error) {
+func GetLocationLiteID(service *services.Service, locationID int) (*LocationLite, error) {
 	var locationLite LocationLite
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationLiteEndpoint, locationID), &locationLite)
 	if err != nil {
@@ -87,7 +88,7 @@ func (service *Service) GetLocationLiteID(locationID int) (*LocationLite, error)
 	return &locationLite, nil
 }
 
-func (service *Service) GetLocationLiteByName(locationLiteName string) (*LocationLite, error) {
+func GetLocationLiteByName(service *services.Service, locationLiteName string) (*LocationLite, error) {
 	var locationsLite []LocationLite
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationLiteEndpoint, url.QueryEscape(locationLiteName)), &locationsLite)
 	if err != nil {
@@ -101,7 +102,7 @@ func (service *Service) GetLocationLiteByName(locationLiteName string) (*Locatio
 	return nil, fmt.Errorf("no location found with name: %s", locationLiteName)
 }
 
-func (service *Service) GetAll() ([]LocationLite, error) {
+func GetAll(service *services.Service) ([]LocationLite, error) {
 	var locations []LocationLite
 	err := common.ReadAllPages(service.Client, locationLiteEndpoint, &locations)
 	return locations, err

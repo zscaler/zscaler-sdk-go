@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -17,7 +18,7 @@ type ApplicationServicesGroupLite struct {
 	NameL10nTag bool   `json:"nameL10nTag"`
 }
 
-func (service *Service) GetByName(serviceGroupName string) (*ApplicationServicesGroupLite, error) {
+func GetByName(service *services.Service, serviceGroupName string) (*ApplicationServicesGroupLite, error) {
 	var appServicesGroupLite []ApplicationServicesGroupLite
 	err := common.ReadAllPages(service.Client, appServicesGroupLiteEndpoint, &appServicesGroupLite)
 	if err != nil {
@@ -31,7 +32,7 @@ func (service *Service) GetByName(serviceGroupName string) (*ApplicationServices
 	return nil, fmt.Errorf("no app services group found with name: %s", serviceGroupName)
 }
 
-func (service *Service) GetAll() ([]ApplicationServicesGroupLite, error) {
+func GetAll(service *services.Service) ([]ApplicationServicesGroupLite, error) {
 	var appServiceGroups []ApplicationServicesGroupLite
 	err := common.ReadAllPages(service.Client, appServicesGroupLiteEndpoint, &appServiceGroups)
 	return appServiceGroups, err

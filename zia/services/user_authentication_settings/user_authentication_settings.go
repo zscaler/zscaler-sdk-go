@@ -2,6 +2,8 @@ package user_authentication_settings
 
 import (
 	"fmt"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -17,7 +19,7 @@ type QueryParameters struct {
 	ID string
 }
 
-func (service *Service) Get() (*ExemptedUrls, error) {
+func Get(service *services.Service) (*ExemptedUrls, error) {
 	var urls ExemptedUrls
 	err := service.Client.Read(exemptedUrlsEndpoint, &urls)
 	if err != nil {
@@ -46,8 +48,8 @@ func difference(slice1 []string, slice2 []string) []string {
 	return diff
 }
 
-func (service *Service) Update(urls ExemptedUrls) (*ExemptedUrls, error) {
-	currentUrsl, err := service.Get()
+func Update(service *services.Service, urls ExemptedUrls) (*ExemptedUrls, error) {
+	currentUrsl, err := Get(service)
 	if err != nil {
 		return nil, err
 	}

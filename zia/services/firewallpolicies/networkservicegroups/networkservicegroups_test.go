@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 )
 
@@ -49,8 +50,9 @@ func TestNetworkServiceGroups(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	nwServices := networkservices.New(client)
-	nwSvcList, err := nwServices.GetAllNetworkServices()
+	service := services.New(client)
+
+	nwSvcList, err := networkservices.GetAllNetworkServices(service)
 	if err != nil {
 		t.Errorf("Error getting network services: %v", err)
 		return
@@ -58,8 +60,6 @@ func TestNetworkServiceGroups(t *testing.T) {
 	if len(nwSvcList) == 0 {
 		t.Error("Expected retrieved network services to be non-empty, but got empty slice")
 	}
-
-	service := New(client)
 
 	nwSvcgroup := NetworkServiceGroups{
 		Name:        name,
@@ -81,7 +81,7 @@ func TestNetworkServiceGroups(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.CreateNetworkServiceGroups(&nwSvcgroup)
+		createdResource, err = CreateNetworkServiceGroups(service, &nwSvcgroup)
 		return err
 	})
 	if err != nil {
@@ -110,14 +110,14 @@ func TestNetworkServiceGroups(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.UpdateNetworkServiceGroups(createdResource.ID, retrievedResource)
+		_, _, err = UpdateNetworkServiceGroups(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.GetNetworkServiceGroups(createdResource.ID)
+	updatedResource, err := GetNetworkServiceGroups(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -129,7 +129,7 @@ func TestNetworkServiceGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetNetworkServiceGroupsByName(updateName)
+	retrievedResource, err = GetNetworkServiceGroupsByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -140,7 +140,7 @@ func TestNetworkServiceGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAllNetworkServiceGroups()
+	resources, err := GetAllNetworkServiceGroups(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -160,22 +160,22 @@ func TestNetworkServiceGroups(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.DeleteNetworkServiceGroups(createdResource.ID)
+		_, delErr := DeleteNetworkServiceGroups(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.GetNetworkServiceGroups(createdResource.ID)
+	_, err = GetNetworkServiceGroups(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*NetworkServiceGroups, error) {
+func tryRetrieveResource(s *services.Service, id int) (*NetworkServiceGroups, error) {
 	var resource *NetworkServiceGroups
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.GetNetworkServiceGroups(id)
+		resource, err = GetNetworkServiceGroups(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -191,9 +191,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetNetworkServiceGroups(0)
+	_, err = GetNetworkServiceGroups(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -204,9 +204,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.DeleteNetworkServiceGroups(0)
+	_, err = DeleteNetworkServiceGroups(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -217,9 +217,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.UpdateNetworkServiceGroups(0, &NetworkServiceGroups{})
+	_, _, err = UpdateNetworkServiceGroups(service, 0, &NetworkServiceGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -230,9 +230,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetNetworkServiceGroupsByName("non_existent_name")
+	_, err = GetNetworkServiceGroupsByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

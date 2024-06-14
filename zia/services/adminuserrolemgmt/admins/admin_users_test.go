@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/roles"
 )
 
@@ -47,15 +48,16 @@ func TestUserManagement(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	require.NoError(t, err, "Error creating client")
 
-	roleService := roles.New(client)
-	roles, err := roleService.GetAllAdminRoles()
+	service := services.New(client)
+
+	roles, err := roles.GetAllAdminRoles(service)
+
 	require.NoError(t, err, "Error retrieving roles")
 	require.NotEmpty(t, roles, "No roles found")
 
 	// Generate random complex password for admin user account
 	rPassword := tests.TestPassword(20)
 
-	service := New(client)
 	admin := AdminUsers{
 		UserName:                    name + name,
 		LoginName:                   name + "@bd-hashicorp.com",
@@ -76,7 +78,7 @@ func TestUserManagement(t *testing.T) {
 	var createdResource *AdminUsers
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.CreateAdminUser(admin)
+		createdResource, err = CreateAdminUser(service, admin)
 		require.NoError(t, err, "Creating a new admin user should not error")
 		return err
 	})
@@ -106,14 +108,14 @@ func TestUserManagement(t *testing.T) {
 	// Test resource update
 	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
-		_, err = service.UpdateAdminUser(createdResource.ID, *retrievedResource)
+		_, err = UpdateAdminUser(service, createdResource.ID, *retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.GetAdminUsers(createdResource.ID)
+	updatedResource, err := GetAdminUsers(service, createdResource.ID)
 	require.NoError(t, err, "Could not get admin user by ID")
 	assert.NotNil(t, updatedResource.Disabled, "admin user disabled is missing")
 
@@ -128,7 +130,7 @@ func TestUserManagement(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetAdminUsersByLoginName(expectedLoginName) // Name should be prefixed with "tests-"
+	retrievedResource, err = GetAdminUsersByLoginName(service, expectedLoginName) // Name should be prefixed with "tests-"
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -139,7 +141,7 @@ func TestUserManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAllAdminUsers()
+	resources, err := GetAllAdminUsers(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -159,13 +161,13 @@ func TestUserManagement(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.DeleteAdminUser(createdResource.ID)
+		_, delErr := DeleteAdminUser(service, createdResource.ID)
 		return delErr
 	})
 	require.NoError(t, err, "Should not error when deleting")
 
 	// Confirm that the user has been deleted
-	_, err = service.GetAdminUsers(createdResource.ID)
+	_, err = GetAdminUsers(service, createdResource.ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "resource not found") || strings.Contains(err.Error(), "does not exist") {
 			// User deletion confirmed, no further operations on this user
@@ -179,12 +181,12 @@ func TestUserManagement(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*AdminUsers, error) {
+func tryRetrieveResource(s *services.Service, id int) (*AdminUsers, error) {
 	var resource *AdminUsers
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.GetAdminUsers(id)
+		resource, err = GetAdminUsers(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -200,9 +202,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetAdminUsers(0)
+	_, err = GetAdminUsers(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -213,9 +215,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.DeleteAdminUser(0)
+	_, err = DeleteAdminUser(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -226,9 +228,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.UpdateAdminUser(0, AdminUsers{})
+	_, err = UpdateAdminUser(service, 0, AdminUsers{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -239,9 +241,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetAdminByUsername("non_existent_name")
+	_, err = GetAdminByUsername(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

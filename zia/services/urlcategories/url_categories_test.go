@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -50,7 +51,7 @@ func TestURLCategories(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	urlCategories := URLCategory{
 		SuperCategory:     "USER_DEFINED",
@@ -76,7 +77,7 @@ func TestURLCategories(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.CreateURLCategories(&urlCategories)
+		createdResource, err = CreateURLCategories(service, &urlCategories)
 		return err
 	})
 	if err != nil {
@@ -106,14 +107,14 @@ func TestURLCategories(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = service.UpdateURLCategories(createdResource.ID, retrievedResource)
+		_, _, err = UpdateURLCategories(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -125,7 +126,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetCustomURLCategories(name)
+	retrievedResource, err = GetCustomURLCategories(service, name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -137,7 +138,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -157,22 +158,22 @@ func TestURLCategories(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.DeleteURLCategories(createdResource.ID)
+		_, delErr := DeleteURLCategories(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with a retry mechanism.
-func tryRetrieveResource(s *Service, id string) (*URLCategory, error) {
+func tryRetrieveResource(s *services.Service, id string) (*URLCategory, error) {
 	var resource *URLCategory
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -191,9 +192,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get("non_existent_id")
+	_, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -204,9 +205,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.DeleteURLCategories("non_existent_id")
+	_, err = DeleteURLCategories(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -217,9 +218,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.UpdateURLCategories("non_existent_id", &URLCategory{})
+	_, _, err = UpdateURLCategories(service, "non_existent_id", &URLCategory{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -230,9 +231,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetCustomURLCategories("non_existent_name")
+	_, err = GetCustomURLCategories(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

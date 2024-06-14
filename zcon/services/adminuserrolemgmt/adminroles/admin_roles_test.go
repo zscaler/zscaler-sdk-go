@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 )
 
 func TestAdminRole(t *testing.T) {
@@ -13,9 +14,9 @@ func TestAdminRole(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	roles, err := service.GetAllAdminRoles()
+	roles, err := GetAllAdminRoles(service)
 	if err != nil {
 		t.Errorf("Error getting admin roles: %v", err)
 		return
@@ -26,7 +27,7 @@ func TestAdminRole(t *testing.T) {
 	}
 	name := roles[0].Name
 	t.Log("Getting admin roles by name:" + name)
-	ecgroup, err := service.GetByName(name)
+	ecgroup, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting admin roles by name: %v", err)
 		return
@@ -36,7 +37,7 @@ func TestAdminRole(t *testing.T) {
 		return
 	}
 
-	adminRole, err := service.GetByName(name)
+	adminRole, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting admin roles by name: %v", err)
 		return
@@ -47,7 +48,7 @@ func TestAdminRole(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a admin role with a non-existent name
 	nonExistentName := "ThisAdminRoleNotExist"
-	_, err = service.GetByName(nonExistentName)
+	_, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestMain(m *testing.M) {
@@ -41,8 +42,8 @@ func cleanResources() {
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
-	resources, err := service.Get()
+	service := services.New(client)
+	resources, err := Get(service)
 	if err != nil {
 		log.Printf("Error retrieving exempted URLs during cleanup: %v", err)
 		return
@@ -69,10 +70,10 @@ func TestUserAuthenticationSettings(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Create 3 random exempted URLs
-	initialUrls, err := service.Get()
+	initialUrls, err := Get(service)
 	if err != nil {
 		t.Fatalf("Error fetching initial exempted URLs: %v", err)
 	}
@@ -81,13 +82,13 @@ func TestUserAuthenticationSettings(t *testing.T) {
 	allUrls := append(initialUrls.URLs, newUrls...)
 
 	// Update with the new exempted URLs
-	_, err = service.Update(ExemptedUrls{URLs: allUrls})
+	_, err = Update(service, ExemptedUrls{URLs: allUrls})
 	if err != nil {
 		t.Fatalf("Error updating exempted URLs: %v", err)
 	}
 
 	// Fetch and validate the exempted URLs after updating
-	updatedUrls, err := service.Get()
+	updatedUrls, err := Get(service)
 	if err != nil {
 		t.Fatalf("Error fetching updated exempted URLs: %v", err)
 	}
@@ -98,7 +99,7 @@ func TestUserAuthenticationSettings(t *testing.T) {
 	}
 
 	// Clean up by removing the URLs we added for testing
-	_, err = service.Update(ExemptedUrls{URLs: initialUrls.URLs})
+	_, err = Update(service, ExemptedUrls{URLs: initialUrls.URLs})
 	if err != nil {
 		t.Fatalf("Error cleaning up exempted URLs: %v", err)
 	}

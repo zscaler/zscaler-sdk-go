@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
@@ -16,10 +17,9 @@ func TestGroupByDatacenter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	staticipsService := staticips.New(client)
-	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -28,7 +28,7 @@ func TestGroupByDatacenter(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticipsService.Delete(staticIP.ID)
+		_, err := staticips.Delete(service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Deleting static ip failed: %v", err)
 		}
@@ -40,7 +40,7 @@ func TestGroupByDatacenter(t *testing.T) {
 	// Test for each individual search parameter
 	t.Run("TestRoutableIP", func(t *testing.T) {
 		commonParams.RoutableIP = true
-		results, err := service.SearchByDatacenters(commonParams)
+		results, err := SearchByDatacenters(service, commonParams)
 		if err != nil {
 			t.Errorf("Error searching datacenters with RoutableIP: %v", err)
 		}
@@ -51,7 +51,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	t.Run("TestWithinCountryOnly", func(t *testing.T) {
 		commonParams.WithinCountryOnly = true
-		results, err := service.SearchByDatacenters(commonParams)
+		results, err := SearchByDatacenters(service, commonParams)
 		if err != nil {
 			t.Errorf("Error searching datacenters with RoutableIP: %v", err)
 		}
@@ -62,7 +62,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	t.Run("TestIncludePrivateServiceEdge", func(t *testing.T) {
 		commonParams.IncludePrivateServiceEdge = true
-		results, err := service.SearchByDatacenters(commonParams)
+		results, err := SearchByDatacenters(service, commonParams)
 		if err != nil {
 			t.Errorf("Error searching datacenters with RoutableIP: %v", err)
 		}
@@ -73,7 +73,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	t.Run("TestIncludeCurrentVips", func(t *testing.T) {
 		commonParams.IncludeCurrentVips = true
-		results, err := service.SearchByDatacenters(commonParams)
+		results, err := SearchByDatacenters(service, commonParams)
 		if err != nil {
 			t.Errorf("Error searching datacenters with RoutableIP: %v", err)
 		}
@@ -84,7 +84,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	// Test for each individual search parameter
 	t.Run("TestSourceIp", func(t *testing.T) {
-		results, err := service.SearchByDatacenters(common.DatacenterSearchParameters{SourceIp: ipAddress})
+		results, err := SearchByDatacenters(service, common.DatacenterSearchParameters{SourceIp: ipAddress})
 		if err != nil {
 			t.Errorf("Error searching datacenters with SourceIp: %v", err)
 		}
@@ -95,7 +95,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	t.Run("TestLatitudeLongitude", func(t *testing.T) {
 		// Adjust to include source IP, latitude, and longitude from staticIP
-		results, err := service.SearchByDatacenters(common.DatacenterSearchParameters{
+		results, err := SearchByDatacenters(service, common.DatacenterSearchParameters{
 			SourceIp:  ipAddress,
 			Latitude:  float64(staticIP.Latitude),
 			Longitude: float64(staticIP.Longitude),
@@ -110,7 +110,7 @@ func TestGroupByDatacenter(t *testing.T) {
 
 	// Test with all parameters combined
 	t.Run("TestAllParameters", func(t *testing.T) {
-		results, err := service.SearchByDatacenters(common.DatacenterSearchParameters{
+		results, err := SearchByDatacenters(service, common.DatacenterSearchParameters{
 			RoutableIP:                true,
 			WithinCountryOnly:         true,
 			IncludePrivateServiceEdge: true,
