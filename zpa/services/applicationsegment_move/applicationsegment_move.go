@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -12,7 +13,7 @@ const (
 	appSegmentEndpoint = "/application"
 )
 
-type AppSegmentMicrotenantMove struct {
+type AppSegmentMicrotenantMoveRequest struct {
 	ApplicationID        string `json:"applicationId,omitempty"`
 	MicroTenantID        string `json:"microtenantId,omitempty"`
 	TargetSegmentGroupID string `json:"targetSegmentGroupId,omitempty"`
@@ -20,11 +21,11 @@ type AppSegmentMicrotenantMove struct {
 	TargetServerGroupID  string `json:"targetServerGroupId,omitempty"`
 }
 
-func (service *Service) AppSegmentMicrotenantMove(applicationID string, move AppSegmentMicrotenantMove) (*http.Response, error) {
+func AppSegmentMicrotenantMove(service *services.Service, applicationID string, move AppSegmentMicrotenantMoveRequest) (*http.Response, error) {
 	// Check if a microtenant ID was provided in the move struct, else use the one from the service
 	microTenantID := move.MicroTenantID
-	if microTenantID == "" && service.microTenantID != nil {
-		microTenantID = *service.microTenantID
+	if microTenantID == "" && service.MicroTenantID() != nil {
+		microTenantID = *service.MicroTenantID()
 	}
 	// Corrected URL format to include the applicationID before /move
 	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)

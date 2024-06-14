@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,9 +17,9 @@ func TestTimeWindow_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	tWindows, err := service.GetAll()
+	tWindows, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting time windows: %v", err)
 		return
@@ -29,7 +30,7 @@ func TestTimeWindow_data(t *testing.T) {
 	}
 	tWindowName := tWindows[0].Name
 	t.Log("Getting time window by name:" + tWindowName)
-	tWindow, err := service.GetTimeWindowByName(tWindowName)
+	tWindow, err := GetTimeWindowByName(service, tWindowName)
 	if err != nil {
 		t.Errorf("Error getting time windows by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestTimeWindow_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a time window with a non-existent name
 	nonExistentName := "ThisTimeWindowDoesNotExist"
-	_, err = service.GetTimeWindowByName(nonExistentName)
+	_, err = GetTimeWindowByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -54,9 +55,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	timeWindows, err := service.GetAll()
+	timeWindows, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting time window : %v", err)
 		return
@@ -85,7 +86,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a service with the name "Weekends" exists
 	knownName := "Weekends"
@@ -99,7 +100,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve service with name variation: %s", variation)
-		timeWindows, err := service.GetTimeWindowByName(variation)
+		timeWindows, err := GetTimeWindowByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting service with name variation '%s': %v", variation, err)
 			continue

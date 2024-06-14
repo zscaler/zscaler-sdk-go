@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -37,10 +38,10 @@ type BaCertificate struct {
 	MicrotenantName     string   `json:"microtenantName,omitempty"`
 }
 
-func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Response, error) {
+func Get(service *services.Service, baCertificateID string) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,9 +49,9 @@ func (service *Service) Get(baCertificateID string) (*BaCertificate, *http.Respo
 	return v, resp, nil
 }
 
-func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.Response, error) {
+func GetIssuedByName(service *services.Service, CertName string) (*BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -62,18 +63,9 @@ func (service *Service) GetIssuedByName(CertName string) (*BaCertificate, *http.
 	return nil, resp, fmt.Errorf("no issued certificate named '%s' was found", CertName)
 }
 
-func (service *Service) GetAll() ([]BaCertificate, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
-	if err != nil {
-		return nil, nil, err
-	}
-	return list, resp, nil
-}
-
-func (service *Service) Create(baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
+func Create(service *services.Service, baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, common.Filter{MicroTenantID: service.microTenantID}, baCertificate, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, baCertificate, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -81,11 +73,20 @@ func (service *Service) Create(baCertificate BaCertificate) (*BaCertificate, *ht
 	return v, resp, nil
 }
 
-func (service *Service) Delete(baCertificateID string) (*http.Response, error) {
+func Delete(service *services.Service, baCertificateID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
+}
+
+func GetAll(service *services.Service) ([]BaCertificate, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
 }

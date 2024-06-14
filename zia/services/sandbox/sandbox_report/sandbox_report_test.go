@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestGetRatingQuota(t *testing.T) {
@@ -14,9 +15,9 @@ func TestGetRatingQuota(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
-	quotas, err := service.GetRatingQuota()
+	quotas, err := GetRatingQuota(service)
 	if err != nil {
 		t.Errorf("Error getting Rating Quotas: %v", err)
 	}
@@ -32,7 +33,7 @@ func TestGetReportMD5Hash(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Replace with an actual MD5 hash of known malware. This is just an example.
 	md5Hashes := []string{"F69CA01D65E6C8F9E3540029E5F6AB92"}
@@ -40,7 +41,7 @@ func TestGetReportMD5Hash(t *testing.T) {
 	for _, md5Hash := range md5Hashes {
 		for _, details := range []string{"full", "summary"} {
 			t.Run(fmt.Sprintf("MD5Hash=%s-Details=%s", md5Hash, details), func(t *testing.T) {
-				report, err := service.GetReportMD5Hash(md5Hash, details)
+				report, err := GetReportMD5Hash(service, md5Hash, details)
 
 				if err != nil {
 					if strings.Contains(err.Error(), "md5 is unknown or analysis has yet not been completed.Please try again later") {

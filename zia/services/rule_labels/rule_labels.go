@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -36,7 +37,7 @@ type RuleLabels struct {
 	ReferencedRuleCount int `json:"referencedRuleCount,omitempty"`
 }
 
-func (service *Service) Get(ruleLabelID int) (*RuleLabels, error) {
+func Get(service *services.Service, ruleLabelID int) (*RuleLabels, error) {
 	var ruleLabel RuleLabels
 	err := service.Client.Read(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
 	if err != nil {
@@ -47,7 +48,7 @@ func (service *Service) Get(ruleLabelID int) (*RuleLabels, error) {
 	return &ruleLabel, nil
 }
 
-func (service *Service) GetRuleLabelByName(labelName string) (*RuleLabels, error) {
+func GetRuleLabelByName(service *services.Service, labelName string) (*RuleLabels, error) {
 	var ruleLabels []RuleLabels
 	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	if err != nil {
@@ -61,7 +62,7 @@ func (service *Service) GetRuleLabelByName(labelName string) (*RuleLabels, error
 	return nil, fmt.Errorf("no rule label found with name: %s", labelName)
 }
 
-func (service *Service) Create(ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
+func Create(service *services.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
 	resp, err := service.Client.Create(ruleLabelsEndpoint, *ruleLabelID)
 	if err != nil {
 		return nil, nil, err
@@ -76,7 +77,7 @@ func (service *Service) Create(ruleLabelID *RuleLabels) (*RuleLabels, *http.Resp
 	return createdRuleLabel, nil, nil
 }
 
-func (service *Service) Update(ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
+func Update(service *services.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
 	if err != nil {
 		return nil, nil, err
@@ -87,7 +88,7 @@ func (service *Service) Update(ruleLabelID int, ruleLabels *RuleLabels) (*RuleLa
 	return updatedRuleLabel, nil, nil
 }
 
-func (service *Service) Delete(ruleLabelID int) (*http.Response, error) {
+func Delete(service *services.Service, ruleLabelID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
 	if err != nil {
 		return nil, err
@@ -96,7 +97,7 @@ func (service *Service) Delete(ruleLabelID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]RuleLabels, error) {
+func GetAll(service *services.Service) ([]RuleLabels, error) {
 	var ruleLabels []RuleLabels
 	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	return ruleLabels, err

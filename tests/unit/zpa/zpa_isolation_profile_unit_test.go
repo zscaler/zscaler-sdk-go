@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
 )
@@ -13,6 +14,9 @@ import (
 func TestIsolationProfile_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/isolation/profiles", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
 		query := r.URL.Query()
@@ -32,12 +36,9 @@ func TestIsolationProfile_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "CBI Profile1 not found"}`))
 		}
 	})
-	service := &isolationprofile.Service{
-		Client: client,
-	}
 
 	// Make the GetByName request
-	profile, _, err := service.GetByName("CBIProfile1")
+	profile, _, err := isolationprofile.GetByName(service, "CBIProfile1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -55,6 +56,9 @@ func TestIsolationProfile_GetByName(t *testing.T) {
 func TestIsolationProfile_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/isolation/profiles", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -65,12 +69,9 @@ func TestIsolationProfile_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &isolationprofile.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	profiles, _, err := service.GetAll()
+	profiles, _, err := isolationprofile.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

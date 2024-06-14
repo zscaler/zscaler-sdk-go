@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/activation"
 )
 
@@ -21,10 +22,9 @@ func TestActivationCLI(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
-	activationService := activation.New(service.Client)
+	service := services.New(client)
 
-	_, err = activationService.CreateActivation(activation.Activation{
+	_, err = activation.CreateActivation(service, activation.Activation{
 		Status: "active",
 	})
 	if err != nil {

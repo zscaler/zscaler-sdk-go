@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -26,7 +27,7 @@ type IsolationProfile struct {
 	IsolationURL       string `json:"isolationUrl"`
 }
 
-func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
+func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
 
 	// Set up custom filters for pagination
@@ -47,7 +48,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func (service *Service) GetAll() ([]IsolationProfile, *http.Response, error) {
+func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
 	if err != nil {

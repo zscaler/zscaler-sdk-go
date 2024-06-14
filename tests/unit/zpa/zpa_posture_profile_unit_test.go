@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
 )
 
 func TestPostureProfile_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/posture/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Posture 1"}`))
 	})
-	service := &postureprofile.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	posture, _, err := service.Get("123")
+	posture, _, err := postureprofile.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -40,6 +41,9 @@ func TestPostureProfile_Get(t *testing.T) {
 func TestPostureProfile_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/posture", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
 		query := r.URL.Query()
@@ -59,12 +63,9 @@ func TestPostureProfile_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "Posture Profile not found"}`))
 		}
 	})
-	service := &postureprofile.Service{
-		Client: client,
-	}
 
 	// Make the GetByName request
-	profile, _, err := service.GetByName("Posture1")
+	profile, _, err := postureprofile.GetByName(service, "Posture1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -82,6 +83,9 @@ func TestPostureProfile_GetByName(t *testing.T) {
 func TestPostureProfile_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/posture", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -92,12 +96,9 @@ func TestPostureProfile_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &postureprofile.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	profiles, _, err := service.GetAll()
+	profiles, _, err := postureprofile.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

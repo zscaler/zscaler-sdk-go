@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (
-	deviceQualityMetricsEndpoint = "v1/call-quality-metrics"
+	deviceQualityMetricsEndpoint = "call-quality-metrics"
 )
 
 type CallQualityMetrics struct {
@@ -20,10 +21,10 @@ type CallQualityMetrics struct {
 
 // Gets the Call Quality metric trend for a device for a CQM application.
 // If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) GetQualityMetrics(deviceID, appID string, filters common.GetFromToFilters) (*CallQualityMetrics, *http.Response, error) {
-	v := new(CallQualityMetrics)
+func GetQualityMetrics(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]CallQualityMetrics, *http.Response, error) {
+	var v []CallQualityMetrics
 	path := fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceQualityMetricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

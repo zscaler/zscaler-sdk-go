@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
@@ -50,7 +51,7 @@ type GREVirtualIPList struct {
 }
 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud, including region and data center information. By default, the request gets all public VIPs in the cloud, but you can also include private or all VIPs in the request, if necessary.
-func (service *Service) GetZscalerVIPs(datacenter string) (*ZscalerVIPs, error) {
+func GetZscalerVIPs(service *services.Service, datacenter string) (*ZscalerVIPs, error) {
 	var zscalerVips []ZscalerVIPs
 
 	err := common.ReadAllPages(service.Client, vipsEndpoint, &zscalerVips)
@@ -66,7 +67,7 @@ func (service *Service) GetZscalerVIPs(datacenter string) (*ZscalerVIPs, error) 
 }
 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP.
-func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GREVirtualIPList, error) {
+func GetZSGREVirtualIPList(service *services.Service, sourceIP string, count int) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
 	if err != nil {
@@ -79,7 +80,7 @@ func (service *Service) GetZSGREVirtualIPList(sourceIP string, count int) (*[]GR
 }
 
 // Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud by sourceIP within country.
-func (service *Service) GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCode string) (*[]GREVirtualIPList, error) {
+func GetPairZSGREVirtualIPsWithinCountry(service *services.Service, sourceIP, countryCode string) (*[]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?sourceIp=%s&withinCountryOnly=true", vipRecommendedListEndpoint, sourceIP), &zscalerVips)
 	if err != nil {
@@ -118,27 +119,27 @@ func containsVIP(vips []GREVirtualIPList, vip GREVirtualIPList) bool {
 	return false
 }
 
-func (service *Service) GetAll(sourceIP string) ([]GREVirtualIPList, error) {
+func GetAll(service *services.Service, sourceIP string) ([]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
 	err := common.ReadAllPages(service.Client, vipRecommendedListEndpoint+"?sourceIp="+sourceIP, &zscalerVips)
 	return zscalerVips, err
 }
 
-func (service *Service) getAllStaticIPs() ([]staticips.StaticIP, error) {
+func getAllStaticIPs(service *services.Service) ([]staticips.StaticIP, error) {
 	var staticIPs []staticips.StaticIP
 	err := common.ReadAllPages(service.Client, "/staticIP", &staticIPs)
 	return staticIPs, err
 }
 
 // GetAllSourceIPs  gets all vips for all static ips
-func (service *Service) GetAllSourceIPs() ([]GREVirtualIPList, error) {
+func GetAllSourceIPs(service *services.Service) ([]GREVirtualIPList, error) {
 	var zscalerVips []GREVirtualIPList
-	ips, err := service.getAllStaticIPs()
+	ips, err := getAllStaticIPs(service)
 	if err != nil {
 		return nil, err
 	}
 	for _, ip := range ips {
-		list, err := service.GetAll(ip.IpAddress)
+		list, err := GetAll(service, ip.IpAddress)
 		if err != nil {
 			continue
 		}

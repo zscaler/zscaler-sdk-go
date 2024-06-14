@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/cloudbrowserisolation"
 )
 
@@ -42,12 +43,12 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func retryGetByName(service *Service, name string) (*URLFilteringRule, error) {
+func retryGetByName(service *services.Service, name string) (*URLFilteringRule, error) {
 	var rule *URLFilteringRule
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		rule, err = service.GetByName(name)
+		rule, err = GetByName(service, name)
 		if err == nil {
 			return rule, nil
 		}
@@ -65,10 +66,9 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	cbiService := cloudbrowserisolation.New(client)
-	cbiProfileList, err := cbiService.GetAll()
+	cbiProfileList, err := cloudbrowserisolation.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting cbi profile: %v", err)
 		return
@@ -100,7 +100,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, err = Create(service, &rule)
 		return err
 	})
 	if err != nil {
@@ -130,14 +130,14 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -161,7 +161,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	allResources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -186,25 +186,25 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
+		_, getErr := Get(service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
-func tryRetrieveResource(service *Service, id int) (*URLFilteringRule, error) {
+func tryRetrieveResource(service *services.Service, id int) (*URLFilteringRule, error) {
 	var resource *URLFilteringRule
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = service.Get(id)
+		resource, err = Get(service, id)
 		if err == nil {
 			return resource, nil
 		}
@@ -220,7 +220,7 @@ func TestURLFilteringRuleBlock(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-updated-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
@@ -261,7 +261,7 @@ func TestURLFilteringRuleBlock(t *testing.T) {
 	}
 
 	// Retrieve and check the updated URL Filtering Rule
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving updated URL Filtering Rule: %v", err)
 	}
@@ -270,11 +270,11 @@ func TestURLFilteringRuleBlock(t *testing.T) {
 	}
 }
 
-func createURLFilteringRule(t *testing.T, service *Service, rule *URLFilteringRule) (*URLFilteringRule, error) {
+func createURLFilteringRule(t *testing.T, service *services.Service, rule *URLFilteringRule) (*URLFilteringRule, error) {
 	var createdResource *URLFilteringRule
 	err := retryOnConflict(func() error {
 		var err error
-		createdResource, err = service.Create(rule)
+		createdResource, err = Create(service, rule)
 		if err != nil {
 			t.Logf("Error creating URL Filtering Rule: %v", err) // Use t for logging
 		}
@@ -283,9 +283,9 @@ func createURLFilteringRule(t *testing.T, service *Service, rule *URLFilteringRu
 	return createdResource, err
 }
 
-func updateURLFilteringRule(t *testing.T, service *Service, resource *URLFilteringRule) error {
+func updateURLFilteringRule(t *testing.T, service *services.Service, resource *URLFilteringRule) error {
 	return retryOnConflict(func() error {
-		_, _, err := service.Update(resource.ID, resource)
+		_, _, err := Update(service, resource.ID, resource)
 		if err != nil {
 			t.Logf("Error updating URL Filtering Rule: %v", err) // Use t for logging
 		}
@@ -293,9 +293,9 @@ func updateURLFilteringRule(t *testing.T, service *Service, resource *URLFilteri
 	})
 }
 
-func cleanupURLFilteringRule(t *testing.T, service *Service, id int) {
+func cleanupURLFilteringRule(t *testing.T, service *services.Service, id int) {
 	err := retryOnConflict(func() error {
-		_, err := service.Delete(id)
+		_, err := Delete(service, id)
 		return err
 	})
 	if err != nil {
@@ -308,9 +308,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -321,9 +321,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -334,9 +334,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &URLFilteringRule{})
+	_, _, err = Update(service, 0, &URLFilteringRule{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -347,9 +347,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non_existent_name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

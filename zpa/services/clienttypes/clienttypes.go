@@ -2,6 +2,8 @@ package clienttypes
 
 import (
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -22,7 +24,7 @@ type ClientTypes struct {
 	ZPNClientTypePartner          string `json:"zpn_client_type_zapp_partner"`
 }
 
-func (service *Service) GetAllClientTypes() (*ClientTypes, *http.Response, error) {
+func GetAllClientTypes(service *services.Service) (*ClientTypes, *http.Response, error) {
 	v := new(ClientTypes)
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + clientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

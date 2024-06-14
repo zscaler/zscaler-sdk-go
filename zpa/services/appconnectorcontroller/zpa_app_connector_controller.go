@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -55,11 +56,15 @@ type AppConnector struct {
 	MicroTenantName                  string                 `json:"microtenantName,omitempty"`
 }
 
+type BulkDeleteRequest struct {
+	IDs []string `json:"ids"`
+}
+
 // This function search the App Connector by ID
-func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Response, error) {
+func Get(service *services.Service, appConnectorID string) (*AppConnector, *http.Response, error) {
 	v := new(AppConnector)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
-	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,9 +72,9 @@ func (service *Service) Get(appConnectorID string) (*AppConnector, *http.Respons
 }
 
 // This function search the App Connector by Name
-func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http.Response, error) {
+func GetByName(service *services.Service, appConnectorName string) (*AppConnector, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnector](service.Client, relativeURL, common.Filter{Search: appConnectorName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnector](service.Client, relativeURL, common.Filter{Search: appConnectorName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -81,27 +86,23 @@ func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http
 	return nil, resp, fmt.Errorf("no app connector named '%s' was found", appConnectorName)
 }
 
-func (service *Service) GetAll() ([]AppConnector, *http.Response, error) {
+func GetAll(service *services.Service) ([]AppConnector, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnector](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnector](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
 	return list, resp, nil
 }
 
-type BulkDeleteRequest struct {
-	IDs []string `json:"ids"`
-}
-
 // Update Updates the App Connector details for the specified ID.
-func (service *Service) Update(appConnectorID string, appConnector AppConnector) (*AppConnector, *http.Response, error) {
+func Update(service *services.Service, appConnectorID string, appConnector AppConnector) (*AppConnector, *http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
-	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, appConnector, nil)
+	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnector, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	resource, resp, err := service.Get(appConnectorID)
+	resource, resp, err := Get(service, appConnectorID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,9 +110,9 @@ func (service *Service) Update(appConnectorID string, appConnector AppConnector)
 }
 
 // Delete Deletes the App Connector for the specified ID.
-func (service *Service) Delete(appConnectorID string) (*http.Response, error) {
+func Delete(service *services.Service, appConnectorID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorEndpoint, appConnectorID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -119,9 +120,18 @@ func (service *Service) Delete(appConnectorID string) (*http.Response, error) {
 }
 
 // BulkDelete Bulk deletes the App Connectors.
-func (service *Service) BulkDelete(appConnectorIDs []string) (*http.Response, error) {
+func BulkDelete(service *services.Service, appConnectorIDs []string) (*http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint + "/bulkDelete"
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, BulkDeleteRequest{IDs: appConnectorIDs}, nil)
+
+	// Check if a microtenant ID is provided, else use the one from the service
+	microTenantID := service.MicroTenantID()
+
+	// Construct the filter with the microtenant ID if available
+	filter := common.Filter{
+		MicroTenantID: microTenantID,
+	}
+
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, filter, BulkDeleteRequest{IDs: appConnectorIDs}, nil)
 	if err != nil {
 		return nil, err
 	}

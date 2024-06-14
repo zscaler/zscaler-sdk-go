@@ -1,12 +1,19 @@
 package manage_pass
 
 /*
+import (
+	"testing"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
+)
+
 func TestUpdateManagePass(t *testing.T) {
 	client, err := tests.NewZccClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZCC client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	managePass := &ManagePass{
 		CompanyID:      12345,
@@ -22,7 +29,7 @@ func TestUpdateManagePass(t *testing.T) {
 		ZpaDisablePass: "zpaDisablePassword",
 	}
 
-	response, err := service.UpdateManagePass(managePass)
+	response, err := UpdateManagePass(service, managePass)
 	if err != nil {
 		t.Fatalf("Error updating manage pass: %v", err)
 	}

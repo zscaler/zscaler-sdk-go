@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentinspection"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
@@ -24,20 +25,20 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application segment group for testing
-	appGroupService := segmentgroup.New(client)
+
+	service := services.New(client)
+
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 
-	service := applicationsegmentpra.New(client)
 	appSegment := applicationsegmentpra.AppSegmentPRA{
 		Name:             name,
 		Description:      name,
@@ -74,7 +75,7 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(appSegment)
+	createdResource, _, err := applicationsegmentpra.Create(service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -96,21 +97,21 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application segment group for testing
-	appGroupService := segmentgroup.New(client)
+
+	service := services.New(client)
+
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 
-	baCertificateService := bacertificate.New(client)
-	certificateList, _, err := baCertificateService.GetAll()
+	certificateList, _, err := bacertificate.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -119,7 +120,6 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	service := applicationsegmentinspection.New(client)
 	appSegment := applicationsegmentinspection.AppSegmentInspection{
 		Name:             name,
 		Description:      name,
@@ -156,7 +156,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(appSegment)
+	createdResource, _, err := applicationsegmentinspection.Create(service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -178,21 +178,21 @@ func TestBaApplicationSegment(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application segment group for testing
-	appGroupService := segmentgroup.New(client)
+
+	service := services.New(client)
+
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 
-	baCertificateService := bacertificate.New(client)
-	certificateList, _, err := baCertificateService.GetAll()
+	certificateList, _, err := bacertificate.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -201,7 +201,7 @@ func TestBaApplicationSegment(t *testing.T) {
 		t.Error("Expected retrieved certificates to be non-empty, but got empty slice")
 		return
 	}
-	service := browseraccess.New(client)
+
 	appSegment := browseraccess.BrowserAccess{
 		Name:             name,
 		Description:      name,
@@ -235,7 +235,7 @@ func TestBaApplicationSegment(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(appSegment)
+	createdResource, _, err := browseraccess.Create(service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -263,14 +263,14 @@ func TestGetByApplicationType(t *testing.T) {
 		}
 	}()
 
-	service := New(client)
+	service := services.New(client)
 	expandAll := true
 	applicationTypes := []string{"BROWSER_ACCESS", "INSPECT", "SECURE_REMOTE_ACCESS"}
 
 	// Test valid application types with and without appName
 	for _, applicationType := range applicationTypes {
 		t.Run("Without appName "+applicationType, func(t *testing.T) {
-			retrievedByTypeResources, _, err := service.GetByApplicationType("", applicationType, expandAll)
+			retrievedByTypeResources, _, err := GetByApplicationType(service, "", applicationType, expandAll)
 			if err != nil {
 				t.Errorf("Error retrieving resource by application type '%s': %v", applicationType, err)
 			}
@@ -283,7 +283,7 @@ func TestGetByApplicationType(t *testing.T) {
 
 		t.Run("With appName "+applicationType, func(t *testing.T) {
 			appName := "example-app"
-			retrievedByTypeResources, _, err := service.GetByApplicationType(appName, applicationType, expandAll)
+			retrievedByTypeResources, _, err := GetByApplicationType(service, appName, applicationType, expandAll)
 			if err != nil {
 				t.Errorf("Error retrieving resource by application type '%s' with appName '%s': %v", applicationType, appName, err)
 			}
@@ -298,7 +298,7 @@ func TestGetByApplicationType(t *testing.T) {
 	// Test invalid application type
 	t.Run("Invalid applicationType", func(t *testing.T) {
 		invalidApplicationType := "INVALID_TYPE"
-		_, _, err := service.GetByApplicationType("", invalidApplicationType, expandAll)
+		_, _, err := GetByApplicationType(service, "", invalidApplicationType, expandAll)
 		if err == nil {
 			t.Errorf("Expected error for invalid application type '%s', but got nil", invalidApplicationType)
 		}
@@ -306,8 +306,10 @@ func TestGetByApplicationType(t *testing.T) {
 }
 
 func cleanupResources(client *zpa.Client) error {
-	appSegmentPra := applicationsegmentpra.New(client)
-	resources, _, err := appSegmentPra.GetAll()
+
+	service := services.New(client)
+
+	resources, _, err := applicationsegmentpra.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment pra: %v", err)
 		return err
@@ -318,14 +320,13 @@ func cleanupResources(client *zpa.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := appSegmentPra.Delete(r.ID)
+		_, err := applicationsegmentpra.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment pra with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 
-	appSegmentInspection := applicationsegmentinspection.New(client)
-	inspectionResources, _, err := appSegmentInspection.GetAll()
+	inspectionResources, _, err := applicationsegmentinspection.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment inspection: %v", err)
 		return err
@@ -336,14 +337,13 @@ func cleanupResources(client *zpa.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := appSegmentInspection.Delete(r.ID)
+		_, err := applicationsegmentinspection.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment inspection with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 
-	segmentGroupservice := segmentgroup.New(client)
-	segmentGroupResources, _, err := segmentGroupservice.GetAll()
+	segmentGroupResources, _, err := segmentgroup.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get segment groups: %v", err)
 		return err
@@ -354,7 +354,7 @@ func cleanupResources(client *zpa.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := segmentGroupservice.Delete(r.ID)
+		_, err := segmentgroup.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete segment groups with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}

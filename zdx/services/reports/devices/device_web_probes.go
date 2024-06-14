@@ -4,26 +4,27 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (
-	deviceWebProbesEndpoint = "v1/web-probes"
+	deviceWebProbesEndpoint = "web-probes"
 )
 
 type DeviceWebProbe struct {
-	ID        int    `json:"id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	NumProbes int    `json:"num_probes,omitempty"`
-	AvgScore  int    `json:"avg_score,omitempty"`
-	AvgPFT    int    `json:"avg_pft,omitempty"`
+	ID        int     `json:"id,omitempty"`
+	Name      string  `json:"name,omitempty"`
+	NumProbes int     `json:"num_probes,omitempty"`
+	AvgScore  float32 `json:"avg_score,omitempty"`
+	AvgPFT    float32 `json:"avg_pft,omitempty"`
 }
 
-func generateWebProbesPath(deviceID, appID string) string {
+func generateWebProbesPath(deviceID, appID int) string {
 	return fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceWebProbesEndpoint)
 }
 
-func generateWebProbePath(deviceID, appID, probeID string) string {
+func generateWebProbePath(deviceID, appID, probeID int) string {
 	return fmt.Sprintf("%v/%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceWebProbesEndpoint, probeID)
 }
 
@@ -31,21 +32,30 @@ func generateWebProbePath(deviceID, appID, probeID string) string {
 // For Web Probes, you can access Page Fetch Time, Server Response Time, DNS Time, or Availability.
 // If not specified, it defaults to Page Fetch Time (PFT).
 // If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) GetWebProbes(deviceID, appID, probeID string, filters common.GetFromToFilters) (*common.Metric, *http.Response, error) {
-	v := new(common.Metric)
+func GetWebProbes(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+	var v []common.Metric
+	var single common.Metric
 	path := generateWebProbePath(deviceID, appID, probeID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
-	if err != nil {
-		return nil, nil, err
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	if err == nil {
+		return v, resp, nil
 	}
-	return v, resp, nil
+
+	// If unmarshalling to an array fails, try unmarshalling to a single object
+	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	if err == nil {
+		v = append(v, single)
+		return v, resp, nil
+	}
+
+	return nil, nil, err
 }
 
 // Gets the list of all active web probes on a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) GetAllWebProbes(deviceID, appID string, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
+func GetAllWebProbes(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
 	var v []DeviceWebProbe
 	path := generateWebProbesPath(deviceID, appID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -61,7 +62,7 @@ type UserMetadata struct {
 	SpPostURL      string `json:"spPostUrl,omitempty"`
 }
 
-func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error) {
+func Get(service *services.Service, IdpID string) (*IdpController, *http.Response, error) {
 	v := new(IdpController)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+idpControllerEndpoint, IdpID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -72,7 +73,7 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
+func GetByName(service *services.Service, idpName string) (*IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
@@ -86,7 +87,7 @@ func (service *Service) GetByName(idpName string) (*IdpController, *http.Respons
 	return nil, resp, fmt.Errorf("no Idp-Controller named '%s' was found", idpName)
 }
 
-func (service *Service) GetAll() ([]IdpController, *http.Response, error) {
+func GetAll(service *services.Service) ([]IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {

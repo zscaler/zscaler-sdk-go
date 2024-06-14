@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -102,7 +103,7 @@ type Schedule struct {
 	ScheduleDisabled bool `json:"scheduleDisabled,omitempty"`
 }
 
-func (service *Service) GetDLPEDMSchemaID(edmSchemaID int) (*DLPEDMSchema, error) {
+func GetDLPEDMSchemaID(service *services.Service, edmSchemaID int) (*DLPEDMSchema, error) {
 	var edmSchema DLPEDMSchema
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpEDMSchemaEndpoint, edmSchemaID), &edmSchema)
 	if err != nil {
@@ -113,7 +114,7 @@ func (service *Service) GetDLPEDMSchemaID(edmSchemaID int) (*DLPEDMSchema, error
 	return &edmSchema, nil
 }
 
-func (service *Service) GetDLPEDMByName(edmSchemaName string) (*DLPEDMSchema, error) {
+func GetDLPEDMByName(service *services.Service, edmSchemaName string) (*DLPEDMSchema, error) {
 	var edmSchema []DLPEDMSchema
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", dlpEDMSchemaEndpoint, url.QueryEscape(edmSchemaName)), &edmSchema)
 	if err != nil {
@@ -127,7 +128,7 @@ func (service *Service) GetDLPEDMByName(edmSchemaName string) (*DLPEDMSchema, er
 	return nil, fmt.Errorf("no edm schema found with name: %s", edmSchemaName)
 }
 
-func (service *Service) GetAll() ([]DLPEDMSchema, error) {
+func GetAll(service *services.Service) ([]DLPEDMSchema, error) {
 	var edmData []DLPEDMSchema
 	err := common.ReadAllPages(service.Client, dlpEDMSchemaEndpoint, &edmData)
 	return edmData, err

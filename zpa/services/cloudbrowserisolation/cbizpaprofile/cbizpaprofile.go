@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -25,9 +27,9 @@ type ZPAProfiles struct {
 }
 
 // The current API does not seem to support search by ID
-func (service *Service) Get(profileID string) (*ZPAProfiles, *http.Response, error) {
+func Get(service *services.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
 	// First get all the profiles
-	profiles, resp, err := service.GetAll()
+	profiles, resp, err := GetAll(service)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -43,8 +45,8 @@ func (service *Service) Get(profileID string) (*ZPAProfiles, *http.Response, err
 }
 
 // The current API does not seem to support search by Name
-func (service *Service) GetByName(profileName string) (*ZPAProfiles, *http.Response, error) {
-	list, resp, err := service.GetAll()
+func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,7 +58,7 @@ func (service *Service) GetByName(profileName string) (*ZPAProfiles, *http.Respo
 	return nil, resp, fmt.Errorf("no zpa profile named '%s' was found", profileName)
 }
 
-func (service *Service) GetAll() ([]ZPAProfiles, *http.Response, error) {
+func GetAll(service *services.Service) ([]ZPAProfiles, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
 	var list []ZPAProfiles
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)

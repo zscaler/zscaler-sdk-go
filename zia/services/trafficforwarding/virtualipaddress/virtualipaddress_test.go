@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/region/datacenter"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
@@ -18,10 +19,9 @@ func TestVIPs(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	staticIPService := staticips.New(client)
-	staticIP, _, err := staticIPService.Create(&staticips.StaticIP{
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -30,15 +30,14 @@ func TestVIPs(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticIPService.Delete(staticIP.ID)
+		_, err := staticips.Delete(service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
 	// Search for datacenters by source IP
-	dataCenterService := datacenter.New(client)
-	dataCenterList, err := dataCenterService.SearchByDatacenters(common.DatacenterSearchParameters{
+	dataCenterList, err := datacenter.SearchByDatacenters(service, common.DatacenterSearchParameters{
 		SourceIp: ipAddress,
 	})
 	if err != nil {
@@ -59,7 +58,7 @@ func TestVIPs(t *testing.T) {
 
 		// Use the name of the first datacenter from the list
 		datacenterName := dataCenterList[0].Datacenter.Name
-		vips, err := service.GetZscalerVIPs(datacenterName)
+		vips, err := GetZscalerVIPs(service, datacenterName)
 		if err != nil {
 			t.Fatalf("Error fetching VIPs for datacenter %s: %v", datacenterName, err)
 		}
@@ -72,7 +71,7 @@ func TestVIPs(t *testing.T) {
 
 	// Test for GetZSGREVirtualIPList
 	t.Run("TestGetZSGREVirtualIPList", func(t *testing.T) {
-		vips, err := service.GetZSGREVirtualIPList(staticIP.IpAddress, 3)
+		vips, err := GetZSGREVirtualIPList(service, staticIP.IpAddress, 3)
 		if err != nil {
 			t.Fatalf("Error fetching GRE VIP list: %v", err)
 		}
@@ -86,7 +85,7 @@ func TestVIPs(t *testing.T) {
 		sourceIP := ipAddress // Assuming ipAddress from the staticIP
 		countryCode := "US"   // Replace with the appropriate country code
 
-		pairVips, err := service.GetPairZSGREVirtualIPsWithinCountry(sourceIP, countryCode)
+		pairVips, err := GetPairZSGREVirtualIPsWithinCountry(service, sourceIP, countryCode)
 		if err != nil {
 			t.Fatalf("Error fetching pair of VIPs within country: %v", err)
 		}
@@ -96,5 +95,38 @@ func TestVIPs(t *testing.T) {
 		}
 
 		// Additional checks can be added based on the structure of GREVirtualIPList
+	})
+
+	// Test for GetAll
+	t.Run("TestGetAll", func(t *testing.T) {
+		allVips, err := GetAll(service, ipAddress)
+		if err != nil {
+			t.Fatalf("Error fetching all VIPs for source IP: %v", err)
+		}
+		if len(allVips) == 0 {
+			t.Errorf("Expected VIPs for source IP %s, got none", ipAddress)
+		}
+	})
+
+	// Test for getAllStaticIPs
+	t.Run("TestGetAllStaticIPs", func(t *testing.T) {
+		staticIPs, err := getAllStaticIPs(service)
+		if err != nil {
+			t.Fatalf("Error fetching all static IPs: %v", err)
+		}
+		if len(staticIPs) == 0 {
+			t.Errorf("Expected static IPs, got none")
+		}
+	})
+
+	// Test for GetAllSourceIPs
+	t.Run("TestGetAllSourceIPs", func(t *testing.T) {
+		allSourceIPs, err := GetAllSourceIPs(service)
+		if err != nil {
+			t.Fatalf("Error fetching all source IPs: %v", err)
+		}
+		if len(allSourceIPs) == 0 {
+			t.Errorf("Expected VIPs for all source IPs, got none")
+		}
 	})
 }

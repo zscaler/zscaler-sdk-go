@@ -40,8 +40,8 @@ func NewClient(config *Config) (c *Client) {
 	return
 }
 
-func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
-	return client.newRequestDoCustom(method, url, options, body, v)
+func (client *Client) NewRequestDo(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
+	return client.newRequestDoCustom(method, urlStr, options, body, v)
 }
 
 func (client *Client) authenticate() error {
@@ -198,16 +198,27 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 		return nil, err
 	}
 
+	// Read and log the response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	resp.Body = io.NopCloser(bytes.NewBuffer(respBody)) // Reset the response body
+
+	logger.LogResponse(client.Config.Logger, resp, start, reqID)
+	logger.WriteLog(client.Config.Logger, "Response Body: %s", string(respBody)) // Log the response body separately
+
 	if err := checkErrorInResponse(resp); err != nil {
 		return resp, err
 	}
 
 	if v != nil {
+		// Reset the response body again for unmarshalling
+		resp.Body = io.NopCloser(bytes.NewBuffer(respBody))
 		if err := decodeJSON(resp, v); err != nil {
 			return resp, err
 		}
 	}
-	logger.LogResponse(client.Config.Logger, resp, start, reqID)
 	unescapeHTML(v)
 	return resp, nil
 }

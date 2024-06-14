@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -25,7 +26,7 @@ type SamlAttribute struct {
 	UserAttribute bool   `json:"userAttribute,omitempty"`
 }
 
-func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Response, error) {
+func Get(service *services.Service, samlAttributeID string) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+samlAttributeEndpoint, samlAttributeID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
@@ -36,7 +37,7 @@ func (service *Service) Get(samlAttributeID string) (*SamlAttribute, *http.Respo
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Response, error) {
+func GetByName(service *services.Service, samlAttrName string) (*SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {
@@ -50,7 +51,7 @@ func (service *Service) GetByName(samlAttrName string) (*SamlAttribute, *http.Re
 	return nil, resp, fmt.Errorf("no saml attribute named '%s' was found", samlAttrName)
 }
 
-func (service *Service) GetAll() ([]SamlAttribute, *http.Response, error) {
+func GetAll(service *services.Service) ([]SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {

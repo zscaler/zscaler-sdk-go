@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/common"
 )
 
@@ -36,7 +37,7 @@ type ProvisioningAPIKeys struct {
 	PartnerUrl string `json:"partnerUrl,omitempty"`
 }
 
-func (service *Service) Get(apiKeyID int) (*ProvisioningAPIKeys, error) {
+func Get(service *services.Service, apiKeyID int) (*ProvisioningAPIKeys, error) {
 	var apiKey ProvisioningAPIKeys
 	err := service.Client.Read(fmt.Sprintf("%s/%d", apiKeysEndpoint, apiKeyID), &apiKey)
 	if err != nil {
@@ -47,7 +48,7 @@ func (service *Service) Get(apiKeyID int) (*ProvisioningAPIKeys, error) {
 	return &apiKey, nil
 }
 
-func (service *Service) GetPartnerAPIKey(apiKeyValue string, includePartnerKey bool) (*ProvisioningAPIKeys, error) {
+func GetPartnerAPIKey(service *services.Service, apiKeyValue string, includePartnerKey bool) (*ProvisioningAPIKeys, error) {
 	// Constructing the API endpoint URL
 	url := fmt.Sprintf("%s?includePartnerKey=%t", apiKeysEndpoint, includePartnerKey)
 
@@ -67,13 +68,13 @@ func (service *Service) GetPartnerAPIKey(apiKeyValue string, includePartnerKey b
 	return nil, fmt.Errorf("no partner api key found with key value: %s", apiKeyValue)
 }
 
-func (service *Service) GetAll() ([]ProvisioningAPIKeys, error) {
+func GetAll(service *services.Service) ([]ProvisioningAPIKeys, error) {
 	var apiKeys []ProvisioningAPIKeys
 	err := common.ReadAllPages(service.Client, apiKeysEndpoint, &apiKeys)
 	return apiKeys, err
 }
 
-func (service *Service) Create(apiKeyValue *ProvisioningAPIKeys, includePartnerKey bool, keyId *int) (*ProvisioningAPIKeys, error) {
+func Create(service *services.Service, apiKeyValue *ProvisioningAPIKeys, includePartnerKey bool, keyId *int) (*ProvisioningAPIKeys, error) {
 	// Handle nil apiKeyValue appropriately
 	if apiKeyValue == nil {
 		apiKeyValue = &ProvisioningAPIKeys{}

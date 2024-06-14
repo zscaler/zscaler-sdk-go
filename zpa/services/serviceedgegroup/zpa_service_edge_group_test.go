@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestServiceEdgeGroup_Create(t *testing.T) {
@@ -16,10 +17,10 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Create new resource
-	createdResource, _, err := service.Create(ServiceEdgeGroup{
+	createdResource, _, err := Create(service, ServiceEdgeGroup{
 		Name:                   name,
 		Description:            name,
 		Enabled:                true,
@@ -50,7 +51,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestResourceRetrieval", func(t *testing.T) {
-		retrievedResource, _, err := service.Get(createdResource.ID)
+		retrievedResource, _, err := Get(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource: %v", err)
 		}
@@ -65,14 +66,14 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = service.Update(createdResource.ID, &updatedResource)
+		_, err = Update(service, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
 	})
 
 	t.Run("TestResourceRetrievalByName", func(t *testing.T) {
-		retrievedResource, _, err := service.GetByName(updateName)
+		retrievedResource, _, err := GetByName(service, updateName)
 		if err != nil {
 			t.Fatalf("Error retrieving resource by name: %v", err)
 		}
@@ -85,7 +86,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
-		resources, _, err := service.GetAll()
+		resources, _, err := GetAll(service)
 		if err != nil {
 			t.Fatalf("Error retrieving groups: %v", err)
 		}
@@ -105,7 +106,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestResourceRemoval", func(t *testing.T) {
-		_, err := service.Delete(createdResource.ID)
+		_, err := Delete(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error deleting resource: %v", err)
 		}
@@ -117,9 +118,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -130,9 +131,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -143,9 +144,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non_existent_id", &ServiceEdgeGroup{})
+	_, err = Update(service, "non_existent_id", &ServiceEdgeGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -156,9 +157,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

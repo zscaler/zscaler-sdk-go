@@ -9,18 +9,6 @@ import (
 )
 
 func main() {
-	/*
-		If you set one of the value of the parameters to empty string, the client will fallback to:
-		 - The env variables: ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID, ZPA_CLOUD
-		 - Or if the env vars are not set, the client will try to use the config file which should be placed at  $HOME/.zpa/credentials.json on Linux and OS X, or "%USERPROFILE%\.zpa/credentials.json" on windows
-		 	with the following format:
-			{
-				"zpa_client_id": "",
-				"zpa_client_secret": "",
-				"zpa_customer_id": "",
-				"zpa_cloud": ""
-			}
-	*/
 	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
 	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
 	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")

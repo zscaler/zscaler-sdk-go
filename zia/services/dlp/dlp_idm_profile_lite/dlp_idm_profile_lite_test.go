@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,10 +17,10 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := service.GetAll(activeOnly)
+		profiles, err := GetAll(service, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profiles with activeOnly %t: %v", activeOnly, err)
 			return
@@ -30,7 +31,7 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 		}
 		name := profiles[0].TemplateName
 		t.Log("Getting idm profile by name:", name, "with activeOnly:", activeOnly)
-		profile, err := service.GetDLPProfileLiteByName(name, activeOnly)
+		profile, err := GetDLPProfileLiteByName(service, name, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profile by name with activeOnly %t: %v", activeOnly, err)
 			return
@@ -39,6 +40,18 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 			t.Errorf("idm profile name does not match with activeOnly %t: expected %s, got %s", activeOnly, name, profile.TemplateName)
 			return
 		}
+
+		// Additional step to test GetDLPProfileLiteID
+		t.Run("GetDLPProfileLiteID", func(t *testing.T) {
+			profileLite, err := GetDLPProfileLiteID(service, profile.ProfileID, activeOnly)
+			if err != nil {
+				t.Errorf("Error getting DLP Profile Lite ID %d with activeOnly %t: %v", profile.ProfileID, activeOnly, err)
+				return
+			}
+			if profileLite.ProfileID != profile.ProfileID {
+				t.Errorf("DLP Profile Lite ID does not match with activeOnly %t: expected %d, got %d", activeOnly, profile.ProfileID, profileLite.ProfileID)
+			}
+		})
 	}
 
 	// Negative Test remains the same
@@ -50,10 +63,10 @@ func TestGetDLPProfileLiteById(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := service.GetAll(activeOnly)
+		profiles, err := GetAll(service, activeOnly)
 		if err != nil {
 			t.Fatalf("Error getting all IDM profiles with activeOnly %t: %v", activeOnly, err)
 		}
@@ -79,10 +92,10 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := service.GetAll(activeOnly)
+		profiles, err := GetAll(service, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profile with activeOnly %t: %v", activeOnly, err)
 			return
@@ -110,7 +123,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 	knownName := "BD_IDM_TEMPLATE01"
 
 	variations := []string{
@@ -122,7 +135,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	for _, activeOnly := range []bool{true, false} {
 		for _, variation := range variations {
 			t.Logf("Attempting to retrieve group with name variation: %s with activeOnly %t", variation, activeOnly)
-			profile, err := service.GetDLPProfileLiteByName(variation, activeOnly)
+			profile, err := GetDLPProfileLiteByName(service, variation, activeOnly)
 			if err != nil {
 				t.Errorf("Error getting idm profile with name variation '%s' and activeOnly %t: %v", variation, activeOnly, err)
 				continue

@@ -1,25 +1,36 @@
 package applications
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (
-	scoreEndpoint   = "v1/score"
-	metricsEndpoint = "v1/metrics"
+	scoreEndpoint   = "/score"
+	metricsEndpoint = "/metrics"
 )
 
 // Gets the application's ZDX score trend. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) GetAppScores(appID string, filters GetAppsFilters) (*common.Metric, *http.Response, error) {
-	v := new(common.Metric)
-	path := appsEndpoint + "/" + appID + scoreEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
-	if err != nil {
-		return nil, nil, err
+func GetAppScores(service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+	var v []common.Metric
+	var single common.Metric
+	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, scoreEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	if err == nil {
+		return v, resp, nil
 	}
-	return v, resp, nil
+
+	// If unmarshalling to an array fails, try unmarshalling to a single object
+	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	if err == nil {
+		v = append(v, single)
+		return v, resp, nil
+	}
+
+	return nil, nil, err
 }
 
 /*
@@ -29,12 +40,22 @@ For CloudPath Probes, you can access latency metrics for End to End, Client - Eg
 If not specified, it defaults to End to End latency.
 If the time range is not specified, the endpoint defaults to the last 2 hours.
 */
-func (service *Service) GetAppMetrics(appID string, filters GetAppsFilters) (*common.Metric, *http.Response, error) {
-	v := new(common.Metric)
-	path := appsEndpoint + "/" + appID + metricsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
-	if err != nil {
-		return nil, nil, err
+// Gets the application's metric trend.
+func GetAppMetrics(service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+	var v []common.Metric
+	var single common.Metric
+	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, metricsEndpoint)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	if err == nil {
+		return v, resp, nil
 	}
-	return v, resp, nil
+
+	// If unmarshalling to an array fails, try unmarshalling to a single object
+	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	if err == nil {
+		v = append(v, single)
+		return v, resp, nil
+	}
+
+	return nil, nil, err
 }

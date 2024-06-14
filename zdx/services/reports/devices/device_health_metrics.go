@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (
-	deviceHealthMetricsEndpoint = "v1/health-metrics"
+	deviceHealthMetricsEndpoint = "health-metrics"
 )
 
 type HealthMetrics struct {
@@ -21,12 +22,13 @@ type Instances struct {
 	Metrics []common.Metric `json:"metrics,omitempty"`
 }
 
+// /devices/42827781/apps/1/health-metrics?from=1718247199&to=1718254399
 // Gets the health metrics trend for a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
 // The health metrics include CPU, Memory, Disk I/O, Network I/O, Wi-Fi, Network Bandwidth, etc.
-func (service *Service) GetHealthMetrics(deviceID string, filters common.GetFromToFilters) (*HealthMetrics, *http.Response, error) {
-	v := new(HealthMetrics)
+func GetHealthMetrics(service *services.Service, deviceID int, filters common.GetFromToFilters) ([]HealthMetrics, *http.Response, error) {
+	var v []HealthMetrics
 	path := fmt.Sprintf("%v/%v/%v", devicesEndpoint, deviceID, deviceHealthMetricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

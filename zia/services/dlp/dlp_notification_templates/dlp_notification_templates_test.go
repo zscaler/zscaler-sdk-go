@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -72,8 +73,9 @@ func cleanResources() {
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+
+	resources, err := GetAll(service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -81,7 +83,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
+			_, err := Delete(service, r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -115,7 +117,7 @@ func TestDlpNotificationTemplates(t *testing.T) {
 		t.Fatalf("Error reading PlainTextMessage content: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 	dlpTemplate := DlpNotificationTemplates{
 		Name:             name + "DLP Template Test",
 		Subject:          "DLP Violation: ${TRANSACTION_ID} ${ENGINES}",
@@ -127,7 +129,7 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	var createdResource *DlpNotificationTemplates
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&dlpTemplate)
+		createdResource, _, err = Create(service, &dlpTemplate)
 		return err
 	})
 	if err != nil {
@@ -158,14 +160,14 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -177,7 +179,7 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedByNameResource, err := GetByName(service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -189,7 +191,7 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	allResources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -214,26 +216,26 @@ func TestDlpNotificationTemplates(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
+		_, getErr := Get(service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DlpNotificationTemplates, error) {
+func tryRetrieveResource(s *services.Service, id int) (*DlpNotificationTemplates, error) {
 	var resource *DlpNotificationTemplates
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -249,9 +251,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -262,9 +264,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -275,9 +277,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &DlpNotificationTemplates{})
+	_, _, err = Update(service, 0, &DlpNotificationTemplates{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -288,9 +290,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non_existent_name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

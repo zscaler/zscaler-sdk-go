@@ -3,6 +3,8 @@ package region
 import (
 	"fmt"
 	"net/url"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -41,7 +43,7 @@ type Regions struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func (service *Service) GetDatacenterRegion(regionPrefix string) ([]Regions, error) {
+func GetDatacenterRegion(service *services.Service, regionPrefix string) ([]Regions, error) {
 	var regions []Regions
 	err := service.Client.Read(fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
 	if err != nil {

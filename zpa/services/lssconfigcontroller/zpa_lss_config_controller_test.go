@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
 )
@@ -22,15 +23,15 @@ func TestLSSConfigController(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := policysetcontroller.New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	service := services.New(client)
+
+	accessPolicySet, _, err := policysetcontroller.GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access inspection policy set: %v", err)
 		return
 	}
 	// create app connector group for testing
-	appConnGroupService := appconnectorgroup.New(client)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
+	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
 		Description:              name,
 		Enabled:                  true,
@@ -56,18 +57,17 @@ func TestLSSConfigController(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		_, _, getErr := appconnectorgroup.Get(service, appConnGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			_, err := appconnectorgroup.Delete(service, appConnGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting app connector group: %v", err)
 			}
 		}
 	}()
 
-	lssService := New(client)
 	lssConfig := &LSSResource{
 		LSSConfig: &LSSConfig{
 			Name:          name,
@@ -222,10 +222,6 @@ func TestLSSConfigController(t *testing.T) {
 							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_edge_connector"},
 						},
-						// {
-						// 	ObjectType: "CLIENT_TYPE",
-						// 	Values:     []string{"zpn_client_type_vdi"},
-						// },
 						{
 							ObjectType: "CLIENT_TYPE",
 							Values:     []string{"zpn_client_type_zapp"},
@@ -249,7 +245,7 @@ func TestLSSConfigController(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := lssService.Create(lssConfig)
+	createdResource, _, err := Create(service, lssConfig)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -262,7 +258,7 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.LSSConfig.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := lssService.Get(createdResource.ID)
+	retrievedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -274,11 +270,11 @@ func TestLSSConfigController(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.LSSConfig.Name = updateName
-	_, err = lssService.Update(createdResource.ID, retrievedResource)
+	_, err = Update(service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := lssService.Get(createdResource.ID)
+	updatedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -290,7 +286,7 @@ func TestLSSConfigController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = lssService.GetByName(updateName)
+	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -301,7 +297,7 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.LSSConfig.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := lssService.GetAll()
+	resources, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -320,14 +316,14 @@ func TestLSSConfigController(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = lssService.Delete(createdResource.ID)
+	_, err = Delete(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	retrievedAfterDelete, _, err := lssService.Get(createdResource.ID)
+	retrievedAfterDelete, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
 		// Note: This is a basic check.
@@ -350,9 +346,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -363,9 +359,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -376,9 +372,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non_existent_id", &LSSResource{})
+	_, err = Update(service, "non_existent_id", &LSSResource{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -389,9 +385,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

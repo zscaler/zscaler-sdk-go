@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -29,10 +30,10 @@ type EmergencyAccess struct {
 	ActivateNow       bool   `json:"activateNow,omitempty" url:"activateNow,omitempty"`
 }
 
-func (service *Service) Get(profileID string) (*EmergencyAccess, *http.Response, error) {
+func Get(service *services.Service, userID string) (*EmergencyAccess, *http.Response, error) {
 	v := new(EmergencyAccess)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,9 +41,9 @@ func (service *Service) Get(profileID string) (*EmergencyAccess, *http.Response,
 	return v, resp, nil
 }
 
-func (service *Service) GetByEmailID(emailID string) (*EmergencyAccess, *http.Response, error) {
+func GetByEmailID(service *services.Service, emailID string) (*EmergencyAccess, *http.Response, error) {
 	// Use the GetAll function to retrieve all EmergencyAccess records
-	list, resp, err := service.GetAll()
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,11 +57,11 @@ func (service *Service) GetByEmailID(emailID string) (*EmergencyAccess, *http.Re
 	return nil, resp, fmt.Errorf("no emergency access record found with email ID '%s'", emailID)
 }
 
-func (service *Service) Create(emergencyAccess *EmergencyAccess) (*EmergencyAccess, *http.Response, error) {
+func Create(service *services.Service, emergencyAccess *EmergencyAccess) (*EmergencyAccess, *http.Response, error) {
 	emergencyAccess.ActivateNow = false
 	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint)
 	v := new(EmergencyAccess)
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, emergencyAccess, v)
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -68,19 +69,19 @@ func (service *Service) Create(emergencyAccess *EmergencyAccess) (*EmergencyAcce
 	return v, resp, nil
 }
 
-func (service *Service) Update(userID string, emergencyAccess *EmergencyAccess) (*http.Response, error) {
+func Update(service *services.Service, userID string, emergencyAccess *EmergencyAccess) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, emergencyAccess, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/activate
-func (service *Service) Activate(userID string) (*http.Response, error) {
+func Activate(service *services.Service, userID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s/activate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -88,28 +89,28 @@ func (service *Service) Activate(userID string) (*http.Response, error) {
 }
 
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/deactivate
-func (service *Service) Deactivate(userID string) (*http.Response, error) {
+func Deactivate(service *services.Service, userID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s/deactivate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func (service *Service) GetAll() ([]EmergencyAccess, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint+"s") // Correct endpoint
-	pageSize := 500                                                                                                 // Define the pageSize as needed
-	initialPageId := ""                                                                                             // Start without a pageId or as required
+func GetAll(service *services.Service) ([]EmergencyAccess, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s%s%ss", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint) // Correct endpoint
+	pageSize := 500                                                                                              // Define the pageSize as needed
+	initialPageId := ""                                                                                          // Start without a pageId or as required
 
-	return GetAllEmergencyAccessUsers(service.Client, relativeURL, pageSize, initialPageId)
+	return GetAllEmergencyAccessUsers(service, relativeURL, pageSize, initialPageId)
 }
 
-func fetchEmergencyAccessUsersPage(client *zpa.Client, fullURL string) (*http.Response, error) {
-	return client.NewRequestDo("GET", fullURL, nil, nil, nil)
+func fetchEmergencyAccessUsersPage(service *services.Service, fullURL string) (*http.Response, error) {
+	return service.Client.NewRequestDo("GET", fullURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 }
 
-func GetAllEmergencyAccessUsers(client *zpa.Client, baseRelativeURL string, pageSize int, initialPageId string) ([]EmergencyAccess, *http.Response, error) {
+func GetAllEmergencyAccessUsers(service *services.Service, baseRelativeURL string, pageSize int, initialPageId string) ([]EmergencyAccess, *http.Response, error) {
 	var allUsers []EmergencyAccess
 	var lastResponse *http.Response
 	pageId := initialPageId
@@ -123,7 +124,7 @@ func GetAllEmergencyAccessUsers(client *zpa.Client, baseRelativeURL string, page
 			fullURL = fmt.Sprintf("%s?pageSize=%d", baseRelativeURL, pageSize)
 		}
 
-		resp, err := fetchEmergencyAccessUsersPage(client, fullURL)
+		resp, err := fetchEmergencyAccessUsersPage(service, fullURL)
 		if err != nil {
 			return nil, lastResponse, err
 		}

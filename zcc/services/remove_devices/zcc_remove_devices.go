@@ -3,6 +3,7 @@ package remove_devices
 import (
 	"fmt"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/common"
 )
 
@@ -24,7 +25,7 @@ type RemoveDevicesRequest struct {
 }
 
 // SoftRemoveDevices soft removes the enrolled devices from the portal
-func (service *Service) SoftRemoveDevices(request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+func SoftRemoveDevices(service *services.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
 	pagination := common.NewPagination(pageSize)
 	fullURL := fmt.Sprintf("%s?pageSize=%d", softRemoveDevicesEndpoint, pagination.PageSize)
 
@@ -37,7 +38,7 @@ func (service *Service) SoftRemoveDevices(request RemoveDevicesRequest, pageSize
 }
 
 // ForceRemoveDevices force removes the enrolled devices from the portal
-func (service *Service) ForceRemoveDevices(request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+func ForceRemoveDevices(service *services.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
 	pagination := common.NewPagination(pageSize)
 	fullURL := fmt.Sprintf("%s?pageSize=%d", forceRemoveDevicesEndpoint, pagination.PageSize)
 

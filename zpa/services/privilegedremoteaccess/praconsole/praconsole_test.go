@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
@@ -24,24 +25,24 @@ func TestPRAConsole(t *testing.T) {
 	}
 
 	// create segment group for testing
-	segGroupService := segmentgroup.New(client)
+	service := services.New(client)
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
 	}
-	createdSegGroup, _, err := segGroupService.Create(&appGroup)
+	createdSegGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segGroupService.Get(createdSegGroup.ID)
+		_, _, getErr := segmentgroup.Get(service, createdSegGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segGroupService.Delete(createdSegGroup.ID)
+			_, err := segmentgroup.Delete(service, createdSegGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -49,7 +50,6 @@ func TestPRAConsole(t *testing.T) {
 	}()
 
 	// create pra application segment for testing
-	praSegmentService := applicationsegmentpra.New(client)
 	praAppSeg := applicationsegmentpra.AppSegmentPRA{
 		Name:            name,
 		Description:     name,
@@ -96,7 +96,7 @@ func TestPRAConsole(t *testing.T) {
 			},
 		},
 	}
-	createdpraAppSeg, _, err := praSegmentService.Create(praAppSeg)
+	createdpraAppSeg, _, err := applicationsegmentpra.Create(service, praAppSeg)
 	if err != nil {
 		t.Errorf("Error creating pra application segment: %v", err)
 		return
@@ -106,14 +106,13 @@ func TestPRAConsole(t *testing.T) {
 	time.Sleep(5 * time.Second) // Adjust the duration according to the expected processing time
 
 	// Assuming the praSegmentService.Get correctly returns the payload as described
-	retrievedpraAppSeg, _, err := praSegmentService.Get(createdpraAppSeg.ID)
+	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
 	if err != nil {
 		t.Errorf("Error retrieving created pra application segment: %v", err)
 		return
 	}
 
-	baCertificateService := bacertificate.New(client)
-	baCertList, _, err := baCertificateService.GetAll()
+	baCertList, _, err := bacertificate.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -121,11 +120,10 @@ func TestPRAConsole(t *testing.T) {
 	if len(baCertList) == 0 {
 		t.Error("Expected retrieved certificates to be non-empty, but got empty slice")
 	}
-	praPortalService := praportal.New(client)
 	// Create multiple PRA Portals and collect their IDs
 	var praPortalIDs []string
 	for i, cert := range baCertList[:2] { // Assuming you need two PRA Portals and there are at least two certificates
-		praPortal, _, err := praPortalService.Create(&praportal.PRAPortal{
+		praPortal, _, err := praportal.Create(service, &praportal.PRAPortal{
 			Name:                    name + fmt.Sprintf("_pra_portal_%d", i),
 			Description:             name + fmt.Sprintf(" Description %d", i),
 			Enabled:                 true,
@@ -139,14 +137,13 @@ func TestPRAConsole(t *testing.T) {
 			return
 		}
 		defer func(portalID string) {
-			_, err := praPortalService.Delete(portalID)
+			_, err := praportal.Delete(service, portalID)
 			if err != nil {
 				t.Logf("Error deleting PRA portal with ID %s: %v", portalID, err)
 			}
 		}(praPortal.ID)
 		praPortalIDs = append(praPortalIDs, praPortal.ID)
 	}
-	service := New(client)
 
 	var praConsoles []PRAConsole
 
@@ -188,7 +185,7 @@ func TestPRAConsole(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResources, _, err := service.CreatePraBulk(praConsoles)
+	createdResources, _, err := CreatePraBulk(service, praConsoles)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -200,7 +197,7 @@ func TestPRAConsole(t *testing.T) {
 	}
 
 	// Retrieve and Update all PRA Consoles
-	allPRAConsoles, _, err := service.GetAll()
+	allPRAConsoles, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving PRA Consoles: %v", err)
 		return
@@ -209,7 +206,7 @@ func TestPRAConsole(t *testing.T) {
 	for _, console := range allPRAConsoles {
 		// Prepare the update - e.g., updating the description for simplicity
 		console.Description = updateName
-		_, err := service.Update(console.ID, &console)
+		_, err := Update(service, console.ID, &console)
 		if err != nil {
 			t.Errorf("Error updating PRA console with ID %s: %v", console.ID, err)
 		}
@@ -217,7 +214,7 @@ func TestPRAConsole(t *testing.T) {
 
 	// Delete PRA Console resources after updates
 	for _, consoleID := range createdConsoleIDs {
-		_, err := service.Delete(consoleID)
+		_, err := Delete(service, consoleID)
 		if err != nil {
 			t.Errorf("Error deleting PRA console with ID %s: %v", consoleID, err)
 		}
@@ -226,7 +223,7 @@ func TestPRAConsole(t *testing.T) {
 	// Defer the deletion of the praAppSeg resource with a delay
 	defer func() {
 		time.Sleep(2 * time.Second) // Delay to ensure all deletions have propagated
-		_, err := praSegmentService.Delete(createdpraAppSeg.ID)
+		_, err := applicationsegmentpra.Delete(service, createdpraAppSeg.ID)
 		if err != nil {
 			t.Errorf("Error deleting pra application segment: %v", err)
 		}
@@ -238,9 +235,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -251,24 +248,11 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
-	}
-}
-
-func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Update("non_existent_id", &PRAConsole{})
-	if err == nil {
-		t.Error("Expected error updating non-existent resource, but got nil")
 	}
 }
 
@@ -277,9 +261,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

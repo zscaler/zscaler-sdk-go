@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 // isValidMD5 checks if the given string is a valid MD5 hash.
@@ -19,7 +20,7 @@ func TestUpdateBaAdvancedSettings(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	desiredSettings := BaAdvancedSettings{
@@ -32,7 +33,7 @@ func TestUpdateBaAdvancedSettings(t *testing.T) {
 		},
 	}
 
-	updatedSettings, err := service.Update(desiredSettings)
+	updatedSettings, err := Update(service, desiredSettings)
 	if err != nil {
 		t.Errorf("Error updating BA Advanced Settings: %v", err)
 	}
@@ -47,7 +48,7 @@ func TestValidateMD5Hashes(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	hashes := []string{
@@ -75,7 +76,7 @@ func TestValidateMD5Hashes(t *testing.T) {
 			FileHashesToBeBlocked: validHashes,
 		}
 
-		updatedSettings, err := service.Update(desiredSettings)
+		updatedSettings, err := Update(service, desiredSettings)
 		if err != nil {
 			t.Errorf("Error updating BA Advanced Settings: %v", err)
 		}
@@ -93,9 +94,9 @@ func TestGetBaAdvancedSettings(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
-	settings, err := service.Get()
+	settings, err := Get(service)
 	if err != nil {
 		t.Errorf("Error getting BA Advanced Settings: %v", err)
 	}
@@ -110,9 +111,9 @@ func TestGetFileHashCount(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
-	hashCount, err := service.GetFileHashCount()
+	hashCount, err := GetFileHashCount(service)
 	if err != nil {
 		t.Errorf("Error getting file hash count: %v", err)
 	}
@@ -127,14 +128,14 @@ func TestEmptyHashList(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	desiredSettings := BaAdvancedSettings{
 		FileHashesToBeBlocked: []string{},
 	}
 
-	updatedSettings, err := service.Update(desiredSettings)
+	updatedSettings, err := Update(service, desiredSettings)
 	if err != nil {
 		t.Errorf("Error updating BA Advanced Settings: %v", err)
 	}

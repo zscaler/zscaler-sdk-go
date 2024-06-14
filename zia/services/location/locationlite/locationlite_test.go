@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,9 +17,9 @@ func TestLocationLite_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	servers, err := service.GetAll()
+	servers, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting locations: %v", err)
 		return
@@ -29,7 +30,7 @@ func TestLocationLite_data(t *testing.T) {
 	}
 	name := servers[0].Name
 	t.Log("Getting location lite by name:" + name)
-	server, err := service.GetLocationLiteByName(name)
+	server, err := GetLocationLiteByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting location lite by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestLocationLite_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an location lite with a non-existent name
 	nonExistentName := "ThisLocationDoesNotExist"
-	_, err = service.GetLocationLiteByName(nonExistentName)
+	_, err = GetLocationLiteByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -53,10 +54,10 @@ func TestGetById(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Get all servers to find a valid ID
-	servers, err := service.GetAll()
+	servers, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error getting all location lites: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestGetById(t *testing.T) {
 	testID := servers[0].ID
 
 	// Retrieve the server by ID
-	server, err := service.GetLocationLiteID(testID)
+	server, err := GetLocationLiteID(service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving location lite with ID %d: %v", testID, err)
 		return
@@ -92,9 +93,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	locations, err := service.GetAll()
+	locations, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting location lite: %v", err)
 		return
@@ -123,7 +124,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a group with the name "Road Warrior" exists
 	knownName := "Road Warrior"
@@ -137,7 +138,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, err := service.GetLocationLiteByName(variation)
+		group, err := GetLocationLiteByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name variation '%s': %v", variation, err)
 			continue

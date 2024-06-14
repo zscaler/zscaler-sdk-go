@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/gretunnels"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
@@ -42,8 +43,8 @@ func cleanResources() {
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
-	service := gretunnels.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := gretunnels.GetAll(service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -51,7 +52,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.SourceIP, "tests-") {
-			_, err := service.DeleteGreTunnels(r.ID)
+			_, err := gretunnels.DeleteGreTunnels(service, r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -69,8 +70,8 @@ func TestGRETunnelInfo(t *testing.T) {
 	}
 
 	// create static IP for testing
-	staticIPService := staticips.New(client)
-	staticIP, _, err := staticIPService.Create(&staticips.StaticIP{
+	service := services.New(client)
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -78,10 +79,9 @@ func TestGRETunnelInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating static IP for testing: %v", err)
 	}
-	defer deleteStaticIP(staticIPService, staticIP.ID, t)
+	defer deleteStaticIP(service, staticIP.ID, t)
 
-	vipRecommended := virtualipaddress.New(client)
-	vipRecommendedList, err := vipRecommended.GetAll(ipAddress)
+	vipRecommendedList, err := virtualipaddress.GetAll(service, ipAddress)
 	if err != nil {
 		t.Errorf("Error getting recommended vip: %v", err)
 		return
@@ -91,8 +91,8 @@ func TestGRETunnelInfo(t *testing.T) {
 	}
 
 	withinCountry := true // Create a boolean variable
-	greService := gretunnels.New(client)
-	greTunnel, _, err := greService.CreateGreTunnels(&gretunnels.GreTunnels{
+
+	greTunnel, _, err := gretunnels.CreateGreTunnels(service, &gretunnels.GreTunnels{
 		SourceIP:      staticIP.IpAddress,
 		Comment:       comment,
 		WithinCountry: &withinCountry,
@@ -110,11 +110,11 @@ func TestGRETunnelInfo(t *testing.T) {
 		t.Fatalf("Error creating GRE tunnel: %v", err)
 	}
 
-	defer deleteGRETunnel(greService, greTunnel.ID, t)
+	defer deleteGRETunnel(service, greTunnel.ID, t)
 
 	// Get GRE tunnel information
-	greTunnelInfoService := New(client)
-	greTunnelInfo, err := greTunnelInfoService.GetGRETunnelInfo(ipAddress)
+
+	greTunnelInfo, err := GetGRETunnelInfo(service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error retrieving GRE tunnel info: %v", err)
 	}
@@ -137,7 +137,7 @@ func TestGRETunnelInfo(t *testing.T) {
 
 	t.Run("TestInvalidGRETunnelRetrieval", func(t *testing.T) {
 		invalidIpAddress := "invalid-ip-address"
-		_, err := greTunnelInfoService.GetGRETunnelInfo(invalidIpAddress)
+		_, err := GetGRETunnelInfo(service, invalidIpAddress)
 		if err == nil {
 			t.Errorf("Expected an error for invalid IP address, but got nil")
 		} else {
@@ -147,16 +147,16 @@ func TestGRETunnelInfo(t *testing.T) {
 }
 
 // deleteStaticIP deletes a static IP resource
-func deleteStaticIP(service *staticips.Service, id int, t *testing.T) {
-	_, err := service.Delete(id)
+func deleteStaticIP(service *services.Service, id int, t *testing.T) {
+	_, err := staticips.Delete(service, id)
 	if err != nil {
 		t.Errorf("Error deleting static IP: %v", err)
 	}
 }
 
 // deleteGRETunnel deletes a GRE tunnel resource
-func deleteGRETunnel(service *gretunnels.Service, id int, t *testing.T) {
-	_, err := service.DeleteGreTunnels(id)
+func deleteGRETunnel(service *services.Service, id int, t *testing.T) {
+	_, err := gretunnels.DeleteGreTunnels(service, id)
 	if err != nil {
 		t.Errorf("Error deleting GRE tunnel: %v", err)
 	}

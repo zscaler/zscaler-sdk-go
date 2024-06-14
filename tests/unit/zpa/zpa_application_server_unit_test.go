@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 )
 
 func TestApplicationServer_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Server 1"}`))
 	})
-	service := &appservercontroller.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	appServer, _, err := service.Get("123")
+	appServer, _, err := appservercontroller.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -39,15 +40,15 @@ func TestApplicationServer_Get(t *testing.T) {
 func TestApplicationServer_Create(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Server 1"}`))
 	})
 
-	service := &appservercontroller.Service{
-		Client: client,
-	}
 	// Create a sample group
 	appServer := appservercontroller.ApplicationServer{
 		ID:          "123",
@@ -57,7 +58,7 @@ func TestApplicationServer_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdAppServer, _, err := service.Create(appServer)
+	createdAppServer, _, err := appservercontroller.Create(service, appServer)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -77,6 +78,9 @@ func TestApplicationServer_Create(t *testing.T) {
 func TestApplicationServer_GetByName(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
 		query := r.URL.Query()
@@ -96,12 +100,9 @@ func TestApplicationServer_GetByName(t *testing.T) {
 			w.Write([]byte(`{"error": "Server not found"}`))
 		}
 	})
-	service := &appservercontroller.Service{
-		Client: client,
-	}
 
 	// Make the GetByName request
-	appServer, _, err := service.GetByName("Server1")
+	appServer, _, err := appservercontroller.GetByName(service, "Server1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -119,14 +120,15 @@ func TestApplicationServer_GetByName(t *testing.T) {
 func TestApplicationServer_Update(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appservercontroller.Service{
-		Client: client,
-	}
+
 	appServer := appservercontroller.ApplicationServer{
 		ID:          "123",
 		Name:        "Server 1",
@@ -135,7 +137,7 @@ func TestApplicationServer_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := service.Update("123", appServer)
+	_, err := appservercontroller.Update(service, "123", appServer)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -145,16 +147,16 @@ func TestApplicationServer_Update(t *testing.T) {
 func TestApplicationServer_Delete(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server/123", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"success": true}`))
 	})
-	service := &appservercontroller.Service{
-		Client: client,
-	}
 
 	// Make the Delete request
-	_, err := service.Delete("123")
+	_, err := appservercontroller.Delete(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -164,6 +166,9 @@ func TestApplicationServer_Delete(t *testing.T) {
 func TestApplicationServer_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/server", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -174,12 +179,9 @@ func TestApplicationServer_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &appservercontroller.Service{
-		Client: client,
-	}
 
 	// Make the GetAll request
-	appServers, _, err := service.GetAll()
+	appServers, _, err := appservercontroller.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

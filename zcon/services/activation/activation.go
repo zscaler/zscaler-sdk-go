@@ -2,6 +2,8 @@ package activation
 
 import (
 	"errors"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 )
 
 const (
@@ -17,7 +19,7 @@ type ECAdminActivation struct {
 	AdminActivateStatus   string                 `json:"adminActivateStatus"`
 }
 
-func (service *Service) GetActivationStatus() (*ECAdminActivation, error) {
+func GetActivationStatus(service *services.Service) (*ECAdminActivation, error) {
 	var ecAdminActivation ECAdminActivation
 	err := service.Client.Read(ecAdminActivateStatusEndpoint, &ecAdminActivation)
 	if err != nil {
@@ -27,7 +29,7 @@ func (service *Service) GetActivationStatus() (*ECAdminActivation, error) {
 	return &ecAdminActivation, nil
 }
 
-func (service *Service) UpdateActivationStatus(activation ECAdminActivation) (*ECAdminActivation, error) {
+func UpdateActivationStatus(service *services.Service, activation ECAdminActivation) (*ECAdminActivation, error) {
 	resp, err := service.Client.UpdateWithPut(ecAdminActivateEndpoint, activation)
 	if err != nil {
 		return nil, err
@@ -41,7 +43,7 @@ func (service *Service) UpdateActivationStatus(activation ECAdminActivation) (*E
 	return updateActivationStatus, nil
 }
 
-func (service *Service) ForceActivationStatus(forceActivation ECAdminActivation) (*ECAdminActivation, error) {
+func ForceActivationStatus(service *services.Service, forceActivation ECAdminActivation) (*ECAdminActivation, error) {
 	resp, err := service.Client.UpdateWithPut(ecAdminForceActivateEndpoint, forceActivation)
 	if err != nil {
 		return nil, err

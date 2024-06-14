@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -14,10 +15,10 @@ func TestTrustedNetworks(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Test to retrieve all networks
-	networks, _, err := service.GetAll()
+	networks, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting trusted networks: %v", err)
 		return
@@ -30,7 +31,7 @@ func TestTrustedNetworks(t *testing.T) {
 	// Additional step: Use the ID of the first certificate to test the Get function
 	firstNetworkID := networks[0].ID
 	t.Run("Get by ID for first network", func(t *testing.T) {
-		networkByID, _, err := service.Get(firstNetworkID)
+		networkByID, _, err := Get(service, firstNetworkID)
 		if err != nil {
 			t.Fatalf("Error getting network by ID %s: %v", firstNetworkID, err)
 		}
@@ -43,7 +44,7 @@ func TestTrustedNetworks(t *testing.T) {
 	name := networks[0].Name
 	adaptedName := common.RemoveCloudSuffix(name)
 	t.Log("Getting trusted network by name:" + adaptedName)
-	profile, _, err := service.GetByName(adaptedName)
+	profile, _, err := GetByName(service, adaptedName)
 	if err != nil {
 		t.Errorf("Error getting trusted network by name: %v", err)
 		return
@@ -55,11 +56,20 @@ func TestTrustedNetworks(t *testing.T) {
 
 	// Negative Test: Try to retrieve a profile with a non-existent name
 	nonExistentName := "ThisTrustedNetworkNameDoesNotExist"
-	_, _, err = service.GetByName(nonExistentName)
+	_, _, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
+
+	// Negative Test: Try to retrieve a network with a non-existent ID
+	nonExistentID := "non_existent_id"
+	t.Run("Get by non-existent ID", func(t *testing.T) {
+		_, _, err := Get(service, nonExistentID)
+		if err == nil {
+			t.Errorf("Expected error when getting by non-existent ID, got nil")
+		}
+	})
 }
 
 func TestResponseFormatValidation(t *testing.T) {
@@ -69,9 +79,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	networks, _, err := service.GetAll()
+	networks, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting trusted networks: %v", err)
 		return
@@ -104,7 +114,7 @@ func TestResponseFormatValidation(t *testing.T) {
 			return
 		}
 
-		service := New(client)
+		service := services.New(client)
 
 		// Assuming a network with the name "BD-TrustedNetwork01" exists
 		knownName := "BD-TrustedNetwork01"
@@ -118,7 +128,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 		for _, variation := range variations {
 			t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
-			network, _, err := service.GetByName(variation)
+			network, _, err := GetByName(service, variation)
 			if err != nil {
 				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
 				continue
@@ -131,7 +141,6 @@ func TestResponseFormatValidation(t *testing.T) {
 		}
 	}
 */
-
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -139,7 +148,7 @@ func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming that there are networks with the following name variations
 	variations := []string{
@@ -150,7 +159,7 @@ func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve network with name: %s", variation)
-		network, _, err := service.GetByName(variation)
+		network, _, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting trusted network with name '%s': %v", variation, err)
 			continue
@@ -170,10 +179,10 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Fetch the list of all Trusted Networks
-	networks, _, err := service.GetAll()
+	networks, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting list of trusted networks: %v", err)
 		return
@@ -188,7 +197,7 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 	t.Logf("Using known network with Name: %s and NetworkID: %s", knownNetwork.Name, knownNetwork.NetworkID)
 
 	// Use the NetworkID from the known network to test GetByNetID
-	networkByID, _, err := service.GetByNetID(knownNetwork.NetworkID)
+	networkByID, _, err := GetByNetID(service, knownNetwork.NetworkID)
 	if err != nil {
 		t.Errorf("Error getting trusted network with NetworkID '%s': %v", knownNetwork.NetworkID, err)
 		return
@@ -205,9 +214,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

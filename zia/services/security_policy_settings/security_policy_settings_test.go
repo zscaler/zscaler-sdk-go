@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -47,10 +48,10 @@ func TestSecurityPolicySettings(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := &Service{Client: client}
+	service := &services.Service{Client: client}
 
 	// Backup initial settings
-	initialSettings, err := service.GetListUrls()
+	initialSettings, err := GetListUrls(service)
 	if err != nil {
 		t.Fatalf("Error fetching initial settings: %v", err)
 	}
@@ -66,14 +67,14 @@ func TestSecurityPolicySettings(t *testing.T) {
 	}
 
 	err = retryOnConflict(func() error {
-		_, err := service.UpdateListUrls(newSettings)
+		_, err := UpdateListUrls(service, newSettings)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating settings: %v", err)
 	}
 
-	updatedSettings, err := service.GetListUrls()
+	updatedSettings, err := GetListUrls(service)
 	if err != nil {
 		t.Fatalf("Error fetching updated settings: %v", err)
 	}
@@ -89,7 +90,7 @@ func TestSecurityPolicySettings(t *testing.T) {
 
 	// Restore initial settings
 	err = retryOnConflict(func() error {
-		_, err := service.UpdateListUrls(*initialSettings)
+		_, err := UpdateListUrls(service, *initialSettings)
 		return err
 	})
 	if err != nil {
@@ -97,7 +98,7 @@ func TestSecurityPolicySettings(t *testing.T) {
 	}
 
 	// Verify if the settings were restored
-	finalSettings, err := service.GetListUrls()
+	finalSettings, err := GetListUrls(service)
 	if err != nil {
 		t.Fatalf("Error fetching final settings: %v", err)
 	}

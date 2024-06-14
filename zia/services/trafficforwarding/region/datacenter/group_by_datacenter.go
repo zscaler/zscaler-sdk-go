@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -31,7 +32,7 @@ type GreVIP struct {
 	Datacenter         string `json:"datacenter,omitempty"`
 }
 
-func (service *Service) SearchByDatacenters(params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
+func SearchByDatacenters(service *services.Service, params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
 	var zscalerVips []DatacenterVIPS
 	var queryParams []string
 
@@ -72,10 +73,4 @@ func (service *Service) SearchByDatacenters(params common.DatacenterSearchParame
 		return nil, err
 	}
 	return zscalerVips, nil
-}
-
-func (service *Service) GetAll() ([]DatacenterVIPS, error) {
-	var dataCenters []DatacenterVIPS
-	err := common.ReadAllPages(service.Client, vipGroupByDatacenterEndpoint, &dataCenters)
-	return dataCenters, err
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -18,10 +19,10 @@ type AppSegmentSharedToMicrotenant struct {
 	MicroTenantID       string   `json:"microtenantId,omitempty"`
 }
 
-func (service *Service) AppSegmentMicrotenantShare(applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
+func AppSegmentMicrotenantShare(service *services.Service, applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
 	microTenantID := appSegmentRequest.MicroTenantID
-	if microTenantID == "" && service.microTenantID != nil {
-		microTenantID = *service.microTenantID
+	if microTenantID == "" && service.MicroTenantID() != nil {
+		microTenantID = *service.MicroTenantID()
 	}
 
 	relativeURL := fmt.Sprintf("%s%s%s/%s/share", mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)

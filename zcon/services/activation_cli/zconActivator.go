@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	client "github.com/zscaler/zscaler-sdk-go/v2/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/activation"
 )
 
@@ -30,8 +31,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("[ERROR] Failed Initializing zcon client: %v\n", err)
 	}
-	activationService := activation.New(cli)
-	resp, err := activationService.ForceActivationStatus(activation.ECAdminActivation{
+	service := services.New(cli)
+
+	resp, err := activation.ForceActivationStatus(service, activation.ECAdminActivation{
 		OrgEditStatus:         "org_edit_status",
 		OrgLastActivateStatus: "org_last_activate_status",
 		// AdminStatusMap:        "admin_status_map",

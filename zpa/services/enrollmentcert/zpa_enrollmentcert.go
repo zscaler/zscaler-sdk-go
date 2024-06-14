@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -40,10 +41,10 @@ type EnrollmentCert struct {
 	MicrotenantID           string `json:"microtenantId,omitempty"`
 }
 
-func (service *Service) Get(id string) (*EnrollmentCert, *http.Response, error) {
+func Get(service *services.Service, id string) (*EnrollmentCert, *http.Response, error) {
 	v := new(EnrollmentCert)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+enrollmentCertEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,9 +52,9 @@ func (service *Service) Get(id string) (*EnrollmentCert, *http.Response, error) 
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Response, error) {
+func GetByName(service *services.Service, certName string) (*EnrollmentCert, *http.Response, error) {
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{Search: certName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{Search: certName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -65,9 +66,9 @@ func (service *Service) GetByName(certName string) (*EnrollmentCert, *http.Respo
 	return nil, resp, fmt.Errorf("no signing certificate named '%s' was found", certName)
 }
 
-func (service *Service) GetAll() ([]EnrollmentCert, *http.Response, error) {
+func GetAll(service *services.Service) ([]EnrollmentCert, *http.Response, error) {
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

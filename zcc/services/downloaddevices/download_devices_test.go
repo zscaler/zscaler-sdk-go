@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 func TestDownloadDevices(t *testing.T) {
@@ -12,7 +13,7 @@ func TestDownloadDevices(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZCC client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	osTypes := "1,2"           // iOS and Android
 	registrationTypes := "1,4" // Registered and Unregistered
@@ -23,7 +24,7 @@ func TestDownloadDevices(t *testing.T) {
 	}
 	defer os.Remove(file.Name()) // clean up
 
-	err = service.DownloadDevices(osTypes, registrationTypes, file)
+	err = DownloadDevices(service, osTypes, registrationTypes, file)
 	if err != nil {
 		t.Fatalf("Error downloading devices: %v", err)
 	}

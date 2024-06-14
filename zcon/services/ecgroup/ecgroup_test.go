@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 )
 
 func TestECGroup(t *testing.T) {
@@ -13,9 +14,9 @@ func TestECGroup(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	ecgroups, err := service.GetAll()
+	ecgroups, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting Cloud & Branch Connector Group: %v", err)
 		return
@@ -26,7 +27,7 @@ func TestECGroup(t *testing.T) {
 		// Proceed with tests that require at least one EC Group
 		name := ecgroups[0].Name
 		t.Log("Getting Cloud & Branch Connector Group by name: " + name)
-		ecgroup, err := service.GetByName(name)
+		ecgroup, err := GetByName(service, name)
 		if err != nil {
 			t.Errorf("Error getting Cloud & Branch Connector Group by name: %v", err)
 			return
@@ -36,7 +37,7 @@ func TestECGroup(t *testing.T) {
 			return
 		}
 
-		ecgroupLite, err := service.GetEcGroupLiteByName(name)
+		ecgroupLite, err := GetEcGroupLiteByName(service, name)
 		if err != nil {
 			t.Errorf("Error getting Cloud & Branch Connector Group by name: %v", err)
 			return
@@ -49,7 +50,7 @@ func TestECGroup(t *testing.T) {
 
 	// Negative Test: Try to retrieve a EcGroup with a non-existent name
 	nonExistentName := "ThisEcGroupDoesNotExist"
-	_, err = service.GetByName(nonExistentName)
+	_, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return

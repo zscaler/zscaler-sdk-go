@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 )
 
@@ -19,8 +20,8 @@ func getTestIdpId(t *testing.T) string {
 		return ""
 	}
 
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	idpService := services.New(client)
+	idpList, _, err := idpcontroller.GetAll(idpService)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
 		return ""
@@ -55,8 +56,8 @@ func TestSCIMGroup(t *testing.T) {
 		return
 	}
 
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	idpService := services.New(client)
+	idpList, _, err := idpcontroller.GetAll(idpService)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return

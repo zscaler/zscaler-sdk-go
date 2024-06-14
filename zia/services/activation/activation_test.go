@@ -1,16 +1,24 @@
 package activation
 
 /*
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+)
+
 func TestActivation(t *testing.T) {
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	t.Run("Test GetActivationStatus", func(t *testing.T) {
-		activationStatus, err := service.GetActivationStatus()
+		activationStatus, err := GetActivationStatus(service)
 		assert.NoError(t, err)
 		assert.Contains(t, []string{"ACTIVE", "PENDING", "INPROGRESS"}, activationStatus.Status)
 	})
@@ -26,7 +34,7 @@ func TestActivation(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			createdActivation, err := service.CreateActivation(test.input)
+			createdActivation, err := CreateActivation(service, test.input)
 			if err != nil {
 				t.Logf("Warning: Failed to create activation with status %s: %v", test.input.Status, err)
 				continue

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -22,7 +24,7 @@ type GRETunnelInfo struct {
 }
 
 // Gets a list of IP addresses with GRE tunnel details.
-func (service *Service) GetGRETunnelInfo(ipAddress string) (*GRETunnelInfo, error) {
+func GetGRETunnelInfo(service *services.Service, ipAddress string) (*GRETunnelInfo, error) {
 	var greTunnelInfo []GRETunnelInfo
 	err := service.Client.Read(fmt.Sprintf("%s?ipAddress=%s", ipGreTunnelInfoEndpoint, url.QueryEscape(ipAddress)), &greTunnelInfo)
 	if err != nil {

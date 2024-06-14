@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/authdomain"
@@ -31,8 +32,9 @@ func TestApplicationSegmentMove(t *testing.T) {
 	}
 
 	// Step 1: Get available auth domains
-	authDomainService := authdomain.New(client)
-	authDomainList, _, err := authDomainService.GetAllAuthDomains()
+	service := services.New(client)
+
+	authDomainList, _, err := authdomain.GetAllAuthDomains(service)
 	if err != nil {
 		t.Errorf("Error getting auth domains: %v", err)
 		return
@@ -44,7 +46,6 @@ func TestApplicationSegmentMove(t *testing.T) {
 
 	// Function to create microtenant with retries
 	createMicrotenantWithRetry := func(name, description string, domains []string) (*microtenants.MicroTenant, error) {
-		microtenantService := microtenants.New(client)
 		microtenant := microtenants.MicroTenant{
 			Name:                       name,
 			Description:                description,
@@ -56,7 +57,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		var createdMicrotenant *microtenants.MicroTenant
 		var err error
 		for i := 0; i < 3; i++ { // Retry up to 3 times
-			createdMicrotenant, _, err = microtenantService.Create(microtenant)
+			createdMicrotenant, _, err = microtenants.Create(service, microtenant)
 			if err == nil {
 				break
 			}
@@ -76,8 +77,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		t.Fatalf("Failed to create microtenant: %v", err)
 	}
 	defer func() {
-		microtenantService := microtenants.New(client)
-		_, err := microtenantService.Delete(createdMicrotenant.ID)
+		_, err := microtenants.Delete(service, createdMicrotenant.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant: %v", err)
 		}
@@ -86,8 +86,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 	microtenantID := createdMicrotenant.ID
 
 	// Step 2: Create resources in the new Microtenant
-	appConnGroupService := appconnectorgroup.New(client)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
+	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     baseName + "-microtenant-appconn",
 		Description:              baseDescription + "-microtenant-appconn",
 		Enabled:                  true,
@@ -112,8 +111,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		t.Fatalf("Error creating app connector group: %v", err)
 	}
 
-	serverGroupService := servergroup.New(client)
-	serverGroup, _, err := serverGroupService.Create(&servergroup.ServerGroup{
+	serverGroup, _, err := servergroup.Create(service, &servergroup.ServerGroup{
 		Name:             baseName + "-microtenant-server",
 		Description:      baseDescription + "-microtenant-server",
 		Enabled:          true,
@@ -127,20 +125,18 @@ func TestApplicationSegmentMove(t *testing.T) {
 		t.Fatalf("Error creating server group: %v", err)
 	}
 
-	segGroupService := segmentgroup.New(client)
 	segGroup := segmentgroup.SegmentGroup{
 		Name:          baseName + "-microtenant-seg",
 		Description:   baseDescription + "-microtenant-seg",
 		MicroTenantID: microtenantID,
 	}
-	createdSegGroup, _, err := segGroupService.Create(&segGroup)
+	createdSegGroup, _, err := segmentgroup.Create(service, &segGroup)
 	if err != nil {
 		t.Fatalf("Error creating segment group: %v", err)
 	}
 
 	// Step 3: Create resources in the Parent Tenant
-	appConnGroupServiceParent := appconnectorgroup.New(client)
-	appConnGroupParent, _, err := appConnGroupServiceParent.Create(appconnectorgroup.AppConnectorGroup{
+	appConnGroupParent, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     baseName + "-parent-appconn",
 		Description:              baseDescription + "-parent-appconn",
 		Enabled:                  true,
@@ -164,8 +160,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		t.Fatalf("Error creating app connector group in parent tenant: %v", err)
 	}
 
-	serverGroupServiceParent := servergroup.New(client)
-	serverGroupParent, _, err := serverGroupServiceParent.Create(&servergroup.ServerGroup{
+	serverGroupParent, _, err := servergroup.Create(service, &servergroup.ServerGroup{
 		Name:             baseName + "-parent-server",
 		Description:      baseDescription + "-parent-server",
 		Enabled:          true,
@@ -178,19 +173,17 @@ func TestApplicationSegmentMove(t *testing.T) {
 		t.Fatalf("Error creating server group in parent tenant: %v", err)
 	}
 
-	segGroupServiceParent := segmentgroup.New(client)
 	segGroupParent := segmentgroup.SegmentGroup{
 		Name:        baseName + "-parent-seg",
 		Enabled:     true,
 		Description: baseDescription + "-parent-seg",
 	}
-	createdSegGroupParent, _, err := segGroupServiceParent.Create(&segGroupParent)
+	createdSegGroupParent, _, err := segmentgroup.Create(service, &segGroupParent)
 	if err != nil {
 		t.Fatalf("Error creating segment group in parent tenant: %v", err)
 	}
 
 	// Step 4: Create Application Segment in the Parent Tenant
-	appSegmentService := applicationsegment.New(client)
 	appSegment := applicationsegment.ApplicationSegmentResource{
 		Name:                  baseName + "-parent-appseg",
 		Description:           baseDescription + "-parent-appseg",
@@ -215,21 +208,20 @@ func TestApplicationSegmentMove(t *testing.T) {
 			},
 		},
 	}
-	createdAppSegment, _, err := appSegmentService.Create(appSegment)
+	createdAppSegment, _, err := applicationsegment.Create(service, appSegment)
 	if err != nil {
 		t.Fatalf("Error creating application segment: %v", err)
 	}
 
 	// Step 5: Move Application Segment to the Microtenant
-	appSegmentMoveService := New(client)
-	moveRequest := AppSegmentMicrotenantMove{
+	moveRequest := AppSegmentMicrotenantMoveRequest{
 		ApplicationID:        createdAppSegment.ID,
 		TargetSegmentGroupID: createdSegGroup.ID,
 		TargetMicrotenantID:  microtenantID,
 		TargetServerGroupID:  serverGroup.ID,
 	}
 
-	resp, err := appSegmentMoveService.AppSegmentMicrotenantMove(createdAppSegment.ID, moveRequest)
+	resp, err := AppSegmentMicrotenantMove(service, createdAppSegment.ID, moveRequest)
 	if err != nil {
 		t.Fatalf("Error moving application segment: %v", err)
 	}
@@ -240,15 +232,15 @@ func TestApplicationSegmentMove(t *testing.T) {
 	// Cleanup: Resources created in Parent Tenant (except those in Microtenant)
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, err = serverGroupServiceParent.Delete(serverGroupParent.ID)
+		_, err = servergroup.Delete(service, serverGroupParent.ID)
 		if err != nil {
 			t.Errorf("Error deleting server group in parent tenant: %v", err)
 		}
-		_, err = appConnGroupServiceParent.Delete(appConnGroupParent.ID)
+		_, err = appconnectorgroup.Delete(service, appConnGroupParent.ID)
 		if err != nil {
 			t.Errorf("Error deleting app connector group in parent tenant: %v", err)
 		}
-		_, err = segGroupServiceParent.Delete(createdSegGroupParent.ID)
+		_, err = segmentgroup.Delete(service, createdSegGroupParent.ID)
 		if err != nil {
 			t.Errorf("Error deleting segment group in parent tenant: %v", err)
 		}

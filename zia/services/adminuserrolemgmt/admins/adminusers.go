@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -98,7 +99,7 @@ type ExecMobileAppTokens struct {
 	DeviceName  string `json:"deviceName,omitempty"`
 }
 
-func (service *Service) GetAdminUsers(adminUserId int) (*AdminUsers, error) {
+func GetAdminUsers(service *services.Service, adminUserId int) (*AdminUsers, error) {
 	v := new(AdminUsers)
 	relativeURL := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserId)
 	err := service.Client.Read(relativeURL, v)
@@ -108,8 +109,8 @@ func (service *Service) GetAdminUsers(adminUserId int) (*AdminUsers, error) {
 	return v, nil
 }
 
-func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*AdminUsers, error) {
-	adminUsers, err := service.GetAllAdminUsers()
+func GetAdminUsersByLoginName(service *services.Service, adminUsersLoginName string) (*AdminUsers, error) {
+	adminUsers, err := GetAllAdminUsers(service)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +122,8 @@ func (service *Service) GetAdminUsersByLoginName(adminUsersLoginName string) (*A
 	return nil, fmt.Errorf("no admin login found with name: %s", adminUsersLoginName)
 }
 
-func (service *Service) GetAdminByUsername(adminUsername string) (*AdminUsers, error) {
-	adminUsers, err := service.GetAllAdminUsers()
+func GetAdminByUsername(service *services.Service, adminUsername string) (*AdminUsers, error) {
+	adminUsers, err := GetAllAdminUsers(service)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (service *Service) GetAdminByUsername(adminUsername string) (*AdminUsers, e
 	return nil, fmt.Errorf("no admin found with username: %s", adminUsername)
 }
 
-func (service *Service) CreateAdminUser(adminUser AdminUsers) (*AdminUsers, error) {
+func CreateAdminUser(service *services.Service, adminUser AdminUsers) (*AdminUsers, error) {
 	resp, err := service.Client.Create(adminUsersEndpoint, adminUser)
 	if err != nil {
 		return nil, err
@@ -146,7 +147,7 @@ func (service *Service) CreateAdminUser(adminUser AdminUsers) (*AdminUsers, erro
 	return res, nil
 }
 
-func (service *Service) UpdateAdminUser(adminUserID int, adminUser AdminUsers) (*AdminUsers, error) {
+func UpdateAdminUser(service *services.Service, adminUserID int, adminUser AdminUsers) (*AdminUsers, error) {
 	path := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID)
 	resp, err := service.Client.UpdateWithPut(path, adminUser)
 	if err != nil {
@@ -156,7 +157,7 @@ func (service *Service) UpdateAdminUser(adminUserID int, adminUser AdminUsers) (
 	return &res, err
 }
 
-func (service *Service) DeleteAdminUser(adminUserID int) (*http.Response, error) {
+func DeleteAdminUser(service *services.Service, adminUserID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID))
 	if err != nil {
 		return nil, err
@@ -165,7 +166,7 @@ func (service *Service) DeleteAdminUser(adminUserID int) (*http.Response, error)
 	return nil, nil
 }
 
-func (service *Service) GetAllAdminUsers() ([]AdminUsers, error) {
+func GetAllAdminUsers(service *services.Service) ([]AdminUsers, error) {
 	var adminUsers []AdminUsers
 	err := common.ReadAllPages(service.Client, adminUsersEndpoint+"?includeAuditorUsers=true&includeAdminUsers=true", &adminUsers)
 	return adminUsers, err

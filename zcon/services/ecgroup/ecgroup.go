@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/common"
 )
 
@@ -61,7 +62,7 @@ type LBIPAddr struct {
 	IPEnd   string `json:"ipEnd,omitempty"`
 }
 
-func (service *Service) Get(ecGroupID int) (*EcGroup, error) {
+func Get(service *services.Service, ecGroupID int) (*EcGroup, error) {
 	var ecGroup EcGroup
 	err := service.Client.Read(fmt.Sprintf("%s/%d", ecGroupEndpoint, ecGroupID), &ecGroup)
 	if err != nil {
@@ -72,7 +73,7 @@ func (service *Service) Get(ecGroupID int) (*EcGroup, error) {
 	return &ecGroup, nil
 }
 
-func (service *Service) GetByName(ecGroupName string) (*EcGroup, error) {
+func GetByName(service *services.Service, ecGroupName string) (*EcGroup, error) {
 	var ecGroup []EcGroup
 	// We are assuming this provisioning url name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, ecGroupEndpoint, &ecGroup)
@@ -87,7 +88,7 @@ func (service *Service) GetByName(ecGroupName string) (*EcGroup, error) {
 	return nil, fmt.Errorf("no Cloud & Branch Connector Group found with name: %s", ecGroupName)
 }
 
-func (service *Service) Delete(ecGroupID int) (*http.Response, error) {
+func Delete(service *services.Service, ecGroupID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", ecGroupEndpoint, ecGroupID))
 	if err != nil {
 		return nil, err
@@ -96,13 +97,13 @@ func (service *Service) Delete(ecGroupID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]EcGroup, error) {
+func GetAll(service *services.Service) ([]EcGroup, error) {
 	var ecgroups []EcGroup
 	err := common.ReadAllPages(service.Client, ecGroupEndpoint, &ecgroups)
 	return ecgroups, err
 }
 
-func (service *Service) GetEcGroupLiteID(ecGroupID int) (*EcGroup, error) {
+func GetEcGroupLiteID(service *services.Service, ecGroupID int) (*EcGroup, error) {
 	var ecgroupLite EcGroup
 	err := service.Client.Read(fmt.Sprintf("%s/%d", ecGroupLiteEndpoint, ecGroupID), &ecgroupLite)
 	if err != nil {
@@ -113,7 +114,7 @@ func (service *Service) GetEcGroupLiteID(ecGroupID int) (*EcGroup, error) {
 	return &ecgroupLite, nil
 }
 
-func (service *Service) GetEcGroupLiteByName(ecGroupLiteName string) (*EcGroup, error) {
+func GetEcGroupLiteByName(service *services.Service, ecGroupLiteName string) (*EcGroup, error) {
 	var ecgroupLite []EcGroup
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", ecGroupLiteEndpoint, url.QueryEscape(ecGroupLiteName)), &ecgroupLite)
 	if err != nil {

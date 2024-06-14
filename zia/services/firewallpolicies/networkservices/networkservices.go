@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -32,7 +33,7 @@ type NetworkPorts struct {
 	End   int `json:"end,omitempty"`
 }
 
-func (service *Service) Get(serviceID int) (*NetworkServices, error) {
+func Get(service *services.Service, serviceID int) (*NetworkServices, error) {
 	var networkServices NetworkServices
 	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
 	if err != nil {
@@ -43,7 +44,7 @@ func (service *Service) Get(serviceID int) (*NetworkServices, error) {
 	return &networkServices, nil
 }
 
-func (service *Service) GetByName(networkServiceName string) (*NetworkServices, error) {
+func GetByName(service *services.Service, networkServiceName string) (*NetworkServices, error) {
 	var networkServices []NetworkServices
 	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
 	if err != nil {
@@ -57,7 +58,7 @@ func (service *Service) GetByName(networkServiceName string) (*NetworkServices, 
 	return nil, fmt.Errorf("no network services found with name: %s", networkServiceName)
 }
 
-func (service *Service) Create(networkService *NetworkServices) (*NetworkServices, error) {
+func Create(service *services.Service, networkService *NetworkServices) (*NetworkServices, error) {
 	resp, err := service.Client.Create(networkServicesEndpoint, *networkService)
 	if err != nil {
 		return nil, err
@@ -72,7 +73,7 @@ func (service *Service) Create(networkService *NetworkServices) (*NetworkService
 	return createdNetworkServices, nil
 }
 
-func (service *Service) Update(serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
+func Update(service *services.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
 	if err != nil {
 		return nil, nil, err
@@ -83,7 +84,7 @@ func (service *Service) Update(serviceID int, networkService *NetworkServices) (
 	return updatedNetworkServices, nil, nil
 }
 
-func (service *Service) Delete(serviceID int) (*http.Response, error) {
+func Delete(service *services.Service, serviceID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func (service *Service) Delete(serviceID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAllNetworkServices() ([]NetworkServices, error) {
+func GetAllNetworkServices(service *services.Service) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
 	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
 	return networkServices, err

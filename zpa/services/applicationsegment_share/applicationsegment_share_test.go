@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegment"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/authdomain"
@@ -31,8 +32,9 @@ func TestApplicationSegmentShare(t *testing.T) {
 	}
 
 	// Step 1: Get available auth domains
-	authDomainService := authdomain.New(client)
-	authDomainList, _, err := authDomainService.GetAllAuthDomains()
+	service := services.New(client)
+
+	authDomainList, _, err := authdomain.GetAllAuthDomains(service)
 	if err != nil {
 		t.Errorf("Error getting auth domains: %v", err)
 		return
@@ -44,7 +46,6 @@ func TestApplicationSegmentShare(t *testing.T) {
 
 	// Function to create microtenant with retries
 	createMicrotenantWithRetry := func(name, description string, domains []string) (*microtenants.MicroTenant, error) {
-		microtenantService := microtenants.New(client)
 		microtenant := microtenants.MicroTenant{
 			Name:                       name,
 			Description:                description,
@@ -56,7 +57,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		var createdMicrotenant *microtenants.MicroTenant
 		var err error
 		for i := 0; i < 3; i++ { // Retry up to 3 times
-			createdMicrotenant, _, err = microtenantService.Create(microtenant)
+			createdMicrotenant, _, err = microtenants.Create(service, microtenant)
 			if err == nil {
 				break
 			}
@@ -76,8 +77,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to create microtenant A: %v", err)
 	}
 	defer func() {
-		microtenantService := microtenants.New(client)
-		_, err := microtenantService.Delete(microtenantAID.ID)
+		_, err := microtenants.Delete(service, microtenantAID.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant A: %v", err)
 		}
@@ -89,16 +89,13 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to create microtenant B: %v", err)
 	}
 	defer func() {
-		microtenantService := microtenants.New(client)
-		_, err := microtenantService.Delete(microtenantBID.ID)
+		_, err := microtenants.Delete(service, microtenantBID.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant B: %v", err)
 		}
 	}()
 
-	// Step 2: Create resources in Microtenant A
-	appConnGroupServiceA := appconnectorgroup.New(client)
-	appConnGroupA, _, err := appConnGroupServiceA.Create(appconnectorgroup.AppConnectorGroup{
+	appConnGroupA, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     baseName + "-microtenantA-appconn",
 		Description:              baseDescription + "-microtenantA-appconn",
 		Enabled:                  true,
@@ -123,8 +120,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Error creating app connector group A: %v", err)
 	}
 
-	serverGroupServiceA := servergroup.New(client)
-	serverGroupA, _, err := serverGroupServiceA.Create(&servergroup.ServerGroup{
+	serverGroupA, _, err := servergroup.Create(service, &servergroup.ServerGroup{
 		Name:             baseName + "-microtenantA-server",
 		Description:      baseDescription + "-microtenantA-server",
 		Enabled:          true,
@@ -138,8 +134,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Error creating server group A: %v", err)
 	}
 
-	segGroupServiceA := segmentgroup.New(client)
-	segGroupA, _, err := segGroupServiceA.Create(&segmentgroup.SegmentGroup{
+	segGroupA, _, err := segmentgroup.Create(service, &segmentgroup.SegmentGroup{
 		Name:          baseName + "-microtenantA-seg",
 		Description:   baseDescription + "-microtenantA-seg",
 		Enabled:       true,
@@ -150,7 +145,6 @@ func TestApplicationSegmentShare(t *testing.T) {
 	}
 
 	// Step 3: Create a single Application Segment in Microtenant A
-	appSegmentService := applicationsegment.New(client)
 	appSegment := applicationsegment.ApplicationSegmentResource{
 		Name:                  baseName + "-appseg",
 		Description:           baseDescription + "-appseg",
@@ -176,20 +170,19 @@ func TestApplicationSegmentShare(t *testing.T) {
 			},
 		},
 	}
-	createdAppSegment, _, err := appSegmentService.Create(appSegment)
+	createdAppSegment, _, err := applicationsegment.Create(service, appSegment)
 	if err != nil {
 		t.Fatalf("Error creating application segment: %v", err)
 	}
 
 	// Step 4: Share Application Segment from Microtenant A to Microtenant B
-	appSegmentShareService := New(client)
 	shareRequest := AppSegmentSharedToMicrotenant{
 		ApplicationID:       createdAppSegment.ID,
 		ShareToMicrotenants: []string{microtenantBID.ID},
 		MicroTenantID:       microtenantAID.ID,
 	}
 
-	resp, err := appSegmentShareService.AppSegmentMicrotenantShare(createdAppSegment.ID, shareRequest)
+	resp, err := AppSegmentMicrotenantShare(service, createdAppSegment.ID, shareRequest)
 	if err != nil {
 		t.Fatalf("Error sharing application segment: %v", err)
 	}

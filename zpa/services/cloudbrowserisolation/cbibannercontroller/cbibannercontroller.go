@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -25,7 +27,7 @@ type CBIBannerController struct {
 	Persist           bool   `json:"persist,omitempty"`
 }
 
-func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Response, error) {
+func Get(service *services.Service, bannerID string) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, bannerID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -36,8 +38,8 @@ func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Respon
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(bannerName string) (*CBIBannerController, *http.Response, error) {
-	list, resp, err := service.GetAll()
+func GetByName(service *services.Service, bannerName string) (*CBIBannerController, *http.Response, error) {
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +51,7 @@ func (service *Service) GetByName(bannerName string) (*CBIBannerController, *htt
 	return nil, resp, fmt.Errorf("no cloud browser isolation banner named '%s' was found", bannerName)
 }
 
-func (service *Service) Create(cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
+func Create(service *services.Service, cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
 	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, nil, cbiBanner, &v)
 	if err != nil {
@@ -58,7 +60,7 @@ func (service *Service) Create(cbiBanner *CBIBannerController) (*CBIBannerContro
 	return v, resp, nil
 }
 
-func (service *Service) Update(cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
+func Update(service *services.Service, cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiBanner, nil)
 	if err != nil {
@@ -67,7 +69,7 @@ func (service *Service) Update(cbiBannerID string, cbiBanner *CBIBannerControlle
 	return resp, err
 }
 
-func (service *Service) Delete(cbiBannerID string) (*http.Response, error) {
+func Delete(service *services.Service, cbiBannerID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
@@ -76,7 +78,7 @@ func (service *Service) Delete(cbiBannerID string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]CBIBannerController, *http.Response, error) {
+func GetAll(service *services.Service) ([]CBIBannerController, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
 	var list []CBIBannerController
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)

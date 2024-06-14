@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -25,7 +26,7 @@ type IsolationProfile struct {
 }
 
 // Updated GetByName function
-func (service *Service) GetByName(profileName string) (*IsolationProfile, error) {
+func GetByName(service *services.Service, profileName string) (*IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
 	if err != nil {
@@ -40,7 +41,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, error)
 }
 
 // Updated GetAll function
-func (service *Service) GetAll() ([]IsolationProfile, error) {
+func GetAll(service *services.Service) ([]IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
 	return cbiProfiles, checkNotSubscribedError(err)

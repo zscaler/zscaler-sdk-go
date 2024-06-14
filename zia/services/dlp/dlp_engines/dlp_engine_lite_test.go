@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,9 +17,9 @@ func TestDLPEngineLite_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	engines, err := service.GetAll()
+	engines, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting predefined engine name: %v", err)
 		return
@@ -29,7 +30,7 @@ func TestDLPEngineLite_data(t *testing.T) {
 	}
 	name := engines[0].PredefinedEngineName
 	t.Log("Getting predefined engine name by name:" + name)
-	engine, err := service.GetByPredefinedEngine(name)
+	engine, err := GetByPredefinedEngine(service, name)
 	if err != nil {
 		t.Errorf("Error getting predefined engine by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestDLPEngineLite_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an predefined engine name with a non-existent name
 	nonExistentName := "ThisPredefinedEngineDoesNotExist"
-	_, err = service.GetByPredefinedEngine(nonExistentName)
+	_, err = GetByPredefinedEngine(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -53,10 +54,10 @@ func TestGetById(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Get all engines to find a valid ID
-	engines, err := service.GetAll()
+	engines, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error getting all dlp predefined engine: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestGetById(t *testing.T) {
 	testID := engines[0].ID
 
 	// Retrieve the engine by ID
-	engine, err := service.Get(testID)
+	engine, err := Get(service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving dlp predefined engine with ID %d: %v", testID, err)
 		return
@@ -91,10 +92,10 @@ func TestGetByLiteID(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Retrieve all DLP engines
-	engines, err := service.GetAllEngineLite()
+	engines, err := GetAllEngineLite(service)
 	if err != nil {
 		t.Fatalf("Error getting all DLP engines: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestGetByLiteID(t *testing.T) {
 
 	// Test GetEngineLiteID
 	t.Run("GetEngineLiteID", func(t *testing.T) {
-		engineByID, err := service.GetEngineLiteID(firstEngine.ID)
+		engineByID, err := GetEngineLiteID(service, firstEngine.ID)
 		if err != nil {
 			t.Errorf("Error getting DLP engine by ID: %v", err)
 			return
@@ -126,9 +127,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	engines, err := service.GetAll()
+	engines, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting predefined engine: %v", err)
 		return
@@ -157,7 +158,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a group with the name "EXTERNAL" exists
 	knownName := "EXTERNAL"
@@ -171,7 +172,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		engine, err := service.GetByPredefinedEngine(variation)
+		engine, err := GetByPredefinedEngine(service, variation)
 		if err != nil {
 			t.Errorf("Error getting predefined engine with name variation '%s': %v", variation, err)
 			continue

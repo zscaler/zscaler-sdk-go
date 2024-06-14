@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
@@ -18,11 +19,10 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	policyServiceV2 := New(client)
+	service := services.New(client)
 
 	// create service edge group for testing
-	svcEdgeGroupService := serviceedgegroup.New(client)
-	svcEdgeGroup, _, err := svcEdgeGroupService.Create(serviceedgegroup.ServiceEdgeGroup{
+	svcEdgeGroup, _, err := serviceedgegroup.Create(service, serviceedgegroup.ServiceEdgeGroup{
 		Name:                   name,
 		Description:            name,
 		Enabled:                true,
@@ -42,18 +42,18 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := svcEdgeGroupService.Get(svcEdgeGroup.ID)
+		_, _, getErr := serviceedgegroup.Get(service, svcEdgeGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := svcEdgeGroupService.Delete(svcEdgeGroup.ID)
+			_, err := serviceedgegroup.Delete(service, svcEdgeGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting service edge group: %v", err)
 			}
 		}
 	}()
 
-	accessPolicySet, _, err := policyServiceV2.GetByPolicyType(policyType)
+	accessPolicySet, _, err := GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -99,7 +99,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
+		createdResource, _, err := CreateRule(service, &accessPolicyRule)
 
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -118,7 +118,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -126,7 +126,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		}
 
 		// Retrieve and print the updated resource as JSON
-		updatedResource, _, getErr := policyServiceV2.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -136,7 +136,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = policyServiceV2.GetByNameAndType(policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -155,7 +155,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = policyServiceV2.BulkReorder(policyType, ruleIdToOrder)
+	_, err = BulkReorder(service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestAccessRedirectionPolicyV2(t *testing.T) {
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = policyServiceV2.Delete(accessPolicySet.ID, ruleID)
+		_, err = Delete(service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

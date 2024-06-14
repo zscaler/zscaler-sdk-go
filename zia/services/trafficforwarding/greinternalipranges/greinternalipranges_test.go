@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestGREInternalIPRanges(t *testing.T) {
@@ -12,11 +13,11 @@ func TestGREInternalIPRanges(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	expectedCount := 10
 
-	ranges, err := service.GetGREInternalIPRange(expectedCount)
+	ranges, err := GetGREInternalIPRange(service, expectedCount)
 	if err != nil {
 		t.Errorf("Error retrieving GRE internal IP ranges: %v", err)
 		return

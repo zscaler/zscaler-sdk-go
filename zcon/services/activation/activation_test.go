@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 )
 
 func TestZCONActivation(t *testing.T) {
@@ -13,11 +14,11 @@ func TestZCONActivation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// Test GetActivationStatus
 	t.Run("GetActivationStatus", func(t *testing.T) {
-		status, err := service.GetActivationStatus()
+		status, err := GetActivationStatus(service)
 		assert.NoError(t, err)
 		assert.NotNil(t, status)
 		assert.Contains(t, []string{"EDITS_CLEARED", "EDITS_PRESENT", "EDITS_ACTIVATED_ON_RESTART"}, status.OrgEditStatus)
@@ -27,7 +28,7 @@ func TestZCONActivation(t *testing.T) {
 	// Test UpdateActivationStatus
 	t.Run("UpdateActivationStatus", func(t *testing.T) {
 		updateActivation := ECAdminActivation{}
-		updatedStatus, err := service.UpdateActivationStatus(updateActivation)
+		updatedStatus, err := UpdateActivationStatus(service, updateActivation)
 		assert.NoError(t, err)
 		assert.NotNil(t, updatedStatus)
 		assert.Contains(t, []string{"ADM_LOGGED_IN", "ADM_EDITING", "ADM_ACTV_QUEUED", "ADM_ACTIVATING", "ADM_ACTV_DONE", "ADM_ACTV_FAIL", "ADM_EXPIRED"}, updatedStatus.AdminActivateStatus)
@@ -36,7 +37,7 @@ func TestZCONActivation(t *testing.T) {
 	// Test ForceActivationStatus
 	t.Run("ForceActivationStatus", func(t *testing.T) {
 		forceActivation := ECAdminActivation{}
-		forcedStatus, err := service.ForceActivationStatus(forceActivation)
+		forcedStatus, err := ForceActivationStatus(service, forceActivation)
 		assert.NoError(t, err)
 		assert.NotNil(t, forcedStatus)
 		assert.Contains(t, []string{"ADM_LOGGED_IN", "ADM_EDITING", "ADM_ACTV_QUEUED", "ADM_ACTIVATING", "ADM_ACTV_DONE", "ADM_ACTV_FAIL", "ADM_EXPIRED"}, forcedStatus.AdminActivateStatus)

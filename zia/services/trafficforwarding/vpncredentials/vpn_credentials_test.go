@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
 
@@ -52,8 +53,9 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	staticipsService := staticips.New(client)
-	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
+	service := services.New(client)
+
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -62,13 +64,12 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticipsService.Delete(staticIP.ID)
+		_, err := staticips.Delete(service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Deleting static ip failed: %v", err)
 		}
 	}()
 
-	service := New(client)
 	cred := VPNCredentials{
 		Type:         "IP",
 		IPAddress:    ipAddress,
@@ -79,7 +80,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	var createdResource *VPNCredentials
 
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&cred)
+		createdResource, _, err = Create(service, &cred)
 		return err
 	})
 	if err != nil {
@@ -110,14 +111,14 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 
 	retrievedResource.Comments = updateComment
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -130,7 +131,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comments)
 	}
 
-	retrievedResource, err = service.GetVPNByType("IP")
+	retrievedResource, err = GetVPNByType(service, "IP")
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -143,7 +144,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, retrievedResource.Comments)
 	}
 
-	resources, err := service.GetAll()
+	resources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -164,25 +165,25 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	}
 
 	err = retryOnConflict(func() error {
-		return service.Delete(createdResource.ID)
+		return Delete(service, createdResource.ID)
 	})
 	if err != nil {
 		t.Fatalf("Error deleting resource: %v", err)
 	}
 
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*VPNCredentials, error) {
+func tryRetrieveResource(s *services.Service, id int) (*VPNCredentials, error) {
 	var resource *VPNCredentials
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -198,9 +199,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -211,9 +212,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	err = service.Delete(0)
+	err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -224,9 +225,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &VPNCredentials{})
+	_, _, err = Update(service, 0, &VPNCredentials{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -237,9 +238,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByFQDN("non-existent-fqdn")
+	_, err = GetByFQDN(service, "non-existent-fqdn")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent fqdn, but got nil")
 	}

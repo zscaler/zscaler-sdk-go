@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 )
@@ -34,7 +35,7 @@ type Services struct {
 	IsNameL10nTag bool                           `json:"isNameL10nTag,omitempty"`
 }
 
-func (service *Service) GetNetworkServiceGroups(serviceGroupID int) (*NetworkServiceGroups, error) {
+func GetNetworkServiceGroups(service *services.Service, serviceGroupID int) (*NetworkServiceGroups, error) {
 	var networkServiceGroups NetworkServiceGroups
 	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), &networkServiceGroups)
 	if err != nil {
@@ -45,7 +46,7 @@ func (service *Service) GetNetworkServiceGroups(serviceGroupID int) (*NetworkSer
 	return &networkServiceGroups, nil
 }
 
-func (service *Service) GetNetworkServiceGroupsByName(serviceGroupsName string) (*NetworkServiceGroups, error) {
+func GetNetworkServiceGroupsByName(service *services.Service, serviceGroupsName string) (*NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
 	err := common.ReadAllPages(service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
 	if err != nil {
@@ -59,7 +60,7 @@ func (service *Service) GetNetworkServiceGroupsByName(serviceGroupsName string) 
 	return nil, fmt.Errorf("no network service groups found with name: %s", serviceGroupsName)
 }
 
-func (service *Service) CreateNetworkServiceGroups(networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, error) {
+func CreateNetworkServiceGroups(service *services.Service, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, error) {
 	resp, err := service.Client.Create(networkServiceGroupsEndpoint, *networkServiceGroups)
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (service *Service) CreateNetworkServiceGroups(networkServiceGroups *Network
 	return createdNetworkServiceGroups, nil
 }
 
-func (service *Service) UpdateNetworkServiceGroups(serviceGroupID int, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, *http.Response, error) {
+func UpdateNetworkServiceGroups(service *services.Service, serviceGroupID int, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), *networkServiceGroups)
 	if err != nil {
 		return nil, nil, err
@@ -85,7 +86,7 @@ func (service *Service) UpdateNetworkServiceGroups(serviceGroupID int, networkSe
 	return updatedNetworkServiceGroups, nil, nil
 }
 
-func (service *Service) DeleteNetworkServiceGroups(serviceGroupID int) (*http.Response, error) {
+func DeleteNetworkServiceGroups(service *services.Service, serviceGroupID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID))
 	if err != nil {
 		return nil, err
@@ -94,7 +95,7 @@ func (service *Service) DeleteNetworkServiceGroups(serviceGroupID int) (*http.Re
 	return nil, nil
 }
 
-func (service *Service) GetAllNetworkServiceGroups() ([]NetworkServiceGroups, error) {
+func GetAllNetworkServiceGroups(service *services.Service) ([]NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
 	err := common.ReadAllPages(service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
 	return networkServiceGroups, err

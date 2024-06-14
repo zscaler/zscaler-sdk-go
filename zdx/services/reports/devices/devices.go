@@ -3,6 +3,8 @@ package devices
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 )
 
 const (
@@ -18,20 +20,20 @@ type DeviceDetail struct {
 }
 
 type Hardware struct {
-	HWModel     string `json:"hw_model,omitempty"`
-	HWMFG       string `json:"hw_mfg,omitempty"`
-	HWType      string `json:"hw_type,omitempty"`
-	HWSerial    string `json:"hw_serial,omitempty"`
-	TotMem      string `json:"tot_mem,omitempty"`
-	GPU         string `json:"gpu,omitempty"`
-	DiskSize    string `json:"disk_size,omitempty"`
-	DiskModel   string `json:"disk_model,omitempty"`
-	DiskType    string `json:"disk_type,omitempty"`
-	CPUMFG      string `json:"cpu_mfg,omitempty"`
-	CPUModel    string `json:"cpu_model,omitempty"`
-	SpeedGHZ    int    `json:"speed_ghz,omitempty"`
-	LogicalProc int    `json:"logical_proc,omitempty"`
-	NumCores    int    `json:"num_cores,omitempty"`
+	HWModel     string  `json:"hw_model,omitempty"`
+	HWMFG       string  `json:"hw_mfg,omitempty"`
+	HWType      string  `json:"hw_type,omitempty"`
+	HWSerial    string  `json:"hw_serial,omitempty"`
+	TotMem      int     `json:"tot_mem,omitempty"`
+	GPU         string  `json:"gpu,omitempty"`
+	DiskSize    int     `json:"disk_size,omitempty"`
+	DiskModel   string  `json:"disk_model,omitempty"`
+	DiskType    string  `json:"disk_type,omitempty"`
+	CPUMFG      string  `json:"cpu_mfg,omitempty"`
+	CPUModel    string  `json:"cpu_model,omitempty"`
+	SpeedGHZ    float32 `json:"speed_ghz,omitempty"`
+	LogicalProc int     `json:"logical_proc,omitempty"`
+	NumCores    int     `json:"num_cores,omitempty"`
 }
 
 type Network struct {
@@ -62,7 +64,7 @@ type Software struct {
 }
 
 // Gets the device details including the device model information, tunnel type, network, and software details. The JSON must contain the user ID and email address to associate the device to a user. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) Get(deviceID string) (*DeviceDetail, *http.Response, error) {
+func GetDevice(service *services.Service, deviceID string) (*DeviceDetail, *http.Response, error) {
 	v := new(DeviceDetail)
 	path := fmt.Sprintf("%v/%v", devicesEndpoint, deviceID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
@@ -73,7 +75,7 @@ func (service *Service) Get(deviceID string) (*DeviceDetail, *http.Response, err
 }
 
 // Gets the list of all active devices and its basic details. The JSON must contain the user's ID and email address to associate the device to the user. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func (service *Service) GetAll(filters GetDevicesFilters) ([]DeviceDetail, *http.Response, error) {
+func GetAllDevices(service *services.Service, filters GetDevicesFilters) ([]DeviceDetail, *http.Response, error) {
 	var v struct {
 		NextOffSet interface{}    `json:"next_offset"`
 		List       []DeviceDetail `json:"devices"`

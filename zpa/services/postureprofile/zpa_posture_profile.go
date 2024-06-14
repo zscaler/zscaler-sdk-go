@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -34,7 +35,7 @@ type PostureProfile struct {
 	ZscalerCustomerID              string `json:"zscalerCustomerId,omitempty"`
 }
 
-func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) {
+func Get(service *services.Service, id string) (*PostureProfile, *http.Response, error) {
 	v := new(PostureProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+postureProfileEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -45,7 +46,7 @@ func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) 
 	return v, resp, nil
 }
 
-func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *http.Response, error) {
+func GetByPostureUDID(service *services.Service, postureUDID string) (*PostureProfile, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
@@ -59,7 +60,7 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 	return nil, resp, fmt.Errorf("no posture profile with postureUDID '%s' was found", postureUDID)
 }
 
-func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
+func GetByName(service *services.Service, postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 
@@ -81,7 +82,7 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 	return nil, resp, fmt.Errorf("no posture profile named '%s' was found", postureName)
 }
 
-func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
+func GetAll(service *services.Service) ([]PostureProfile, *http.Response, error) {
 	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {

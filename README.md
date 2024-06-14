@@ -9,32 +9,22 @@
 
 -> **Disclaimer:** Please refer to our [General Support Statement](docs/guides/support.md) before proceeding with the use of this provider. You can also refer to our [troubleshooting guide](docs/guides/troubleshooting.md) for guidance on typical problems.
 
-# Zscaler SDK GO
+# Official Zscaler SDK GO Overview
 
+- [Getting Started](#getting-started)
 * [Need help?](#need-help)
 * [Getting started](#getting-started)
 * [Usage guide](#usage-guide)
 * [Contributing](#contributing)
 
-This repository contains the ZIA/ZPA/ZDX/ZCC SDK for Golang. This SDK can be
+This repository contains the ZIA/ZPA/ZDX/ZCC/ZCON SDK for Golang. This SDK can be
 used in your server-side code to interact with the Zscaler platform
 
-For more information about ZIA/ZPA APIs visit:
-
-* [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide)
-* [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
-* [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
-
-## Need help?
-
-If you run into problems using the SDK, you can
-
-* Refer to our [General Support Statement](/docs/guides/support.md)
-* Post [issues][github-issues] here on GitHub (for code errors)
-
-The latest release can always be found on the [releases page][github-releases].
+Each package is supportedd by an individual and robust HTTP client designed to handle failures on different levels by performing intelligent retries.
 
 ## Getting started
+
+The SDK is compatible with Go version 1.18.x and up. You must use [Go Modules](https://blog.golang.org/using-go-modules) to install the SDK.
 
 To install the Zscaler GO SDK in your project:
 
@@ -42,129 +32,343 @@ To install the Zscaler GO SDK in your project:
   - You can skip this step if you already use `go mod`
   - Run `go get github.com/zscaler/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"` or
-  - Before you begin, make sure you have an administrator account and API Keys in the ZIA and/or ZPA portals.
-  - For more information on to create API Keys for ZIA and/or ZPA see the following help guides:
+  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"`.
 
-  - [Getting Started ZIA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide).
-  - [Getting Started ZPA API](https://help.zscaler.com/zpa/getting-started-zpa-api)
-  - [Getting Started ZDX API](https://help.zscaler.com/zdx/about-zdx-api)
+### You'll also need
 
-## Installation
+*  An administrator account in whichiever one of the Zscaler products you want to interact with.
+* API Keys in the the respective Zscaler cloud products.
+* For more information on getting started with Zscaler APIs visit one of the following links:
 
-To download all packages in the repo with their dependencies, simply run
+* [ZPA API](https://help.zscaler.com/zpa/zpa-api/api-developer-reference-guide)
+* [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
+* [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
+* [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
+* [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
 
-`go get github.com/zscaler/zscaler-sdk-go`
+## Authentication<a id="authentication"></a>
 
-## Getting Started
+Each Zscaler product has separate developer documentation and authentication methods. In this section you will find
 
-One can start using Zscaler Go SDK by initializing client and making a request.
-Here is an example of creating a ZPA App Connector Group.
+1. Credentials that are hard-coded into configuration arguments.
 
+   :warning: **Caution**: Zscaler does not recommend hard-coding credentials into arguments, as they can be exposed in plain text in version control systems. Use environment variables instead.
+
+### ZIA native authentication
+
+- For authentication via Zscaler Internet Access, you must provide `username`, `password`, `api_key` and `cloud`
+
+The ZIA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZIA_USERNAME`, `ZIA_PASSWORD`, `ZIA_API_KEY`, `ZIA_CLOUD` environment variables, representing your ZIA `username`, `password`, `api_key` and `cloud` respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |    
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZIA_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |   
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$zsapi.<Zscaler Cloud Name>/api/v1`.| `ZIA_CLOUD` |
+
+### ZPA native authentication
+
+For authentication via Zscaler Private Access, you must provide `client_id`, `client_secret`, `customer_id` and `cloud`
+
+The ZPA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `PRODUCTION`
+* `ZPATWO`
+* `BETA`
+* `GOV`
+* `GOVUS`
+
+### Environment variables
+
+You can provide credentials via the `ZPA_CLIENT_ID`, `ZPA_CLIENT_SECRET`, `ZPA_CUSTOMER_ID`, `ZPA_CLOUD` environment variables, representing your ZPA `client_id`, `client_secret`, `customer_id` and `cloud` of your ZPA account, respectively.
+
+~> **NOTE** `ZPA_CLOUD` environment variable is required, and is used to identify the correct API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |    
+| `client_secret`       | _(String)_ The ZPA API client secret generated from the ZPA console.| `ZPA_CLIENT_SECRET` |
+| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |   
+| `cloud`       | _(String)_ The Zscaler cloud for your tenancy.| `ZPA_CLOUD` |
+
+### ZCC native authentication
+
+For authentication via Zscaler Client Connector (Mobile Portal), you must provide `APIKey`, `SecretKey`, `cloudEnv`
+
+The ZCC Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZCC_CLIENT_ID`, `ZCC_CLIENT_SECRET`, `ZCC_CLOUD` environment variables, representing your ZCC `APIKey`, `SecretKey`, and `cloudEnv` of your ZCC account, respectively.
+
+~> **NOTE** `ZCC_CLOUD` environment variable is required, and is used to identify the correct API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |    
+| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` | 
+| `cloudEnv`       | _(String)_ The host and basePath for the ZCC cloud services API is `$mobileadmin.<Zscaler Cloud Name>/papi`.| `ZCC_CLOUD` |
+
+### ZCON native authentication
+
+- For authentication via Zscaler Cloud Connector, you must provide `username`, `password`, `api_key` and `cloud`
+
+The ZCON Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### Environment variables
+
+You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_KEY`, `ZCON_CLOUD` environment variables, representing your ZCON `username`, `password`, `api_key` and `cloud` respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |    
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZCON_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |   
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZCON_CLOUD` |
+
+### ZDX native authentication
+
+For authentication via Zscaler Digital Experience (ZDX), you must provide `APIKeyID`, `SecretKey`
+
+The ZDX Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to.
+
+### Environment variables
+
+You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environment variables, representing your ZDX `APIKey`, `SecretKey` of your ZDX account, respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |    
+| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` | 
+
+## Initialize a Client
+
+### ZPA Client Initialization
 ```go
-package main
-
 import (
- "log"
- "os"
-
- "github.com/zscaler/zscaler-sdk-go/v2/zpa"
- "github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zpa"
 )
 
 func main() {
- /*
-  If you set one of the value of the parameters to empty string, the client will fallback to:
-   - The env variables: ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID, ZPA_CLOUD
-   - Or if the env vars are not set, the client will try to use the config file which should be placed at  $HOME/.zpa/credentials.json on Linux and OS X, or "%USERPROFILE%\.zpa/credentials.json" on windows
-    with the following format:
-   {
-    "zpa_client_id": "",
-    "zpa_client_secret": "",
-    "zpa_customer_id": "",
-    "zpa_cloud": "https://config.private.zscaler.com"
-   }
- */
- zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
- zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
- zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
- zpa_cloud := os.Getenv("ZPA_CLOUD")
- config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "userAgent")
- if err != nil {
-  log.Printf("[ERROR] creating config failed: %v\n", err)
-  return
- }
- zpaClient := zpa.NewClient(config)
- appConnectorGroupService := appconnectorgroup.New(zpaClient)
- app := appconnectorgroup.AppConnectorGroup{
-  Name:                   "Example app connector group",
-  Description:            "Example  app connector group",
-  Enabled:                true,
-  CityCountry:            "California, US",
-  CountryCode:            "US",
-  Latitude:               "37.3382082",
-  Longitude:              "-121.8863286",
-  Location:               "San Jose, CA, USA",
-  UpgradeDay:             "SUNDAY",
-  UpgradeTimeInSecs:      "66600",
-  OverrideVersionProfile: true,
-  VersionProfileID:       "0",
-  DNSQueryType:           "IPV4",
- }
- // Create new app connector group
- createdResource, _, err := appConnectorGroupService.Create(app)
- if err != nil {
-  log.Printf("[ERROR] creating app connector group failed: %v\n", err)
-  return
- }
- // Update app connector group
- createdResource.Description = "New description"
- _, err = appConnectorGroupService.Update(createdResource.ID, createdResource)
- if err != nil {
-  log.Printf("[ERROR] updating app connector group failed: %v\n", err)
-  return
- }
- // Delete app connector group
- _, err = appConnectorGroupService.Delete(createdResource.ID)
- if err != nil {
-  log.Printf("[ERROR] deleting app connector group failed: %v\n", err)
-  return
- }
+	clientID      := ""
+	clientSecret  := ""
+	customerID    := ""
+	cloudEnv      := ""
+	userAgent     := ""
+
+	config, err := zpa.NewConfig(clientID, clientSecret, customerID, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zpa.NewClient(config)
+	ctx := context.TODO()
+
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
+### ZIA Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zia"
+)
+
+func main() {
+	username  := ""
+	password  := ""
+	apiKey    := ""
+	cloudEnv  := "" 
+
+	client, err := zia.NewClient(username, password, apiKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating client: %v\n", err)
+	}
+	ctx := context.TODO()
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
 }
 ```
 
-!> **WARNING:** Hard-coding the **ANY** Zscaler credentials such as API Keys, client ID, and client Secrets,
-works for quick tests, but for real projects you should use a more secure ways of storing these values
-(such as environment variables).
+### ZCC Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zcc"
+)
+
+func main() {
+
+	APIKey    :=  "" 
+	SecretKey :=  ""
+	cloudEnv  :=  ""
+	userAgent :=  ""
+
+	config, err := zcc.NewConfig(APIKey, SecretKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zcc.NewClient(config)
+	ctx := context.TODO()
+
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
+### ZDX Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zdx"
+)
+
+func main() {
+
+	APIKey    := ""
+	SecretKey := ""
+	cloudEnv  := ""
+
+	config, err := zdx.NewConfig(APIKey, SecretKey, cloudEnv)
+	if err != nil {
+		log.Fatalf("Error creating configuration: %v\n", err)
+	}
+	client := zdx.NewClient(config)
+	ctx := context.TODO()
+
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
+
+### ZCON Client Initialization
+```go
+import (
+	"fmt"
+	"context"
+	"github.com/zscaler/zscaler-sdk-golang/v2/zcon"
+)
+
+func main() {
+	username    := ""  
+	password    := ""  
+	apiKey      := ""    
+	cloudEnv    := "" 
+	userAgent   := "" 
+
+	client, err := zcon.NewClient(username, password, apiKey, cloudEnv, userAgent)
+	if err != nil {
+		log.Fatalf("Error creating client: %v\n", err)
+	}
+
+	ctx := context.TODO()
+	fmt.Printf("Context: %+v\nClient: %+v\n", ctx, client)
+}
+```
+
+Hard-coding any of the Zscaler API credentials works for quick tests, but for real
+projects you should use a more secure way of storing these values (such as
+environment variables). This library supports a few different configuration
+sources, covered in the [configuration reference](#configuration-reference) section.
 
 ## Usage guide
 
-These examples will help you understand how to use this library.
+These examples will help you understand how to use this library. You can also
+browse the full [API reference documentation][sdkapiref].
 
 Once you initialize a `client`, you can call methods to make requests to the
-ZPA and/or ZIA APIs. Most methods are grouped by the API endpoint they belong to. For
-example, methods that call the [ZPA Application Segment
-API](https://help.zscaler.com/zpa/application-controller) are organized under
-`Application Controller`.
+respective Zscaler API. Most methods are grouped by the API endpoint they belong to. For
+example, methods that call the ZPA [Application
+Segments](https://help.zscaler.com/zpa/application-controller#/mgmtconfig/v1/admin/customers/{customerId}/application-get) are organized under
+`zpa.applicationsegment`.
 
 ## Caching
 
 In the default configuration the ZPA and ZIA client utilizes a memory cache that has a time to live on its cached values.
 
-See [Configuration Setter Object](#configuration-setter-object)  `WithCache(cache bool)`, `WithCacheTtl(int32`, and `WithCacheCleanWindow(i int32)`.
-
 This helps to keep HTTP requests to the ZPA and ZIA API at a minimum. In the case where the client needs to be certain it is accessing recent data; for instance, list items, delete an item, then list items again; be sure to make use of the refresh next facility to clear the request cache. To completely disable the request
 memory cache configure the client with `WithCache(false)` or set the following environment variable ``ZSCALER_SDK_CACHE_DISABLED`` to `true`.
 
-### Configuration Setter Object
+The SDK supports caching for GET requests to improve performance and reduce the number of API calls. 
+The cache can be configured and enabled/disabled using the following configuration parameters:
 
-The client is configured with a configuration setter object passed to the `NewClient` function.
+- `cacheEnabled`: Enables or disables caching.
+- `cacheTtl`: Time-to-live for cached entries.
+- `cacheCleanwindow`: Interval for cleaning expired cache entries.
+- `cacheMaxSizeMB`: Maximum size of the cache in megabytes.
 
-| function | description |
-|----------|-------------|
-| WithCache(cache bool) | Use request memory cache |
-| WithCacheTtl(i int32) | Cache time to live in seconds |
-| WithCacheCleanWindow(i int32) | Cache clean up interval in seconds
+When a cached response is available and still valid, the SDK serves the response from the cache instead of making an API call. This behavior can be overridden by setting `freshCache` to `true`, which forces the SDK to bypass the cache and fetch a fresh response.
+
+## Connection Retry / Rate Limiting
+
+This SDK is designed to handle connection retries and rate limiting to ensure reliable and efficient API interactions.
+
+### ZPA Retry Logic
+
+By default, this SDK retries requests that receive a `429 Too Many Requests` response from the server. The retry mechanism respects the `Retry-After` header provided in the response. The `Retry-After` header indicates the time required to wait before another call can be made. For example, a value of `13s` in the `Retry-After` header means the SDK should wait 13 seconds before retrying the request.
+
+Additionally, the SDK uses an exponential backoff strategy for other server errors, where the wait time between retries increases exponentially up to a maximum limit. This is managed by the `BackoffConfig` configuration, which specifies the following:
+
+- `Enabled`: Set to `true` to enable the backoff and retry mechanism.
+- `RetryWaitMinSeconds`: Minimum time to wait before retrying a request.
+- `RetryWaitMaxSeconds`: Maximum time to wait before retrying a request.
+- `MaxNumOfRetries`: Maximum number of retries for a request.
+
+To comply with API rate limits, the SDK includes a custom rate limiter. The rate limiter ensures that requests do not exceed the following limits:
+
+- ``GET`` requests: Maximum 20 requests in a 10-second interval.
+- ``POST``, ``PUT``, ``DELETE`` requests: Maximum 10 requests in a 10-second interval.
+
+If the request rate exceeds these limits, the SDK waits for an appropriate amount of time before proceeding with the request. The rate limiter tracks the number of requests and enforces these limits to avoid exceeding the allowed rate.
+
+### ZIA Retry Logic
+
+The ZIA API client in this SDK is designed to handle retries and rate limiting to ensure reliable and efficient interactions with the ZIA API.
+
+The retry mechanism for the ZIA API client works as follows:
+
+- The SDK retries requests that receive a `429 Too Many Requests` response or other recoverable errors.
+- The primary mechanism for retries leverages the `Retry-After` header included in the response from the server. This header indicates the amount of time to wait before retrying the request. If the `Retry-After` header is present in the response body, it is also respected.
+- If the `Retry-After` header is not provided, the SDK uses an exponential backoff strategy with configurable parameters:
+  - `RetryWaitMinSeconds`: Minimum time to wait before retrying a request.
+  - `RetryWaitMaxSeconds`: Maximum time to wait before retrying a request.
+  - `MaxNumOfRetries`: Maximum number of retries for a request.
+- The SDK also includes custom handling for specific error codes and messages to decide if a retry should be attempted.
 
 ## Contributing
 
@@ -172,14 +376,11 @@ We're happy to accept contributions and PRs! Please see the [contribution
 guide](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
 structure a contribution.
 
+[sdkapiref]: https://pkg.go.dev/github.com/zscaler/zscaler-sdk-go/v2
 [github-issues]: https://github.com/zscaler/zscaler-sdk-go/issues
 [github-releases]: https://github.com/zscaler/zscaler-sdk-go/releases
 
-License
-=========
-
 MIT License
-
 =======
 
 Copyright (c) 2022 [Zscaler](https://github.com/zscaler)

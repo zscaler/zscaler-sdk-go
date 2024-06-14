@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,9 +17,9 @@ func TestDLPEDM_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	templates, err := service.GetAll()
+	templates, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting idm profiles: %v", err)
 		return
@@ -29,7 +30,7 @@ func TestDLPEDM_data(t *testing.T) {
 	}
 	name := templates[0].ProjectName
 	t.Log("Getting edm template by name:" + name)
-	template, err := service.GetDLPEDMByName(name)
+	template, err := GetDLPEDMByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting edm template by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestDLPEDM_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an edm template with a non-existent name
 	nonExistentName := "ThisEDMTemplateDoesNotExist"
-	_, err = service.GetDLPEDMByName(nonExistentName)
+	_, err = GetDLPEDMByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -53,10 +54,10 @@ func TestGetById(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Get all servers to find a valid ID
-	templates, err := service.GetAll()
+	templates, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error getting all edm templates: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestGetById(t *testing.T) {
 	testID := templates[0].SchemaID
 
 	// Retrieve the server by ID
-	template, err := service.GetDLPEDMSchemaID(testID)
+	template, err := GetDLPEDMSchemaID(service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving edm template with ID %d: %v", testID, err)
 		return
@@ -92,9 +93,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	templates, err := service.GetAll()
+	templates, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting edm template: %v", err)
 		return
@@ -123,7 +124,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a edm template with the name "BD_EDM_TEMPLATE01" exists
 	knownName := "BD_EDM_TEMPLATE01"
@@ -137,7 +138,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		template, err := service.GetDLPEDMByName(variation)
+		template, err := GetDLPEDMByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting edm template with name variation '%s': %v", variation, err)
 			continue
@@ -156,10 +157,10 @@ func TestEDMFields(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Retrieve all EDM profiles
-	edmProfiles, err := service.GetAll() // Assuming appropriate method name and parameters
+	edmProfiles, err := GetAll(service) // Assuming appropriate method name and parameters
 	if err != nil {
 		t.Fatalf("Error getting all EDM profiles: %v", err)
 	}

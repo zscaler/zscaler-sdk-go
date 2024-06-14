@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -28,19 +29,19 @@ type ApplicationServer struct {
 	MicroTenantName   string   `json:"microtenantName,omitempty"`
 }
 
-func (service *Service) Get(id string) (*ApplicationServer, *http.Response, error) {
+func Get(service *services.Service, id string) (*ApplicationServer, *http.Response, error) {
 	v := new(ApplicationServer)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(appServerName string) (*ApplicationServer, *http.Response, error) {
+func GetByName(service *services.Service, appServerName string) (*ApplicationServer, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{Search: appServerName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{Search: appServerName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,36 +53,36 @@ func (service *Service) GetByName(appServerName string) (*ApplicationServer, *ht
 	return nil, resp, fmt.Errorf("no application server named '%s' was found", appServerName)
 }
 
-func (service *Service) Create(server ApplicationServer) (*ApplicationServer, *http.Response, error) {
+func Create(service *services.Service, server ApplicationServer) (*ApplicationServer, *http.Response, error) {
 	v := new(ApplicationServer)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, common.Filter{MicroTenantID: service.microTenantID}, server, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, server, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(id string, appServer ApplicationServer) (*http.Response, error) {
+func Update(service *services.Service, id string, appServer ApplicationServer) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, appServer, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appServer, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(id string) (*http.Response, error) {
+func Delete(service *services.Service, id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]ApplicationServer, *http.Response, error) {
+func GetAll(service *services.Service) ([]ApplicationServer, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

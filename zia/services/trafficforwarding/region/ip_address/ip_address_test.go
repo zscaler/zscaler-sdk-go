@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
 
@@ -16,10 +17,9 @@ func TestByIPAddress(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	staticIPService := staticips.New(client)
-	staticIP, _, err := staticIPService.Create(&staticips.StaticIP{
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -28,13 +28,13 @@ func TestByIPAddress(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticIPService.Delete(staticIP.ID)
+		_, err := staticips.Delete(service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
-	result, err := service.GetByIPAddress(ipAddress)
+	result, err := GetByIPAddress(service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error searching by IP address: %v", err)
 	}

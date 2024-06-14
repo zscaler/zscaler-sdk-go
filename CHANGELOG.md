@@ -1,5 +1,53 @@
 # Changelog
 
+# 2.61.0 (June 14, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Added new ZDX API methods and Endpoints
+  - `GET` - `/alerts/ongoing`
+  - `GET` - `/alerts/historical`
+  - `GET` - `/alerts/{alert_id}`
+  - `GET` - `/alerts/{alert_id}/affected_devices`
+  - `GET` - `/inventory/software`
+  - `GET` - `/alerts/software/{software_key}`
+  - `GET` - `/active_geo`
+  - `GET` - `/devices/{deviceid}/deeptraces`
+  - `POST` - `/devices/{deviceid}/deeptraces`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}`
+  - `DELETE` - `/devices/{deviceid}/deeptraces/{trace_id}`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/web_probe-metrics`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/cloudpath-metrics`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/cloudpath`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/health-metrics`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/events`
+  - `GET` - `/devices/{deviceid}/deeptraces/{trace_id}/top-processes`
+  - `POST` - `/analysis`
+  - `GET` - `/analysis/{analysis}`
+  - `DELETE` - `/analysis/{analysis}`
+
+For details on the functionality of each of the above endpoints, please see [ZDX API Guide](https://help.zscaler.com/zdx/getting-started-zdx-api)
+
+### Internal Changes
+
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZPA package to centralize the `service.go` client instantiation.
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZIA package to centralize the `service.go` client instantiation.
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZDX package to centralize the `service.go` client instantiation.
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZCC package to centralize the `service.go` client instantiation.
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Refactored ZCON package to centralize the `service.go` client instantiation.
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Enhanced test coverage statements across several functions in all API packages.
+
+### Deprecations
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Deprecated ZIA `urlcategories` function ``GetCustomURLCategories``. The `customOnly` parameter is now combined within the function `GetIncludeOnlyUrlKeyWordCounts` and can be optionally set to `true`.
+
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Deprecated ZPA `ConvertV1ResponseToV2Request` from package ``policysetcontrollerv2`` package. The function now lives directly in the ZPA Terraform Provider to convert ``policysetcontroller`` v1 responses into ``policysetcontrollerv2`` format.
+
+### Documentation
+- [PR #258](https://github.com/zscaler/zscaler-sdk-go/pull/258) - Expanded README with more details regarding client instantiation and options. The README also include details regarding rate limites, retries and caching parameters.
+
 # 2.6.0 (June 6, 2024)
 
 ## Notes

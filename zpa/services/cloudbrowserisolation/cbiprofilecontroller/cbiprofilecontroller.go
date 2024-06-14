@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -86,7 +88,7 @@ type DebugMode struct {
 	FilePassword string `json:"filePassword,omitempty"`
 }
 
-func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
+func Get(service *services.Service, profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -97,8 +99,8 @@ func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
-	list, resp, err := service.GetAll()
+func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,7 +112,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
+func Create(service *services.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, nil, cbiProfile, &v)
 	if err != nil {
@@ -119,8 +121,8 @@ func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile,
 	return v, resp, nil
 }
 
-func (service *Service) Update(segmentGroupId string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, segmentGroupId)
+func Update(service *services.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
@@ -128,7 +130,7 @@ func (service *Service) Update(segmentGroupId string, segmentGroupRequest *Isola
 	return resp, err
 }
 
-func (service *Service) Delete(profileID string) (*http.Response, error) {
+func Delete(service *services.Service, profileID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
@@ -137,7 +139,7 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]IsolationProfile, *http.Response, error) {
+func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiProfileEndpoint
 	var list []IsolationProfile
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)

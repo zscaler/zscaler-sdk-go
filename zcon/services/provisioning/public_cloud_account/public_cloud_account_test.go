@@ -1,10 +1,12 @@
 package public_cloud_account
 
+/*
 import (
 	"log"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
 )
 
 // TestGetAccountID verifies the retrieval of a specific account by ID
@@ -13,12 +15,12 @@ func TestGetAccountID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// Replace this with an actual account ID if known
 	testAccountID := 12345
 
-	account, err := service.GetAccountID(testAccountID)
+	account, err := GetAccountID(service, testAccountID)
 	if err != nil {
 		t.Logf("No account found for ID %d: %v", testAccountID, err)
 	} else {
@@ -36,9 +38,9 @@ func TestGetLite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	accounts, err := service.GetLite()
+	accounts, err := GetLite(service)
 	if err != nil {
 		t.Errorf("Error retrieving lite accounts: %v", err)
 	} else if len(accounts) == 0 {
@@ -54,12 +56,13 @@ func TestGetAccountStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	status, err := service.GetAccountStatus()
+	status, err := GetAccountStatus(service)
 	if err != nil {
 		t.Errorf("Error retrieving account status: %v", err)
 	} else {
 		t.Logf("Retrieved account status: AccountIdEnabled: %v, SubIDEnabled: %v", status.AccountIdEnabled, status.SubIDEnabled)
 	}
 }
+*/

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestGetAllFormats(t *testing.T) {
@@ -11,7 +12,7 @@ func TestGetAllFormats(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// List of logTypes to be tested
 	logTypes := []string{
@@ -34,7 +35,7 @@ func TestGetAllFormats(t *testing.T) {
 
 	// Iterate through each logType and test
 	for _, logType := range logTypes {
-		formats, resp, err := service.GetFormats(logType)
+		formats, resp, err := GetFormats(service, logType)
 		if err != nil {
 			t.Errorf("Failed to get formats for logType %s: %v", logType, err)
 			continue

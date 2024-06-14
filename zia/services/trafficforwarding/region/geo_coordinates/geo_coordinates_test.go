@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
 
@@ -16,11 +17,10 @@ func TestGeoCoordinates(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Create static IP for testing
-	staticIPService := staticips.New(client)
-	staticIP, _, err := staticIPService.Create(&staticips.StaticIP{
+	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -30,14 +30,14 @@ func TestGeoCoordinates(t *testing.T) {
 
 	// Clean up: delete the static IP after test
 	defer func() {
-		_, err := staticIPService.Delete(staticIP.ID)
+		_, err := staticips.Delete(service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
 	// Retrieve the GeoCoordinates using the latitude and longitude from the staticIP
-	coordinate, err := service.GetByGeoCoordinates(
+	coordinate, err := GetByGeoCoordinates(service,
 		float64(staticIP.Latitude),
 		float64(staticIP.Longitude),
 	)

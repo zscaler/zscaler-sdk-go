@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -93,19 +94,19 @@ type AssistantSchedule struct {
 	FrequencyInterval string `json:"frequencyInterval"`
 }
 
-func (service *Service) Get(serviceEdgeID string) (*ServiceEdgeController, *http.Response, error) {
+func Get(service *services.Service, serviceEdgeID string) (*ServiceEdgeController, *http.Response, error) {
 	v := new(ServiceEdgeController)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(serviceEdgeName string) (*ServiceEdgeController, *http.Response, error) {
+func GetByName(service *services.Service, serviceEdgeName string) (*ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{Search: serviceEdgeName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{Search: serviceEdgeName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -117,9 +118,9 @@ func (service *Service) GetByName(serviceEdgeName string) (*ServiceEdgeControlle
 	return nil, resp, fmt.Errorf("no service edge named '%s' was found", serviceEdgeName)
 }
 
-func (service *Service) GetAll() ([]ServiceEdgeController, *http.Response, error) {
+func GetAll(service *services.Service) ([]ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -131,13 +132,13 @@ type BulkDeleteRequest struct {
 }
 
 // Update Updates the Service Edge details for the specified ID.
-func (service *Service) Update(serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
+func Update(service *services.Service, serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, serviceEdgeID, nil)
+	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	resource, resp, err := service.Get(serviceEdgeID)
+	resource, resp, err := Get(service, serviceEdgeID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -145,9 +146,9 @@ func (service *Service) Update(serviceEdgeID string, serviceEdge ServiceEdgeCont
 }
 
 // Delete Deletes the Service Edge for the specified ID.
-func (service *Service) Delete(serviceEdgeID string) (*http.Response, error) {
+func Delete(service *services.Service, serviceEdgeID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -155,47 +156,9 @@ func (service *Service) Delete(serviceEdgeID string) (*http.Response, error) {
 }
 
 // BulkDelete Bulk deletes the Service Edge.
-func (service *Service) BulkDelete(serviceEdgeIDs []string) (*http.Response, error) {
+func BulkDelete(service *services.Service, serviceEdgeIDs []string) (*http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeControllerEndpoint + "/bulkDelete"
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-// Get a Configured Service Edge Controller schedule frequency.
-func (service *Service) GetSchedule() (*AssistantSchedule, *http.Response, error) {
-	v := new(AssistantSchedule)
-	path := fmt.Sprintf("%v", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
-	if err != nil {
-		return nil, nil, err
-	}
-	return v, resp, nil
-}
-
-// Configure a Service Edge Controller schedule frequency to delete the in active connectors with configured frequency.
-func (service *Service) CreateSchedule(assistantSchedule AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
-	v := new(AssistantSchedule)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint, common.Filter{MicroTenantID: service.microTenantID}, assistantSchedule, &v)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return v, resp, nil
-}
-
-func (service *Service) UpdateSchedule(schedulerID string, assistantSchedule *AssistantSchedule) (*http.Response, error) {
-	// Validate FrequencyInterval
-	validIntervals := map[string]bool{"5": true, "7": true, "14": true, "30": true, "60": true, "90": true}
-	if _, valid := validIntervals[assistantSchedule.FrequencyInterval]; !valid {
-		return nil, fmt.Errorf("invalid FrequencyInterval: %s", assistantSchedule.FrequencyInterval)
-	}
-
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint, schedulerID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, assistantSchedule, nil)
+	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
 	if err != nil {
 		return nil, err
 	}

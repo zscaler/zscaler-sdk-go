@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/postureprofile"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
@@ -22,14 +23,9 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	appGroupService := segmentgroup.New(client)
-	idpService := idpcontroller.New(client)
-	samlService := samlattribute.New(client)
-	postureService := postureprofile.New(client)
-	trustedNwService := trustednetwork.New(client)
-	policyServiceV2 := New(client)
+	service := services.New(client)
 
-	idpList, _, err := idpService.GetAll()
+	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -39,7 +35,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		return
 	}
 
-	samlsList, _, err := samlService.GetAll()
+	samlsList, _, err := samlattribute.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -48,7 +44,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	postureList, _, err := postureService.GetAll()
+	postureList, _, err := postureprofile.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting posture profiles: %v", err)
 		return
@@ -57,7 +53,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
 	}
 
-	trustedNetworkList, _, err := trustedNwService.GetAll()
+	trustedNetworkList, _, err := trustednetwork.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting trusted networks: %v", err)
 		return
@@ -70,25 +66,25 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		Name:        segmentGroupName,
 		Description: segmentGroupName,
 	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		_, _, getErr := segmentgroup.Get(service, createdAppGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appGroupService.Delete(createdAppGroup.ID)
+			_, err := segmentgroup.Delete(service, createdAppGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
 		}
 	}()
 
-	accessPolicySet, _, err := policyServiceV2.GetByPolicyType(policyType)
+	accessPolicySet, _, err := GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -159,7 +155,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
+		createdResource, _, err := CreateRule(service, &accessPolicyRule)
 
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -178,7 +174,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -186,7 +182,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		}
 
 		// Retrieve and print the updated resource as JSON
-		updatedResource, _, getErr := policyServiceV2.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -196,7 +192,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = policyServiceV2.GetByNameAndType(policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -215,14 +211,14 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = policyServiceV2.BulkReorder(policyType, ruleIdToOrder)
+	_, err = BulkReorder(service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = policyServiceV2.Delete(accessPolicySet.ID, ruleID)
+		_, err = Delete(service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

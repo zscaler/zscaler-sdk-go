@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -59,19 +60,19 @@ type PRAPortal struct {
 	MicroTenantName string `json:"microtenantName,omitempty"`
 }
 
-func (service *Service) Get(portalID string) (*PRAPortal, *http.Response, error) {
+func Get(service *services.Service, portalID string) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(portalName string) (*PRAPortal, *http.Response, error) {
+func GetByName(service *services.Service, portalName string) (*PRAPortal, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praPortalEndpoint
-	list, resp, err := common.GetAllPagesGeneric[PRAPortal](service.Client, relativeURL, portalName)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{Search: portalName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -80,39 +81,39 @@ func (service *Service) GetByName(portalName string) (*PRAPortal, *http.Response
 			return &sra, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no sra portal '%s' was found", portalName)
+	return nil, resp, fmt.Errorf("no pra portal '%s' was found", portalName)
 }
 
-func (service *Service) Create(sraPortal *PRAPortal) (*PRAPortal, *http.Response, error) {
+func Create(service *services.Service, sraPortal *PRAPortal) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, nil, sraPortal, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(portalID string, sraPortal *PRAPortal) (*http.Response, error) {
+func Update(service *services.Service, portalID string, sraPortal *PRAPortal) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, sraPortal, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(portalID string) (*http.Response, error) {
+func Delete(service *services.Service, portalID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]PRAPortal, *http.Response, error) {
+func GetAll(service *services.Service) ([]PRAPortal, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praPortalEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

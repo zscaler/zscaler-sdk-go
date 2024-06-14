@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -51,7 +52,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	group := IPSourceGroups{
 		Name:        name,
@@ -62,7 +63,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource creation
 	var createdResource *IPSourceGroups
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&group)
+		createdResource, err = Create(service, &group)
 		return err
 	})
 	if err != nil {
@@ -95,13 +96,13 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	retrievedResource.IPAddresses = group.IPAddresses
 
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 		return
@@ -120,7 +121,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 		return
@@ -137,7 +138,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	allResources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -163,7 +164,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource removal
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
+		_, getErr := Get(service, createdResource.ID)
 		if getErr != nil {
 			if strings.Contains(getErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
@@ -171,7 +172,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 			}
 			return fmt.Errorf("Error retrieving resource %d: %v", createdResource.ID, getErr)
 		}
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		if delErr != nil {
 			if strings.Contains(delErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
@@ -187,12 +188,12 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*IPSourceGroups, error) {
+func tryRetrieveResource(s *services.Service, id int) (*IPSourceGroups, error) {
 	var resource *IPSourceGroups
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -208,9 +209,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -221,9 +222,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -234,9 +235,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update(0, &IPSourceGroups{})
+	_, err = Update(service, 0, &IPSourceGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -247,9 +248,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non_existent_name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

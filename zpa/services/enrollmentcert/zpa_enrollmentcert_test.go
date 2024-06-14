@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -17,9 +18,9 @@ func TestEnrollmentCert(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	certificates, _, err := service.GetAll()
+	certificates, _, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error getting enrollment certificates: %v", err)
 		return
@@ -47,7 +48,7 @@ func TestEnrollmentCert(t *testing.T) {
 	// Test GetByName for each specific certificate name
 	for _, reqName := range requiredNames {
 		t.Run("GetByName for "+reqName, func(t *testing.T) {
-			certificate, _, err := service.GetByName(reqName)
+			certificate, _, err := GetByName(service, reqName)
 			if err != nil {
 				t.Fatalf("Error getting enrollment certificate by name %s: %v", reqName, err)
 			}
@@ -60,12 +61,21 @@ func TestEnrollmentCert(t *testing.T) {
 	// Additional step: Use the ID of the first certificate to test the Get function
 	firstCertID := certificates[0].ID
 	t.Run("Get by ID for first certificate", func(t *testing.T) {
-		certificateByID, _, err := service.Get(firstCertID)
+		certificateByID, _, err := Get(service, firstCertID)
 		if err != nil {
 			t.Fatalf("Error getting enrollment certificate by ID %s: %v", firstCertID, err)
 		}
 		if certificateByID.ID != firstCertID {
 			t.Errorf("Enrollment certificate ID does not match: expected %s, got %s", firstCertID, certificateByID.ID)
+		}
+	})
+
+	// Negative Test: Try to retrieve a certificate with a non-existent ID
+	nonExistentID := "non_existent_id"
+	t.Run("Get by non-existent ID", func(t *testing.T) {
+		_, _, err := Get(service, nonExistentID)
+		if err == nil {
+			t.Errorf("Expected error when getting by non-existent ID, got nil")
 		}
 	})
 }
@@ -75,9 +85,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
@@ -90,7 +100,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	requiredNames := []string{"Root", "Client", "Connector", "Service Edge", "Isolation Client"}
 
@@ -105,7 +115,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve certificate with name variation: %s", variation)
-				certificate, _, err := service.GetByName(variation)
+				certificate, _, err := GetByName(service, variation)
 				if err != nil {
 					t.Errorf("Error getting certificate with name variation '%s': %v", variation, err)
 					return
