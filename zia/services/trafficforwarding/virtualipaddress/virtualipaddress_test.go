@@ -96,4 +96,37 @@ func TestVIPs(t *testing.T) {
 
 		// Additional checks can be added based on the structure of GREVirtualIPList
 	})
+
+	// Test for GetAll
+	t.Run("TestGetAll", func(t *testing.T) {
+		allVips, err := GetAll(service, ipAddress)
+		if err != nil {
+			t.Fatalf("Error fetching all VIPs for source IP: %v", err)
+		}
+		if len(allVips) == 0 {
+			t.Errorf("Expected VIPs for source IP %s, got none", ipAddress)
+		}
+	})
+
+	// Test for getAllStaticIPs
+	t.Run("TestGetAllStaticIPs", func(t *testing.T) {
+		staticIPs, err := getAllStaticIPs(service)
+		if err != nil {
+			t.Fatalf("Error fetching all static IPs: %v", err)
+		}
+		if len(staticIPs) == 0 {
+			t.Errorf("Expected static IPs, got none")
+		}
+	})
+
+	// Test for GetAllSourceIPs
+	t.Run("TestGetAllSourceIPs", func(t *testing.T) {
+		allSourceIPs, err := GetAllSourceIPs(service)
+		if err != nil {
+			t.Fatalf("Error fetching all source IPs: %v", err)
+		}
+		if len(allSourceIPs) == 0 {
+			t.Errorf("Expected VIPs for all source IPs, got none")
+		}
+	})
 }

@@ -111,28 +111,24 @@ func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func GetCustomURLCategories(service *services.Service, customName string) (*URLCategory, error) {
+func GetIncludeOnlyUrlKeyWordCounts(service *services.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
 	var urlCategory []URLCategory
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, "true"), &urlCategory)
-	if err != nil {
-		return nil, err
-	}
-	for _, custom := range urlCategory {
-		if strings.EqualFold(custom.ConfiguredName, customName) { // Use ConfiguredName instead of ID for comparison
-			return &custom, nil
-		}
-	}
-	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
-}
+	queryParams := url.Values{}
 
-func GetIncludeOnlyUrlKeyWordCounts(service *services.Service, customName string) (*URLCategory, error) {
-	var urlCategory []URLCategory
-	err := service.Client.Read(fmt.Sprintf("%s?includeOnlyUrlKeywordCounts=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
+	if includeOnlyUrlKeywordCounts {
+		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
+	}
+	if customOnly {
+		queryParams.Set("customOnly", "true")
+	}
+
+	err := service.Client.Read(fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, custom := range urlCategory {
-		if strings.EqualFold(custom.ID, customName) {
+		if strings.EqualFold(custom.ConfiguredName, customName) {
 			return &custom, nil
 		}
 	}

@@ -74,9 +74,3 @@ func SearchByDatacenters(service *services.Service, params common.DatacenterSear
 	}
 	return zscalerVips, nil
 }
-
-func GetAll(service *services.Service) ([]DatacenterVIPS, error) {
-	var dataCenters []DatacenterVIPS
-	err := common.ReadAllPages(service.Client, vipGroupByDatacenterEndpoint, &dataCenters)
-	return dataCenters, err
-}

@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
@@ -8,7 +9,7 @@ import (
 
 const (
 	softwareEndpoint    = "v1/inventory/software"
-	softwareKeyEndpoint = "v1/inventory/softwares"
+	softwareKeyEndpoint = "v1/inventory/software"
 )
 
 type SoftwareOverviewResponse struct {
@@ -27,8 +28,8 @@ type SoftwareOverview struct {
 	Vendor              string `json:"vendor,omitempty"`
 	SoftwareGroup       string `json:"software_group,omitempty"`
 	SoftwareInstallType string `json:"software_install_type,omitempty"`
-	UserTotal           string `json:"user_total,omitempty"`
-	DeviceTotal         string `json:"device_total,omitempty"`
+	UserTotal           int    `json:"user_total,omitempty"`
+	DeviceTotal         int    `json:"device_total,omitempty"`
 }
 
 type SoftwareUserList struct {
@@ -55,9 +56,9 @@ func GetSoftware(service *services.Service, filters GetSoftwareFilters) ([]Softw
 	return response.Software, response.NextOffset, resp, nil
 }
 
-func GetSoftwareKey(service *services.Service, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
+func GetSoftwareKey(service *services.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
 	var response SoftwareKeyResponse
-	path := softwareKeyEndpoint
+	path := fmt.Sprintf("%v/%v", softwareKeyEndpoint, softwareKey)
 	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, "", nil, err

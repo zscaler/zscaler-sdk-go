@@ -231,20 +231,3 @@ func GetAll(service *services.Service) ([]URLFilteringRule, error) {
 	}
 	return urlFilteringPolicies, nil
 }
-
-// RulesCount returns the number of rules.
-func RulesCount(service *services.Service) int {
-	rules, _ := GetAll(service)
-	return len(rules)
-}
-
-// Reorder chanegs the order of the rule.
-func Reorder(service *services.Service, ruleID, order int) (int, error) {
-	resp, err := Get(service, ruleID)
-	if err != nil {
-		return 0, err
-	}
-	resp.Order = order
-	_, _, err = Update(service, ruleID, resp)
-	return order, err
-}
