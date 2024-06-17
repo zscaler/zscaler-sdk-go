@@ -189,6 +189,8 @@ func tryRetrieveResource(s *services.Service, id string) (*URLCategory, error) {
 	return nil, err
 }
 
+//// The URL Categories API does not currently handle these test cases correctly.
+/// It's currently returning a 500 Server Error instead of the expected 404 Not Found
 /*
 func TestDeleteNonExistentResource(t *testing.T) {
 	client, err := tests.NewZiaClient()

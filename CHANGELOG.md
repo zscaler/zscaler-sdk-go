@@ -18,6 +18,7 @@
 - [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Added missing new `city` field attribute in the ZIA package `trafficforwarding/staticips`. The attribute block returns the following information:
   - `id` - ID of the city
   - `name` - Name of the city i.e "Toronto, Ontario, Canada"
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - The ZIA API client, now retries on `StatusPreconditionFailed` 412.
 
 # 2.61.0 (June 14, 2024)
 

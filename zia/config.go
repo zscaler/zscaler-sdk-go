@@ -455,7 +455,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			err = json.Unmarshal(data, &apiRespErr)
 			if err == nil {
 				if apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Failed during enter Org barrier" ||
-					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" {
+					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" ||
+					apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Request processing failed, possibly because an expected precondition was not met" {
 					return true, nil
 				}
 			}
