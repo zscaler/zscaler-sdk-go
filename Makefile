@@ -159,7 +159,6 @@ ziaActivator:
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
-	ziaActivator
 
 zconActivator: GOOS=$(shell go env GOOS)
 zconActivator: GOARCH=$(shell go env GOARCH)

@@ -111,12 +111,12 @@ func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func GetIncludeOnlyUrlKeyWordCounts(service *services.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
+func GetCustomURLCategories(service *services.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	queryParams := url.Values{}
 
 	if includeOnlyUrlKeywordCounts {
-		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
+		queryParams.Set("includeOnlyUrlKeywordCounts", "false")
 	}
 	if customOnly {
 		queryParams.Set("customOnly", "true")

@@ -13,10 +13,29 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.61.0``
+``Last updated: v2.61.1``
 
 ---
 
+# 2.61.1 (June 17, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancements
+
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - ZIA Activator can now be compiled directly from the [Zscaler-SDK-Go](https://github.com/zscaler/zscaler-sdk-go), by executing the command `make ziaActivator` from the root of the repository directory.
+
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Combined the following two ZIA functions `GetIncludeOnlyUrlKeyWordCounts` and `GetCustomURLCategories` for simplicity. It's possible now to set the following parameters concurrently:
+  - `customOnly` - The parameter is set to true by default. If set to true, it gets information on custom URL categories only.
+  - `includeOnlyUrlKeywordCounts` - 
+
+### Fixes
+
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Added missing new `city` field attribute in the ZIA package `trafficforwarding/staticips`. The attribute block returns the following information:
+  - `id` - ID of the city
+  - `name` - Name of the city i.e "Toronto, Ontario, Canada"
+  
 # 2.61.0 (June 14, 2024)
 
 ## Notes

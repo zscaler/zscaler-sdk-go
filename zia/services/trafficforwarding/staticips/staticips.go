@@ -34,6 +34,8 @@ type StaticIP struct {
 	// Indicates whether a non-RFC 1918 IP address is publicly routable. This attribute is ignored if there is no ZIA Private Service Edge associated to the organization.
 	RoutableIP bool `json:"routableIP,omitempty"`
 
+	City *City `json:"city,omitempty"`
+
 	// When the static IP address was last modified
 	LastModificationTime int `json:"lastModificationTime"`
 
@@ -63,6 +65,14 @@ type LastModifiedBy struct {
 	// The configured name of the entity
 	Name       string                 `json:"name,omitempty"`
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
+}
+
+type City struct {
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
+	Name string `json:"name,omitempty"`
 }
 
 func Get(service *services.Service, staticIpID int) (*StaticIP, error) {
