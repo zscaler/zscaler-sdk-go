@@ -109,7 +109,7 @@ test\:integration\:zpa:
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... -parallel 10 -timeout 60m
+	@go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... ./zia/activation_cli/... -parallel 10 -timeout 60m
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 
@@ -159,7 +159,6 @@ ziaActivator:
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
-	ziaActivator
 
 zconActivator: GOOS=$(shell go env GOOS)
 zconActivator: GOARCH=$(shell go env GOARCH)
