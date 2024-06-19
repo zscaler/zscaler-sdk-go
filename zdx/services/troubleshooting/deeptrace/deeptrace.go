@@ -12,16 +12,19 @@ const (
 )
 
 type DeepTraceSession struct {
-	TraceID      string       `json:"trace_id"`
-	TraceDetails TraceDetails `json:"trace_details,omitempty"`
-	Status       string       `json:"status,omitempty"`
-	CreatedAt    int          `json:"created_at,omitempty"`
-	StartedAt    int          `json:"started_at,omitempty"`
-	EndedAt      int          `json:"ended_at,omitempty"`
+	TraceID             string       `json:"trace_id"`
+	TraceDetails        TraceDetails `json:"trace_details,omitempty"`
+	Status              string       `json:"status,omitempty"`
+	CreatedAt           int          `json:"created_at,omitempty"`
+	StartedAt           int          `json:"started_at,omitempty"`
+	EndedAt             int          `json:"ended_at,omitempty"`
+	ExpectedTimeMinutes int          `json:"expected_time_minutes,omitempty"`
 }
 
 type TraceDetails struct {
 	SessionName        string `json:"session_name"`
+	AppID              string `json:"app_id"`
+	AppName            string `json:"app_name"`
 	UserID             string `json:"user_id,omitempty"`
 	Username           string `json:"username,omitempty"`
 	DeviceID           string `json:"device_id,omitempty"`
@@ -30,7 +33,7 @@ type TraceDetails struct {
 	WebProbeName       string `json:"web_probe_name,omitempty"`
 	CloudPathProbeID   string `json:"cloudpath_probe_id,omitempty"`
 	CloudPathProbeName string `json:"cloud_path_name,omitempty"`
-	SessionLength      string `json:"session_length,omitempty"`
+	SessionLength      int    `json:"session_length,omitempty"`
 	ProbeDevice        bool   `json:"probe_device,omitempty"`
 }
 

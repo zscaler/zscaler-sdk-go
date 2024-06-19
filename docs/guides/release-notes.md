@@ -35,6 +35,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Added missing new `city` field attribute in the ZIA package `trafficforwarding/staticips`. The attribute block returns the following information:
   - `id` - ID of the city
   - `name` - Name of the city i.e "Toronto, Ontario, Canada"
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - The ZIA API client, now retries on `StatusPreconditionFailed` 412.
+
+### Documentation
+- [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Added several ZDX CLI based examples into the examples. [ZDX Examples](https://github.com/zscaler/zscaler-sdk-go/tree/master/examples/zdx). The results returned by the API are displayed in table format.
   
 # 2.61.0 (June 14, 2024)
 

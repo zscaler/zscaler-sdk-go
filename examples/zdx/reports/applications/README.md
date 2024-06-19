@@ -14,13 +14,13 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/applications"
 )
 
-type Device struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Platform string `json:"platform"`
+type App struct {
+	ID    int     `json:"id"`
+	Name  string  `json:"name"`
+	Score float32 `json:"score"`
 }
 
 func main() {
@@ -70,46 +70,38 @@ func main() {
 		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
 	cli := zdx.NewClient(cfg)
-	deviceService := services.New(cli)
+	appService := services.New(cli)
 
 	// Define filters
-	filters := devices.GetDevicesFilters{
-		GetFromToFilters: common.GetFromToFilters{
-			From: int(fromTime),
-			To:   int(toTime),
-		},
+	filters := common.GetFromToFilters{
+		From: int(fromTime),
+		To:   int(toTime),
 	}
 
-	// Get all devices
-	devicesList, _, err := devices.GetAllDevices(deviceService, filters)
+	// Get all apps
+	appsList, _, err := applications.GetAllApps(appService, filters)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all devices failed: %v\n", err)
+		log.Fatalf("[ERROR] getting all apps failed: %v\n", err)
 	}
 
-	// Extract device details and display in table format
-	var deviceData []Device
-	for _, device := range devicesList {
-		// Extract platform information from device name
-		parts := strings.Split(device.Name, "(")
-		platform := ""
-		if len(parts) > 1 {
-			platform = strings.TrimSuffix(parts[1], ")")
-		}
-		deviceData = append(deviceData, Device{
-			ID:       device.ID,
-			Name:     parts[0],
-			Platform: platform,
+	// Extract app details and display in table format
+	var appData []App
+	for _, app := range appsList {
+		appData = append(appData, App{
+			ID:    app.ID,
+			Name:  app.Name,
+			Score: app.Score,
 		})
 	}
 
 	// Display the data in a formatted table
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"device_id", "device_name", "platform"})
+	table.SetHeader([]string{"App ID", "App Name", "Score"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
-	for _, device := range deviceData {
-		table.Append([]string{strconv.Itoa(device.ID), device.Name, device.Platform})
+	for _, app := range appData {
+		table.Append([]string{strconv.Itoa(app.ID), app.Name, fmt.Sprintf("%.2f", app.Score)})
 	}
 
 	table.Render()

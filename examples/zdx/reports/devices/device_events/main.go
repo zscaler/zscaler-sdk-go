@@ -1,10 +1,10 @@
-```go
 package main
 
 import (
 	"bufio"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -17,12 +17,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
 )
 
-type Device struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Platform string `json:"platform"`
-}
-
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -34,12 +28,28 @@ func main() {
 		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
 
-	// Prompt for from time
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	if err != nil {
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+	}
+	cli := zdx.NewClient(cfg)
+	service := services.New(cli)
+
+	// Prompt the user for device ID
+	fmt.Print("Enter device ID: ")
+	deviceIDInput, _ := reader.ReadString('\n')
+	deviceIDInput = strings.TrimSpace(deviceIDInput)
+	deviceID, err := strconv.Atoi(deviceIDInput)
+	if err != nil {
+		log.Fatalf("[ERROR] Invalid device ID: %v\n", err)
+	}
+
+	// Prompt the user for optional from and to timestamps
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
 	fromInput, _ := reader.ReadString('\n')
 	fromInput = strings.TrimSpace(fromInput)
 
-	// Prompt for to time
 	fmt.Print("Enter end time in Unix Epoch (optional, defaults to now): ")
 	toInput, _ := reader.ReadString('\n')
 	toInput = strings.TrimSpace(toInput)
@@ -64,54 +74,43 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	deviceService := services.New(cli)
-
 	// Define filters
-	filters := devices.GetDevicesFilters{
-		GetFromToFilters: common.GetFromToFilters{
-			From: int(fromTime),
-			To:   int(toTime),
-		},
+	filters := common.GetFromToFilters{
+		From: int(fromTime),
+		To:   int(toTime),
 	}
 
-	// Get all devices
-	devicesList, _, err := devices.GetAllDevices(deviceService, filters)
+	// Call GetEvents with the provided device ID and filters
+	deviceEvents, resp, err := devices.GetEvents(service, deviceID, filters)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all devices failed: %v\n", err)
+		log.Fatalf("Error getting events: %v", err)
 	}
 
-	// Extract device details and display in table format
-	var deviceData []Device
-	for _, device := range devicesList {
-		// Extract platform information from device name
-		parts := strings.Split(device.Name, "(")
-		platform := ""
-		if len(parts) > 1 {
-			platform = strings.TrimSuffix(parts[1], ")")
-		}
-		deviceData = append(deviceData, Device{
-			ID:       device.ID,
-			Name:     parts[0],
-			Platform: platform,
-		})
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
 	}
 
-	// Display the data in a formatted table
+	if len(deviceEvents) == 0 {
+		log.Println("No events found.")
+	} else {
+		displayDeviceEvents(deviceEvents)
+	}
+}
+
+func displayDeviceEvents(deviceEvents []devices.DeviceEvents) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"device_id", "device_name", "platform"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
+	table.SetHeader([]string{"Event Category", "Name", "DisplayName", "Prev", "Curr"})
 
-	for _, device := range deviceData {
-		table.Append([]string{strconv.Itoa(device.ID), device.Name, device.Platform})
+	for _, deviceEvent := range deviceEvents {
+		for _, event := range deviceEvent.Events {
+			table.Append([]string{
+				event.Category,
+				event.Name,
+				event.DisplayName,
+				event.Prev,
+				event.Curr,
+			})
+		}
 	}
-
 	table.Render()
 }
-```

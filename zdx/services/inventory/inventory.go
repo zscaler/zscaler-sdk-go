@@ -27,7 +27,7 @@ type SoftwareOverview struct {
 	SoftwareName        string `json:"software_name,omitempty"`
 	Vendor              string `json:"vendor,omitempty"`
 	SoftwareGroup       string `json:"software_group,omitempty"`
-	SoftwareInstallType string `json:"software_install_type,omitempty"`
+	SoftwareInstallType string `json:"sw_install_type,omitempty"`
 	UserTotal           int    `json:"user_total,omitempty"`
 	DeviceTotal         int    `json:"device_total,omitempty"`
 }

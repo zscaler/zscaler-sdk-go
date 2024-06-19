@@ -15,9 +15,13 @@ type GetFromToFilters struct {
 	// The start time (in seconds) for the query. The value is entered in Unix Epoch. If not entered, returns the data for the last 2 hours.
 	From int `json:"from,omitempty" url:"from,omitempty"`
 	// The end time (in seconds) for the query. The value is entered in Unix Epoch. If not entered, returns the data for the last 2 hours.
-	To         int      `json:"to,omitempty" url:"to,omitempty"`
-	Loc        []int    `json:"loc,omitempty" url:"loc,omitempty"`
-	Dept       []int    `json:"dept,omitempty" url:"dept,omitempty"`
-	Geo        []string `json:"geo,omitempty" url:"geo,omitempty"`
-	MetricName string   `json:"metric_name,omitempty" url:"metric_name,omitempty"`
+	To             int      `json:"to,omitempty" url:"to,omitempty"`
+	Loc            []int    `json:"loc,omitempty" url:"loc,omitempty"`
+	Dept           []int    `json:"dept,omitempty" url:"dept,omitempty"`
+	Geo            []string `json:"geo,omitempty" url:"geo,omitempty"`
+	LocationGroups []string `json:"location_groups,omitempty" url:"location_groups,omitempty"`
+	MetricName     string   `json:"metric_name,omitempty" url:"metric_name,omitempty"`
+	Offset         string   `json:"offset,omitempty" url:"offset,omitempty"`
+	// The number of items that must be returned per request from the list.
+	Limit int `json:"limit,omitempty" url:"limit,omitempty"`
 }

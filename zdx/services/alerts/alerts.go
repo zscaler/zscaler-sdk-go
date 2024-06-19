@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (
@@ -65,10 +66,23 @@ type Group struct {
 	Name string `json:"name"`
 }
 
-// GetOngoingAlerts retrieves ongoing alerts
-func GetOngoingAlerts(service *services.Service) (*AlertsResponse, *http.Response, error) {
+type Device struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	UserID    int    `json:"userid"`
+	UserName  string `json:"userName"`
+	UserEmail string `json:"userEmail"`
+}
+
+type AffectedDevicesResponse struct {
+	Devices    []Device `json:"devices"`
+	NextOffset string   `json:"next_offset"`
+}
+
+// GetOngoingAlerts retrieves ongoing alerts with optional filters
+func GetOngoingAlerts(service *services.Service, filters common.GetFromToFilters) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
-	resp, err := service.Client.NewRequestDo("GET", ongoingEndpoint, nil, nil, &response)
+	resp, err := service.Client.NewRequestDo("GET", ongoingEndpoint, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -76,9 +90,14 @@ func GetOngoingAlerts(service *services.Service) (*AlertsResponse, *http.Respons
 }
 
 // GetHistoricalAlerts retrieves historical alerts
-func GetHistoricalAlerts(service *services.Service) (*AlertsResponse, *http.Response, error) {
+// Gets the list of alert history rules defined across an organization.
+// All alert history rules are returned if the search filter is not specified.
+// The default is set to the previous 2 hours. Alert history rules have an Ended On date.
+// The Ended On date is used to pull alerts in conjunction with the provided filters.
+// Cannot exceed the 14-day time range limit for alert rules.
+func GetHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
-	resp, err := service.Client.NewRequestDo("GET", historicalEndpoint, nil, nil, &response)
+	resp, err := service.Client.NewRequestDo("GET", historicalEndpoint, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -97,10 +116,10 @@ func GetAlert(service *services.Service, alertID string) (*Alert, *http.Response
 }
 
 // GetAffectedDevices retrieves the affected devices for a specific alert by ID
-func GetAffectedDevices(service *services.Service, alertID string) (*AlertsResponse, *http.Response, error) {
-	var response AlertsResponse
+func GetAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) (*AffectedDevicesResponse, *http.Response, error) {
+	var response AffectedDevicesResponse
 	path := fmt.Sprintf(affectedDevicesEndpoint, alertID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
+	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}

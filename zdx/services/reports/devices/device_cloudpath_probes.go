@@ -63,7 +63,8 @@ type Hops struct {
 }
 
 // devices/{deviceid}/apps/{appid}/cloudpath-probes
-// Gets the list of all active Cloud Path probes on a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
+// Gets the list of all active Cloud Path probes on a device.
+// If the time range is not specified, the default is the previous 2 hours
 func GetAllCloudPathProbes(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceCloudPathProbe, *http.Response, error) {
 	var v []DeviceCloudPathProbe
 	path := fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint)
@@ -75,6 +76,7 @@ func GetAllCloudPathProbes(service *services.Service, deviceID, appID int, filte
 }
 
 // /devices/{deviceid}/apps/{appid}/cloudpath-probes/{probeid}/cloudpath
+// Gets the Web probe's Page Fetch Time (PFT) on a device for an application. If the time range is not specified, the endpoint defaults to the previous 2 hours.
 func GetDeviceAppCloudPathProbe(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]NetworkStats, *http.Response, error) {
 	var v []NetworkStats
 	path := fmt.Sprintf("%v/%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint, probeID)
@@ -86,6 +88,9 @@ func GetDeviceAppCloudPathProbe(service *services.Service, deviceID, appID, prob
 }
 
 // /devices/{deviceid}/apps/{appid}/cloudpath-probes/{probeid}/cloudpath
+// Gets the Cloud Path hop data for an application on a specific device.
+// Includes the summary data for the entire path like the total number of hops, packet loss, latency, and tunnel type (if available).
+// It also includes a similar summary of data for each individual hop. If the time range is not specified, the endpoint defaults to the previous 2 hours.
 func GetCloudPathAppDevice(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]CloudPathProbe, *http.Response, error) {
 	var v []CloudPathProbe
 	path := fmt.Sprintf("%v/%v/%v/%v/%v/%v/%s", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint, probeID, "/cloudpath")

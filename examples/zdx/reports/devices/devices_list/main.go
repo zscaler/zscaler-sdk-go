@@ -1,4 +1,3 @@
-```go
 package main
 
 import (
@@ -114,4 +113,3 @@ func main() {
 
 	table.Render()
 }
-```
