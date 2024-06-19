@@ -64,9 +64,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
-		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
@@ -74,13 +71,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
-		}
 		toTime = parsedTo
 	}
 
-	// Define filters
+	// Convert times to safe int values
 	fromInt, err := safeIntConversion(fromTime)
 	if err != nil {
 		log.Fatalf("[ERROR] %v\n", err)
@@ -91,6 +85,7 @@ func main() {
 		log.Fatalf("[ERROR] %v\n", err)
 	}
 
+	// Define filters
 	filters := common.GetFromToFilters{
 		From: fromInt,
 		To:   toInt,
@@ -113,6 +108,13 @@ func main() {
 	}
 }
 
+func safeIntConversion(value int64) (int, error) {
+	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
+		return 0, fmt.Errorf("value %d is out of range for int type", value)
+	}
+	return int(value), nil
+}
+
 func displayDeviceEvents(deviceEvents []devices.DeviceEvents) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Event Category", "Name", "DisplayName", "Prev", "Curr"})
@@ -129,11 +131,4 @@ func displayDeviceEvents(deviceEvents []devices.DeviceEvents) {
 		}
 	}
 	table.Render()
-}
-
-func safeIntConversion(value int64) (int, error) {
-	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
-		return 0, fmt.Errorf("value %d is out of range for int type", value)
-	}
-	return int(value), nil
 }

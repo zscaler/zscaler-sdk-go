@@ -48,25 +48,39 @@ func main() {
 	fromTime := now.Add(-2 * time.Hour).Unix()
 	toTime := now.Unix()
 
+	var fromInt, toInt int
+	var err error
+
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
+		fromInt, err = safeIntConversion(parsedFrom)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
 		}
-		fromTime = parsedFrom
+	} else {
+		fromInt, err = safeIntConversion(fromTime)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
 	}
+
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
+		toInt, err = safeIntConversion(parsedTo)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
 		}
-		toTime = parsedTo
+	} else {
+		toInt, err = safeIntConversion(toTime)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
 	}
 
 	// Create configuration and client
@@ -78,16 +92,6 @@ func main() {
 	deviceService := services.New(cli)
 
 	// Define filters
-	fromInt, err := safeIntConversion(fromTime)
-	if err != nil {
-		log.Fatalf("[ERROR] %v\n", err)
-	}
-
-	toInt, err := safeIntConversion(toTime)
-	if err != nil {
-		log.Fatalf("[ERROR] %v\n", err)
-	}
-
 	filters := devices.GetDevicesFilters{
 		GetFromToFilters: common.GetFromToFilters{
 			From: fromInt,
