@@ -52,7 +52,8 @@ func (client *Client) authenticate() error {
 			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s environment variables.\n", ZDX_API_KEY_ID, ZDX_API_SECRET)
 			return errors.New("no client credentials were provided")
 		}
-		client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID)
+		maskedAPIKeyID := maskAPIKeyID(client.Config.APIKeyID)
+		client.Config.Logger.Printf("[TRACE] Getting access token for %s=%s\n", ZDX_API_KEY_ID, maskedAPIKeyID)
 		currTimestamp := time.Now().Unix()
 		authReq := AuthRequest{
 			Timestamp:    currTimestamp,
@@ -63,8 +64,8 @@ func (client *Client) authenticate() error {
 		url := client.Config.BaseURL.String() + "/v1/oauth/token"
 		req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 		}
 
 		req.Header.Add("Content-Type", "application/json")
@@ -73,26 +74,26 @@ func (client *Client) authenticate() error {
 		}
 		resp, err := client.Config.GetHTTPClient().Do(req)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 		}
 		defer resp.Body.Close()
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 		}
 		if resp.StatusCode >= 300 {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s, url:%s", ZDX_API_KEY_ID, client.Config.APIKeyID, resp.StatusCode, respBody, url)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s\n", ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s", ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
 		}
 		var a AuthToken
 		err = json.Unmarshal(respBody, &a)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZDX_API_KEY_ID, client.Config.APIKeyID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 		}
-		// we need keep auth token for future http request
+		// we need to keep auth token for future HTTP requests
 		client.Config.AuthToken = &a
 	}
 	return nil
@@ -142,11 +143,19 @@ func generateHash(apiSecret string, currTimestamp int64) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
+func maskAPIKeyID(apiKeyID string) string {
+	if len(apiKeyID) <= 4 {
+		return "****"
+	}
+	return apiKeyID[:2] + strings.Repeat("*", len(apiKeyID)-4) + apiKeyID[len(apiKeyID)-2:]
+}
+
 // Generating the Http request
 func (client *Client) newRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" {
-		client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s\n", ZDX_API_KEY_ID, client.Config.APIKeyID)
-		return nil, fmt.Errorf("failed to signin the user %s=%s", ZDX_API_KEY_ID, client.Config.APIKeyID)
+		maskedAPIKeyID := maskAPIKeyID(client.Config.APIKeyID)
+		client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s\n", ZDX_API_KEY_ID, maskedAPIKeyID)
+		return nil, fmt.Errorf("failed to sign in the user %s=%s", ZDX_API_KEY_ID, maskedAPIKeyID)
 	}
 	var buf io.ReadWriter
 	if body != nil {

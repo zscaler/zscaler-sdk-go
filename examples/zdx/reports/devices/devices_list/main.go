@@ -90,13 +90,14 @@ func main() {
 	for _, device := range devicesList {
 		// Extract platform information from device name
 		parts := strings.Split(device.Name, "(")
+		name := parts[0]
 		platform := ""
 		if len(parts) > 1 {
 			platform = strings.TrimSuffix(parts[1], ")")
 		}
 		deviceData = append(deviceData, Device{
 			ID:       device.ID,
-			Name:     parts[0],
+			Name:     name,
 			Platform: platform,
 		})
 	}
