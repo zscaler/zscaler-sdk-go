@@ -81,9 +81,19 @@ func main() {
 	}
 
 	// Define filters
+	fromInt, err := safeIntConversion(fromTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
+	toInt, err := safeIntConversion(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
 	filters := common.GetFromToFilters{
-		From: int(fromTime),
-		To:   int(toTime),
+		From: fromInt,
+		To:   toInt,
 	}
 
 	// Call GetEvents with the provided device ID and filters
@@ -119,4 +129,11 @@ func displayDeviceEvents(deviceEvents []devices.DeviceEvents) {
 		}
 	}
 	table.Render()
+}
+
+func safeIntConversion(value int64) (int, error) {
+	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
+		return 0, fmt.Errorf("value %d is out of range for int type", value)
+	}
+	return int(value), nil
 }

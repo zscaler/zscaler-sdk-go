@@ -89,6 +89,9 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
 		if err == nil {
+			if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
+				log.Fatalf("[ERROR] Start time is out of range for int type\n")
+			}
 			from = parsedFrom
 		} else {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
@@ -101,6 +104,9 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
 		if err == nil {
+			if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
+				log.Fatalf("[ERROR] End time is out of range for int type\n")
+			}
 			to = parsedTo
 		} else {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
