@@ -232,6 +232,14 @@ func (c *Client) refreshSession() error {
 	}
 	c.session = session
 	c.sessionRefreshed = time.Now()
+	// Set a default session timeout if it's not provided
+	if c.session.PasswordExpiryTime == -1 {
+		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 1 minute")
+		c.sessionTimeout = 30 * time.Minute
+	} else {
+		c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime")
+		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
+	}
 	return nil
 }
 
@@ -267,42 +275,54 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
-	// One call to this function is allowed at a time caller must call lock.
+
 	if c.session == nil {
+		c.Logger.Printf("[INFO] No session found, refreshing session")
 		err := c.refreshSession()
 		if err != nil {
-			c.Logger.Printf("[ERROR] failed to get session id: %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to get session id: %v\n", err)
 			return err
 		}
 	} else {
 		now := time.Now()
-		// Refresh if session has expire time (diff than -1)  & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
-		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).After(now) {
+		c.Logger.Printf("[INFO] Current time: %v\nSession Refreshed: %v\nSession Timeout: %v\n",
+			now.Format("2006-01-02 15:04:05 MST"),
+			c.sessionRefreshed.Format("2006-01-02 15:04:05 MST"),
+			c.sessionTimeout)
+		// Refresh if session has expire time (diff than -1) & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
+		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
+			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
 			err := c.refreshSession()
 			if err != nil {
-				c.Logger.Printf("[ERROR] failed to refresh session id: %v\n", err)
+				c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
 				return err
 			}
+		} else {
+			c.Logger.Printf("[INFO] Session is still valid, no need to refresh")
 		}
 	}
+
 	url, err := url.Parse(c.URL)
 	if err != nil {
-		c.Logger.Printf("[ERROR] failed to parse url %s: %v\n", c.URL, err)
+		c.Logger.Printf("[ERROR] Failed to parse url %s: %v\n", c.URL, err)
 		return err
 	}
+
 	if c.HTTPClient.Jar == nil {
 		c.HTTPClient.Jar, err = cookiejar.New(nil)
 		if err != nil {
-			c.Logger.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to create new http cookie jar %v\n", err)
 			return err
 		}
 	}
+
 	c.HTTPClient.Jar.SetCookies(url, []*http.Cookie{
 		{
 			Name:  cookieName,
 			Value: c.session.JSessionID,
 		},
 	})
+
 	return nil
 }
 
