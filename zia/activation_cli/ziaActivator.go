@@ -31,7 +31,7 @@ func main() {
 	userAgent := fmt.Sprintf("(%s %s) cli/ziaActivator", runtime.GOOS, runtime.GOARCH)
 
 	// Now, we'll use the local SDK's NewClient method to get the client instance
-	cli, err := client.NewClient(username, password, apiKey, ziaCloud, userAgent)
+	cli, err := client.NewClient(username, password, apiKey, ziaCloud, userAgent, false)
 	if err != nil {
 		log.Fatalf("[ERROR] Failed Initializing ZIA client: %v\n", err)
 	}

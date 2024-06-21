@@ -103,7 +103,7 @@ func NewZiaClient() (*zia.Client, error) {
 	apiKey := os.Getenv("ZIA_API_KEY")
 	ziaCloud := os.Getenv("ZIA_CLOUD")
 
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go", false)
 	if err != nil {
 		log.Printf("[ERROR] creating client failed: %v\n", err)
 		return nil, err

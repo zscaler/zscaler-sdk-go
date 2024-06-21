@@ -205,7 +205,7 @@ func TestNewClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotC, err := NewClient(tt.args.userName, tt.args.password, tt.args.apiKey, tt.args.ziaCloud, tt.args.UserAgent)
+			gotC, err := NewClient(tt.args.userName, tt.args.password, tt.args.apiKey, tt.args.ziaCloud, tt.args.UserAgent, false)
 			if err != nil {
 				t.Errorf("NewClient error = %v, wantErr nil", err)
 				return
@@ -223,7 +223,7 @@ func TestNewClient(t *testing.T) {
 func setupMuxAndClient() *Client {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
-	cli, err := NewClient("username", "password", "apiKey------", "cloud", "")
+	cli, err := NewClient("username", "password", "apiKey------", "cloud", "", false)
 	if err != nil {
 		panic(err)
 	}

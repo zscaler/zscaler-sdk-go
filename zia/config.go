@@ -108,7 +108,7 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 }
 
 // NewClient Returns a Client from credentials passed as parameters.
-func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
+func NewClient(username, password, apiKey, ziaCloud, userAgent string, cacheEnabled ...bool) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
@@ -116,7 +116,15 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 	if ziaCloud == "zspreview" {
 		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
 	}
-	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+
+	// Determine cacheEnabled setting
+	cacheDisabledEnv, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	cacheEnabledFlag := !cacheDisabledEnv // Default to environment variable setting
+
+	if len(cacheEnabled) > 0 {
+		cacheEnabledFlag = cacheEnabled[0]
+	}
+
 	cli := Client{
 		userName:         username,
 		password:         password,
@@ -126,14 +134,14 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		URL:              url,
 		Logger:           logger,
 		UserAgent:        userAgent,
-		cacheEnabled:     !cacheDisabled,
+		cacheEnabled:     cacheEnabledFlag,
 		cacheTtl:         time.Minute * 10,
 		cacheCleanwindow: time.Minute * 8,
 		cacheMaxSizeMB:   0,
 		rateLimiter:      rateLimiter,
 	}
 	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
-	if err != nil {
+	if err != nil || !cacheEnabledFlag {
 		cche = cache.NewNopCache()
 	}
 	cli.cache = cche
