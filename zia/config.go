@@ -237,7 +237,7 @@ func (c *Client) refreshSession() error {
 		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 1 minute")
 		c.sessionTimeout = 30 * time.Minute
 	} else {
-		c.Logger.Printf("[INFO] Setting sessionTimeout to %v seconds based on PasswordExpiryTime", c.session.PasswordExpiryTime)
+		c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime")
 		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
 	}
 	return nil
