@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -26,10 +27,10 @@ const (
 	authResponse = `{
 	"authType": "authType",
     "obfuscateApiKey": true,
-    "passwordExpiryTime": 10000,
-    "passwordExpiryDays": 10000,
+    "passwordExpiryTime": 10,
+    "passwordExpiryDays": 10,
     "source": "source",
-    "jSessionID": ""
+    "jSessionID": "JSESSIONID"
 }`
 )
 
@@ -48,7 +49,6 @@ func TestClient_Request(t *testing.T) {
 		wantErr    bool
 		wantVal    *dummyStruct
 	}{
-		// NewRequestDo test cases
 		{
 			name: "GET happy path",
 			args: struct {
@@ -68,7 +68,6 @@ func TestClient_Request(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				// panic(fmt.Sprintf("%v", r.Header))
 			},
 			wantVal: &dummyStruct{
 				ID: 1234,
@@ -99,6 +98,49 @@ func TestClient_Request(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClient_SessionRefresh(t *testing.T) {
+	defer teardown()
+	client := setupMuxAndClient()
+
+	// Initial request to establish session
+	mux.HandleFunc("/authenticatedSession", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Set-Cookie", "JSESSIONID=JSESSIONID;")
+		_, err := w.Write([]byte(authResponse))
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		_, err := w.Write([]byte(getResponse))
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	// Make initial request
+	resp, err := client.Request("/test", "GET", nil, client.GetContentType())
+	assert.NoError(t, err)
+
+	var result dummyStruct
+	err = json.Unmarshal(resp, &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 1234, result.ID)
+
+	// Simulate session expiration
+	time.Sleep(11 * time.Second) // Sleep to expire the session (based on 10-second expiry set in authResponse)
+
+	// Make another request to trigger session refresh
+	resp, err = client.Request("/test", "GET", nil, client.GetContentType())
+	assert.NoError(t, err)
+
+	err = json.Unmarshal(resp, &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 1234, result.ID)
 }
 
 func TestNewClient(t *testing.T) {
