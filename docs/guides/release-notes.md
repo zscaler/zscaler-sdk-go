@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.61.1``
+``Last updated: v2.61.2``
 
 ---
+
+# 2.61.2 (June 21, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #261](https://github.com/zscaler/zscaler-sdk-go/pull/261) - Fixed an issue where sessions were not properly refreshed when expired, leading to `SESSION_NOT_VALID` errors during API requests after a period of inactivity. This ensures that sessions are correctly refreshed before making API calls, improving the reliability of the SDK.
 
 # 2.61.1 (June 17, 2024)
 
