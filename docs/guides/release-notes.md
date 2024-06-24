@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.61.2``
+``Last updated: v2.61.3``
 
 ---
+
+# 2.61.3 (June 24, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancement
+
+- [PR #262](https://github.com/zscaler/zscaler-sdk-go/pull/262) - Enhanced filtering capability for the ZPA GetAll functions in the following packages:
+  - `applicationsegmentinspection`
+  - `applicationsegmentpra`
 
 # 2.61.2 (June 21, 2024)
 

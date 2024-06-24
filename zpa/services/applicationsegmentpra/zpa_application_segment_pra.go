@@ -224,7 +224,7 @@ func GetAll(service *services.Service) ([]AppSegmentPRA, *http.Response, error) 
 	result := []AppSegmentPRA{}
 	// filter pra apps
 	for _, item := range list {
-		if len(item.CommonAppsDto.AppsConfig) == 0 || (!common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
+		if len(item.PRAApps) > 0 {
 			result = append(result, item)
 		}
 	}
