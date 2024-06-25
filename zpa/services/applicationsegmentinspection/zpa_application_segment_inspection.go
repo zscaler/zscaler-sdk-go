@@ -225,9 +225,9 @@ func GetAll(service *services.Service) ([]AppSegmentInspection, *http.Response, 
 		return nil, nil, err
 	}
 	result := []AppSegmentInspection{}
-	// filter inspection apps
+	// filter pra apps
 	for _, item := range list {
-		if len(item.CommonAppsDto.AppsConfig) > 0 && common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT") {
+		if len(item.InspectionAppDto) > 0 {
 			result = append(result, item)
 		}
 	}

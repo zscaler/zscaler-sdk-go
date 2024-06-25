@@ -47,6 +47,8 @@ type PolicyRuleResource struct {
 	ModifiedTime             string                         `json:"modifiedTime,omitempty"`
 	AuditMessage             string                         `json:"auditMessage,omitempty"`
 	CustomMsg                string                         `json:"customMsg,omitempty"`
+	DefaultRule              bool                           `json:"defaultRule,omitempty"`
+	DefaultRuleName          string                         `json:"defaultRuleName,omitempty"`
 	Operator                 string                         `json:"operator,omitempty"`
 	PolicySetID              string                         `json:"policySetId,omitempty"`
 	PolicyType               string                         `json:"policyType,omitempty"`
@@ -54,14 +56,13 @@ type PolicyRuleResource struct {
 	ReauthIdleTimeout        string                         `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout            string                         `json:"reauthTimeout,omitempty"`
 	RuleOrder                string                         `json:"ruleOrder,omitempty"`
-	ZpnCbiProfileID          string                         `json:"zpnCbiProfileId,omitempty"`
 	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Credential               *Credential                    `json:"credential,omitempty"`
@@ -117,8 +118,7 @@ type PolicyRule struct {
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
-	Version                  string                         `json:"version,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
 	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`

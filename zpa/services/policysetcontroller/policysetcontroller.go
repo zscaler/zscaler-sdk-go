@@ -41,7 +41,6 @@ type PolicyRule struct {
 	DefaultRuleName          string                 `json:"defaultRuleName,omitempty"`
 	Description              string                 `json:"description,omitempty"`
 	ID                       string                 `json:"id,omitempty"`
-	IsolationDefaultRule     bool                   `json:"isolationDefaultRule"`
 	ModifiedBy               string                 `json:"modifiedBy,omitempty"`
 	ModifiedTime             string                 `json:"modifiedTime,omitempty"`
 	Name                     string                 `json:"name,omitempty"`
