@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.61.4 (June 27, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancement
+
+- [PR #263](https://github.com/zscaler/zscaler-sdk-go/pull/263) - Added new Session Time Ticker to ZIA Client to track session renewal and expiration time.
+
 # 2.61.3 (June 24, 2024)
 
 ## Notes
