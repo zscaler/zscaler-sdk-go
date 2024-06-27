@@ -65,6 +65,7 @@ type Client struct {
 	rateLimiter      *rl.RateLimiter
 	sessionTicker    *time.Ticker
 	stopTicker       chan bool
+	refreshing       bool
 }
 
 // Session ...
@@ -250,10 +251,6 @@ func (c *Client) refreshSession() error {
 		c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime: %v seconds", c.session.PasswordExpiryTime)
 		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
 	}
-
-	// Reset the ticker interval
-	c.startSessionTicker()
-
 	return nil
 }
 
@@ -306,10 +303,18 @@ func (c *Client) checkSession() error {
 
 		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
 			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
-			err := c.refreshSession()
-			if err != nil {
-				c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
-				return err
+			if !c.refreshing {
+				c.refreshing = true
+				c.Unlock()
+				err := c.refreshSession()
+				c.Lock()
+				c.refreshing = false
+				if err != nil {
+					c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
+					return err
+				}
+			} else {
+				c.Logger.Printf("[INFO] Another refresh is in progress, waiting for it to complete")
 			}
 		} else {
 			c.Logger.Printf("[INFO] Session is still valid, no need to refresh")
@@ -549,7 +554,15 @@ func (c *Client) startSessionTicker() {
 			for {
 				select {
 				case <-c.sessionTicker.C:
-					c.refreshSession()
+					c.Lock()
+					if !c.refreshing {
+						c.refreshing = true
+						c.Unlock()
+						c.refreshSession()
+						c.Lock()
+						c.refreshing = false
+					}
+					c.Unlock()
 				case <-c.stopTicker:
 					c.sessionTicker.Stop()
 					return
