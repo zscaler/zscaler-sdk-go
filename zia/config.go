@@ -42,6 +42,7 @@ const (
 )
 
 // Client ...
+// Client ...
 type Client struct {
 	sync.Mutex
 	userName         string
@@ -62,6 +63,8 @@ type Client struct {
 	cacheCleanwindow time.Duration
 	cacheMaxSizeMB   int
 	rateLimiter      *rl.RateLimiter
+	sessionTicker    *time.Ticker
+	stopTicker       chan bool
 }
 
 // Session ...
@@ -117,7 +120,7 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
 	}
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
-	cli := Client{
+	cli := &Client{
 		userName:         username,
 		password:         password,
 		apiKey:           apiKey,
@@ -131,13 +134,20 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		cacheCleanwindow: time.Minute * 8,
 		cacheMaxSizeMB:   0,
 		rateLimiter:      rateLimiter,
+		stopTicker:       make(chan bool),
+		sessionTimeout:   30 * time.Minute, // Initialize with a default session timeout
 	}
+
 	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
 	if err != nil {
 		cche = cache.NewNopCache()
 	}
 	cli.cache = cche
-	return &cli, nil
+
+	// Start the session refresh ticker
+	cli.startSessionTicker()
+
+	return cli, nil
 }
 
 // MakeAuthRequestZIA authenticates using the provided credentials and returns the session or an error.
@@ -228,18 +238,22 @@ func (c *Client) refreshSession() error {
 	}
 	session, err := MakeAuthRequestZIA(&credentialData, c.URL, c.HTTPClient, c.UserAgent)
 	if err != nil {
+		c.Logger.Printf("[ERROR] Failed to make auth request: %v\n", err)
 		return err
 	}
 	c.session = session
 	c.sessionRefreshed = time.Now()
-	// Set a default session timeout if it's not provided
 	if c.session.PasswordExpiryTime == -1 {
-		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 1 minute")
+		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 30 minutes")
 		c.sessionTimeout = 30 * time.Minute
 	} else {
-		c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime")
+		c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime: %v seconds", c.session.PasswordExpiryTime)
 		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
 	}
+
+	// Reset the ticker interval
+	c.startSessionTicker()
+
 	return nil
 }
 
@@ -271,11 +285,12 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 	c.Unlock()
 }
 
-// checkSession synce new session if its over the timeout limit.
+// checkSession checks if the session is valid and refreshes it if necessary.
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
 
+	now := time.Now()
 	if c.session == nil {
 		c.Logger.Printf("[INFO] No session found, refreshing session")
 		err := c.refreshSession()
@@ -284,12 +299,11 @@ func (c *Client) checkSession() error {
 			return err
 		}
 	} else {
-		now := time.Now()
 		c.Logger.Printf("[INFO] Current time: %v\nSession Refreshed: %v\nSession Timeout: %v\n",
 			now.Format("2006-01-02 15:04:05 MST"),
 			c.sessionRefreshed.Format("2006-01-02 15:04:05 MST"),
 			c.sessionTimeout)
-		// Refresh if session has expire time (diff than -1) & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
+
 		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
 			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
 			err := c.refreshSession()
@@ -499,4 +513,50 @@ func (c *Client) GetSandboxURL() string {
 
 func (c *Client) GetSandboxToken() string {
 	return os.Getenv("ZIA_SANDBOX_TOKEN")
+}
+
+// func (c *Client) startSessionTicker() {
+// 	c.Lock()
+// 	defer c.Unlock()
+
+// 	if c.sessionTicker != nil {
+// 		c.stopTicker <- true
+// 		c.sessionTicker.Stop()
+// 	}
+
+// 	tickerInterval := c.sessionTimeout - 1*time.Minute
+// 	c.sessionTicker = time.NewTicker(tickerInterval)
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-c.sessionTicker.C:
+// 				err := c.refreshSession()
+// 				if err != nil {
+// 					c.Logger.Printf("[ERROR] Failed to refresh session: %v\n", err)
+// 				}
+// 			case <-c.stopTicker:
+// 				return
+// 			}
+// 		}
+// 	}()
+// }
+
+// startSessionTicker starts a ticker to refresh the session periodically
+func (c *Client) startSessionTicker() {
+	if c.sessionTimeout > 0 {
+		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
+		go func() {
+			for {
+				select {
+				case <-c.sessionTicker.C:
+					c.refreshSession()
+				case <-c.stopTicker:
+					c.sessionTicker.Stop()
+					return
+				}
+			}
+		}()
+	} else {
+		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
+	}
 }
