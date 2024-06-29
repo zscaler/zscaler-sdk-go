@@ -197,7 +197,7 @@ jobs:
   #         OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
 
   zpa-prod-tenants:
-    needs: [zpa-beta-tenants]
+    # needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
