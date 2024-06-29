@@ -1,6 +1,6 @@
 # Changelog
 
-# 2.61.4 (June 27, 2024)
+# 2.61.4 (June 28, 2024)
 
 ## Notes
 - Golang: **v1.21**
@@ -8,6 +8,7 @@
 ### Enhancement
 
 - [PR #263](https://github.com/zscaler/zscaler-sdk-go/pull/263) - Added new Session Time Ticker to ZIA Client to track session renewal and expiration time.
+- [PR #263](https://github.com/zscaler/zscaler-sdk-go/pull/263) - Added ZDX query string parameter `q` to assist with refined search for a user name or email.
 
 # 2.61.3 (June 24, 2024)
 

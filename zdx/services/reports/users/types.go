@@ -1,6 +1,9 @@
 package users
 
+import "github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
+
 type GetUsersFilters struct {
+	common.GetFromToFilters
 	// The start time (in seconds) for the query. The value is entered in Unix Epoch. If not entered, returns the data for the last 2 hours.
 	From int `json:"from,omitempty" url:"from,omitempty"`
 	// The end time (in seconds) for the query. The value is entered in Unix Epoch. If not entered, returns the data for the last 2 hours.
@@ -15,4 +18,6 @@ type GetUsersFilters struct {
 	Offset string `json:"offset,omitempty" url:"offset,omitempty"`
 	// The number of items that must be returned per request from the list.
 	Limit int `json:"limit,omitempty" url:"limit,omitempty"`
+	// Search for a user name or email. The search results include active users for the first 1000 matches.
+	Q string `json:"q,omitempty" url:"q,omitempty"`
 }
