@@ -67,7 +67,7 @@ func TestBaApplicationSegment(t *testing.T) {
 		HealthReporting:  "ON_ACCESS",
 		HealthCheckType:  "DEFAULT",
 		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.bd-hashicorp"},
+		DomainNames:      []string{name + ".bd-hashicorp"},
 		ClientlessApps: []ClientlessApps{
 			{
 				Name:                name + ".bd-hashicorp",

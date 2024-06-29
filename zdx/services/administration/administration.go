@@ -31,6 +31,7 @@ type GetLocationsFilters struct {
 	From   int    `json:"from,omitempty" url:"from,omitempty"`
 	To     int    `json:"to,omitempty" url:"to,omitempty"`
 	Search string `json:"search,omitempty" url:"search,omitempty"`
+	Q      string `json:"q,omitempty" url:"q,omitempty"`
 }
 
 // Gets the list of configured departments.

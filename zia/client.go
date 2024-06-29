@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -21,10 +22,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
-			// this will allow to remove resource from cache when PUT/DELETE/PATCH requests are called, which modifies the resource
 			c.cache.Delete(key)
-			// to avoid resources that GET url is not the same as DELETE/PUT/PATCH url, because of different query params.
-			// example delete app segment has key url/<id>?forceDelete=true but GET has url/<id>, in this case we clean the whole cache entries with key prefix url/<id>
 			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 		}
 		resp := c.cache.Get(key)
@@ -40,15 +38,44 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		}
 	}
 
+	// Ensure the session is valid before making the request
+	err := c.checkSession()
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := c.HTTPClient.Do(req)
 	logger.LogResponse(c.Logger, resp, start, reqID)
 	if err != nil {
 		return resp, err
 	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return resp, err
+	}
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	// Fallback check for SESSION_NOT_VALID
+	if resp.StatusCode == http.StatusUnauthorized || strings.Contains(string(body), "SESSION_NOT_VALID") {
+		// Refresh session and retry
+		err := c.refreshSession()
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("JSessionID", c.session.JSessionID)
+		resp, err = c.HTTPClient.Do(req)
+		logger.LogResponse(c.Logger, resp, start, reqID)
+		if err != nil {
+			return resp, err
+		}
+	}
+
 	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
 		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 		c.cache.Set(key, cache.CopyResponse(resp))
 	}
+
 	return resp, nil
 }
 
@@ -92,13 +119,6 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 	start := time.Now()
 	logger.LogRequest(c.Logger, req, reqID, otherHeaders, !isSandboxRequest)
 	for retry := 1; retry <= 5; retry++ {
-		if !isSandboxRequest {
-			err = c.checkSession()
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		resp, err = c.do(req, start, reqID)
 		if err != nil {
 			return nil, err

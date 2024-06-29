@@ -24,4 +24,6 @@ type GetFromToFilters struct {
 	Offset         string   `json:"offset,omitempty" url:"offset,omitempty"`
 	// The number of items that must be returned per request from the list.
 	Limit int `json:"limit,omitempty" url:"limit,omitempty"`
+	// Search for a user name or email. The search results include active users for the first 1000 matches.
+	Q string `json:"q,omitempty" url:"q,omitempty"`
 }

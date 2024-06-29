@@ -431,7 +431,7 @@ func sweepProvisioningKey(client *zpa.Client) error {
 				continue
 			}
 			log.Printf("Deleting provisioning key with ID: %s, Name: %s, AssociationType: %s", r.ID, r.Name, associationType)
-			_, err := provisioningkey.Delete(service, r.ID, associationType) // Assuming Delete method requires ID and associationType
+			_, err := provisioningkey.Delete(service, associationType, r.ID) // Assuming Delete method requires ID and associationType
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete provisioning key with ID: %s, Name: %s, AssociationType: %s: %v", r.ID, r.Name, associationType, err)
 			}

@@ -1,8 +1,8 @@
 module github.com/zscaler/zscaler-sdk-go/v2
 
-go 1.21
+go 1.22
 
-toolchain go1.22.0
+toolchain go1.22.4
 
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
