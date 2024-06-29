@@ -214,7 +214,7 @@ func TestBaApplicationSegment(t *testing.T) {
 		HealthReporting:  "ON_ACCESS",
 		HealthCheckType:  "DEFAULT",
 		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.bd-hashicorp"},
+		DomainNames:      []string{name + ".bd-hashicorp"},
 		ClientlessApps: []browseraccess.ClientlessApps{
 			{
 				Name:                name + ".bd-hashicorp",
@@ -223,14 +223,14 @@ func TestBaApplicationSegment(t *testing.T) {
 				TrustUntrustedCert:  true,
 				Domain:              name + ".bd-hashicorp",
 				ApplicationProtocol: "HTTPS",
-				ApplicationPort:     "9443",
+				ApplicationPort:     "7443",
 				CertificateID:       certificateList[0].ID,
 			},
 		},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: "9443",
-				To:   "9443",
+				From: "7443",
+				To:   "7443",
 			},
 		},
 	}

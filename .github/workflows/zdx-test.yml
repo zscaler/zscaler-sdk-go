@@ -24,7 +24,7 @@ jobs:
   #   strategy:
   #     fail-fast: false
   #     matrix:
-  #       goVersion: ["1.21"]
+  #       goVersion: ["1.22"]
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.21"]
+        goVersion: ["1.22"]
         environment:
           # - ZDX_ZS1
           # - ZDX_ZSCLOUD

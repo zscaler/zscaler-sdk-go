@@ -2,7 +2,6 @@ package applicationsegment_move
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -23,7 +22,6 @@ func TestApplicationSegmentMove(t *testing.T) {
 	// Generate base random strings
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -203,8 +201,8 @@ func TestApplicationSegmentMove(t *testing.T) {
 		},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: rPort,
-				To:   rPort,
+				From: "5443",
+				To:   "5443",
 			},
 		},
 	}

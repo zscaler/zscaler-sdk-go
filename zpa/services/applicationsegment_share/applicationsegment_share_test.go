@@ -2,7 +2,6 @@ package applicationsegment_share
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -23,7 +22,6 @@ func TestApplicationSegmentShare(t *testing.T) {
 	// Generate base random strings
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -165,8 +163,8 @@ func TestApplicationSegmentShare(t *testing.T) {
 		},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
-				From: rPort,
-				To:   rPort,
+				From: "6443",
+				To:   "6443",
 			},
 		},
 	}
