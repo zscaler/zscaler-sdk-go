@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.61.5 (July 2, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Enhancement
+
+- [PR #264](https://github.com/zscaler/zscaler-sdk-go/pull/264) - Fixed ZPA `policysetcontroller` and `policysetcontrollerv2` attributes `appConnectorGroups`, `serviceEdgeGroups`, `appServerGroups` by removing the `omitempty` tag
+
 # 2.61.4 (June 28, 2024)
 
 ## Notes
