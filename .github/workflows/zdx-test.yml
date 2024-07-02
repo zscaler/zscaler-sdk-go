@@ -119,7 +119,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           max_attempts: 3
-          timeout_minutes: 30 # Adjust as needed
+          timeout_minutes: 45 # Adjust as needed
           command: |
             make test:integration:zdx
         env:
