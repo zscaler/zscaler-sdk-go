@@ -35,6 +35,8 @@ type Locations struct {
 	// Country
 	Country string `json:"country,omitempty"`
 
+	State string `json:"state,omitempty"`
+
 	// Language
 	Language string `json:"language,omitempty"`
 
@@ -68,6 +70,10 @@ type Locations struct {
 
 	// Enable IOT Discovery at the location
 	IOTDiscoveryEnabled bool `json:"iotDiscoveryEnabled"`
+
+	IOTEnforcePolicySet bool `json:"iotEnforcePolicySet"`
+
+	CookiesAndProxy bool `json:"cookiesAndProxy"`
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
 	// Enable SSL Inspection. Set to true in order to apply your SSL Inspection policy to HTTPS traffic in the location and inspect HTTPS transactions for data leakage, malicious content, and viruses.
@@ -123,6 +129,10 @@ type Locations struct {
 	// Profile tag that specifies the location traffic type. If not specified, this tag defaults to "Unassigned".
 	Profile string `json:"profile,omitempty"`
 
+	ExcludeFromDynamicGroups string `json:"excludeFromDynamicGroups,omitempty"`
+
+	ExcludeFromManualGroups string `json:"excludeFromManualGroups,omitempty"`
+
 	// Additional notes or information regarding the location or sub-location. The description cannot exceed 1024 characters.
 	Description string `json:"description,omitempty"`
 
@@ -132,12 +142,17 @@ type Locations struct {
 	// If set to true, indicates that this is a default sub-location created by the Zscaler service to accommodate IPv6 addresses that are not part of any user-defined sub-locations. The default sub-location is created with the name Other6 and it can be renamed, if required. This field is applicable only if ipv6Enabled is set is true.
 	Other6SubLocation bool `json:"other6SubLocation,omitempty"`
 
+	ECLocation bool `json:"ecLocation,omitempty"`
+
 	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
 	IPv6Enabled bool `json:"ipv6Enabled,omitempty"`
 
 	// (Optional) Name-ID pair of the NAT64 prefix configured as the DNS64 prefix for the location. If specified, the DNS64 prefix is used for the IP addresses that reside in this location. If not specified, a prefix is selected from the set of supported prefixes. This field is applicable only if ipv6Enabled is set is true.
 	// Before you can configure a DNS64 prefix, you must send a GET request to /ipv6config/nat64prefix to retrieve the IDs of NAT64 prefixes, which can be configured as the DNS64 prefix.
 	IPv6Dns64Prefix bool `json:"ipv6Dns64Prefix,omitempty"`
+
+	DynamiclocationGroups []common.IDNameExtensions `json:"dynamiclocationGroups"`
+	StaticLocationGroups  []common.IDNameExtensions `json:"staticLocationGroups"`
 }
 
 type Location struct {
@@ -184,6 +199,22 @@ type VPNCredentials struct {
 
 	// SD-WAN Partner that manages the location. If a partner does not manage the location, this is set to Self.
 	ManagedBy []ManagedBy `json:"managedBy,omitempty"`
+}
+
+type StaticLocationGroups struct {
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
+	Name string `json:"name,omitempty"`
+}
+
+type DynamiclocationGroups struct {
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
+	Name string `json:"name,omitempty"`
 }
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
