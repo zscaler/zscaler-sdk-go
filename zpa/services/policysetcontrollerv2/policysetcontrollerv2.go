@@ -61,10 +61,10 @@ type PolicyRuleResource struct {
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
-	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
-	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
-	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
-	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
+	Conditions               []PolicyRuleResourceConditions `json:"conditions"`
+	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups"`
+	AppServerGroups          []AppServerGroups              `json:"appServerGroups"`
+	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups"`
 	Credential               *Credential                    `json:"credential,omitempty"`
 	PrivilegedCapabilities   PrivilegedCapabilities         `json:"privilegedCapabilities,omitempty"`
 }

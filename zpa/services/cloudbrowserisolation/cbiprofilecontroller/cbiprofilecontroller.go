@@ -62,11 +62,11 @@ type ForwardToZia struct {
 }
 
 type Watermark struct {
-	Enabled       bool `json:"enabled,omitempty"`
-	ShowUserID    bool `json:"showUserId,omitempty"`
-	ShowTimestamp bool `json:"showTimestamp,omitempty"`
-	ShowMessage   bool `json:"showMessage,omitempty"`
-	Message       bool `json:"message,omitempty"`
+	Enabled       bool   `json:"enabled,omitempty"`
+	ShowUserID    bool   `json:"showUserId,omitempty"`
+	ShowTimestamp bool   `json:"showTimestamp,omitempty"`
+	ShowMessage   bool   `json:"showMessage,omitempty"`
+	Message       string `json:"message,omitempty"`
 }
 type SecurityControls struct {
 	DocumentViewer     bool      `json:"documentViewer,omitempty"`
@@ -78,6 +78,7 @@ type SecurityControls struct {
 	CopyPaste          string    `json:"copyPaste,omitempty"`
 	LocalRender        bool      `json:"localRender,omitempty"`
 }
+
 type Regions struct {
 	Name string `json:"name,omitempty"`
 	ID   string `json:"id,omitempty"`
