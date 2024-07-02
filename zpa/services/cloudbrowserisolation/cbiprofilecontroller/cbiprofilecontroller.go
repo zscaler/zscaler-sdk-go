@@ -48,15 +48,17 @@ type Banner struct {
 }
 
 type UserExperience struct {
-	SessionPersistence  bool          `json:"sessionPersistence,omitempty"`
-	BrowserInBrowser    bool          `json:"browserInBrowser,omitempty"`
-	PersistIsolationBar bool          `json:"persistIsolationBar,omitempty"`
+	SessionPersistence  bool          `json:"sessionPersistence"`
+	BrowserInBrowser    bool          `json:"browserInBrowser"`
+	PersistIsolationBar bool          `json:"persistIsolationBar"`
+	Translate           bool          `json:"translate"`
+	ZGPU                bool          `json:"zgpu,omitempty"`
 	ForwardToZia        *ForwardToZia `json:"forwardToZia,omitempty"`
 }
 
 type ForwardToZia struct {
-	Enabled        bool   `json:"enabled,omitempty"`
-	OrganizationID bool   `json:"organizationId,omitempty"`
+	Enabled        bool   `json:"enabled"`
+	OrganizationID string `json:"organizationId"`
 	CloudName      string `json:"cloudName,omitempty"`
 	PacFileUrl     string `json:"pacFileUrl,omitempty"`
 }
@@ -68,15 +70,22 @@ type Watermark struct {
 	ShowMessage   bool   `json:"showMessage,omitempty"`
 	Message       string `json:"message,omitempty"`
 }
+
 type SecurityControls struct {
-	DocumentViewer     bool      `json:"documentViewer,omitempty"`
-	AllowPrinting      bool      `json:"allowPrinting,omitempty"`
-	Watermark          Watermark `json:"watermark,omitempty"`
-	FlattenedPdf       bool      `json:"flattenedPdf,omitempty"`
-	UploadDownload     string    `json:"uploadDownload,omitempty"`
-	RestrictKeystrokes bool      `json:"restrictKeystrokes,omitempty"`
-	CopyPaste          string    `json:"copyPaste,omitempty"`
-	LocalRender        bool      `json:"localRender,omitempty"`
+	DocumentViewer     bool       `json:"documentViewer,omitempty"`
+	AllowPrinting      bool       `json:"allowPrinting,omitempty"`
+	Watermark          *Watermark `json:"watermark,omitempty"`
+	FlattenedPdf       bool       `json:"flattenedPdf,omitempty"`
+	UploadDownload     string     `json:"uploadDownload,omitempty"`
+	RestrictKeystrokes bool       `json:"restrictKeystrokes,omitempty"`
+	CopyPaste          string     `json:"copyPaste,omitempty"`
+	LocalRender        bool       `json:"localRender,omitempty"`
+	DeepLink           *DeepLink  `json:"deepLink,omitempty"`
+}
+
+type DeepLink struct {
+	Enabled      bool     `json:"enabled,omitempty"`
+	Applications []string `json:"applications,omitempty"`
 }
 
 type Regions struct {

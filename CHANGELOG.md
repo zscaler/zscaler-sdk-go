@@ -1,11 +1,38 @@
 # Changelog
 
+# 2.61.6 (July 2, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #265](https://github.com/zscaler/zscaler-sdk-go/pull/265) - Fixed ``cbiprofilecontroller`` package `message` attribute type from `bool` to `string`
+
+### Enhancement
+- [PR #265](https://github.com/zscaler/zscaler-sdk-go/pull/265) - Included  new``cbiprofilecontroller`` attribute options:
+  - `watermark` - Admins can enable watermarking per isolation profile and choose to display the user ID, date and timestamp (in UTC), and a custom message
+    - `enabled`
+    - `showUserId`
+    - `showTimestamp`
+    - `showMessage`
+    - `message`
+  - `debugMode` - Enable to allow starting isolation sessions in debug mode to collect troubleshooting information.
+    - `filePassword` - Optional password to debug files when this mode is enabled.
+  - `forwardToZia` - Optional password to debug files when this mode is enabled.
+    - `organizationId` - Use the organization ID from the Company Profile section.
+    - `cloudName` - The cloud name on which the organization exists. i.e `zscalertwo`
+    - `pacFileUrl` - Enable to have the PAC file be configured on the Isolated browser to forward traffic via ZIA.
+  - `deepLink` - Deep Linking allows users to open applications from their local machine via the rendered deep link data on an isolated web page.
+    - `enabled`
+    - `applications` - If no specific applications are added here, then deep linking is applied to all of your applications.
+
 # 2.61.5 (July 2, 2024)
 
 ## Notes
 - Golang: **v1.21**
 
-### Enhancement
+### Bug Fixes
 
 - [PR #264](https://github.com/zscaler/zscaler-sdk-go/pull/264) - Fixed ZPA `policysetcontroller` and `policysetcontrollerv2` attributes `appConnectorGroups`, `serviceEdgeGroups`, `appServerGroups` by removing the `omitempty` tag
 
