@@ -43,6 +43,10 @@ type Locations struct {
 	// Timezone of the location. If not specified, it defaults to GMT.
 	TZ string `json:"tz,omitempty"`
 
+	ChildCount int `json:"childCount,omitempty"`
+
+	MatchInChild int `json:"matchInChild,omitempty"`
+
 	//
 	GeoOverride bool `json:"geoOverride,omitempty"`
 
