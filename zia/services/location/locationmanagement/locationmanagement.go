@@ -45,7 +45,7 @@ type Locations struct {
 
 	ChildCount int `json:"childCount,omitempty"`
 
-	MatchInChild int `json:"matchInChild,omitempty"`
+	MatchInChild bool `json:"matchInChild,omitempty"`
 
 	//
 	GeoOverride bool `json:"geoOverride,omitempty"`
@@ -133,9 +133,9 @@ type Locations struct {
 	// Profile tag that specifies the location traffic type. If not specified, this tag defaults to "Unassigned".
 	Profile string `json:"profile,omitempty"`
 
-	ExcludeFromDynamicGroups string `json:"excludeFromDynamicGroups,omitempty"`
+	ExcludeFromDynamicGroups bool `json:"excludeFromDynamicGroups,omitempty"`
 
-	ExcludeFromManualGroups string `json:"excludeFromManualGroups,omitempty"`
+	ExcludeFromManualGroups bool `json:"excludeFromManualGroups,omitempty"`
 
 	// Additional notes or information regarding the location or sub-location. The description cannot exceed 1024 characters.
 	Description string `json:"description,omitempty"`
