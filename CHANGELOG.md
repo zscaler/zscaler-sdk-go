@@ -1,5 +1,25 @@
 # Changelog
 
+# 2.61.7 (July 2, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #266](https://github.com/zscaler/zscaler-sdk-go/pull/266) - Added ZIA ``locationmanagement`` package missing attributes
+  - `cookiesAndProxy`
+  - `iotEnforcePolicySet`
+  - `ecLocation`
+  - `excludeFromDynamicGroups`
+  - `excludeFromManualGroups`
+  - `dynamiclocationGroups`
+    - `id`
+    - `name`
+- `staticlocationGroups`
+    - `id`
+    - `name`
+
 # 2.61.6 (July 2, 2024)
 
 ## Notes
