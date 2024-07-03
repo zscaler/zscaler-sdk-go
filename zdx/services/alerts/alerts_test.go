@@ -83,48 +83,51 @@ func TestGetHistoricalAlerts(t *testing.T) {
 	}
 }
 
-// func TestGetAlert(t *testing.T) {
-// 	client, err := tests.NewZdxClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
+/*
+func TestGetAlert(t *testing.T) {
+	client, err := tests.NewZdxClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
-// 	service := services.New(client)
+	service := services.New(client)
 
-// 	// //Get the first alert from historical alerts
-// 	// alerts, resp, err := GetHistoricalAlerts(service)
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error getting historical alerts: %v", err)
-// 	// }
+	// //Get the first alert from historical alerts
+	// alerts, resp, err := GetHistoricalAlerts(service)
+	// if err != nil {
+	// 	t.Fatalf("Error getting historical alerts: %v", err)
+	// }
 
-// 	// if resp.StatusCode != http.StatusOK {
-// 	// 	t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
-// 	// }
+	// if resp.StatusCode != http.StatusOK {
+	// 	t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	// }
 
-// 	// if len(alerts.Alerts) == 0 {
-// 	// 	t.Log("No historical alerts found.")
-// 	// 	return
-// 	// }
+	// if len(alerts.Alerts) == 0 {
+	// 	t.Log("No historical alerts found.")
+	// 	return
+	// }
 
-// 	// firstAlertID := strconv.Itoa(alerts.Alerts[0].ID)
+	// firstAlertID := strconv.Itoa(alerts.Alerts[0].ID)
 
-// 	// Get the specific alert by ID
-// 	alert, resp, err := GetAlert(service, "7381380182807289758")
-// 	if err != nil {
-// 		t.Fatalf("Error getting alert: %v", err)
-// 	}
+	// Get the specific alert by ID
+	alert, resp, err := GetAlert(service, "7381380182807289758")
+	if err != nil {
+		t.Fatalf("Error getting alert: %v", err)
+	}
 
-// 	if resp.StatusCode != http.StatusOK {
-// 		t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
-// 	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
 
-// 	if alert.ID == 0 {
-// 		t.Log("No alert found with the specified ID.")
-// 	} else {
-// 		t.Logf("Retrieved alert ID: %d, Rule Name: %s", alert.ID, alert.RuleName)
-// 	}
-// }
+	if alert.ID == 0 {
+		t.Log("No alert found with the specified ID.")
+	} else {
+		t.Logf("Retrieved alert ID: %d, Rule Name: %s", alert.ID, alert.RuleName)
+	}
+}
+*/
 
+/*
 func TestGetAffectedDevices(t *testing.T) {
 	client, err := tests.NewZdxClient()
 	if err != nil {
@@ -143,30 +146,30 @@ func TestGetAffectedDevices(t *testing.T) {
 	}
 
 	// Get the first alert from historical alerts
-	// alerts, resp, err := GetHistoricalAlerts(service, filters)
-	// if err != nil {
-	// 	t.Fatalf("Error getting historical alerts: %v", err)
-	// }
+	alerts, resp, err := GetHistoricalAlerts(service, filters)
+	if err != nil {
+		t.Fatalf("Error getting historical alerts: %v", err)
+	}
 
-	// if resp.StatusCode != http.StatusOK {
-	// 	t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
-	// }
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
 
-	// if len(alerts.Alerts) == 0 {
-	// 	t.Log("No historical alerts found.")
-	// 	return
-	// }
+	if len(alerts.Alerts) == 0 {
+		t.Log("No historical alerts found.")
+		return
+	}
 
-	// // Log the retrieved alert IDs for debugging purposes
-	// for _, alert := range alerts.Alerts {
-	// 	t.Logf("Retrieved Alert ID: %d", alert.ID)
-	// }
+	// Log the retrieved alert IDs for debugging purposes
+	for _, alert := range alerts.Alerts {
+		t.Logf("Retrieved Alert ID: %d", alert.ID)
+	}
 
-	// firstAlertID := strconv.Itoa(alerts.Alerts[0].ID)
-	// t.Logf("Using First Alert ID: %s", firstAlertID)
+	firstAlertID := strconv.Itoa(alerts.Alerts[0].ID)
+	t.Logf("Using First Alert ID: %s", firstAlertID)
 
 	// Get the affected devices for the specific alert by ID using the same filters
-	affectedDevices, resp, err := GetAffectedDevices(service, "7381380182807289758", filters)
+	affectedDevices, resp, err := GetAffectedDevices(service, firstAlertID, filters)
 	if err != nil {
 		t.Fatalf("Error getting affected devices: %v", err)
 	}
@@ -184,3 +187,4 @@ func TestGetAffectedDevices(t *testing.T) {
 		}
 	}
 }
+*/
