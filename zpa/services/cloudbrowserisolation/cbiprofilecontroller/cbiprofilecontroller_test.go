@@ -7,6 +7,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiregions"
 )
 
@@ -27,6 +28,17 @@ func TestCBIProfileController(t *testing.T) {
 	}
 	if len(cbiRegionsList) == 0 {
 		t.Error("Expected retrieved cbi regions to be non-empty, but got empty slice")
+	}
+
+	//Fetch the certificate by name (assuming this function returns a valid certificate object with a UUID)
+	cbiCertificate, _, err := cbicertificatecontroller.GetByName(service, "Zscaler Root Certificate")
+	if err != nil {
+		t.Errorf("Error getting cbi certificate: %v", err)
+		return
+	}
+	if cbiCertificate == nil || cbiCertificate.ID == "" {
+		t.Error("Expected to retrieve a cbi certificate with a valid ID, but got nil or empty ID")
+		return
 	}
 
 	// create application connector group for testing
@@ -60,21 +72,36 @@ func TestCBIProfileController(t *testing.T) {
 	}()
 
 	cbiProfile := IsolationProfile{
-		Name:        name,
-		Description: name,
-		BannerID:    cbiBannerController.ID,
-		RegionIDs:   []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
+		Name:           name,
+		Description:    name,
+		BannerID:       cbiBannerController.ID,
+		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
+		CertificateIDs: []string{cbiCertificate.ID},
 		UserExperience: &UserExperience{
-			SessionPersistence: true,
-			BrowserInBrowser:   true,
+			SessionPersistence:  true,
+			BrowserInBrowser:    true,
+			PersistIsolationBar: true,
+			Translate:           true,
 		},
 		SecurityControls: &SecurityControls{
 			CopyPaste:          "all",
-			UploadDownload:     "all",
+			UploadDownload:     "upstream",
 			DocumentViewer:     true,
 			LocalRender:        true,
 			AllowPrinting:      true,
-			RestrictKeystrokes: false,
+			RestrictKeystrokes: true,
+			FlattenedPdf:       true,
+			DeepLink: &DeepLink{
+				Enabled:      true,
+				Applications: []string{"test_app1", "test_app2"},
+			},
+			Watermark: &Watermark{
+				Enabled:       true,
+				ShowUserID:    true,
+				ShowTimestamp: true,
+				ShowMessage:   true,
+				Message:       "Zscaler SDK GO Test",
+			},
 		},
 	}
 
@@ -165,57 +192,3 @@ func TestCBIProfileController(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-
-/*
-func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, _, err = service.Get("non_existent_id")
-	if err == nil {
-		t.Error("Expected error retrieving non-existent resource, but got nil")
-	}
-}
-
-func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Delete("non_existent_id")
-	if err == nil {
-		t.Error("Expected error deleting non-existent resource, but got nil")
-	}
-}
-
-func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Update("non_existent_id", &IsolationProfile{})
-	if err == nil {
-		t.Error("Expected error updating non-existent resource, but got nil")
-	}
-}
-
-func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, _, err = service.GetByName("non_existent_name")
-	if err == nil {
-		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-	}
-}
-*/
