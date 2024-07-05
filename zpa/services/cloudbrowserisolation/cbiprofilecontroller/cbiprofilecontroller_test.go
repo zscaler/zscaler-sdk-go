@@ -7,7 +7,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiregions"
 )
 
@@ -28,15 +27,6 @@ func TestCBIProfileController(t *testing.T) {
 	}
 	if len(cbiRegionsList) == 0 {
 		t.Error("Expected retrieved cbi regions to be non-empty, but got empty slice")
-	}
-
-	cbiCertificate, _, err := cbicertificatecontroller.GetByName(service, "Zscaler Root Certificate")
-	if err != nil {
-		t.Errorf("Error getting cbi certificate: %v", err)
-		return
-	}
-	if cbiCertificate == nil {
-		t.Error("Expected to retrieve a cbi certificate, but got nil")
 	}
 
 	// create application connector group for testing
@@ -70,11 +60,10 @@ func TestCBIProfileController(t *testing.T) {
 	}()
 
 	cbiProfile := IsolationProfile{
-		Name:           name,
-		Description:    name,
-		BannerID:       cbiBannerController.ID,
-		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
-		CertificateIDs: []string{cbiCertificate.ID},
+		Name:        name,
+		Description: name,
+		BannerID:    cbiBannerController.ID,
+		RegionIDs:   []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
 		UserExperience: &UserExperience{
 			SessionPersistence: true,
 			BrowserInBrowser:   true,

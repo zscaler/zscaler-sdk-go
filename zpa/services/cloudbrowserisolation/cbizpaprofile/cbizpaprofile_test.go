@@ -21,8 +21,8 @@ func TestCBIZPAProfile(t *testing.T) {
 
 	service := services.New(client)
 
-	// Test to retrieve all profiles
-	profiles, _, err := GetAll(service)
+	// Test to retrieve all profiles with nil for optional parameters
+	profiles, _, err := GetAll(service, nil, nil)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return
@@ -83,7 +83,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	service := services.New(client)
 
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(service, nil, nil)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return

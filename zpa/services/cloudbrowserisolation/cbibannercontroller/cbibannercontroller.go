@@ -45,7 +45,11 @@ func GetByName(service *services.Service, bannerName string) (*CBIBannerControll
 	}
 	for _, banner := range list {
 		if strings.EqualFold(banner.Name, bannerName) {
-			return &banner, resp, nil
+			fullBanner, _, err := Get(service, banner.ID)
+			if err != nil {
+				return nil, nil, err
+			}
+			return fullBanner, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("no cloud browser isolation banner named '%s' was found", bannerName)
