@@ -145,7 +145,7 @@ func TestCBICertificates(t *testing.T) {
 		}
 	})
 
-	// Test 5: Delete the certificate
+	//Test 5: Delete the certificate
 	t.Run("TestDeleteCertificate", func(t *testing.T) {
 		_, err := Delete(service, createdCert.ID)
 		if err != nil {

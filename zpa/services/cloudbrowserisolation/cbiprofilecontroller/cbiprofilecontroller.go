@@ -116,7 +116,11 @@ func GetByName(service *services.Service, profileName string) (*IsolationProfile
 	}
 	for _, profile := range list {
 		if strings.EqualFold(profile.Name, profileName) {
-			return &profile, resp, nil
+			fullProfile, _, err := Get(service, profile.ID)
+			if err != nil {
+				return nil, nil, err
+			}
+			return fullProfile, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)

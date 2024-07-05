@@ -1,5 +1,18 @@
 # Changelog
 
+# 2.61.8 (July 4, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #267](https://github.com/zscaler/zscaler-sdk-go/pull/267) - Fixed ZPA Cloud Browser Isolation resources to allow search by name and ID.
+  - `cbibannercontroller`
+  - `cbicertificatecontroller`
+  - `cbiprofilecontroller`
+  - `cbizpaprofile`
+
 # 2.61.7 (July 2, 2024)
 
 ## Notes
