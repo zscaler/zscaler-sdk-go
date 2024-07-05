@@ -31,16 +31,14 @@ func TestCBIProfileController(t *testing.T) {
 	}
 
 	//Fetch the certificate by name (assuming this function returns a valid certificate object with a UUID)
-	cbiCertificate, _, err := cbicertificatecontroller.GetByName(service, "Zscaler Root Certificate")
+	cbiCertificateList, _, err := cbicertificatecontroller.GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting cbi certificate: %v", err)
 		return
 	}
-	if cbiCertificate == nil || cbiCertificate.ID == "" {
-		t.Error("Expected to retrieve a cbi certificate with a valid ID, but got nil or empty ID")
-		return
+	if len(cbiCertificateList) == 0 {
+		t.Error("Expected retrieved cbi certificates to be non-empty, but got empty slice")
 	}
-
 	// create application connector group for testing
 	cbiBanner := cbibannercontroller.CBIBannerController{
 		Name:              name,
@@ -76,7 +74,7 @@ func TestCBIProfileController(t *testing.T) {
 		Description:    name,
 		BannerID:       cbiBannerController.ID,
 		RegionIDs:      []string{cbiRegionsList[0].ID, cbiRegionsList[1].ID},
-		CertificateIDs: []string{cbiCertificate.ID},
+		CertificateIDs: []string{cbiCertificateList[0].ID},
 		UserExperience: &UserExperience{
 			SessionPersistence:  true,
 			BrowserInBrowser:    true,
@@ -150,7 +148,7 @@ func TestCBIProfileController(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByNameOrID(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}

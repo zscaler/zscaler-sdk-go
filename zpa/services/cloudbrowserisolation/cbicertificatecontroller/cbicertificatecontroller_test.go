@@ -136,7 +136,7 @@ func TestCBICertificates(t *testing.T) {
 
 	// Test 4: Retrieve the certificate by name
 	t.Run("TestGetByName", func(t *testing.T) {
-		retrievedCertByName, _, err := GetByName(service, cbiCertificate.Name)
+		retrievedCertByName, _, err := GetByNameOrID(service, cbiCertificate.Name)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
 		}

@@ -32,17 +32,28 @@ func Get(service *services.Service, certificateID string) (*CBICertificate, *htt
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, certificateName string) (*CBICertificate, *http.Response, error) {
+func GetByNameOrID(service *services.Service, identifier string) (*CBICertificate, *http.Response, error) {
+	// Retrieve all banners
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, cert := range list {
-		if strings.EqualFold(cert.Name, certificateName) {
-			return &cert, resp, nil
+
+	// Try to find by ID
+	for _, certificate := range list {
+		if certificate.ID == identifier {
+			return Get(service, certificate.ID)
 		}
 	}
-	return nil, resp, fmt.Errorf("no certificate named '%s' was found", certificateName)
+
+	// Try to find by name
+	for _, certificate := range list {
+		if strings.EqualFold(certificate.Name, identifier) {
+			return Get(service, certificate.ID)
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation certificate named or with ID '%s' was found", identifier)
 }
 
 func Create(service *services.Service, cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
