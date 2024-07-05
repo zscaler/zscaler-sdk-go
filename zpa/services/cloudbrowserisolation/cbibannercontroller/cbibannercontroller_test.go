@@ -77,7 +77,7 @@ func TestCBIBannerController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByNameOrID(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}

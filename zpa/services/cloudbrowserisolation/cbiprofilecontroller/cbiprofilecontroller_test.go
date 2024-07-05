@@ -31,7 +31,7 @@ func TestCBIProfileController(t *testing.T) {
 	}
 
 	//Fetch the certificate by name (assuming this function returns a valid certificate object with a UUID)
-	cbiCertificate, _, err := cbicertificatecontroller.GetByName(service, "Zscaler Root Certificate")
+	cbiCertificate, _, err := cbicertificatecontroller.GetByNameOrID(service, "Zscaler Root Certificate")
 	if err != nil {
 		t.Errorf("Error getting cbi certificate: %v", err)
 		return
@@ -150,7 +150,7 @@ func TestCBIProfileController(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByNameOrID(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
