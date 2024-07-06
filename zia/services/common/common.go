@@ -88,6 +88,16 @@ type SandboxRSS struct {
 	SignatureSources string `json:"SignatureSources,omitempty"`
 }
 
+type Order struct {
+	On string `json:"on,omitempty"`
+	By string `json:"by,omitempty"`
+}
+
+type DataConsumed struct {
+	Min int `json:"min,omitempty"`
+	Max int `json:"max,omitempty"`
+}
+
 // GetPageSize returns the page size.
 func GetPageSize() int {
 	return pageSize
