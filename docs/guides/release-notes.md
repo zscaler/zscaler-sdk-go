@@ -13,10 +13,22 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.61.9``
+``Last updated: v2.61.10``
 
 ---
 
+# 2.61.10 (July 5, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #268](https://github.com/zscaler/zscaler-sdk-go/pull/268) - Fixed ZPA Cloud Browser Isolation resources to allow search by name and ID.
+  - `cbibannercontroller`
+  - `cbicertificatecontroller`
+  - `cbiprofilecontroller`
+  
 # 2.61.9 (July 5, 2024)
 
 ## Notes
