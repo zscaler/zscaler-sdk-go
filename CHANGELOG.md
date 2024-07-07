@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.61.11 (July 7, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #269](https://github.com/zscaler/zscaler-sdk-go/pull/269) - Fixed ZPA App Protection (Inspection) resources with missing attributes.
+
 # 2.61.10 (July 5, 2024)
 
 ## Notes
