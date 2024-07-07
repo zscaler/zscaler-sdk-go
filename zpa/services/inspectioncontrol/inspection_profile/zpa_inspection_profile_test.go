@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_custom_controls"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_predefined_controls"
 )
@@ -86,15 +87,15 @@ func TestInspectionProfile(t *testing.T) {
 		return
 	}
 
-	predefinedControls := make([]CustomCommonControls, len(predefinedControlsByGroup)+1)
+	predefinedControls := make([]common.CustomCommonControls, len(predefinedControlsByGroup)+1)
 	for i, control := range predefinedControlsByGroup {
-		predefinedControls[i] = CustomCommonControls{
+		predefinedControls[i] = common.CustomCommonControls{
 			ID:          control.ID,
 			Action:      "BLOCK",
 			ActionValue: control.ActionValue,
 		}
 	}
-	predefinedControls[len(predefinedControlsByGroup)] = CustomCommonControls{
+	predefinedControls[len(predefinedControlsByGroup)] = common.CustomCommonControls{
 		ID:     controlByName.ID,
 		Action: "BLOCK",
 	}
