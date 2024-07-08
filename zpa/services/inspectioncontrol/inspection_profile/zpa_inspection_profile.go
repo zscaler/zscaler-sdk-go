@@ -24,6 +24,7 @@ type InspectionProfile struct {
 	Name                              string                        `json:"name,omitempty"`
 	Description                       string                        `json:"description,omitempty"`
 	APIProfile                        bool                          `json:"apiProfile,omitempty"`
+	OverrideAction                    string                        `json:"overrideAction,omitempty"`
 	CommonGlobalOverrideActionsConfig map[string]interface{}        `json:"commonGlobalOverrideActionsConfig,omitempty"`
 	CreationTime                      string                        `json:"creationTime,omitempty"`
 	ZSDefinedControlChoice            string                        `json:"zsDefinedControlChoice,omitempty"`
