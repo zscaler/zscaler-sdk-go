@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.61.11``
+``Last updated: v2.61.12``
 
 ---
+
+# 2.61.12 (July 8, 2024)
+
+## Notes
+- Golang: **v1.21**
+
+### Bug Fixes
+
+- [PR #269](https://github.com/zscaler/zscaler-sdk-go/pull/269) - Fixed ZPA App Protection (Inspection) resources with missing attributes.
+- [PR #269](https://github.com/zscaler/zscaler-sdk-go/pull/269) - Fixed zpa_inspection_profile missing `overrideAction` attribute.
 
 # 2.61.11 (July 7, 2024)
 
