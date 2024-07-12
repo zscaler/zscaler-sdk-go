@@ -108,6 +108,30 @@ func InList(list []string, item string) bool {
 	return false
 }
 
+/*
+	func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
+		var v struct {
+			TotalPages interface{} `json:"totalPages"`
+			List       []T         `json:"list"`
+		}
+		resp, err := client.NewRequestDo("GET", relativeURL, Pagination{
+			Search2:       filters.Search,
+			MicroTenantID: filters.MicroTenantID,
+			PageSize:      pageSize,
+			Page:          page,
+			SortBy:        filters.SortBy,
+			SortOrder:     filters.SortOrder,
+		}, nil, &v)
+		if err != nil {
+			return 0, nil, resp, err
+		}
+
+		pages := fmt.Sprintf("%v", v.TotalPages)
+		totalPages, _ := strconv.Atoi(pages)
+
+		return totalPages, v.List, resp, nil
+	}
+*/
 func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	var v struct {
 		TotalPages interface{} `json:"totalPages"`
@@ -130,7 +154,6 @@ func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 
 	return totalPages, v.List, resp, nil
 }
-
 func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	return getAllPagesGenericWithCustomFilters[T](
 		client,
@@ -192,6 +215,36 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 		}
 	}
 
+	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, filters)
+	if err != nil {
+		return nil, resp, err
+	}
+	var l []T
+	for page := 2; page <= totalPages; page++ {
+		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](client, relativeURL, page, DefaultPageSize, filters)
+		if err != nil {
+			return nil, resp, err
+		}
+		result = append(result, l...)
+	}
+
+	return result, resp, nil
+}
+
+/*
+// GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
+func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
+	if (filters.MicroTenantID == nil || *filters.MicroTenantID == "") && filters.MicroTenantName != nil && *filters.MicroTenantName != "" {
+		// get microtenant id by name
+		mt, resp, err := getMicroTenantByName(client, *filters.MicroTenantName)
+		if err == nil {
+			return nil, resp, err
+		}
+		if mt != nil {
+			filters.MicroTenantID = &mt.ID
+		}
+	}
+
 	// Updated filter search: replace spaces with '&' for the API's search query format
 	filters.Search = strings.ReplaceAll(filters.Search, " ", "&")
 
@@ -210,3 +263,4 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 
 	return result, resp, nil
 }
+*/
