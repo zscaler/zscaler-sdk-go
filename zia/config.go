@@ -3,6 +3,7 @@ package zia
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -115,11 +116,40 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
-	httpClient := getHTTPClient(logger, rateLimiter)
-	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
-	if ziaCloud == "zspreview" {
-		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+
+	var url string
+	var bypassSSL bool // Declare bypassSSL here but don't set it yet
+
+	// Predefined clouds and their URL formatting
+	predefinedClouds := map[string]bool{
+		"zscalerbeta":  true,
+		"zscaler":      true,
+		"zscloud":      true,
+		"zscalerone":   true,
+		"zscalertwo":   true,
+		"zscalerthree": true,
+		"zscalergov":   true,
+		"zscalerten":   true,
+		"zspreview":    false, // Treat zspreview differently
 	}
+
+	// Check if ziaCloud is one of the predefined ones or arbitrary
+	if _, exists := predefinedClouds[ziaCloud]; exists {
+		if ziaCloud == "zspreview" {
+			url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+		} else {
+			url = fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
+		}
+		bypassSSL = false // No need to bypass SSL for known clouds
+	} else {
+		// For arbitrary URLs, format differently and plan to bypass SSL
+		url = fmt.Sprintf("https://%s/%s", ziaCloud, ziaAPIVersion)
+		bypassSSL = true // Bypass SSL verification for arbitrary URLs
+	}
+
+	// Generate the HTTP client with the decision on SSL verification
+	httpClient := getHTTPClient(logger, rateLimiter, bypassSSL)
+
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := &Client{
 		userName:         username,
@@ -386,7 +416,8 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 	return 0
 }
 
-func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
+// Modified getHTTPClient to handle bypassSSL parameter
+func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, bypassSSL bool) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
@@ -396,14 +427,22 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		l.Printf("[ERROR] failed to create cookie jar: %v", err)
-		// Handle the error, possibly by continuing without a cookie jar
-		// or you can choose to halt the execution if the cookie jar is critical
 	}
 
 	// Configure the underlying HTTP client
+	httpTransport := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		MaxIdleConnsPerHost: maxIdleConnections,
+	}
+
+	if bypassSSL {
+		httpTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
 	retryableClient.HTTPClient = &http.Client{
-		Jar: jar, // Set the cookie jar
-		// ... other configurations ...
+		Jar:       jar,
+		Timeout:   time.Duration(requestTimeout) * time.Second,
+		Transport: logging.NewSubsystemLoggingHTTPTransport("gozscaler", httpTransport),
 	}
 
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
@@ -423,7 +462,6 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 				}
 			}
 		}
-		// default to exp backoff
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -431,24 +469,6 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 		}
 		return sleep
 	}
-	retryableClient.CheckRetry = checkRetry
-	retryableClient.Logger = l
-	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
-	retryableClient.HTTPClient.Transport = &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
-		MaxIdleConnsPerHost: maxIdleConnections,
-	}
-
-	retryableClient.HTTPClient = &http.Client{
-		Timeout: time.Duration(requestTimeout) * time.Second,
-		Transport: &http.Transport{
-			Proxy:               http.ProxyFromEnvironment,
-			MaxIdleConnsPerHost: maxIdleConnections,
-		},
-		Jar: jar, // Set the cookie jar
-	}
-	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
-
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
 
