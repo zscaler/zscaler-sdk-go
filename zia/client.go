@@ -152,7 +152,41 @@ func (client *Client) WithFreshCache() {
 	client.freshCache = true
 }
 
-// Create send HTTP Post request.
+// // Create send HTTP Post request.
+// func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
+// 	if o == nil {
+// 		return nil, errors.New("tried to create with a nil payload not a Struct")
+// 	}
+// 	t := reflect.TypeOf(o)
+// 	if t.Kind() != reflect.Struct {
+// 		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
+// 	}
+// 	data, err := json.Marshal(o)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	resp, err := c.Request(endpoint, "POST", data, "application/json")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if len(resp) > 0 {
+// 		responseObject := reflect.New(t).Interface()
+// 		err = json.Unmarshal(resp, &responseObject)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+
+// 		c.Logger.Printf("Created Object with ID %v", id)
+// 		return responseObject, nil
+// 	} else {
+// 		// in case of 204 no content
+// 		return nil, nil
+// 	}
+// }
+
+// Create sends an HTTP POST request.
 func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
@@ -171,6 +205,13 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 	if len(resp) > 0 {
+		// Check if the response is an array of strings
+		var stringArrayResponse []string
+		if json.Unmarshal(resp, &stringArrayResponse) == nil {
+			return stringArrayResponse, nil
+		}
+
+		// Otherwise, handle as usual
 		responseObject := reflect.New(t).Interface()
 		err = json.Unmarshal(resp, &responseObject)
 		if err != nil {

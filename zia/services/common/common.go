@@ -41,6 +41,30 @@ type ZPAAppSegments struct {
 	ExternalID string `json:"externalId"`
 }
 
+/*
+type CommonEntityReferences struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id,omitempty"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Indicates whether name is a tag that can be used to look-up the display string, typically from a localization resource bundle.
+	IsNameL10NTag bool `json:"isNameL10nTag,omitempty"`
+
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
+
+	// Indicates whether the entity was deleted.
+	Deleted bool `json:"deleted,omitempty"`
+
+	// Indicates the external id. Only applicable when this reference is of an external entity.
+	ExternalID string `json:"externalId,omitempty"`
+
+	// Indicates when the entity was assigned to the primary domain object.
+	AssociationTime string `json:"associationTime,omitempty"`
+}
+*/
+
 type UserGroups struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
