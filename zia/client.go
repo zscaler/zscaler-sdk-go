@@ -227,6 +227,56 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 }
 
+func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to create with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to create with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
+func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to update with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to update with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "PUT", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // Read ...
 func (c *Client) Read(endpoint string, o interface{}) error {
 	contentType := c.GetContentType()

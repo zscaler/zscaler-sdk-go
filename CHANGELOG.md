@@ -1,5 +1,26 @@
 # Changelog
 
+# 2.70.0 (July 23, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA Additions
+
+#### Cloud App Control Rules
+- Added `GET /webApplicationRules/{rule_type}` to Get the list of Web Application Rule by type [PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `GET /webApplicationRules/{rule_type}/{ruleId}` to Get a Web Application Rule by type and id[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `POST /webApplicationRules/{rule_type}` to Adds a new Web Application rule.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `PUT /webApplicationRules/{rule_type}/{ruleId}` to Update a new Web Application rule.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `DELETE /webApplicationRules/{rule_type}/{ruleId}` to Delete a new Web Application rule.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+
+#### URL Categories
+- Added `POST /urlLookup` to Retrieve Zscaler's default classification for a given set of URLs (e.g., ['abc.com', 'xyz.com']).[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `GET /urlCategories/urlQuota` to Gets information on the number of unique URLs that are currently provisioned for your organization as well as how many URLs you can add before reaching that number.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `GET /urlCategories/lite` to Gets a lightweight key-value list of all or custom URL categories.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `GET /urlCategories/review/domains` to find matching entries present in existing custom URL categories.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added `GET /urlCategories/review/domains` Adds the list of matching URLs fetched by POST /urlCategories/review/domains to the specified custom URL categories. A maximum of 100 URL categories can be updated at once using this request.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+
 # 2.61.12 (July 8, 2024)
 
 ## Notes
