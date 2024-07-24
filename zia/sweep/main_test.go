@@ -15,6 +15,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/admins"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/cloudappcontrol"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/dlp/dlp_web_rules"
@@ -26,7 +27,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/forwarding_rules"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/location/locationmanagement"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/rule_labels"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/sandbox/sandbox_settings"
@@ -83,6 +83,7 @@ func sweep() error {
 	sweepFunctions := []func(*zia.Client) error{
 		sweepFirewallFilteringRules,
 		sweepURLFilteringPolicies,
+		sweepWebApplicationRules,
 		sweepLocationManagement,
 		sweepAdminUsers,
 		sweepDLPEngines,
@@ -95,7 +96,7 @@ func sweep() error {
 		sweepNetworkServiceGroups,
 		sweepNetworkServices,
 		sweepForwardingControlRules,
-		sweepZPAGateways,
+		// sweepZPAGateways,
 		sweepRuleLabels,
 		sweepGRETunnels,
 		sweepStaticIP,
@@ -377,26 +378,28 @@ func sweepForwardingControlRules(client *zia.Client) error {
 	return nil
 }
 
-func sweepZPAGateways(client *zia.Client) error {
-	service := zpa_gateways.New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get zpa gateways: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+/*
+	func sweepZPAGateways(client *zia.Client) error {
+		service := zpa_gateways.New(client)
+		resources, err := service.GetAll()
 		if err != nil {
-			log.Printf("[ERROR] Failed to delete zpa gateways with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			log.Printf("[ERROR] Failed to get zpa gateways: %v", err)
+			return err
 		}
+
+		for _, r := range resources {
+			if !strings.HasPrefix(r.Name, "tests-") {
+				continue
+			}
+			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete zpa gateways with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			}
+		}
+		return nil
 	}
-	return nil
-}
+*/
 
 func sweepLocationManagement(client *zia.Client) error {
 	service := services.New(client)
@@ -637,6 +640,35 @@ func sweepURLFilteringPolicies(client *zia.Client) error {
 			log.Printf("[ERROR] Failed to delete url filtering policies with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
+	return nil
+}
+
+func sweepWebApplicationRules(client *zia.Client) error {
+	service := services.New(client)
+	ruleTypes := []string{"STREAMING_MEDIA"}
+
+	for _, ruleType := range ruleTypes {
+		resources, err := cloudappcontrol.GetByRuleType(service, ruleType)
+		if err != nil {
+			log.Printf("[ERROR] Failed to get web application rules for type %s: %v", ruleType, err)
+			return err
+		}
+
+		for _, r := range resources {
+			if !strings.HasPrefix(r.Name, "tests-") {
+				continue
+			}
+			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+			err, _ := cloudappcontrol.Delete(service, ruleType, r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete web application rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			}
+		}
+
+		// Add a delay to respect rate limits
+		time.Sleep(1 * time.Second)
+	}
+
 	return nil
 }
 

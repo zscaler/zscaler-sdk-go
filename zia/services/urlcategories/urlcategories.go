@@ -1,6 +1,7 @@
 package urlcategories
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 
 const (
 	urlCategoriesEndpoint = "/urlCategories"
+	urlQuotaHandler       = "urlQuota"
+	urlLookupEndpoint     = "/urlLookup"
 )
 
 type URLCategory struct {
@@ -100,6 +103,29 @@ type URLKeywordCounts struct {
 	RetainParentKeywordCount int `json:"retainParentKeywordCount,omitempty"`
 }
 
+type URLQuota struct {
+	UniqueUrlsProvisioned int `json:"uniqueUrlsProvisioned,omitempty"`
+	RemainingUrlsQuota    int `json:"remainingUrlsQuota,omitempty"`
+}
+
+type URLClassification struct {
+	URL                                 string   `json:"url,omitempty"`
+	URLClassifications                  []string `json:"urlClassifications,omitempty"`
+	URLClassificationsWithSecurityAlert []string `json:"urlClassificationsWithSecurityAlert,omitempty"`
+	Application                         string   `json:"application,omitempty"`
+}
+
+type DomainMatch struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type URLReview struct {
+	URL        string        `json:"url"`
+	DomainType string        `json:"domainType"`
+	Matches    []DomainMatch `json:"matches"`
+}
+
 func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
 	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
@@ -169,8 +195,74 @@ func DeleteURLCategories(service *services.Service, categoryID string) (*http.Re
 	return nil, nil
 }
 
+func GetURLQuota(service *services.Service) (*URLQuota, error) {
+	url := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, urlQuotaHandler)
+	var quota URLQuota
+	err := service.Client.Read(url, &quota)
+	if err != nil {
+		return nil, err
+	}
+	return &quota, nil
+}
+
+func GetURLLookup(service *services.Service, urls []string) ([]URLClassification, error) {
+	resp, err := service.Client.CreateWithSlicePayload(urlLookupEndpoint, urls)
+	if err != nil {
+		return nil, err
+	}
+
+	var lookupResults []URLClassification
+	err = json.Unmarshal(resp, &lookupResults)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Client.Logger.Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
+	return lookupResults, nil
+}
+
 func GetAll(service *services.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err
+}
+
+func GetAllLite(service *services.Service) ([]URLCategory, error) {
+	var urlCategories []URLCategory
+	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
+	if err != nil {
+		service.Client.Logger.Printf("[ERROR] Error fetching URL categories: %v", err)
+		return nil, err
+	}
+	return urlCategories, nil
+}
+
+func CreateURLReview(service *services.Service, domains []string) ([]URLReview, error) {
+	resp, err := service.Client.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
+	if err != nil {
+		return nil, err
+	}
+
+	var reviewResults []URLReview
+	err = json.Unmarshal(resp, &reviewResults)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Client.Logger.Printf("[DEBUG] returning URL review results: %+v", reviewResults)
+	return reviewResults, nil
+}
+
+func UpdateURLReview(service *services.Service, reviews []URLReview) error {
+	resp, err := service.Client.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
+	if err != nil {
+		return err
+	}
+
+	if len(resp) > 0 {
+		return errors.New("unexpected response format")
+	}
+
+	service.Client.Logger.Printf("[DEBUG] successfully updated URL review")
+	return nil
 }
