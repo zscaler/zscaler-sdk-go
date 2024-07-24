@@ -31,12 +31,21 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - Added `PUT /webApplicationRules/{rule_type}/{ruleId}` to Update a new Web Application rule.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 - Added `DELETE /webApplicationRules/{rule_type}/{ruleId}` to Delete a new Web Application rule.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 
+#### DLP Dictionary
+- Added `GET /dlpDictionaries/{dictId}/predefinedIdentifiers` to Retrieves the list of identifiers that are available for selection in the specified hierarchical DLP dictionary.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added new attribute `dlpdictionary` attributes:
+  * `confidenceLevelForPredefinedDict`: `String` - The DLP confidence threshold for predefined dictionaries
+  * `dictionaryCloningEnabled`: `Bool` - A Boolean constant that indicates that the cloning option is supported for the DLP dictionary using the true value.
+  * `customPhraseSupported`: `Bool` - A Boolean constant that indicates that custom phrases are supported for the DLP dictionary using the true value.
+  * `proximityLengthEnabled`: `Bool` - A Boolean constant that indicates whether the proximity length option is supported for a DLP dictionary or not.
+
 #### URL Categories
 - Added `POST /urlLookup` to Retrieve Zscaler's default classification for a given set of URLs (e.g., ['abc.com', 'xyz.com']).[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 - Added `GET /urlCategories/urlQuota` to Gets information on the number of unique URLs that are currently provisioned for your organization as well as how many URLs you can add before reaching that number.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 - Added `GET /urlCategories/lite` to Gets a lightweight key-value list of all or custom URL categories.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 - Added `GET /urlCategories/review/domains` to find matching entries present in existing custom URL categories.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
 - Added `GET /urlCategories/review/domains` Adds the list of matching URLs fetched by POST /urlCategories/review/domains to the specified custom URL categories. A maximum of 100 URL categories can be updated at once using this request.[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+- Added new attribute `urlCategories2` to `urlfilteringrules` package. See [Zscaler Release Notes](https://help.zscaler.com/zia/release-upgrade-summary-2024#:~:text=Filtering%20Policy.-,Update%20to%20Cloud%20Service%20API,-The%20UrlFilteringRule%20model)
 
 # 2.61.12 (July 8, 2024)
 

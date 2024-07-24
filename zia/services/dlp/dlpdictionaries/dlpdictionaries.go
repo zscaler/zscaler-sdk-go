@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	dlpDictionariesEndpoint    = "/dlpDictionaries"
-	validateDLPPatternEndpoint = "/dlpDictionaries/validateDlpPattern"
+	dlpDictionariesEndpoint          = "/dlpDictionaries"
+	dlpPredefinedIdentifiersEndpoint = "/predefinedIdentifiers"
 )
 
 type DlpDictionary struct {
@@ -75,24 +75,48 @@ type DlpDictionary struct {
 	// This field is set to true if the dictionary is cloned from a predefined dictionary. Otherwise, it is set to false.
 	PredefinedClone bool `json:"predefinedClone,omitempty"`
 
+	// This field specifies whether duplicate matches of a phrase from a dictionary must be counted individually toward the match count or ignored, thereby maintaining a single count for multiple occurrences.
+	PredefinedCountActionType string `json:"predefinedCountActionType,omitempty"`
+
 	// This value is set to true if proximity length and high confidence phrases are enabled for the DLP dictionary.
 	ProximityLengthEnabled bool `json:"proximityLengthEnabled,omitempty"`
+
+	// A Boolean constant that indicates if proximity length is enabled or disabled for a custom DLP dictionary. A true value indicates that proximity length is enabled, whereas a false value indicates that it is disabled.
+	ProximityEnabledForCustomDictionary bool `json:"proximityEnabledForCustomDictionary,omitempty"`
+
+	// A Boolean constant that indicates that the cloning option is supported for the DLP dictionary using the true value. This field is applicable only to predefined DLP dictionaries.
+	DictionaryCloningEnabled bool `json:"dictionaryCloningEnabled"`
+
+	// A Boolean constant that indicates that custom phrases are supported for the DLP dictionary using the true value. This field is applicable only to predefined DLP dictionaries with a high confidence score threshold.
+	CustomPhraseSupported bool `json:"customPhraseSupported,omitempty"`
+
+	// A true value indicates that the DLP dictionary is of hierarchical type that includes sub-dictionaries. A false value indicates that the dictionary is not hierarchical.
+	HierarchicalDictionary bool `json:"hierarchicalDictionary,omitempty"`
+
+	// The list of identifiers selected within a DLP dictionary of hierarchical type. Each identifier represents a sub-dictionary that consists of specific patterns. To retrieve the list of identifiers that are available for selection within a specific hierarchical dictionary, send a GET request to /dlpDictionaries/{dictId}/predefinedIdentifiers.
+	HierarchicalIdentifiers []string `json:"hierarchicalIdentifiers,omitempty"`
+
+	PredefinedPhrases []string `json:"predefinedPhrases,omitempty"`
+
+	ThresholdAllowed bool `json:"thresholdAllowed,omitempty"`
+
+	ConfidenceLevelForPredefinedDict string `json:"confidenceLevelForPredefinedDict"`
 }
 
 type Phrases struct {
 	// The action applied to a DLP dictionary using phrases
-	Action string `json:"action,omitempty"`
+	Action string `json:"action"`
 
 	// DLP dictionary phrase
-	Phrase string `json:"phrase,omitempty"`
+	Phrase string `json:"phrase"`
 }
 
 type Patterns struct {
 	// The action applied to a DLP dictionary using patterns
-	Action string `json:"action,omitempty"`
+	Action string `json:"action"`
 
 	// DLP dictionary pattern
-	Pattern string `json:"pattern,omitempty"`
+	Pattern string `json:"pattern"`
 }
 
 type EDMMatchDetails struct {
@@ -143,6 +167,22 @@ func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary
 		}
 	}
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
+}
+
+func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) ([]string, int, error) {
+	dictionary, err := GetByName(service, dictionaryName)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var predefinedIdentifiers []string
+	endpoint := fmt.Sprintf("%s/%d/predefinedIdentifiers", dlpDictionariesEndpoint, dictionary.ID)
+	err = service.Client.Read(endpoint, &predefinedIdentifiers)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return predefinedIdentifiers, dictionary.ID, nil
 }
 
 func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {

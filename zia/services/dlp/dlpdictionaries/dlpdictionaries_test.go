@@ -1,12 +1,15 @@
 package dlpdictionaries
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v2/tests"
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
@@ -159,6 +162,35 @@ func TestDLPDictionaries(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
+}
+
+func TestGetPredefinedIdentifiers(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	require.NoError(t, err, "Error creating client")
+	service := services.New(client)
+
+	t.Run("Successful fetch of predefined identifiers", func(t *testing.T) {
+		dictionaryName := "CRED_LEAKAGE"
+		identifiers, dictionaryID, err := GetPredefinedIdentifiers(service, dictionaryName)
+		require.NoError(t, err)
+		assert.NotZero(t, dictionaryID)
+		assert.NotEmpty(t, identifiers)
+		fmt.Printf("Dictionary ID: %d\n", dictionaryID)
+		fmt.Printf("Predefined Identifiers: %v\n", identifiers)
+	})
+
+	t.Run("Error fetching dictionary by name", func(t *testing.T) {
+		dictionaryName := "InvalidDictionaryName" // Replace with a name that doesn't exist
+		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		assert.Error(t, err)
+	})
+
+	t.Run("Error reading predefined identifiers", func(t *testing.T) {
+		// Assuming there's no predefined identifier for this dictionary
+		dictionaryName := "AnotherInvalidDictionaryName" // Replace with another name that doesn't exist
+		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		assert.Error(t, err)
+	})
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
