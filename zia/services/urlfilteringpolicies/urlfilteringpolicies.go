@@ -32,7 +32,7 @@ type URLFilteringRule struct {
 
 	// List of URL categories for which rule is applied.
 	// The urlCategories and urlCategories2 parameters are connected with a logical AND operator so that the URL Filtering policy rules are triggered when it matches the selected categories in both the URL Categories fields.
-	URLCategories2 []string `json:"urlCategories2,omitempty"`
+	URLCategories2 []string `json:"urlCategories2"`
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
 

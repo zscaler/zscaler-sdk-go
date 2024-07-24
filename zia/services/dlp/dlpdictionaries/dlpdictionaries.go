@@ -35,7 +35,7 @@ type DlpDictionary struct {
 	NameL10nTag bool `json:"nameL10nTag"`
 
 	// This value is set to true for custom DLP dictionaries.
-	Custom bool `json:"custom"`
+	Custom bool `json:"custom,omitempty"`
 
 	// DLP threshold type
 	ThresholdType string `json:"thresholdType,omitempty"`
@@ -168,6 +168,24 @@ func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary
 	}
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
+
+// func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) ([]string, error) {
+// 	// Use the GetByName function to retrieve the dictionary by name
+// 	dictionary, err := GetByName(service, dictionaryName)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error retrieving dictionary by name: %v", err)
+// 	}
+
+// 	// If dictionary is found, get the predefined identifiers using the dictionary ID
+// 	predefinedIdentifiersEndpoint := fmt.Sprintf(dlpDictionariesEndpoint+"/%d/predefinedIdentifiers", dictionary.ID)
+// 	var predefinedIdentifiers []string
+// 	err = service.Client.Read(predefinedIdentifiersEndpoint, &predefinedIdentifiers)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error retrieving predefined identifiers: %v", err)
+// 	}
+
+// 	return predefinedIdentifiers, nil
+// }
 
 func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) ([]string, int, error) {
 	dictionary, err := GetByName(service, dictionaryName)
