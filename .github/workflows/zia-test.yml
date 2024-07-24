@@ -79,6 +79,13 @@ jobs:
           ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
           ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
 
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out 
+          fail_ci_if_error: true
+
   zia-test-tenants:
     runs-on: ubuntu-latest
     strategy:
