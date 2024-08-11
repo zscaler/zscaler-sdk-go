@@ -13,6 +13,7 @@ import (
 const (
 	locationsEndpoint   = "/locations"
 	subLocationEndpoint = "/sublocations"
+	maxBulkDeleteIDs    = 100
 )
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
@@ -55,7 +56,7 @@ type Locations struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// IP ports that are associated with the location
-	Ports string `json:"ports,omitempty"`
+	Ports []string `json:"ports,omitempty"`
 
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
@@ -353,6 +354,20 @@ func Delete(service *services.Service, locationID int) (*http.Response, error) {
 	}
 
 	return nil, nil
+}
+
+func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
+	if len(ids) > maxBulkDeleteIDs {
+		// Truncate the list to the first 100 IDs
+		ids = ids[:maxBulkDeleteIDs]
+		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+	}
+
+	// Define the payload
+	payload := map[string][]int{
+		"ids": ids,
+	}
+	return service.Client.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
 }
 
 func GetAll(service *services.Service) ([]Locations, error) {

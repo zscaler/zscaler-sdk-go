@@ -236,3 +236,20 @@ func AllAvailableActions(service *services.Service, ruleType string, payload Ava
 	service.Client.Logger.Printf("[DEBUG] returning available actions: %+v", availableActions)
 	return availableActions, nil
 }
+
+// GetRuleTypeMapping retrieves the rule type mapping from the API.
+func GetRuleTypeMapping(service *services.Service) (map[string]string, error) {
+	// Initialize a map to hold the response
+	var ruleTypeMapping map[string]string
+
+	// Perform the GET request
+	err := service.Client.Read(webApplicationRulesEndpoint+"/ruleTypeMapping", &ruleTypeMapping)
+	if err != nil {
+		return nil, err
+	}
+
+	// Log the retrieved data
+	service.Client.Logger.Printf("[DEBUG] Returning web application rule type mapping: %+v", ruleTypeMapping)
+
+	return ruleTypeMapping, nil
+}

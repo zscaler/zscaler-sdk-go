@@ -1,6 +1,8 @@
 package cloudappcontrol
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -230,6 +232,49 @@ func TestAllAvailableActions(t *testing.T) {
 			t.Errorf("Expected action %s, but got %s", expectedActions[i], action)
 		}
 	}
+}
+
+func TestRuleTypeMapping(t *testing.T) {
+	ziaClient, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := services.New(ziaClient)
+
+	// Invoke the GetRuleTypeMapping function
+	mappings, err := GetRuleTypeMapping(service)
+	if err != nil {
+		t.Fatalf("Error getting rule type mappings: %v", err)
+	}
+
+	// Check if the response is not empty
+	if len(mappings) == 0 {
+		t.Error("Expected rule type mappings, but got an empty response")
+	}
+
+	// Optionally, check if specific keys are present in the response
+	expectedKeys := []string{
+		"Webmail", "Social Networking", "Finance", "Legal", "AI & ML Applications",
+	}
+
+	for _, key := range expectedKeys {
+		if _, exists := mappings[key]; !exists {
+			t.Errorf("Expected key %s in the response, but it was not found", key)
+		}
+	}
+
+	// Convert the map back to JSON for logging with HTML escaping disabled
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "  ")
+
+	err = encoder.Encode(mappings)
+	if err != nil {
+		t.Fatalf("Error marshalling rule type mappings to JSON: %v", err)
+	}
+
+	t.Logf("Rule Type Mappings: %s", buffer.String())
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
