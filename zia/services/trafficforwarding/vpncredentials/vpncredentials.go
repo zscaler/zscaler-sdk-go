@@ -13,6 +13,7 @@ import (
 
 const (
 	vpnCredentialsEndpoint = "/vpnCredentials"
+	maxBulkDeleteIDs       = 100
 )
 
 type VPNCredentials struct {
@@ -143,6 +144,23 @@ func Delete(service *services.Service, vpnCredentialID int) error {
 	}
 
 	return nil
+}
+
+// BulkDeleteVPNCredentials sends a bulk delete request for VPN credentials.
+func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
+	if len(ids) > maxBulkDeleteIDs {
+		// Truncate the list to the first 100 IDs
+		ids = ids[:maxBulkDeleteIDs]
+		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+	}
+
+	// Define the payload
+	payload := map[string][]int{
+		"ids": ids,
+	}
+
+	// Call the generalized BulkDelete function from the client
+	return service.Client.BulkDelete(vpnCredentialsEndpoint+"/bulkDelete", payload)
 }
 
 func GetAll(service *services.Service) ([]VPNCredentials, error) {

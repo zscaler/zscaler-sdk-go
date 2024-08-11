@@ -152,40 +152,6 @@ func (client *Client) WithFreshCache() {
 	client.freshCache = true
 }
 
-// // Create send HTTP Post request.
-// func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
-// 	if o == nil {
-// 		return nil, errors.New("tried to create with a nil payload not a Struct")
-// 	}
-// 	t := reflect.TypeOf(o)
-// 	if t.Kind() != reflect.Struct {
-// 		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
-// 	}
-// 	data, err := json.Marshal(o)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	resp, err := c.Request(endpoint, "POST", data, "application/json")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if len(resp) > 0 {
-// 		responseObject := reflect.New(t).Interface()
-// 		err = json.Unmarshal(resp, &responseObject)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-
-// 		c.Logger.Printf("Created Object with ID %v", id)
-// 		return responseObject, nil
-// 	} else {
-// 		// in case of 204 no content
-// 		return nil, nil
-// 	}
-// }
-
 // Create sends an HTTP POST request.
 func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
@@ -334,4 +300,32 @@ func (c *Client) Delete(endpoint string) error {
 		return err
 	}
 	return nil
+}
+
+// BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
+func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+	if payload == nil {
+		return nil, errors.New("tried to delete with a nil payload, expected a struct")
+	}
+
+	// Marshal the payload into JSON
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the POST request
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the status code (204 No Content expected)
+	if len(resp) == 0 {
+		c.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
+		return &http.Response{StatusCode: 204}, nil
+	}
+
+	// If the response is not empty, this might indicate an error or unexpected behavior
+	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }

@@ -1,5 +1,25 @@
 # Changelog
 
+# 2.71.0 (August 11, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA Additions
+
+#### VPN Credentials and Location Management
+- Added `POST /locations/bulkDelete` Bulk delete locations up to a maximum of 100 locations per request. The response returns the location IDs that were successfully deleted. [PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+
+- Added `POST /vpnCredentials/bulkDelete` Bulk delete vpn credentails up to a maximum of 100 vpn credentials per request. The response returns the vpn credential IDs that were successfully deleted. [PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270)
+
+#### Cloud App Control Policies
+
+- Added `GET /webApplicationRules/ruleTypeMapping` to return backend keys that match the application type string.
+
+### Bug Fixes
+
+[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270) - Fixed `ports` attribute from `string` to `slice of string` in `locationmanagement`.
+
 # 2.70.0 (July 23, 2024)
 
 ## Notes
