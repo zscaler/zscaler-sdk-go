@@ -1,5 +1,16 @@
 # Changelog
 
+# 2.72.0 (August 13, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### ZPA Additions
+
+#### Segment Group
+- Added new optimized `V2` endpoint `PUT /segmentGroup/{segmentGroupId}` to prevent "payload.size.exceeded" error when updating a segment group with large numbers or application segments attached. [PR #273](https://github.com/zscaler/zscaler-sdk-go/pull/273)
+  **NOTE** The `V1` endpoint `PUT /segmentGroup/{segmentGroupId}` will eventually be deprecated; however, this change should not affect existing Segment Group configurations.
+
 # 2.71.0 (August 11, 2024)
 
 ## Notes
