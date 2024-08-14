@@ -56,7 +56,7 @@ type Locations struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// IP ports that are associated with the location
-	Ports []string `json:"ports,omitempty"`
+	Ports []int `json:"ports,omitempty"`
 
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
