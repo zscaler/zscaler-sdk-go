@@ -72,6 +72,31 @@ func TestSegmentGroup(t *testing.T) {
 		}
 	})
 
+	// REQUIRES DEPLOYMENT OF ET-76506 IN PRODUCTION BEFORE ENABLING IT.
+	/*
+		t.Run("TestResourceUpdateV2", func(t *testing.T) {
+			updatedResource := *createdResource
+			updatedResource.Name = updateName
+			_, err = UpdateV2(service, createdResource.ID, &updatedResource)
+			if err != nil {
+				t.Fatalf("Error updating resource: %v", err)
+			}
+		})
+
+		t.Run("TestResourceRetrievalByName", func(t *testing.T) {
+			retrievedResource, _, err := GetByName(service, updateName)
+			if err != nil {
+				t.Fatalf("Error retrieving resource by name: %v", err)
+			}
+			if retrievedResource.ID != createdResource.ID {
+				t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
+			}
+			if retrievedResource.Name != updateName {
+				t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
+			}
+		})
+	*/
+
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
 		resources, _, err := GetAll(service)
 		if err != nil {
@@ -137,6 +162,22 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
 }
+
+// REQUIRES DEPLOYMENT OF ET-76506 IN PRODUCTION BEFORE ENABLING IT.
+/*
+func TestUpdateV2NonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := services.New(client)
+
+	_, err = UpdateV2(service, "non_existent_id", &SegmentGroup{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+*/
 
 func TestGetByNameNonExistentResource(t *testing.T) {
 	client, err := tests.NewZpaClient()
