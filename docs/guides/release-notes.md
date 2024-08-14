@@ -27,6 +27,10 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 #### Segment Group
 - Added new optimized `V2` endpoint `PUT /segmentGroup/{segmentGroupId}` to prevent "payload.size.exceeded" error when updating a segment group with large numbers or application segments attached. [PR #273](https://github.com/zscaler/zscaler-sdk-go/pull/273)
   **NOTE** The `V1` endpoint `PUT /segmentGroup/{segmentGroupId}` will eventually be deprecated; however, this change should not affect existing Segment Group configurations.
+
+### Bug Fixes
+
+[PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270) - Fixed `ports` attribute from `string` to `slice of intergers` in `locationmanagement`.
   
 # 2.71.0 (August 11, 2024)
 
