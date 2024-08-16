@@ -2,6 +2,8 @@ package virtualipaddress
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
@@ -107,6 +109,97 @@ func GetPairZSGREVirtualIPsWithinCountry(service *services.Service, sourceIP, co
 		return nil, fmt.Errorf("not enough vips, got %d vips, required: %d", len(pairVips), 2)
 	}
 	return &pairVips, nil
+}
+
+// Gets a paginated list of the virtual IP addresses (VIPs) available in the Zscaler cloud based on optional parameters.
+func GetVIPRecommendedList(service *services.Service, options ...func(*url.Values)) (*[]GREVirtualIPList, error) {
+	queryParams := url.Values{}
+
+	// Apply any optional parameters passed via options
+	for _, option := range options {
+		option(&queryParams)
+	}
+
+	// Default to withinCountryOnly if no withinCountryOnly flag is provided
+	if queryParams.Get("withinCountryOnly") == "" {
+		queryParams.Set("withinCountryOnly", "true")
+	}
+
+	// Construct the full endpoint with the query parameters
+	endpoint := fmt.Sprintf("%s?%s", vipRecommendedListEndpoint, queryParams.Encode())
+
+	var zscalerVips []GREVirtualIPList
+	err := common.ReadAllPages(service.Client, endpoint, &zscalerVips)
+	if err != nil {
+		return nil, err
+	}
+
+	// If less than 2 VIPs are found, ensure at least 2 are returned
+	if len(zscalerVips) < 2 {
+		for _, vip := range zscalerVips {
+			if len(zscalerVips) >= 2 {
+				break
+			}
+			if !containsVIP(zscalerVips, vip) {
+				zscalerVips = append(zscalerVips, vip)
+			}
+		}
+	}
+
+	if len(zscalerVips) < 2 {
+		return nil, fmt.Errorf("not enough vips, got %d vips, required: %d", len(zscalerVips), 2)
+	}
+
+	return &zscalerVips, nil
+}
+
+// Optional parameters as functions to be passed to GetVIPRecommendedList
+func WithRoutableIP(routableIP bool) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("routableIP", strconv.FormatBool(routableIP))
+	}
+}
+
+func WithWithinCountryOnly(withinCountryOnly bool) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("withinCountryOnly", strconv.FormatBool(withinCountryOnly))
+	}
+}
+
+func WithIncludePrivateServiceEdge(includePrivateServiceEdge bool) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("includePrivateServiceEdge", strconv.FormatBool(includePrivateServiceEdge))
+	}
+}
+
+func WithIncludeCurrentVips(includeCurrentVips bool) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("includeCurrentVips", strconv.FormatBool(includeCurrentVips))
+	}
+}
+
+func WithSourceIP(sourceIp string) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("sourceIp", sourceIp)
+	}
+}
+
+func WithLatitude(latitude float64) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("latitude", fmt.Sprintf("%f", latitude))
+	}
+}
+
+func WithLongitude(longitude float64) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("longitude", fmt.Sprintf("%f", longitude))
+	}
+}
+
+func WithSubcloud(subcloud string) func(*url.Values) {
+	return func(v *url.Values) {
+		v.Set("subcloud", subcloud)
+	}
 }
 
 // Helper function to check if a VIP is already in the list

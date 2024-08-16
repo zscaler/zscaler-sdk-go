@@ -129,4 +129,25 @@ func TestVIPs(t *testing.T) {
 			t.Errorf("Expected VIPs for all source IPs, got none")
 		}
 	})
+
+	// Test for GetVIPRecommendedList with all optional parameters
+	t.Run("TestGetVIPRecommendedList", func(t *testing.T) {
+		vips, err := GetVIPRecommendedList(
+			service,
+			WithSourceIP(ipAddress),
+			WithRoutableIP(true),
+			WithWithinCountryOnly(true),
+			WithIncludePrivateServiceEdge(true),
+			WithIncludeCurrentVips(true),
+			WithLatitude(22.2914),
+			WithLongitude(114.1445),
+		)
+		if err != nil {
+			t.Fatalf("Error getting VIP recommended list: %v", err)
+		}
+
+		if len(*vips) == 0 {
+			t.Errorf("Expected recommended VIPs, but got none")
+		}
+	})
 }
