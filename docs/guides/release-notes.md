@@ -13,10 +13,26 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.0``
+``Last updated: v2.72.1``
 
 ---
 
+# 2.72.1 (August 16, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #274](https://github.com/zscaler/zscaler-sdk-go/pull/274) - Added new ZIA function `GetVIPRecommendedList`, which will support all optional parameters when retrieving the list of recommended Virtual IP addresses per datacenter. The following optional parameters are now supported:
+  - `routable_ip` - (Boolean) The routable IP address.
+  - `within_country_only` - (Boolean) Search within country only.
+  - `include_private_service_edge` - (Boolean) Include ZIA Private Service Edge VIPs.
+  - `include_current_vips` - (Boolean) Include currently assigned VIPs.
+  - `latitude` - (Number) The latitude coordinate of the GRE tunnel source.
+  - `longitude` - (Number) The longitude coordinate of the GRE tunnel source.
+  - `subcloud` - (String) The longitude coordinate of the GRE tunnel source.
+  
 # 2.72.0 (August 13, 2024)
 
 ## Notes
