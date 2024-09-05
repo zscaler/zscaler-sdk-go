@@ -23,6 +23,8 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/cache"
 	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v2/utils"
+	"github.com/zscaler/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -42,30 +44,31 @@ const (
 )
 
 // Client ...
-// Client ...
 type Client struct {
 	sync.Mutex
-	userName         string
-	password         string
-	cloud            string
-	apiKey           string
-	session          *Session
-	sessionRefreshed time.Time     // Also indicates last usage
-	sessionTimeout   time.Duration // in minutes
-	URL              string
-	HTTPClient       *http.Client
-	Logger           logger.Logger
-	UserAgent        string
-	freshCache       bool
-	cacheEnabled     bool
-	cache            cache.Cache
-	cacheTtl         time.Duration
-	cacheCleanwindow time.Duration
-	cacheMaxSizeMB   int
-	rateLimiter      *rl.RateLimiter
-	sessionTicker    *time.Ticker
-	stopTicker       chan bool
-	refreshing       bool
+	userName          string
+	password          string
+	cloud             string
+	apiKey            string
+	session           *Session
+	sessionRefreshed  time.Time     // Also indicates last usage
+	sessionTimeout    time.Duration // in minutes
+	URL               string
+	HTTPClient        *http.Client
+	Logger            logger.Logger
+	UserAgent         string
+	freshCache        bool
+	cacheEnabled      bool
+	cache             cache.Cache
+	cacheTtl          time.Duration
+	cacheCleanwindow  time.Duration
+	cacheMaxSizeMB    int
+	rateLimiter       *rl.RateLimiter
+	sessionTicker     *time.Ticker
+	stopTicker        chan bool
+	refreshing        bool
+	useOneAPI         bool
+	oauth2Credentials *zidentity.Credentials
 }
 
 // Session ...
@@ -109,6 +112,72 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	}
 
 	return key, nil
+}
+
+// NewOneAPIClient Returns a Client from credentials passed as parameters.
+func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2ProviderUrl string) (*Client, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
+	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
+	httpClient := getHTTPClient(logger, rateLimiter)
+
+	if clientID == "" || clientSecret == "" {
+		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+	}
+
+	if ziaCloud == "" {
+		ziaCloud = os.Getenv("ZIA_CLOUD")
+	}
+
+	if oauth2ProviderUrl == "" {
+		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+	}
+
+	var url string
+	if strings.EqualFold(ziaCloud, "PRODUCTION") {
+		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
+	} else {
+		url = fmt.Sprintf("https://api.%s.zsapi.net/zia/%s", strings.ToLower(ziaCloud), ziaAPIVersion)
+	}
+	/*
+		TODO: handle this case
+			if ziaCloud == "zspreview" {
+				url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+			}
+	*/
+
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	cli := &Client{
+		cloud:            ziaCloud,
+		HTTPClient:       httpClient,
+		URL:              url,
+		Logger:           logger,
+		UserAgent:        userAgent,
+		cacheEnabled:     !cacheDisabled,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
+		rateLimiter:      rateLimiter,
+		stopTicker:       make(chan bool),
+		sessionTimeout:   30 * time.Minute, // Initialize with a default session timeout
+		useOneAPI:        true,
+		oauth2Credentials: &zidentity.Credentials{
+			ClientID:          clientID,
+			ClientSecret:      clientSecret,
+			Oauth2ProviderUrl: oauth2ProviderUrl,
+		},
+	}
+
+	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	cli.cache = cche
+
+	// Start the session refresh ticker
+	cli.startSessionTicker()
+
+	return cli, nil
 }
 
 // NewClient Returns a Client from credentials passed as parameters.
@@ -286,6 +355,23 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
+	if c.useOneAPI {
+		if c.oauth2Credentials != nil && (c.oauth2Credentials.AuthToken == nil || c.oauth2Credentials.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.AuthToken.AccessToken)) {
+			a, err := zidentity.Authenticate(
+				c.oauth2Credentials.ClientID,
+				c.oauth2Credentials.ClientSecret,
+				c.oauth2Credentials.Oauth2ProviderUrl,
+				c.UserAgent,
+				c.HTTPClient,
+			)
+			if err != nil {
+				return err
+			}
+			c.oauth2Credentials.AuthToken = a
+			return nil
+		}
+		return nil
+	}
 
 	now := time.Now()
 	if c.session == nil {
@@ -548,6 +634,10 @@ func (c *Client) GetSandboxToken() string {
 
 // startSessionTicker starts a ticker to refresh the session periodically
 func (c *Client) startSessionTicker() {
+	if c.useOneAPI {
+		return
+	}
+
 	if c.sessionTimeout > 0 {
 		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
 		go func() {

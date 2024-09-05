@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	logger "github.com/zscaler/zscaler-sdk-go/v2/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -83,12 +84,74 @@ type Config struct {
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
 	sync.Mutex
-	UserAgent        string
-	cacheEnabled     bool
-	freshCache       bool
-	cacheTtl         time.Duration
-	cacheCleanwindow time.Duration
-	cacheMaxSizeMB   int
+	UserAgent         string
+	cacheEnabled      bool
+	freshCache        bool
+	cacheTtl          time.Duration
+	cacheCleanwindow  time.Duration
+	cacheMaxSizeMB    int
+	useOneAPI         bool
+	oauth2ProviderUrl string
+}
+
+func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUrl, userAgent string) (*Config, error) {
+	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
+	// if creds not provided in TF config, try loading from env vars
+	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
+		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		customerID = os.Getenv(ZPA_CUSTOMER_ID)
+		cloud = os.Getenv(ZPA_CLOUD)
+	}
+	if oauth2ProviderUrl == "" {
+		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+	}
+	// last resort to configuration file:
+	if clientID == "" || clientSecret == "" || customerID == "" {
+		creds, err := loadCredentialsFromConfig(logger)
+		if err != nil || creds == nil {
+			return nil, err
+		}
+		clientID = creds.ClientID
+		clientSecret = creds.ClientSecret
+		customerID = creds.CustomerID
+		cloud = creds.ZpaCloud
+	}
+
+	if cloud == "" {
+		cloud = os.Getenv(ZPA_CLOUD)
+	}
+
+	var rawUrl string
+	if strings.EqualFold(cloud, "PRODUCTION") {
+		rawUrl = "https://api.zsapi.net/zpa"
+	} else {
+		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
+	}
+
+	baseURL, err := url.Parse(rawUrl)
+	if err != nil {
+		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
+	}
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	return &Config{
+		BaseURL:           baseURL,
+		Logger:            logger,
+		httpClient:        nil,
+		ClientID:          clientID,
+		ClientSecret:      clientSecret,
+		CustomerID:        customerID,
+		Cloud:             cloud,
+		BackoffConf:       defaultBackoffConf,
+		UserAgent:         userAgent,
+		rateLimiter:       rl.NewRateLimiter(20, 10, 10, 10),
+		cacheEnabled:      !cacheDisabled,
+		cacheTtl:          time.Minute * 10,
+		cacheCleanwindow:  time.Minute * 8,
+		cacheMaxSizeMB:    0,
+		useOneAPI:         true,
+		oauth2ProviderUrl: oauth2ProviderUrl,
+	}, err
 }
 
 /*
