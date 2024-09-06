@@ -125,26 +125,34 @@ func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2Provider
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
 	}
 
+	// Check if ziaCloud is provided in the function call; if not, check the environment variable
 	if ziaCloud == "" {
 		ziaCloud = os.Getenv("ZIA_CLOUD")
 	}
 
-	if oauth2ProviderUrl == "" {
-		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
-	}
-
+	// Default to production if no ZIA_CLOUD is specified
 	var url string
-	if strings.EqualFold(ziaCloud, "PRODUCTION") {
+	if ziaCloud == "" {
+		// No ZIA_CLOUD or ziaCloud provided, use production URL
+		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
+	} else if strings.EqualFold(ziaCloud, "PRODUCTION") {
+		// User explicitly set ZIA_CLOUD to "PRODUCTION", use production URL
 		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
 	} else {
+		// Non-production cloud specified, use the corresponding URL
 		url = fmt.Sprintf("https://api.%s.zsapi.net/zia/%s", strings.ToLower(ziaCloud), ziaAPIVersion)
 	}
+
 	/*
 		TODO: handle this case
 			if ziaCloud == "zspreview" {
 				url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
 			}
 	*/
+
+	if oauth2ProviderUrl == "" {
+		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+	}
 
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := &Client{

@@ -103,9 +103,11 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		customerID = os.Getenv(ZPA_CUSTOMER_ID)
 		cloud = os.Getenv(ZPA_CLOUD)
 	}
+
 	if oauth2ProviderUrl == "" {
 		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
 	}
+
 	// last resort to configuration file:
 	if clientID == "" || clientSecret == "" || customerID == "" {
 		creds, err := loadCredentialsFromConfig(logger)
@@ -118,14 +120,20 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		cloud = creds.ZpaCloud
 	}
 
+	// Default to production if no ZPA_CLOUD is specified
 	if cloud == "" {
 		cloud = os.Getenv(ZPA_CLOUD)
 	}
 
 	var rawUrl string
-	if strings.EqualFold(cloud, "PRODUCTION") {
+	if cloud == "" {
+		// No ZPA_CLOUD or cloud provided, use production URL
+		rawUrl = "https://api.zsapi.net/zpa"
+	} else if strings.EqualFold(cloud, "PRODUCTION") {
+		// User explicitly set ZPA_CLOUD to "PRODUCTION", use production URL
 		rawUrl = "https://api.zsapi.net/zpa"
 	} else {
+		// Non-production cloud specified, use the corresponding URL
 		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
 	}
 
@@ -133,6 +141,7 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
+
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	return &Config{
 		BaseURL:           baseURL,
