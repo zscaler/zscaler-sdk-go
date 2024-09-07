@@ -115,7 +115,7 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 }
 
 // NewOneAPIClient Returns a Client from credentials passed as parameters.
-func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2ProviderUrl string) (*Client, error) {
+func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, vanityDomain string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
@@ -133,25 +133,26 @@ func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2Provider
 	// Default to production if no ZIA_CLOUD is specified
 	var url string
 	if ziaCloud == "" {
-		// No ZIA_CLOUD or ziaCloud provided, use production URL
 		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
 	} else if strings.EqualFold(ziaCloud, "PRODUCTION") {
-		// User explicitly set ZIA_CLOUD to "PRODUCTION", use production URL
 		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
 	} else {
-		// Non-production cloud specified, use the corresponding URL
 		url = fmt.Sprintf("https://api.%s.zsapi.net/zia/%s", strings.ToLower(ziaCloud), ziaAPIVersion)
 	}
 
 	/*
-		TODO: handle this case
-			if ziaCloud == "zspreview" {
-				url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
-			}
+	   TODO: handle this case
+	       if ziaCloud == "zspreview" {
+	           url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+	       }
 	*/
 
-	if oauth2ProviderUrl == "" {
-		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+	// Construct the OAuth2 provider URL correctly
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
+	}
+	if !strings.HasPrefix(vanityDomain, "https://") {
+		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
 	}
 
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
@@ -172,7 +173,7 @@ func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2Provider
 		oauth2Credentials: &zidentity.Credentials{
 			ClientID:          clientID,
 			ClientSecret:      clientSecret,
-			Oauth2ProviderUrl: oauth2ProviderUrl,
+			Oauth2ProviderUrl: vanityDomain,
 		},
 	}
 

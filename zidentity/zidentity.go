@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	ZIDENTITY_CLIENT_ID           = "ZIDENTITY_CLIENT_ID"
-	ZIDENTITY_CLIENT_SECRET       = "ZIDENTITY_CLIENT_SECRET"
-	ZIDENTITY_OAUTH2_PROVIDER_URL = "ZIDENTITY_OAUTH2_PROVIDER_URL"
+	ZIDENTITY_CLIENT_ID     = "ZIDENTITY_CLIENT_ID"
+	ZIDENTITY_CLIENT_SECRET = "ZIDENTITY_CLIENT_SECRET"
+	ZIDENTITY_VANITY_DOMAIN = "ZIDENTITY_VANITY_DOMAIN" // Updated to vanity domain
 )
 
 type AuthToken struct {
@@ -25,19 +25,25 @@ type Credentials struct {
 	AuthToken         *AuthToken
 	ClientID          string
 	ClientSecret      string
-	Oauth2ProviderUrl string
+	Oauth2ProviderUrl string // This can still exist for backward compatibility
 }
 
-func Authenticate(clientID, clientSecret, oauth2ProviderUrl, userAgent string, httpClient *http.Client) (*AuthToken, error) {
+func Authenticate(clientID, clientSecret, vanityDomain, userAgent string, httpClient *http.Client) (*AuthToken, error) {
 	if clientID == "" || clientSecret == "" {
 		return nil, errors.New("no client credentials were provided")
 	}
+
+	// Ensure the vanity domain is provided and does not include protocol
+	if !strings.HasPrefix(vanityDomain, "https://") && vanityDomain != "" {
+		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	}
+
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_secret", clientSecret)
 	data.Set("client_id", clientID)
 	data.Set("audience", "https://api.zscaler.com")
-	authUrl := oauth2ProviderUrl
+	authUrl := vanityDomain
 
 	req, err := http.NewRequest("POST", authUrl, strings.NewReader(data.Encode()))
 	if err != nil {

@@ -94,8 +94,9 @@ type Config struct {
 	oauth2ProviderUrl string
 }
 
-func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUrl, userAgent string) (*Config, error) {
+func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, vanityDomain, userAgent string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
+
 	// if creds not provided in TF config, try loading from env vars
 	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
@@ -104,8 +105,12 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		cloud = os.Getenv(ZPA_CLOUD)
 	}
 
-	if oauth2ProviderUrl == "" {
-		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+	// Check for vanity domain and ensure proper formatting
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
+	}
+	if !strings.HasPrefix(vanityDomain, "https://") {
+		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
 	}
 
 	// last resort to configuration file:
@@ -121,19 +126,12 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 	}
 
 	// Default to production if no ZPA_CLOUD is specified
-	if cloud == "" {
-		cloud = os.Getenv(ZPA_CLOUD)
-	}
-
 	var rawUrl string
 	if cloud == "" {
-		// No ZPA_CLOUD or cloud provided, use production URL
 		rawUrl = "https://api.zsapi.net/zpa"
 	} else if strings.EqualFold(cloud, "PRODUCTION") {
-		// User explicitly set ZPA_CLOUD to "PRODUCTION", use production URL
 		rawUrl = "https://api.zsapi.net/zpa"
 	} else {
-		// Non-production cloud specified, use the corresponding URL
 		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
 	}
 
@@ -159,7 +157,7 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		cacheCleanwindow:  time.Minute * 8,
 		cacheMaxSizeMB:    0,
 		useOneAPI:         true,
-		oauth2ProviderUrl: oauth2ProviderUrl,
+		oauth2ProviderUrl: vanityDomain,
 	}, err
 }
 
