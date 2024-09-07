@@ -28,15 +28,21 @@ type Client struct {
 	cache  cache.Cache
 }
 
-// NewOneAPIClient returns a new client for the specified apiKey.
+// The cloud parameter is optional and is handled in the Config object.
 func NewOneAPIClient(config *Config) (c *Client) {
+	// If config is nil, create a new one with default values
 	if config == nil {
-		config, _ = NewOneAPIConfig("", "", "", "", "", "")
+		// Empty strings for clientID, clientSecret, etc., will fallback to environment variables in NewOneAPIConfig
+		config, _ = NewOneAPIConfig("", "", "", "", "")
 	}
+
+	// Setup the cache
 	cche, err := cache.NewCache(config.cacheTtl, config.cacheCleanwindow, config.cacheMaxSizeMB)
 	if err != nil {
 		cche = cache.NewNopCache()
 	}
+
+	// Create and return the Client with the provided Config
 	c = &Client{Config: config, cache: cche}
 	return
 }

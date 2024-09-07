@@ -94,26 +94,46 @@ type Config struct {
 	oauth2ProviderUrl string
 }
 
-func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, vanityDomain, userAgent string) (*Config, error) {
+// NewOneAPIConfig returns a Config from credentials passed as parameters.
+// The cloud parameter is now optional using a variadic argument.
+func NewOneAPIConfig(clientID, clientSecret, customerID, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 
-	// if creds not provided in TF config, try loading from env vars
-	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
+	// Fallback to environment variables if clientID, clientSecret, customerID, or userAgent are not provided
+	if clientID == "" || clientSecret == "" || customerID == "" || userAgent == "" {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
 		customerID = os.Getenv(ZPA_CUSTOMER_ID)
-		cloud = os.Getenv(ZPA_CLOUD)
 	}
 
-	// Check for vanity domain and ensure proper formatting
+	// Handle the optional cloud parameter
+	var cloud string
+	if len(optionalCloud) > 0 && optionalCloud[0] != "" {
+		cloud = optionalCloud[0] // Use provided cloud value
+	} else {
+		cloud = os.Getenv(ZPA_CLOUD) // Fallback to environment variable
+	}
+
+	// Default to production if no cloud is specified
+	if cloud == "" {
+		cloud = "PRODUCTION"
+	}
+
+	// Check for vanity domain and ensure proper formatting of the OAuth2 provider URL based on the cloud
 	if vanityDomain == "" {
 		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
 	}
-	if !strings.HasPrefix(vanityDomain, "https://") {
-		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+
+	var oauth2ProviderUrl string
+	if strings.EqualFold(cloud, "PRODUCTION") {
+		// For production, use the standard zslogin.net
+		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	} else {
+		// For non-production clouds, append the cloud type to zslogin
+		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(cloud))
 	}
 
-	// last resort to configuration file:
+	// Fallback to configuration file if credentials are not provided
 	if clientID == "" || clientSecret == "" || customerID == "" {
 		creds, err := loadCredentialsFromConfig(logger)
 		if err != nil || creds == nil {
@@ -125,22 +145,24 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, vanityDomain, us
 		cloud = creds.ZpaCloud
 	}
 
-	// Default to production if no ZPA_CLOUD is specified
+	// Default to production if no cloud is specified
 	var rawUrl string
-	if cloud == "" {
-		rawUrl = "https://api.zsapi.net/zpa"
-	} else if strings.EqualFold(cloud, "PRODUCTION") {
+	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = "https://api.zsapi.net/zpa"
 	} else {
 		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
 	}
 
+	// Parse the base URL
 	baseURL, err := url.Parse(rawUrl)
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
 
+	// Check if cache is disabled via environment variable
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+
+	// Return the Config object
 	return &Config{
 		BaseURL:           baseURL,
 		Logger:            logger,
@@ -157,7 +179,7 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, vanityDomain, us
 		cacheCleanwindow:  time.Minute * 8,
 		cacheMaxSizeMB:    0,
 		useOneAPI:         true,
-		oauth2ProviderUrl: vanityDomain,
+		oauth2ProviderUrl: oauth2ProviderUrl, // Ensure the OAuth2 provider URL is set correctly
 	}, err
 }
 
