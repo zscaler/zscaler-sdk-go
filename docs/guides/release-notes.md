@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.1``
+``Last updated: v2.72.2``
 
 ---
+
+# 2.72.2 (September 11, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #276](https://github.com/zscaler/zscaler-sdk-go/pull/276) - Fixed removed `omitempty` from ZPA `microtenant_id` attribute in `policysetcontrollerv2`.
 
 # 2.72.1 (August 16, 2024)
 

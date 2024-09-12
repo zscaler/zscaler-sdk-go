@@ -27,7 +27,7 @@ type PolicySet struct {
 	Name            string       `json:"name,omitempty"`
 	Sorted          bool         `json:"sorted"`
 	PolicyType      string       `json:"policyType,omitempty"`
-	MicroTenantID   string       `json:"microtenantId,omitempty"`
+	MicroTenantID   string       `json:"microtenantId"`
 	MicroTenantName string       `json:"microtenantName,omitempty"`
 	Rules           []PolicyRule `json:"rules"`
 }
@@ -59,7 +59,7 @@ type PolicyRuleResource struct {
 	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
-	MicroTenantID            string                         `json:"microtenantId,omitempty"`
+	MicroTenantID            string                         `json:"microtenantId"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	Conditions               []PolicyRuleResourceConditions `json:"conditions"`
 	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups"`
@@ -116,7 +116,7 @@ type PolicyRule struct {
 	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
-	MicroTenantID            string                         `json:"microtenantId,omitempty"`
+	MicroTenantID            string                         `json:"microtenantId"`
 	MicroTenantName          string                         `json:"microtenantName,omitempty"`
 	AppConnectorGroups       []AppConnectorGroups           `json:"appConnectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
@@ -179,7 +179,7 @@ type PrivilegedCapabilities struct {
 	CreationTime  string   `json:"creationTime,omitempty"`
 	ModifiedBy    string   `json:"modifiedBy,omitempty"`
 	ModifiedTime  string   `json:"modifiedTime,omitempty"`
-	MicroTenantID string   `json:"microtenantId,omitempty"`
+	MicroTenantID string   `json:"microtenantId"`
 	Capabilities  []string `json:"capabilities,omitempty"`
 }
 
