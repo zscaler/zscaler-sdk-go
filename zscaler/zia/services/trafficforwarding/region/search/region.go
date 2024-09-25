@@ -1,6 +1,7 @@
 package region
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -43,9 +44,9 @@ type Regions struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func GetDatacenterRegion(service *zscaler.Service, regionPrefix string) ([]Regions, error) {
+func GetDatacenterRegion(ctx context.Context, service *zscaler.Service, regionPrefix string) ([]Regions, error) {
 	var regions []Regions
-	err := service.Client.Read(fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package cbiprofilecontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -98,10 +99,10 @@ type DebugMode struct {
 	FilePassword string `json:"filePassword,omitempty"`
 }
 
-func Get(service *zscaler.Service, profileID string) (*IsolationProfile, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,8 +110,8 @@ func Get(service *zscaler.Service, profileID string) (*IsolationProfile, *http.R
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
-	list, resp, err := GetAll(service)
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+	list, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -122,37 +123,37 @@ func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile,
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func Create(service *zscaler.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, nil, cbiProfile, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, nil, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, segmentGroupRequest, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, nil, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, profileID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, profileID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiProfileEndpoint
 	var list []IsolationProfile
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

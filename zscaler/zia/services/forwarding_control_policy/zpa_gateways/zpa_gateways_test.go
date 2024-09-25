@@ -62,7 +62,7 @@ func TestZPAGateways(t *testing.T) {
 
 	// create app connector group for testing
 	service := services.New(zpaClient)
-	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
+	appConnGroup, _, err := appconnectorgroup.Create(context.Background(), service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
 		Description:              name,
 		Enabled:                  true,
@@ -92,7 +92,7 @@ func TestZPAGateways(t *testing.T) {
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appconnectorgroup.Delete(service, appConnGroup.ID)
+			_, err := appconnectorgroup.Delete(context.Background(), service, appConnGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting app connector group: %v", err)
 			}
@@ -100,7 +100,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create app server for testing
-	serverGroup, _, err := servergroup.Create(service, &servergroup.ServerGroup{
+	serverGroup, _, err := servergroup.Create(context.Background(), service, &servergroup.ServerGroup{
 		Name:             name,
 		Description:      name,
 		Enabled:          true,
@@ -121,7 +121,7 @@ func TestZPAGateways(t *testing.T) {
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := servergroup.Delete(service, serverGroup.ID)
+			_, err := servergroup.Delete(context.Background(), service, serverGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting server group: %v", err)
 			}
@@ -129,7 +129,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create segment group for testing
-	segmentGroup, _, err := segmentgroup.Create(service, &segmentgroup.SegmentGroup{
+	segmentGroup, _, err := segmentgroup.Create(context.Background(), service, &segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
@@ -144,7 +144,7 @@ func TestZPAGateways(t *testing.T) {
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentgroup.Delete(service, segmentGroup.ID)
+			_, err := segmentgroup.Delete(context.Background(), service, segmentGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -152,7 +152,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create segment group for testing
-	appSegment, _, err := applicationsegment.Create(service, applicationsegment.ApplicationSegmentResource{
+	appSegment, _, err := applicationsegment.Create(context.Background(), service, applicationsegment.ApplicationSegmentResource{
 		Name:                  name,
 		Description:           name,
 		Enabled:               true,
@@ -188,7 +188,7 @@ func TestZPAGateways(t *testing.T) {
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := applicationsegment.Delete(service, appSegment.ID)
+			_, err := applicationsegment.Delete(context.Background(), service, appSegment.ID)
 			if err != nil {
 				t.Errorf("Error deleting application segment: %v", err)
 			}

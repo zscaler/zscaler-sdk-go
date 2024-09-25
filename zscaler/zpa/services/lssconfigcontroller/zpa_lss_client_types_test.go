@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -14,7 +15,7 @@ func TestGetAllClientTypes(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	clientTypes, _, err := GetClientTypes(service)
+	clientTypes, _, err := GetClientTypes(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Failed to get client types: %v", err)
 	}
@@ -47,7 +48,7 @@ func TestClientTypesStatusCodeCheck(t *testing.T) {
 	}
 
 	// Fetch the client types and the HTTP response
-	_, httpResponse, err := GetClientTypes(service)
+	_, httpResponse, err := GetClientTypes(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving client types: %v", err)
 	}
@@ -65,7 +66,7 @@ func TestClientTypesErrorResponse(t *testing.T) {
 	}
 
 	// Fetch the client types and the HTTP response
-	clientTypes, httpResponse, err := GetClientTypes(service)
+	clientTypes, httpResponse, err := GetClientTypes(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving client types: %v", err)
 	}

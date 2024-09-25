@@ -1,6 +1,7 @@
 package workloadgroups
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -68,9 +69,9 @@ type Tags struct {
 	Value string `json:"value,omitempty"`
 }
 
-func Get(service *zscaler.Service, workloadID int) (*WorkloadGroup, error) {
+func Get(ctx context.Context, service *zscaler.Service, workloadID int) (*WorkloadGroup, error) {
 	var workloadGroup WorkloadGroup
-	err := service.Client.Read(fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadID), &workloadGroup)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadID), &workloadGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +80,9 @@ func Get(service *zscaler.Service, workloadID int) (*WorkloadGroup, error) {
 	return &workloadGroup, nil
 }
 
-func GetByName(service *zscaler.Service, workloadName string) (*WorkloadGroup, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, workloadName string) (*WorkloadGroup, error) {
 	var workloadGroups []WorkloadGroup
-	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
+	err := common.ReadAllPages(ctx, service.Client, workloadGroupsEndpoint, &workloadGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +94,8 @@ func GetByName(service *zscaler.Service, workloadName string) (*WorkloadGroup, e
 	return nil, fmt.Errorf("no workload group found with name: %s", workloadName)
 }
 
-func GetAll(service *zscaler.Service) ([]WorkloadGroup, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]WorkloadGroup, error) {
 	var workloadGroups []WorkloadGroup
-	err := common.ReadAllPages(service.Client, workloadGroupsEndpoint, &workloadGroups)
+	err := common.ReadAllPages(ctx, service.Client, workloadGroupsEndpoint, &workloadGroups)
 	return workloadGroups, err
 }

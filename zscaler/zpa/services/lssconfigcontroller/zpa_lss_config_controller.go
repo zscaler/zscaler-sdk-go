@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -158,19 +159,19 @@ type Operands struct {
 	RHS          string `json:"rhs,omitempty"`
 }
 
-func Get(service *zscaler.Service, lssID string) (*LSSResource, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, lssID string) (*LSSResource, *http.Response, error) {
 	v := new(LSSResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, lssName string) (*LSSResource, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, lssName string) (*LSSResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + lssConfigEndpoint
-	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[LSSResource](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -182,36 +183,36 @@ func GetByName(service *zscaler.Service, lssName string) (*LSSResource, *http.Re
 	return nil, resp, fmt.Errorf("no lss controller named '%s' was found", lssName)
 }
 
-func Create(service *zscaler.Service, lssConfig *LSSResource) (*LSSResource, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, lssConfig *LSSResource) (*LSSResource, *http.Response, error) {
 	v := new(LSSResource)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+lssConfigEndpoint, nil, lssConfig, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+lssConfigEndpoint, nil, lssConfig, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, lssID string, lssConfig *LSSResource) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, lssID string, lssConfig *LSSResource) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, lssConfig, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, nil, lssConfig, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, lssID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, lssID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+lssConfigEndpoint, lssID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]LSSResource, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]LSSResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + lssConfigEndpoint
-	list, resp, err := common.GetAllPagesGeneric[LSSResource](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[LSSResource](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

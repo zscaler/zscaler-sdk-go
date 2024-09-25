@@ -1,6 +1,7 @@
 package scimattributeheader
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -13,7 +14,7 @@ func getTestIdpId(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
 		return ""
@@ -49,7 +50,7 @@ func TestSCIMAttributeHeader(t *testing.T) {
 	testIdpId := getTestIdpId(t)
 
 	// Test GetAllByIdpId function
-	scimAttribute, resp, err := GetAllByIdpId(service, testIdpId)
+	scimAttribute, resp, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Fatalf("Error getting all SCIM Attribute Header by IdP ID: %v", err)
 	}
@@ -66,7 +67,7 @@ func TestSCIMAttributeHeader(t *testing.T) {
 
 	// Use the first SCIM attribute headers's name from the list for testing
 	scimName := scimAttribute[0].Name
-	_, _, err = GetByName(service, scimName, testIdpId)
+	_, _, err = GetByName(context.Background(), service, scimName, testIdpId)
 	if err != nil {
 		t.Fatalf("Error getting SCIM Attribute Headers by name: %v", err)
 	}
@@ -80,7 +81,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	testIdpId := getTestIdpId(t)
 
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting SCIM Attribute Header: %v", err)
 		return
@@ -111,7 +112,7 @@ func TestNonExistentSCIMAttributeHeaderName(t *testing.T) {
 	}
 
 	testIdpId := getTestIdpId(t)
-	_, _, err = GetByName(service, "NonExistentName", testIdpId)
+	_, _, err = GetByName(context.Background(), service, "NonExistentName", testIdpId)
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SCIM Attribute Header by name, got none")
 	}
@@ -124,7 +125,7 @@ func TestEmptyResponse(t *testing.T) {
 	}
 
 	testIdpId := getTestIdpId(t)
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting SCIM Attribute Header: %v", err)
 		return
@@ -146,7 +147,7 @@ func TestGetSCIMAttributeHeaderByID(t *testing.T) {
 	}
 	testIdpId := getTestIdpId(t)
 
-	attributes, _, err := GetAllByIdpId(service, testIdpId)
+	attributes, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting all SCIM Attribute Headers: %v", err)
 		return
@@ -159,7 +160,7 @@ func TestGetSCIMAttributeHeaderByID(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	group, _, err := Get(service, testIdpId, specificID)
+	group, _, err := Get(context.Background(), service, testIdpId, specificID)
 	if err != nil {
 		t.Errorf("Error getting SCIM Attribute Header by ID: %v", err)
 		return
@@ -178,7 +179,7 @@ func TestSCIMAttributeHeaderGetValues(t *testing.T) {
 	testIdpId := getTestIdpId(t)
 
 	// Retrieve all attributes for the IdP
-	attributes, _, err := GetAllByIdpId(service, testIdpId)
+	attributes, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Fatalf("Error getting all SCIM Attribute Header: %v", err)
 	}
@@ -191,7 +192,7 @@ func TestSCIMAttributeHeaderGetValues(t *testing.T) {
 
 	// Use the ID of the first attribute for GetValues
 	attributeID := attributes[0].ID
-	values, err := GetValues(service, testIdpId, attributeID)
+	values, err := GetValues(context.Background(), service, testIdpId, attributeID)
 	if err != nil {
 		t.Fatalf("Error getting values for attribute ID %s: %v", attributeID, err)
 	}
@@ -209,7 +210,7 @@ func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 	testIdpId := getTestIdpId(t)
-	attributes, _, err := GetAllByIdpId(service, testIdpId)
+	attributes, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting all SCIM Attribute Header: %v", err)
 		return
@@ -222,7 +223,7 @@ func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	attribute, _, err := Get(service, testIdpId, specificID)
+	attribute, _, err := Get(context.Background(), service, testIdpId, specificID)
 	if err != nil {
 		t.Errorf("Error getting SCIM Attribute Header by ID: %v", err)
 		return
@@ -253,7 +254,7 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 	testIdpId := getTestIdpId(t)
-	_, resp, err := GetAllByIdpId(service, testIdpId)
+	_, resp, err :=  GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting SCIM Attribute Header: %v", err)
 		return

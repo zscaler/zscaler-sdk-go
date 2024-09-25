@@ -1,6 +1,7 @@
 package locationgroups
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -14,7 +15,7 @@ func TestLocationGroups(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -22,12 +23,12 @@ func TestLocationGroups(t *testing.T) {
 		return
 	}
 	name := resources[0].Name
-	resourceByName, err := GetLocationGroupByName(service, name)
+	resourceByName, err := GetLocationGroupByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 
-	_, err = GetLocationGroup(service, resourceByName.ID)
+	_, err = GetLocationGroup(context.Background(), service, resourceByName.ID)
 	if err != nil {
 		t.Errorf("expected resource to exist: %v", err)
 	}
@@ -36,11 +37,11 @@ func TestLocationGroups(t *testing.T) {
 	groupTypes := []string{"DYNAMIC_GROUP", "STATIC_GROUP"}
 	for _, gType := range groupTypes {
 		t.Run(fmt.Sprintf("GroupType-%s", gType), func(t *testing.T) {
-			resourceByType, err := GetGroupType(service, gType)
+			resourceByType, err := GetGroupType(context.Background(), service, gType)
 			if err != nil {
 				t.Errorf("Error retrieving resource by type '%s': %v", gType, err)
 			} else {
-				_, err = GetLocationGroup(service, resourceByType.ID)
+				_, err = GetLocationGroup(context.Background(), service, resourceByType.ID)
 				if err != nil {
 					t.Errorf("expected resource to exist for group type '%s': %v", gType, err)
 				}

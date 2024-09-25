@@ -1,6 +1,7 @@
 package customerversionprofile
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -17,7 +18,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 	}
 
 	// Normal case for GetAll
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting customer version profiles: %v", err)
 		return
@@ -31,7 +32,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 	t.Log("Getting customer version profile by name:" + name)
 
 	// Normal case for GetByName
-	profile, _, err := GetByName(service, name)
+	profile, _, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting customer version profile by name: %v", err)
 		return
@@ -45,7 +46,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 	t.Run("No version profile found case for GetByName", func(t *testing.T) {
 		// Use a name that does not exist
 		nonExistentName := "NonExistentVersionProfileName"
-		_, _, err := GetByName(service, nonExistentName)
+		_, _, err := GetByName(context.Background(), service, nonExistentName)
 		if err == nil {
 			t.Errorf("Expected error when no version profile is found, but got none")
 		}
@@ -73,7 +74,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve customer version profile with name variation: %s", variation)
-				version, _, err := GetByName(service, variation)
+				version, _, err := GetByName(context.Background(), service, variation)
 				if err != nil {
 					errorMsg := fmt.Sprintf("Error getting customer version profile with name variation '%s': %v", variation, err)
 					errorMsgs = append(errorMsgs, errorMsg)

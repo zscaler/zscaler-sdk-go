@@ -1,6 +1,7 @@
 package dlpdictionaries
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -144,9 +145,9 @@ type IDMProfileMatchAccuracy struct {
 	MatchAccuracy string `json:"matchAccuracy,omitempty"`
 }
 
-func Get(service *zscaler.Service, dlpDictionariesID int) (*DlpDictionary, error) {
+func Get(ctx context.Context, service *zscaler.Service, dlpDictionariesID int) (*DlpDictionary, error) {
 	var dlpDictionary DlpDictionary
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
 	if err != nil {
 		return nil, err
 	}
@@ -155,9 +156,9 @@ func Get(service *zscaler.Service, dlpDictionariesID int) (*DlpDictionary, error
 	return &dlpDictionary, nil
 }
 
-func GetByName(service *zscaler.Service, dictionaryName string) (*DlpDictionary, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, dictionaryName string) (*DlpDictionary, error) {
 	var dictionaries []DlpDictionary
-	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
+	err := common.ReadAllPages(ctx, service.Client, dlpDictionariesEndpoint, &dictionaries)
 	if err != nil {
 		return nil, err
 	}
@@ -169,9 +170,9 @@ func GetByName(service *zscaler.Service, dictionaryName string) (*DlpDictionary,
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
 
-// func GetPredefinedIdentifiers(service *zscaler.Service, dictionaryName string) ([]string, error) {
+// func GetPredefinedIdentifiers(ctx context.Context, service *zscaler.Service, dictionaryName string) ([]string, error) {
 // 	// Use the GetByName function to retrieve the dictionary by name
-// 	dictionary, err := GetByName(service, dictionaryName)
+// 	dictionary, err := GetByName(ctx,service, dictionaryName)
 // 	if err != nil {
 // 		return nil, fmt.Errorf("error retrieving dictionary by name: %v", err)
 // 	}
@@ -179,7 +180,7 @@ func GetByName(service *zscaler.Service, dictionaryName string) (*DlpDictionary,
 // 	// If dictionary is found, get the predefined identifiers using the dictionary ID
 // 	predefinedIdentifiersEndpoint := fmt.Sprintf(dlpDictionariesEndpoint+"/%d/predefinedIdentifiers", dictionary.ID)
 // 	var predefinedIdentifiers []string
-// 	err = service.Client.Read(predefinedIdentifiersEndpoint, &predefinedIdentifiers)
+// 	err = service.Client.Read(ctx, predefinedIdentifiersEndpoint, &predefinedIdentifiers)
 // 	if err != nil {
 // 		return nil, fmt.Errorf("error retrieving predefined identifiers: %v", err)
 // 	}
@@ -187,15 +188,15 @@ func GetByName(service *zscaler.Service, dictionaryName string) (*DlpDictionary,
 // 	return predefinedIdentifiers, nil
 // }
 
-func GetPredefinedIdentifiers(service *zscaler.Service, dictionaryName string) ([]string, int, error) {
-	dictionary, err := GetByName(service, dictionaryName)
+func GetPredefinedIdentifiers(ctx context.Context, service *zscaler.Service, dictionaryName string) ([]string, int, error) {
+	dictionary, err := GetByName(ctx, service, dictionaryName)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var predefinedIdentifiers []string
 	endpoint := fmt.Sprintf("%s/%d/predefinedIdentifiers", dlpDictionariesEndpoint, dictionary.ID)
-	err = service.Client.Read(endpoint, &predefinedIdentifiers)
+	err = service.Client.Read(ctx, endpoint, &predefinedIdentifiers)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -203,8 +204,8 @@ func GetPredefinedIdentifiers(service *zscaler.Service, dictionaryName string) (
 	return predefinedIdentifiers, dictionary.ID, nil
 }
 
-func Create(service *zscaler.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
-	resp, err := service.Client.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
+func Create(ctx context.Context, service *zscaler.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, dlpDictionariesEndpoint, *dlpDictionariesID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -218,8 +219,8 @@ func Create(service *zscaler.Service, dlpDictionariesID *DlpDictionary) (*DlpDic
 	return createdDlpDictionary, nil, nil
 }
 
-func Update(service *zscaler.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
+func Update(ctx context.Context, service *zscaler.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -229,8 +230,8 @@ func Update(service *zscaler.Service, dlpDictionariesID int, dlpDictionaries *Dl
 	return updatedDlpDictionary, nil, nil
 }
 
-func DeleteDlpDictionary(service *zscaler.Service, dlpDictionariesID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
+func DeleteDlpDictionary(ctx context.Context, service *zscaler.Service, dlpDictionariesID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
 	if err != nil {
 		return nil, err
 	}
@@ -238,8 +239,8 @@ func DeleteDlpDictionary(service *zscaler.Service, dlpDictionariesID int) (*http
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]DlpDictionary, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
-	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
+	err := common.ReadAllPages(ctx, service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err
 }

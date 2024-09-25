@@ -76,7 +76,7 @@ func TestDLPDictionaries(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = Create(service, &dictionary)
+		createdResource, _, err = Create(context.Background(), service, &dictionary)
 		return err
 	})
 	if err != nil {
@@ -104,14 +104,14 @@ func TestDLPDictionaries(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -122,7 +122,7 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = GetByName(service, updateName)
+	retrievedResource, err = GetByName(context.Background(), service, updateName)
 
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
@@ -134,7 +134,7 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestDLPDictionaries(t *testing.T) {
 		_, delErr := DeleteDlpDictionary(service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -216,7 +216,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -240,7 +240,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(service, 0, &DlpDictionary{})
+	_, _, err = Update(context.Background(), service, 0, &DlpDictionary{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -252,7 +252,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetByName(service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

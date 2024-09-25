@@ -1,6 +1,7 @@
 package cbibannercontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -27,10 +28,10 @@ type CBIBannerController struct {
 	Persist           bool   `json:"persist,omitempty"`
 }
 
-func Get(service *zscaler.Service, bannerID string) (*CBIBannerController, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, bannerID string) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, bannerID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,8 +39,8 @@ func Get(service *zscaler.Service, bannerID string) (*CBIBannerController, *http
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, bannerName string) (*CBIBannerController, *http.Response, error) {
-	list, resp, err := GetAll(service)
+func GetByName(ctx context.Context, service *zscaler.Service, bannerName string) (*CBIBannerController, *http.Response, error) {
+	list, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,37 +52,37 @@ func GetByName(service *zscaler.Service, bannerName string) (*CBIBannerControlle
 	return nil, resp, fmt.Errorf("no cloud browser isolation banner named '%s' was found", bannerName)
 }
 
-func Create(service *zscaler.Service, cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiBannerEndpoint, nil, cbiBanner, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", cbiConfig+service.Client.GetCustomerID()+cbiBannerEndpoint, nil, cbiBanner, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, cbiBannerID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiBanner, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, nil, cbiBanner, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, cbiBannerID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, cbiBannerID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, cbiBannerID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]CBIBannerController, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CBIBannerController, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiBannersEndpoint
 	var list []CBIBannerController
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

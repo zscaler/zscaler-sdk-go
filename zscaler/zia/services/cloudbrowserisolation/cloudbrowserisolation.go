@@ -1,6 +1,7 @@
 package cloudbrowserisolation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -26,9 +27,9 @@ type IsolationProfile struct {
 }
 
 // Updated GetByName function
-func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
-	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
+	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
 	if err != nil {
 		return nil, checkNotSubscribedError(err)
 	}
@@ -41,9 +42,9 @@ func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile,
 }
 
 // Updated GetAll function
-func GetAll(service *zscaler.Service) ([]IsolationProfile, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
-	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
+	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
 	return cbiProfiles, checkNotSubscribedError(err)
 }
 

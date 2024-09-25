@@ -1,6 +1,7 @@
 package cbicertificatecontroller
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -73,21 +74,21 @@ func TestCBICertificates(t *testing.T) {
 			PEM:  "", // Invalid as it's empty
 			Name: "invalid-cert",
 		}
-		_, _, err := Create(service, &invalidCert)
+		_, _, err := Create(context.Background(), service, &invalidCert)
 		if err == nil {
 			t.Errorf("Expected error while uploading invalid certificate, got nil")
 		}
 	})
 
 	// Upload the certificate
-	createdCert, _, err := Create(service, &cbiCertificate)
+	createdCert, _, err := Create(context.Background(), service, &cbiCertificate)
 	if err != nil {
 		t.Fatalf("Error uploading certificate: %v", err)
 	}
 
 	// Test 2: Verify the certificate is present in the GetAll list
 	t.Run("TestGetAllCertificates", func(t *testing.T) {
-		allCerts, _, err := GetAll(service)
+		allCerts, _, err := GetAll(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Error retrieving all certificates: %v", err)
 		}
@@ -114,13 +115,13 @@ func TestCBICertificates(t *testing.T) {
 
 		// Update the certificate with the new name
 		cbiCertificate.Name = updatedCertName
-		_, err = Update(service, createdCert.ID, &cbiCertificate)
+		_, err = Update(context.Background(), service, createdCert.ID, &cbiCertificate)
 		if err != nil {
 			t.Fatalf("Error updating certificate: %v", err)
 		}
 
 		// Verify the update by retrieving the certificate again
-		updatedCert, _, err := Get(service, createdCert.ID)
+		updatedCert, _, err := Get(context.Background(), service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving updated certificate: %v", err)
 		}
@@ -131,7 +132,7 @@ func TestCBICertificates(t *testing.T) {
 
 	// Test 4: Retrieve the certificate by name
 	t.Run("TestGetByName", func(t *testing.T) {
-		retrievedCertByName, _, err := GetByNameOrID(service, cbiCertificate.Name)
+		retrievedCertByName, _, err := GetByNameOrID(context.Background(), service, cbiCertificate.Name)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
 		}
@@ -142,13 +143,13 @@ func TestCBICertificates(t *testing.T) {
 
 	//Test 5: Delete the certificate
 	t.Run("TestDeleteCertificate", func(t *testing.T) {
-		_, err := Delete(service, createdCert.ID)
+		_, err := Delete(context.Background(), service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error deleting certificate: %v", err)
 		}
 
 		// Attempt Retrieval After Deletion
-		_, _, err = Get(service, createdCert.ID)
+		_, _, err = Get(context.Background(), service, createdCert.ID)
 		if err == nil || !strings.Contains(err.Error(), "resource.not.found") {
 			t.Errorf("Expected error while retrieving deleted certificate, got nil or unexpected error: %v", err)
 		}

@@ -1,6 +1,7 @@
 package scimgroup
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -18,7 +19,7 @@ func getTestIdpId(t *testing.T) string {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
 		return ""
@@ -51,7 +52,7 @@ func TestSCIMGroup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -77,7 +78,7 @@ func TestSCIMGroup(t *testing.T) {
 	}
 
 	// Test GetAllByIdpId function
-	scimGroups, resp, err := GetAllByIdpId(service, testIdpId)
+	scimGroups, resp, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Logf("Error getting all SCIM groups by IdP ID: %v", err)
 		return
@@ -91,7 +92,7 @@ func TestSCIMGroup(t *testing.T) {
 	if len(scimGroups) > 0 {
 		// Use the first SCIM group's name from the list for testing
 		scimName := scimGroups[0].Name
-		_, _, err = GetByName(service, scimName, testIdpId)
+		_, _, err = GetByName(context.Background(), service, scimName, testIdpId)
 		if err != nil {
 			t.Logf("Error getting SCIM group by name: %v", err)
 		}
@@ -109,7 +110,7 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 	testIdpId := getTestIdpId(t)
 
 	// Retrieve a list of SCIM groups
-	scimGroups, _, err := GetAllByIdpId(service, testIdpId)
+	scimGroups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Fatalf("Error retrieving SCIM groups: %v", err)
 	}
@@ -136,7 +137,7 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 		service.SortBy = sortField
 		service.SortOrder = sortOrder
 
-		scimGroup, _, err := GetByName(service, testScimName, testIdpId)
+		scimGroup, _, err := GetByName(context.Background(), service, testScimName, testIdpId)
 		if err != nil {
 			t.Errorf("Error getting SCIM group by name with sort order %s: %v", sortOrder, err)
 			continue
@@ -156,7 +157,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	testIdpId := getTestIdpId(t)
 
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting scim group: %v", err)
 		return
@@ -187,7 +188,7 @@ func TestNonExistentSCIMGroupName(t *testing.T) {
 	}
 
 	testIdpId := getTestIdpId(t)
-	_, _, err = GetByName(service, "NonExistentName", testIdpId)
+	_, _, err = GetByName(context.Background(), service, "NonExistentName", testIdpId)
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SCIM group by name, got none")
 	}
@@ -200,7 +201,7 @@ func TestEmptyResponse(t *testing.T) {
 	}
 
 	testIdpId := getTestIdpId(t)
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting SCIM Groups: %v", err)
 		return
@@ -218,7 +219,7 @@ func TestGetSCIMGroupByID(t *testing.T) {
 	}
 
 	testIdpId := getTestIdpId(t)
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting all SCIM Groups: %v", err)
 		return
@@ -232,7 +233,7 @@ func TestGetSCIMGroupByID(t *testing.T) {
 
 	// Proceed with the test if there are groups.
 	specificID := groups[0].ID
-	group, _, err := Get(service, strconv.FormatInt(specificID, 10)) // Pass the service and specificID
+	group, _, err := Get(context.Background(), service, strconv.FormatInt(specificID, 10)) // Pass the service and specificID
 	if err != nil {
 		t.Errorf("Error getting SCIM Group by ID: %v", err)
 		return
@@ -251,7 +252,7 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 
 	testIdpId := getTestIdpId(t)
 
-	groups, _, err := GetAllByIdpId(service, testIdpId)
+	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting all SCIM Group: %v", err)
 		return
@@ -265,7 +266,7 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 
 	// Retrieve a specific SCIM Group by its ID
 	specificID := groups[0].ID
-	group, _, err := Get(service, strconv.FormatInt(specificID, 10)) // Pass both service and specificID
+	group, _, err := Get(context.Background(), service, strconv.FormatInt(specificID, 10)) // Pass both service and specificID
 	if err != nil {
 		t.Errorf("Error getting SCIM Group by ID: %v", err)
 		return
@@ -292,7 +293,7 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 // 		t.Fatalf("Error creating client: %v", err)
 // 	}
 // 	testIdpId := getTestIdpId(t)
-// 	_, resp, err := GetAllByIdpId(service, testIdpId)
+// 	_, resp, err :=  GetAllByIdpId(context.Background(), service, testIdpId)
 // 	if err != nil {
 // 		t.Errorf("Error getting SCIM Groups: %v", err)
 // 		return

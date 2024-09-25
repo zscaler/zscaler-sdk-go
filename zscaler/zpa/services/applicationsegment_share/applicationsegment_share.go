@@ -1,6 +1,7 @@
 package applicationsegment_share
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -19,7 +20,7 @@ type AppSegmentSharedToMicrotenant struct {
 	MicroTenantID       string   `json:"microtenantId,omitempty"`
 }
 
-func AppSegmentMicrotenantShare(service *zscaler.Service, applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
+func AppSegmentMicrotenantShare(ctx context.Context, service *zscaler.Service, applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
 	microTenantID := appSegmentRequest.MicroTenantID
 	if microTenantID == "" && service.MicroTenantID() != nil {
 		microTenantID = *service.MicroTenantID()
@@ -33,7 +34,7 @@ func AppSegmentMicrotenantShare(service *zscaler.Service, applicationID string, 
 		filter.MicroTenantID = &microTenantID
 	}
 
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, filter, appSegmentRequest, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, filter, appSegmentRequest, nil)
 	if err != nil {
 		return nil, err
 	}

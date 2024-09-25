@@ -1,6 +1,7 @@
 package sweep
 
 import (
+	"context"
 	"flag"
 	"log"
 	"math/rand"
@@ -121,7 +122,7 @@ func sweep() error {
 
 func sweepAdminUsers(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := admins.GetAllAdminUsers(service)
+	resources, err := admins.GetAllAdminUsers(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get admin users: %v", err)
 		return err
@@ -132,7 +133,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.UserName)
-		_, err := admins.DeleteAdminUser(service, r.ID)
+		_, err := admins.DeleteAdminUser(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete app connector group with ID: %d, Name: %s: %v", r.ID, r.UserName, err)
 		}
@@ -143,7 +144,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 /*
 	func sweepDLPEngines(client *zscaler.Client) error {
 		service := zscaler.NewService(client)
-		resources, err := dlp_engines.GetAll(service)
+		resources, err := dlp_engines.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp engines: %v", err)
 			return err
@@ -154,7 +155,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 				continue
 			}
 			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_engines.Delete(service, r.ID)
+			_, err := dlp_engines.Delete(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete dlp engines with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 			}
@@ -164,7 +165,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 
 	func sweepDLPNotificationTemplates(client *zscaler.Client) error {
 		service := zscaler.NewService(client)
-		resources, err := dlp_notification_templates.GetAll(service)
+		resources, err := dlp_notification_templates.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
 			return err
@@ -175,7 +176,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 				continue
 			}
 			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_notification_templates.Delete(service, r.ID)
+			_, err := dlp_notification_templates.Delete(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete application segment with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 			}
@@ -185,7 +186,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 
 	func sweepADLPWebRules(client *zscaler.Client) error {
 		service := zscaler.NewService(client)
-		resources, err := dlp_web_rules.GetAll(service)
+		resources, err := dlp_web_rules.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
 			return err
@@ -196,7 +197,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 				continue
 			}
 			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_web_rules.Delete(service, r.ID)
+			_, err := dlp_web_rules.Delete(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete dlp web rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 			}
@@ -206,7 +207,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 
 	func sweepDLPDictionaries(client *zscaler.Client) error {
 		service := zscaler.NewService(client)
-		resources, err := dlpdictionaries.GetAll(service)
+		resources, err := dlpdictionaries.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
 			return err
@@ -227,7 +228,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 */
 func sweepFirewallFilteringRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := filteringrules.GetAll(service)
+	resources, err := filteringrules.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
 		return err
@@ -238,7 +239,7 @@ func sweepFirewallFilteringRules(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := filteringrules.Delete(service, r.ID)
+		_, err := filteringrules.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete Firewall filtering rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -248,7 +249,7 @@ func sweepFirewallFilteringRules(client *zscaler.Client) error {
 
 func sweepIPDestinationGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := ipdestinationgroups.GetAll(service)
+	resources, err := ipdestinationgroups.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip destination group: %v", err)
 		return err
@@ -259,7 +260,7 @@ func sweepIPDestinationGroup(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := ipdestinationgroups.Delete(service, r.ID)
+		_, err := ipdestinationgroups.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete ip destination group with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -269,7 +270,7 @@ func sweepIPDestinationGroup(client *zscaler.Client) error {
 
 func sweepIPSourceGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := ipsourcegroups.GetAll(service)
+	resources, err := ipsourcegroups.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip source group: %v", err)
 		return err
@@ -280,7 +281,7 @@ func sweepIPSourceGroup(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := ipsourcegroups.Delete(service, r.ID)
+		_, err := ipsourcegroups.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete ip source group with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -290,7 +291,7 @@ func sweepIPSourceGroup(client *zscaler.Client) error {
 
 func sweepNetworkAplicationGroups(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := networkapplicationgroups.GetAllNetworkApplicationGroups(service)
+	resources, err := networkapplicationgroups.GetAllNetworkApplicationGroups(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network application groups: %v", err)
 		return err
@@ -301,7 +302,7 @@ func sweepNetworkAplicationGroups(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := networkapplicationgroups.Delete(service, r.ID)
+		_, err := networkapplicationgroups.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network application groups with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -311,7 +312,7 @@ func sweepNetworkAplicationGroups(client *zscaler.Client) error {
 
 func sweepNetworkServiceGroups(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := networkservicegroups.GetAllNetworkServiceGroups(service)
+	resources, err := networkservicegroups.GetAllNetworkServiceGroups(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network service groups: %v", err)
 		return err
@@ -322,7 +323,7 @@ func sweepNetworkServiceGroups(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := networkservicegroups.DeleteNetworkServiceGroups(service, r.ID)
+		_, err := networkservicegroups.DeleteNetworkServiceGroups(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network service groupsnetwork service groups with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -332,7 +333,7 @@ func sweepNetworkServiceGroups(client *zscaler.Client) error {
 
 func sweepNetworkServices(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := networkservices.GetAllNetworkServices(service)
+	resources, err := networkservices.GetAllNetworkServices(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network services: %v", err)
 		return err
@@ -343,7 +344,7 @@ func sweepNetworkServices(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := networkservices.Delete(service, r.ID)
+		_, err := networkservices.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network services with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -354,7 +355,7 @@ func sweepNetworkServices(client *zscaler.Client) error {
 /*
 func sweepForwardingControlRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := forwarding_rules.GetAll(service)
+	resources, err := forwarding_rules.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get forwarding control rules: %v", err)
 		return err
@@ -365,7 +366,7 @@ func sweepForwardingControlRules(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := forwarding_rules.Delete(service, r.ID)
+		_, err := forwarding_rules.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete forwarding control rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -398,7 +399,7 @@ func sweepZPAGateways(client *zscaler.Client) error {
 
 func sweepLocationManagement(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := locationmanagement.GetAll(service)
+	resources, err := locationmanagement.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get location management: %v", err)
 		return err
@@ -409,7 +410,7 @@ func sweepLocationManagement(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := locationmanagement.Delete(service, r.ID)
+		_, err := locationmanagement.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete location management with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -419,7 +420,7 @@ func sweepLocationManagement(client *zscaler.Client) error {
 
 func sweepRuleLabels(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := rule_labels.GetAll(service)
+	resources, err := rule_labels.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to rule labels: %v", err)
 		return err
@@ -430,7 +431,7 @@ func sweepRuleLabels(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := rule_labels.Delete(service, r.ID)
+		_, err := rule_labels.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete rule labels with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -442,7 +443,7 @@ func sweepRuleLabels(client *zscaler.Client) error {
 func sweepSandboxSettings(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
 	// First, fetch the current list of MD5 hashes
-	currentSettings, err := sandbox_settings.Get(service)
+	currentSettings, err := sandbox_settings.Get(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current sandbox settings: %v", err)
 		return err
@@ -456,7 +457,7 @@ func sweepSandboxSettings(client *zscaler.Client) error {
 		}
 
 		// Use the Update function with the emptyHashes object to clear the MD5 hashes
-		_, err := sandbox_settings.Update(service, emptyHashes)
+		_, err := sandbox_settings.Update(context.Background(), service, emptyHashes)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear MD5 hashes in sandbox settings: %v", err)
 			return err
@@ -476,7 +477,7 @@ func sweepSecurityPolicySettings(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
 
 	// First, fetch the current lists of whitelist and blacklist URLs
-	currentSettings, err := security_policy_settings.GetListUrls(service)
+	currentSettings, err := security_policy_settings.GetListUrls(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current security policy settings: %v", err)
 		return err
@@ -491,7 +492,7 @@ func sweepSecurityPolicySettings(client *zscaler.Client) error {
 		}
 
 		// Use the UpdateListUrls function with the emptyUrls object to clear the URLs
-		_, err := security_policy_settings.UpdateListUrls(service, emptyUrls)
+		_, err := security_policy_settings.UpdateListUrls(context.Background(), service, emptyUrls)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear URLs in security policy settings: %v", err)
 			return err
@@ -509,7 +510,7 @@ func sweepSecurityPolicySettings(client *zscaler.Client) error {
 func sweepUserAuthenticationSettings(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
 
-	currentSettings, err := user_authentication_settings.Get(service)
+	currentSettings, err := user_authentication_settings.Get(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current sandbox settings: %v", err)
 		return err
@@ -519,7 +520,7 @@ func sweepUserAuthenticationSettings(client *zscaler.Client) error {
 		emptyURLs := user_authentication_settings.ExemptedUrls{
 			URLs: []string{},
 		}
-		_, err := user_authentication_settings.Update(service, emptyURLs)
+		_, err := user_authentication_settings.Update(context.Background(), service, emptyURLs)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear URLs from user authentication settings: %v", err)
 			return err
@@ -535,7 +536,7 @@ func sweepUserAuthenticationSettings(client *zscaler.Client) error {
 
 func sweepGRETunnels(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := gretunnels.GetAll(service)
+	resources, err := gretunnels.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get gre tunnels: %v", err)
 		return err
@@ -546,7 +547,7 @@ func sweepGRETunnels(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.SourceIP)
-		_, err := gretunnels.DeleteGreTunnels(service, r.ID)
+		_, err := gretunnels.DeleteGreTunnels(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete gre tunnels with ID: %d, Name: %s: %v", r.ID, r.SourceIP, err)
 		}
@@ -556,7 +557,7 @@ func sweepGRETunnels(client *zscaler.Client) error {
 
 func sweepStaticIP(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := staticips.GetAll(service)
+	resources, err := staticips.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get static ip: %v", err)
 		return err
@@ -567,7 +568,7 @@ func sweepStaticIP(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Comment)
-		_, err := staticips.Delete(service, r.ID)
+		_, err := staticips.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete static ip with ID: %d, Name: %s: %v", r.ID, r.Comment, err)
 		}
@@ -577,7 +578,7 @@ func sweepStaticIP(client *zscaler.Client) error {
 
 func sweepVPNCredentials(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := vpncredentials.GetAll(service)
+	resources, err := vpncredentials.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get vpn credentials: %v", err)
 		return err
@@ -588,7 +589,7 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, FQDN: %s", r.ID, r.FQDN)
-		err := vpncredentials.Delete(service, r.ID)
+		err := vpncredentials.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete vpn credentials with ID: %d, Name: %s: %v", r.ID, r.Comments, err)
 		}
@@ -598,7 +599,7 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 
 func sweepURLCategories(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := urlcategories.GetAll(service)
+	resources, err := urlcategories.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
 		return err
@@ -609,7 +610,7 @@ func sweepURLCategories(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.ConfiguredName)
-		err, _ := urlcategories.DeleteURLCategories(service, r.ID)
+		err, _ := urlcategories.DeleteURLCategories(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url categories with ID: %s, Name: %s: %v", r.ID, r.ConfiguredName, err)
 		}
@@ -619,7 +620,7 @@ func sweepURLCategories(client *zscaler.Client) error {
 
 func sweepURLFilteringPolicies(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, err := urlfilteringpolicies.GetAll(service)
+	resources, err := urlfilteringpolicies.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url filtering policies: %v", err)
 		return err
@@ -630,7 +631,7 @@ func sweepURLFilteringPolicies(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		err, _ := urlfilteringpolicies.Delete(service, r.ID)
+		err, _ := urlfilteringpolicies.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url filtering policies with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}

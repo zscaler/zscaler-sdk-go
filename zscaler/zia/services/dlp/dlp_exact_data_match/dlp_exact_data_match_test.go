@@ -16,7 +16,7 @@ func TestDLPEDM_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	templates, err := GetAll(service)
+	templates, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idm profiles: %v", err)
 		return
@@ -52,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all servers to find a valid ID
-	templates, err := GetAll(service)
+	templates, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all edm templates: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	templates, err := GetAll(service)
+	templates, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting edm template: %v", err)
 		return
@@ -147,7 +147,7 @@ func TestEDMFields(t *testing.T) {
 	}
 
 	// Retrieve all EDM profiles
-	edmProfiles, err := GetAll(service) // Assuming appropriate method name and parameters
+	edmProfiles, err := GetAll(context.Background(), service) // Assuming appropriate method name and parameters
 	if err != nil {
 		t.Fatalf("Error getting all EDM profiles: %v", err)
 	}

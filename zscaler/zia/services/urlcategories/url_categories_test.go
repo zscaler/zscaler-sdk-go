@@ -1,6 +1,7 @@
 package urlcategories
 
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -75,7 +76,7 @@ func TestURLCategories(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = CreateURLCategories(service, &urlCategories)
+		createdResource, err = CreateURLCategories(context.Background(), service, &urlCategories)
 		return err
 	})
 	if err != nil {
@@ -106,14 +107,14 @@ func TestURLCategories(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = UpdateURLCategories(service, createdResource.ID, retrievedResource)
+		_, _, err = UpdateURLCategories(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -125,7 +126,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -145,7 +146,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test the GetIncludeOnlyUrlKeyWordCounts function with both parameters
-	keywordCountResource, err := GetCustomURLCategories(service, name, true, true)
+	keywordCountResource, err := GetCustomURLCategories(context.Background(), service, name, true, true)
 	if err != nil {
 		t.Errorf("Error retrieving URL category with includeOnlyUrlKeywordCounts and customOnly: %v", err)
 		return
@@ -158,10 +159,10 @@ func TestURLCategories(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := DeleteURLCategories(service, createdResource.ID)
+		_, delErr := DeleteURLCategories(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -173,7 +174,7 @@ func tryRetrieveResource(s *zscaler.Service, id string) (*URLCategory, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -195,7 +196,7 @@ func TestGetURLQuota(t *testing.T) {
 	}
 
 	// Call the GetURLQuota function
-	quota, err := GetURLQuota(service)
+	quota, err := GetURLQuota(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Expected no error, but got %v", err)
 	}
@@ -221,7 +222,7 @@ func TestGetURLLookup(t *testing.T) {
 		return
 	}
 	urls := []string{"google.com"}
-	lookupResults, err := GetURLLookup(service, urls)
+	lookupResults, err := GetURLLookup(context.Background(), service, urls)
 	if err != nil {
 		t.Fatalf("Expected no error, but got %v", err)
 	}
@@ -254,7 +255,7 @@ func TestGetAllLite(t *testing.T) {
 	}
 
 	// Call the GetAllLite function
-	urlCategories, err := GetAllLite(service)
+	urlCategories, err := GetAllLite(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Expected no error, but got %v", err)
 	}

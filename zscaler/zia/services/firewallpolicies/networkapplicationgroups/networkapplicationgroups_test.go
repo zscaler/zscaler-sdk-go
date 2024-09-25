@@ -60,7 +60,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &nwAppgroup)
+		createdResource, err = Create(context.Background(), service, &nwAppgroup)
 		return err
 	})
 	if err != nil {
@@ -89,7 +89,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -139,7 +139,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
 	_, err = GetNetworkApplicationGroups(service, createdResource.ID)
@@ -183,7 +183,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -195,7 +195,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(service, 0, &NetworkApplicationGroups{})
+	_, _, err = Update(context.Background(), service, 0, &NetworkApplicationGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

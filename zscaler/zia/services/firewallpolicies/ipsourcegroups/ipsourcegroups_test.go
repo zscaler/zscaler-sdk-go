@@ -62,7 +62,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource creation
 	var createdResource *IPSourceGroups
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &group)
+		createdResource, err = Create(context.Background(), service, &group)
 		return err
 	})
 	if err != nil {
@@ -95,13 +95,13 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	retrievedResource.IPAddresses = group.IPAddresses
 
 	err = retryOnConflict(func() error {
-		_, err = Update(service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 		return
@@ -120,7 +120,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetByName(service, updateName)
+	retrievedResource, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 		return
@@ -137,7 +137,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := GetAll(service)
+	allResources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -163,7 +163,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource removal
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(service, createdResource.ID)
+		_, getErr := Get(context.Background(), service, createdResource.ID)
 		if getErr != nil {
 			if strings.Contains(getErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
@@ -171,7 +171,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 			}
 			return fmt.Errorf("Error retrieving resource %d: %v", createdResource.ID, getErr)
 		}
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		if delErr != nil {
 			if strings.Contains(delErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
@@ -209,7 +209,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -221,7 +221,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -233,7 +233,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, 0, &IPSourceGroups{})
+	_, err = Update(context.Background(), service, 0, &IPSourceGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -245,7 +245,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = GetByName(service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

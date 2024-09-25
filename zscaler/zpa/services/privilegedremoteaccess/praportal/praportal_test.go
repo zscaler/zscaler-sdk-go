@@ -1,6 +1,7 @@
 package praportal
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -16,7 +17,7 @@ func TestPRAPortal(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	baCertList, _, err := bacertificate.GetAll(service)
+	baCertList, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -36,7 +37,7 @@ func TestPRAPortal(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := Create(service, &sraPortalController)
+	createdResource, _, err := Create(context.Background(), service, &sraPortalController)
 
 	// Check if the request was successful
 	if err != nil {
@@ -50,7 +51,7 @@ func TestPRAPortal(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -62,11 +63,11 @@ func TestPRAPortal(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = Update(service, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -78,7 +79,7 @@ func TestPRAPortal(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -89,7 +90,7 @@ func TestPRAPortal(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -108,14 +109,14 @@ func TestPRAPortal(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, createdResource.ID)
+	_, _, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -127,7 +128,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -139,7 +140,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -151,7 +152,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &PRAPortal{})
+	_, err = Update(context.Background(), service, "non_existent_id", &PRAPortal{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -163,7 +164,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

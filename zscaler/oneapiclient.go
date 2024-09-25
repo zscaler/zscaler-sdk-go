@@ -25,6 +25,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type contextKey string
+
+func (c contextKey) String() string {
+	return "zscaler " + string(c)
+}
+
+var (
+	// ContextAccessToken takes a string OAuth2 access token as authentication for the request.
+	ContextAccessToken = contextKey("access_token")
+)
+
 const (
 	VERSION               = "3.0.0"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
@@ -36,10 +47,10 @@ const (
 
 // AuthToken represents the OAuth2 authentication token and its expiration time.
 type AuthToken struct {
-	TokenType   string    `json:"token_type"`
-	AccessToken string    `json:"access_token"`
-	ExpiresIn   int       `json:"expires_in"` // Token expiration time in seconds
-	Expiry      time.Time // Actual expiration time calculated when the token is issued
+	TokenType   string `json:"token_type"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	Expiry      time.Time
 }
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
@@ -60,7 +71,8 @@ type Configuration struct {
 			PrivateKey    string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
 			AuthToken     *AuthToken `yaml:"authToken"`
 			AccessToken   *AuthToken `yaml:"accessToken"`
-			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"` // New Sandbox token field
+			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"`
+			SandboxCloud  string     `yaml:"sandboxCloud" envconfig:"ZSCALER_SANDBOX_CLOUD"`
 			Cache         struct {
 				Enabled    bool  `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
 				DefaultTtl int32 `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
@@ -93,7 +105,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg := &Configuration{
 		UserAgent: fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		Debug:     false,
-		Context:   context.Background(),
+		Context:   context.Background(), // Set default context
 	}
 
 	cfg.Zscaler.Testing.DisableHttpsCheck = false
@@ -111,11 +123,18 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		cfg.UserAgent = fmt.Sprintf("%s %s", cfg.UserAgent, cfg.UserAgentExtra)
 	}
 
+	ctx := context.WithValue(
+		context.Background(),
+		ContextAccessToken,
+		cfg.Zscaler.Client.AuthToken.AccessToken,
+	)
+	cfg.Context = ctx
+
 	return cfg, nil
 }
 
 // Authenticate performs OAuth2 authentication and retrieves an AuthToken.
-func Authenticate(cfg *Configuration, l logger.Logger) (*AuthToken, error) {
+func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
 	if creds.ClientID == "" || (creds.ClientSecret == "" && creds.PrivateKey == "") {
@@ -141,10 +160,12 @@ func Authenticate(cfg *Configuration, l logger.Logger) (*AuthToken, error) {
 	data.Set("client_id", creds.ClientID)
 	data.Set("audience", "https://api.zscaler.com")
 
-	req, err := http.NewRequest("POST", authUrl, strings.NewReader(data.Encode()))
+	// Create request with context
+	req, err := http.NewRequestWithContext(ctx, "POST", authUrl, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s, err: %v", creds.ClientID, err)
+		return nil, fmt.Errorf("failed to sign in the user %s: %v", creds.ClientID, err)
 	}
+
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("User-Agent", cfg.UserAgent)
 	// start := time.Now()
@@ -359,6 +380,12 @@ func WithZscalerCloud(cloud string) ConfigSetter {
 func WithSandboxToken(token string) ConfigSetter {
 	return func(cfg *Configuration) {
 		cfg.Zscaler.Client.SandboxToken = token
+	}
+}
+
+func WithSandboxCloud(sandboxCloud string) ConfigSetter {
+	return func(cfg *Configuration) {
+		cfg.Zscaler.Client.SandboxCloud = sandboxCloud
 	}
 }
 

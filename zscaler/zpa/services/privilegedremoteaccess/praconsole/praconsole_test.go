@@ -1,6 +1,7 @@
 package praconsole
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -27,18 +28,18 @@ func TestPRAConsole(t *testing.T) {
 		Description: name,
 		Enabled:     true,
 	}
-	createdSegGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdSegGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentgroup.Get(service, createdSegGroup.ID)
+		_, _, getErr := segmentgroup.Get(context.Background(), service, createdSegGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentgroup.Delete(service, createdSegGroup.ID)
+			_, err := segmentgroup.Delete(context.Background(), service, createdSegGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -92,7 +93,7 @@ func TestPRAConsole(t *testing.T) {
 			},
 		},
 	}
-	createdpraAppSeg, _, err := applicationsegmentpra.Create(service, praAppSeg)
+	createdpraAppSeg, _, err := applicationsegmentpra.Create(context.Background(), service, praAppSeg)
 	if err != nil {
 		t.Errorf("Error creating pra application segment: %v", err)
 		return
@@ -102,13 +103,13 @@ func TestPRAConsole(t *testing.T) {
 	time.Sleep(5 * time.Second) // Adjust the duration according to the expected processing time
 
 	// Assuming the praSegmentService.Get correctly returns the payload as described
-	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
+	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(context.Background(), service, createdpraAppSeg.ID)
 	if err != nil {
 		t.Errorf("Error retrieving created pra application segment: %v", err)
 		return
 	}
 
-	baCertList, _, err := bacertificate.GetAll(service)
+	baCertList, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -119,7 +120,7 @@ func TestPRAConsole(t *testing.T) {
 	// Create multiple PRA Portals and collect their IDs
 	var praPortalIDs []string
 	for i, cert := range baCertList[:2] { // Assuming you need two PRA Portals and there are at least two certificates
-		praPortal, _, err := praportal.Create(service, &praportal.PRAPortal{
+		praPortal, _, err := praportal.Create(context.Background(), service, &praportal.PRAPortal{
 			Name:                    name + fmt.Sprintf("_pra_portal_%d", i),
 			Description:             name + fmt.Sprintf(" Description %d", i),
 			Enabled:                 true,
@@ -133,7 +134,7 @@ func TestPRAConsole(t *testing.T) {
 			return
 		}
 		defer func(portalID string) {
-			_, err := praportal.Delete(service, portalID)
+			_, err := praportal.Delete(context.Background(), service, portalID)
 			if err != nil {
 				t.Logf("Error deleting PRA portal with ID %s: %v", portalID, err)
 			}
@@ -181,7 +182,7 @@ func TestPRAConsole(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResources, _, err := CreatePraBulk(service, praConsoles)
+	createdResources, _, err := CreatePraBulk(context.Background(), service, praConsoles)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -193,7 +194,7 @@ func TestPRAConsole(t *testing.T) {
 	}
 
 	// Retrieve and Update all PRA Consoles
-	allPRAConsoles, _, err := GetAll(service)
+	allPRAConsoles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving PRA Consoles: %v", err)
 		return
@@ -202,7 +203,7 @@ func TestPRAConsole(t *testing.T) {
 	for _, console := range allPRAConsoles {
 		// Prepare the update - e.g., updating the description for simplicity
 		console.Description = updateName
-		_, err := Update(service, console.ID, &console)
+		_, err := Update(context.Background(), service, console.ID, &console)
 		if err != nil {
 			t.Errorf("Error updating PRA console with ID %s: %v", console.ID, err)
 		}
@@ -210,7 +211,7 @@ func TestPRAConsole(t *testing.T) {
 
 	// Delete PRA Console resources after updates
 	for _, consoleID := range createdConsoleIDs {
-		_, err := Delete(service, consoleID)
+		_, err := Delete(context.Background(), service, consoleID)
 		if err != nil {
 			t.Errorf("Error deleting PRA console with ID %s: %v", consoleID, err)
 		}
@@ -219,7 +220,7 @@ func TestPRAConsole(t *testing.T) {
 	// Defer the deletion of the praAppSeg resource with a delay
 	defer func() {
 		time.Sleep(2 * time.Second) // Delay to ensure all deletions have propagated
-		_, err := applicationsegmentpra.Delete(service, createdpraAppSeg.ID)
+		_, err := applicationsegmentpra.Delete(context.Background(), service, createdpraAppSeg.ID)
 		if err != nil {
 			t.Errorf("Error deleting pra application segment: %v", err)
 		}
@@ -232,7 +233,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -244,7 +245,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -256,7 +257,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

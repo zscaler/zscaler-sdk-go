@@ -1,6 +1,7 @@
 package inspection_profile
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -134,10 +135,10 @@ type ThreatLabzControls struct {
 	ZscalerInfoUrl                   string                   `json:"zscalerInfoUrl,omitempty"`
 }
 
-func Get(service *zscaler.Service, profileID string) (*InspectionProfile, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, profileID string) (*InspectionProfile, *http.Response, error) {
 	v := new(InspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -162,9 +163,9 @@ func setVersion(inspectionProfile *InspectionProfile) {
 	}
 }
 
-func GetByName(service *zscaler.Service, profileName string) (*InspectionProfile, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*InspectionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + inspectionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -176,10 +177,10 @@ func GetByName(service *zscaler.Service, profileName string) (*InspectionProfile
 	return nil, resp, fmt.Errorf("no inspection profile named '%s' was found", profileName)
 }
 
-func Create(service *zscaler.Service, inspectionProfile InspectionProfile) (*InspectionProfile, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, inspectionProfile InspectionProfile) (*InspectionProfile, *http.Response, error) {
 	setVersion(&inspectionProfile)
 	v := new(InspectionProfile)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, nil, inspectionProfile, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, nil, inspectionProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -187,10 +188,10 @@ func Create(service *zscaler.Service, inspectionProfile InspectionProfile) (*Ins
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, nil, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -198,10 +199,10 @@ func Update(service *zscaler.Service, profileID string, inspectionProfile *Inspe
 	return resp, err
 }
 
-func PutAssociate(service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
+func PutAssociate(ctx context.Context, service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID+"/associateAllPredefinedControls")
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -209,10 +210,10 @@ func PutAssociate(service *zscaler.Service, profileID string, inspectionProfile 
 	return resp, err
 }
 
-func PutDeassociate(service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
+func PutDeassociate(ctx context.Context, service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID+"/deAssociateAllPredefinedControls")
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -220,19 +221,19 @@ func PutDeassociate(service *zscaler.Service, profileID string, inspectionProfil
 	return resp, err
 }
 
-func Patch(service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
+func Patch(ctx context.Context, service *zscaler.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
 	relativeURL := fmt.Sprintf("%s/%s/patch", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("PATCH", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PATCH", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, profileID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, profileID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -240,9 +241,9 @@ func Delete(service *zscaler.Service, profileID string) (*http.Response, error) 
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]InspectionProfile, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]InspectionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + inspectionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package applicationservices
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -18,9 +19,9 @@ type ApplicationServicesLite struct {
 	NameL10nTag bool   `json:"nameL10nTag"`
 }
 
-func GetByName(service *zscaler.Service, serviceName string) (*ApplicationServicesLite, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, serviceName string) (*ApplicationServicesLite, error) {
 	var appServicesLite []ApplicationServicesLite
-	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServicesLite)
+	err := common.ReadAllPages(ctx, service.Client, appServicesLiteEndpoint, &appServicesLite)
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +33,8 @@ func GetByName(service *zscaler.Service, serviceName string) (*ApplicationServic
 	return nil, fmt.Errorf("no application services found with name: %s", serviceName)
 }
 
-func GetAll(service *zscaler.Service) ([]ApplicationServicesLite, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationServicesLite, error) {
 	var appServices []ApplicationServicesLite
-	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServices)
+	err := common.ReadAllPages(ctx, service.Client, appServicesLiteEndpoint, &appServices)
 	return appServices, err
 }

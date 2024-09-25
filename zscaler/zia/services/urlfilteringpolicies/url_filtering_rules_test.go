@@ -1,6 +1,7 @@
 package urlfilteringpolicies
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -52,7 +53,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	cbiProfileList, err := cloudbrowserisolation.GetAll(service)
+	cbiProfileList, err := cloudbrowserisolation.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting cbi profile: %v", err)
 		return
@@ -83,7 +84,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &rule)
+		createdResource, err = Create(context.Background(), service, &rule)
 		return err
 	})
 	if err != nil {
@@ -113,14 +114,14 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -131,7 +132,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(service, updateName)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -143,7 +144,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := GetAll(service)
+	allResources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -168,14 +169,14 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(service, createdResource.ID)
+		_, getErr := Get(context.Background(), service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -187,7 +188,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*URLFilteringRule, error) 
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -205,7 +206,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -217,7 +218,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -230,7 +231,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, _, err = Update(service, 0, &URLFilteringRule{})
+	_, _, err = Update(context.Background(), service, 0, &URLFilteringRule{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -242,7 +243,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	_, err = GetByName(service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

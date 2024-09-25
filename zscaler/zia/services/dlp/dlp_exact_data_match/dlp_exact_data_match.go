@@ -1,6 +1,7 @@
 package dlp_exact_data_match
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -103,9 +104,9 @@ type Schedule struct {
 	ScheduleDisabled bool `json:"scheduleDisabled,omitempty"`
 }
 
-func GetDLPEDMSchemaID(service *zscaler.Service, edmSchemaID int) (*DLPEDMSchema, error) {
+func GetDLPEDMSchemaID(ctx context.Context, service *zscaler.Service, edmSchemaID int) (*DLPEDMSchema, error) {
 	var edmSchema DLPEDMSchema
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpEDMSchemaEndpoint, edmSchemaID), &edmSchema)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpEDMSchemaEndpoint, edmSchemaID), &edmSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +115,9 @@ func GetDLPEDMSchemaID(service *zscaler.Service, edmSchemaID int) (*DLPEDMSchema
 	return &edmSchema, nil
 }
 
-func GetDLPEDMByName(service *zscaler.Service, edmSchemaName string) (*DLPEDMSchema, error) {
+func GetDLPEDMByName(ctx context.Context, service *zscaler.Service, edmSchemaName string) (*DLPEDMSchema, error) {
 	var edmSchema []DLPEDMSchema
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", dlpEDMSchemaEndpoint, url.QueryEscape(edmSchemaName)), &edmSchema)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?name=%s", dlpEDMSchemaEndpoint, url.QueryEscape(edmSchemaName)), &edmSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +129,8 @@ func GetDLPEDMByName(service *zscaler.Service, edmSchemaName string) (*DLPEDMSch
 	return nil, fmt.Errorf("no edm schema found with name: %s", edmSchemaName)
 }
 
-func GetAll(service *zscaler.Service) ([]DLPEDMSchema, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DLPEDMSchema, error) {
 	var edmData []DLPEDMSchema
-	err := common.ReadAllPages(service.Client, dlpEDMSchemaEndpoint, &edmData)
+	err := common.ReadAllPages(ctx, service.Client, dlpEDMSchemaEndpoint, &edmData)
 	return edmData, err
 }

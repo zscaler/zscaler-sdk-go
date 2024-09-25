@@ -61,8 +61,8 @@ func TestUserManagement(t *testing.T) {
 
 	admin := AdminUsers{
 		UserName:                    name + name,
-		LoginName:                   name + "@bd-hashicorp.com",
-		Email:                       email + "@bd-hashicorp.com",
+		LoginName:                   name + "@securitygeek.io",
+		Email:                       email + "@securitygeek.io",
 		Comments:                    updateComments,
 		Password:                    rPassword,
 		IsPasswordLoginAllowed:      true,
@@ -89,7 +89,7 @@ func TestUserManagement(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	expectedLoginName := name + "@bd-hashicorp.com"
+	expectedLoginName := name + "@securitygeek.io"
 	if createdResource.LoginName != expectedLoginName {
 		t.Errorf("Expected created admin user '%s', but got '%s'", expectedLoginName, createdResource.LoginName)
 	}
@@ -182,7 +182,7 @@ func TestUserManagement(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(service *zscaler.Service, id int) (*AdminUsers, error) {
+func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*AdminUsers, error) {
 	var resource *AdminUsers
 	var err error
 

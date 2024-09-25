@@ -1,6 +1,7 @@
 package clienttypes
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestGetAllClientTypes(t *testing.T) {
 
 	// Test case: Normal scenario
 	t.Run("TestGetAllClientTypesNormal", func(t *testing.T) {
-		clientTypes, resp, err := GetAllClientTypes(service)
+		clientTypes, resp, err := GetAllClientTypes(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Failed to fetch client types: %v", err)
 		}

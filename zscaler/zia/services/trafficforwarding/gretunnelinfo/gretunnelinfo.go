@@ -1,6 +1,7 @@
 package gretunnelinfo
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -24,9 +25,9 @@ type GRETunnelInfo struct {
 }
 
 // Gets a list of IP addresses with GRE tunnel details.
-func GetGRETunnelInfo(service *zscaler.Service, ipAddress string) (*GRETunnelInfo, error) {
+func GetGRETunnelInfo(ctx context.Context, service *zscaler.Service, ipAddress string) (*GRETunnelInfo, error) {
 	var greTunnelInfo []GRETunnelInfo
-	err := service.Client.Read(fmt.Sprintf("%s?ipAddress=%s", ipGreTunnelInfoEndpoint, url.QueryEscape(ipAddress)), &greTunnelInfo)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?ipAddress=%s", ipGreTunnelInfoEndpoint, url.QueryEscape(ipAddress)), &greTunnelInfo)
 	if err != nil {
 		return nil, err
 	}

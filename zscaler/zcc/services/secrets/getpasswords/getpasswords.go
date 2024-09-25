@@ -1,6 +1,7 @@
 package getpasswords
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -26,7 +27,7 @@ type GetPasswordsQueryParams struct {
 	OsType   string `url:"osType"`
 }
 
-func GetPasswords(service *zscaler.Service, username, osType string) (*Passwords, error) {
+func GetPasswords(ctx context.Context, service *zscaler.Service, username, osType string) (*Passwords, error) {
 	queryParams := url.Values{}
 	if username != "" {
 		queryParams.Set("username", username)
@@ -42,7 +43,7 @@ func GetPasswords(service *zscaler.Service, username, osType string) (*Passwords
 	}
 
 	var passwords Passwords
-	_, err := service.Client.NewZccRequestDo("GET", fullURL, nil, nil, &passwords)
+	_, err := service.Client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &passwords)
 	if err != nil {
 		return nil, err
 	}

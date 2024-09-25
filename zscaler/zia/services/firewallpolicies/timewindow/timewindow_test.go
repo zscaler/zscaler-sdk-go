@@ -1,6 +1,7 @@
 package timewindow
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestTimeWindow_data(t *testing.T) {
 		return
 	}
 
-	tWindows, err := GetAll(service)
+	tWindows, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting time windows: %v", err)
 		return
@@ -27,7 +28,7 @@ func TestTimeWindow_data(t *testing.T) {
 	}
 	tWindowName := tWindows[0].Name
 	t.Log("Getting time window by name:" + tWindowName)
-	tWindow, err := GetTimeWindowByName(service, tWindowName)
+	tWindow, err := GetTimeWindowByName(context.Background(), service, tWindowName)
 	if err != nil {
 		t.Errorf("Error getting time windows by name: %v", err)
 		return
@@ -38,7 +39,7 @@ func TestTimeWindow_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a time window with a non-existent name
 	nonExistentName := "ThisTimeWindowDoesNotExist"
-	_, err = GetTimeWindowByName(service, nonExistentName)
+	_, err = GetTimeWindowByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -52,7 +53,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	timeWindows, err := GetAll(service)
+	timeWindows, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting time window : %v", err)
 		return
@@ -93,7 +94,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve service with name variation: %s", variation)
-		timeWindows, err := GetTimeWindowByName(service, variation)
+		timeWindows, err := GetTimeWindowByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting service with name variation '%s': %v", variation, err)
 			continue

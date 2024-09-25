@@ -1,6 +1,7 @@
 package groups
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -14,11 +15,8 @@ func TestAccGroupManagement(t *testing.T) {
 		return
 	}
 
-	// Step 2: Create a group-specific service using the ZIA client
-	groupService := New(service.Client)
-
 	// Step 3: Fetch all groups
-	groups, err := groupService.GetAllGroups()
+	groups, err := GetAllGroups(context.Background(), service) // Pass context and service
 	if err != nil {
 		t.Errorf("Error getting groups: %v", err)
 		return
@@ -31,7 +29,7 @@ func TestAccGroupManagement(t *testing.T) {
 	t.Log("Getting groups by name:" + name)
 
 	// Step 4: Get a group by name
-	group, err := groupService.GetGroupByName(name)
+	group, err := GetGroupByName(context.Background(), service, name) // Pass context and service
 	if err != nil {
 		t.Errorf("Error getting groups by name: %v", err)
 		return
@@ -43,7 +41,7 @@ func TestAccGroupManagement(t *testing.T) {
 
 	// Step 5: Negative test: Try to retrieve a group with a non-existent name
 	nonExistentName := "ThisGroupDoesNotExist"
-	_, err = groupService.GetGroupByName(nonExistentName)
+	_, err = GetGroupByName(context.Background(), service, nonExistentName) // Pass context and service
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return

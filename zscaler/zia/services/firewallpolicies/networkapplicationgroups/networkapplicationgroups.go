@@ -1,6 +1,7 @@
 package networkapplicationgroups
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,9 +22,9 @@ type NetworkApplicationGroups struct {
 	Description         string   `json:"description,omitempty"`
 }
 
-func GetNetworkApplicationGroups(service *zscaler.Service, groupID int) (*NetworkApplicationGroups, error) {
+func GetNetworkApplicationGroups(ctx context.Context, service *zscaler.Service, groupID int) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups NetworkApplicationGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), &networkApplicationGroups)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), &networkApplicationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +33,9 @@ func GetNetworkApplicationGroups(service *zscaler.Service, groupID int) (*Networ
 	return &networkApplicationGroups, nil
 }
 
-func GetNetworkApplicationGroupsByName(service *zscaler.Service, appGroupsName string) (*NetworkApplicationGroups, error) {
+func GetNetworkApplicationGroupsByName(ctx context.Context, service *zscaler.Service, appGroupsName string) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
-	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
+	err := common.ReadAllPages(ctx, service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +47,8 @@ func GetNetworkApplicationGroupsByName(service *zscaler.Service, appGroupsName s
 	return nil, fmt.Errorf("no network application groups found with name: %s", appGroupsName)
 }
 
-func Create(service *zscaler.Service, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, error) {
-	resp, err := service.Client.Create(networkAppGroupsEndpoint, *applicationGroup)
+func Create(ctx context.Context, service *zscaler.Service, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, error) {
+	resp, err := service.Client.Create(ctx, networkAppGroupsEndpoint, *applicationGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +62,8 @@ func Create(service *zscaler.Service, applicationGroup *NetworkApplicationGroups
 	return createdApplicationGroups, nil
 }
 
-func Update(service *zscaler.Service, groupID int, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), *applicationGroup)
+func Update(ctx context.Context, service *zscaler.Service, groupID int, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), *applicationGroup)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,8 +73,8 @@ func Update(service *zscaler.Service, groupID int, applicationGroup *NetworkAppl
 	return updatedApplicationGroups, nil, nil
 }
 
-func Delete(service *zscaler.Service, groupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID))
+func Delete(ctx context.Context, service *zscaler.Service, groupID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID))
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +82,8 @@ func Delete(service *zscaler.Service, groupID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAllNetworkApplicationGroups(service *zscaler.Service) ([]NetworkApplicationGroups, error) {
+func GetAllNetworkApplicationGroups(ctx context.Context, service *zscaler.Service) ([]NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
-	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
+	err := common.ReadAllPages(ctx, service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	return networkApplicationGroups, err
 }

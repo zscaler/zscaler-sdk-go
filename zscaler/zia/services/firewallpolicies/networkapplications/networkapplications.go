@@ -1,6 +1,7 @@
 package networkapplications
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -19,26 +20,26 @@ type NetworkApplications struct {
 	Deprecated     bool   `json:"deprecated"`
 }
 
-func GetNetworkApplication(service *zscaler.Service, id, locale string) (*NetworkApplications, error) {
+func GetNetworkApplication(ctx context.Context, service *zscaler.Service, id, locale string) (*NetworkApplications, error) {
 	var networkApplications NetworkApplications
 	url := fmt.Sprintf("%s/%s", networkApplicationsEndpoint, id)
 	if locale != "" {
 		url = fmt.Sprintf("%s?locale=%s", url, locale)
 	}
-	err := service.Client.Read(url, &networkApplications)
+	err := service.Client.Read(ctx, url, &networkApplications)
 	if err != nil {
 		return nil, err
 	}
 	return &networkApplications, nil
 }
 
-func GetByName(service *zscaler.Service, nwApplicationName, locale string) (*NetworkApplications, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, nwApplicationName, locale string) (*NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 
 	// Construct the URL with search and locale query parameters
 	url := fmt.Sprintf("%s?search=%s&locale=%s", networkApplicationsEndpoint, url.QueryEscape(nwApplicationName), url.QueryEscape(locale))
 
-	err := service.Client.Read(url, &networkApplications)
+	err := service.Client.Read(ctx, url, &networkApplications)
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +53,13 @@ func GetByName(service *zscaler.Service, nwApplicationName, locale string) (*Net
 	return nil, fmt.Errorf("no network application found with name: %s", nwApplicationName)
 }
 
-func GetAll(service *zscaler.Service, locale string) ([]NetworkApplications, error) {
+func GetAll(ctx context.Context, service *zscaler.Service, locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint
 	if locale != "" {
 		// Properly escape the locale string and append it as a query parameter
 		endpoint = fmt.Sprintf("%s?locale=%s", networkApplicationsEndpoint, url.QueryEscape(locale))
 	}
-	err := common.ReadAllPages(service.Client, endpoint, &networkApplications)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &networkApplications)
 	return networkApplications, err
 }

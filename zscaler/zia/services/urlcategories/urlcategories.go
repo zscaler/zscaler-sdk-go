@@ -1,6 +1,7 @@
 package urlcategories
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,8 +15,8 @@ import (
 
 const (
 	urlCategoriesEndpoint = "/zia/api/v1/urlCategories"
-	urlQuotaHandler       = "urlQuota"
-	urlLookupEndpoint     = "/urlLookup"
+	urlQuotaHandler       = "/urlQuota"
+	urlLookupEndpoint     = "/zia/api/v1/urlLookup"
 )
 
 type URLCategory struct {
@@ -126,9 +127,9 @@ type URLReview struct {
 	Matches    []DomainMatch `json:"matches"`
 }
 
-func Get(service *zscaler.Service, categoryID string) (*URLCategory, error) {
+func Get(ctx context.Context, service *zscaler.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
-	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,7 @@ func Get(service *zscaler.Service, categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func GetCustomURLCategories(service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
+func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	queryParams := url.Values{}
 
@@ -148,7 +149,7 @@ func GetCustomURLCategories(service *zscaler.Service, customName string, include
 		queryParams.Set("customOnly", "true")
 	}
 
-	err := service.Client.Read(fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
@@ -161,8 +162,8 @@ func GetCustomURLCategories(service *zscaler.Service, customName string, include
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
-func CreateURLCategories(service *zscaler.Service, category *URLCategory) (*URLCategory, error) {
-	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
+func CreateURLCategories(ctx context.Context, service *zscaler.Service, category *URLCategory) (*URLCategory, error) {
+	resp, err := service.Client.Create(ctx, urlCategoriesEndpoint, *category)
 	if err != nil {
 		return nil, err
 	}
@@ -176,8 +177,8 @@ func CreateURLCategories(service *zscaler.Service, category *URLCategory) (*URLC
 	return createdUrlCategory, nil
 }
 
-func UpdateURLCategories(service *zscaler.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
+func UpdateURLCategories(ctx context.Context, service *zscaler.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -186,8 +187,8 @@ func UpdateURLCategories(service *zscaler.Service, categoryID string, category *
 	return updatedUrlCategory, nil, nil
 }
 
-func DeleteURLCategories(service *zscaler.Service, categoryID string) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
+func DeleteURLCategories(ctx context.Context, service *zscaler.Service, categoryID string) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
 	if err != nil {
 		return nil, err
 	}
@@ -195,18 +196,18 @@ func DeleteURLCategories(service *zscaler.Service, categoryID string) (*http.Res
 	return nil, nil
 }
 
-func GetURLQuota(service *zscaler.Service) (*URLQuota, error) {
+func GetURLQuota(ctx context.Context, service *zscaler.Service) (*URLQuota, error) {
 	url := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, urlQuotaHandler)
 	var quota URLQuota
-	err := service.Client.Read(url, &quota)
+	err := service.Client.Read(ctx, url, &quota)
 	if err != nil {
 		return nil, err
 	}
 	return &quota, nil
 }
 
-func GetURLLookup(service *zscaler.Service, urls []string) ([]URLClassification, error) {
-	resp, err := service.Client.CreateWithSlicePayload(urlLookupEndpoint, urls)
+func GetURLLookup(ctx context.Context, service *zscaler.Service, urls []string) ([]URLClassification, error) {
+	resp, err := service.Client.CreateWithSlicePayload(ctx, urlLookupEndpoint, urls)
 	if err != nil {
 		return nil, err
 	}
@@ -221,15 +222,15 @@ func GetURLLookup(service *zscaler.Service, urls []string) ([]URLClassification,
 	return lookupResults, nil
 }
 
-func GetAll(service *zscaler.Service) ([]URLCategory, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
-	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
+	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err
 }
 
-func GetAllLite(service *zscaler.Service) ([]URLCategory, error) {
+func GetAllLite(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
-	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
+	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
 	if err != nil {
 		service.Client.Logger.Printf("[ERROR] Error fetching URL categories: %v", err)
 		return nil, err
@@ -237,8 +238,8 @@ func GetAllLite(service *zscaler.Service) ([]URLCategory, error) {
 	return urlCategories, nil
 }
 
-func CreateURLReview(service *zscaler.Service, domains []string) ([]URLReview, error) {
-	resp, err := service.Client.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
+func CreateURLReview(ctx context.Context, service *zscaler.Service, domains []string) ([]URLReview, error) {
+	resp, err := service.Client.CreateWithSlicePayload(ctx, urlCategoriesEndpoint+"/review/domains", domains)
 	if err != nil {
 		return nil, err
 	}
@@ -253,8 +254,8 @@ func CreateURLReview(service *zscaler.Service, domains []string) ([]URLReview, e
 	return reviewResults, nil
 }
 
-func UpdateURLReview(service *zscaler.Service, reviews []URLReview) error {
-	resp, err := service.Client.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
+func UpdateURLReview(ctx context.Context, service *zscaler.Service, reviews []URLReview) error {
+	resp, err := service.Client.UpdateWithSlicePayload(context.Background(), urlCategoriesEndpoint+"/review/domains", reviews)
 	if err != nil {
 		return err
 	}

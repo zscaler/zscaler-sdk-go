@@ -1,6 +1,7 @@
 package appconnectorgroup
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -99,10 +100,10 @@ type AppServerGroup struct {
 	Name             string `json:"name,omitempty"`
 }
 
-func Get(service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,9 +111,9 @@ func Get(service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGro
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{Search: appConnectorGroupName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](ctx, service.Client, relativeURL, common.Filter{Search: appConnectorGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -124,9 +125,9 @@ func GetByName(service *zscaler.Service, appConnectorGroupName string) (*AppConn
 	return nil, resp, fmt.Errorf("no app connector group named '%s' was found", appConnectorGroupName)
 }
 
-func Create(service *zscaler.Service, appConnectorGroup AppConnectorGroup) (*AppConnectorGroup, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, appConnectorGroup AppConnectorGroup) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -134,9 +135,9 @@ func Create(service *zscaler.Service, appConnectorGroup AppConnectorGroup) (*App
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, appConnectorGroupID string, appConnectorGroup *AppConnectorGroup) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, appConnectorGroupID string, appConnectorGroup *AppConnectorGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -144,9 +145,9 @@ func Update(service *zscaler.Service, appConnectorGroupID string, appConnectorGr
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, appConnectorGroupID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, appConnectorGroupID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -154,9 +155,9 @@ func Delete(service *zscaler.Service, appConnectorGroupID string) (*http.Respons
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]AppConnectorGroup, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]AppConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

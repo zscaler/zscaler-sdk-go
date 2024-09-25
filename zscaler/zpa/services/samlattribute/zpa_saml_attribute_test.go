@@ -1,6 +1,7 @@
 package samlattribute
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -12,7 +13,7 @@ func TestSAMLAttribute(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	attributes, _, err := GetAll(service)
+	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -23,7 +24,7 @@ func TestSAMLAttribute(t *testing.T) {
 	}
 	name := attributes[0].Name
 	t.Log("Getting saml attribute by name:" + name)
-	attribute, _, err := GetByName(service, name)
+	attribute, _, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting saml attribute by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	attributes, _, err := GetAll(service)
+	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -67,7 +68,7 @@ func TestNonExistentSAMLAttributeName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	_, _, err = GetByName(service, "NonExistentName")
+	_, _, err = GetByName(context.Background(), service, "NonExistentName")
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SAML attribute by name, got none")
 	}
@@ -78,7 +79,7 @@ func TestEmptyResponse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	attributes, _, err := GetAll(service)
+	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
 		return
@@ -94,7 +95,7 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	attributes, _, err := GetAll(service)
+	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
 		return
@@ -106,7 +107,7 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	attribute, _, err := Get(service, specificID)
+	attribute, _, err := Get(context.Background(), service, specificID)
 	if err != nil {
 		t.Errorf("Error getting SAML attribute by ID: %v", err)
 		return
@@ -122,7 +123,7 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	attributes, _, err := GetAll(service)
+	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
 		return
@@ -134,7 +135,7 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 	}
 
 	specificID := attributes[0].ID
-	attribute, _, err := Get(service, specificID)
+	attribute, _, err := Get(context.Background(), service, specificID)
 	if err != nil {
 		t.Errorf("Error getting SAML attribute by ID: %v", err)
 		return
@@ -164,7 +165,7 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	_, resp, err := GetAll(service)
+	_, resp, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
 		return

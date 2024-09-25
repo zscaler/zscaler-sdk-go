@@ -1,6 +1,7 @@
 package pracredential
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -69,10 +70,10 @@ type Credential struct {
 	TargetMicrotenantId string `json:"targetMicrotenantId,omitempty"`
 }
 
-func Get(service *zscaler.Service, credentialID string) (*Credential, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, credentialID string) (*Credential, *http.Response, error) {
 	v := new(Credential)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -80,9 +81,9 @@ func Get(service *zscaler.Service, credentialID string) (*Credential, *http.Resp
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, credentialName string) (*Credential, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, credentialName string) (*Credential, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + credentialEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](service.Client, relativeURL, common.Filter{Search: credentialName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](ctx, service.Client, relativeURL, common.Filter{Search: credentialName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,9 +95,9 @@ func GetByName(service *zscaler.Service, credentialName string) (*Credential, *h
 	return nil, resp, fmt.Errorf("no credential controller named '%s' was found", credentialName)
 }
 
-func Create(service *zscaler.Service, credential *Credential) (*Credential, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, credential *Credential) (*Credential, *http.Response, error) {
 	v := new(Credential)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -104,9 +105,9 @@ func Create(service *zscaler.Service, credential *Credential) (*Credential, *htt
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, credentialID string, credentialRequest *Credential) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, credentialID string, credentialRequest *Credential) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, credentialRequest, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, credentialRequest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -114,16 +115,16 @@ func Update(service *zscaler.Service, credentialID string, credentialRequest *Cr
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, credentialID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, credentialID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func CredentialMove(service *zscaler.Service, credentialID string, targetMicrotenantId string) (*http.Response, error) {
+func CredentialMove(ctx context.Context, service *zscaler.Service, credentialID string, targetMicrotenantId string) (*http.Response, error) {
 	// Construct the URL using the credentialEndpoint const and append "/move"
 	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.GetCustomerID(), credentialEndpoint, credentialID)
 
@@ -133,7 +134,7 @@ func CredentialMove(service *zscaler.Service, credentialID string, targetMicrote
 	}
 
 	// Make the POST request with an empty body since the API expects an empty body for this operation
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +142,9 @@ func CredentialMove(service *zscaler.Service, credentialID string, targetMicrote
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]Credential, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]Credential, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + credentialEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

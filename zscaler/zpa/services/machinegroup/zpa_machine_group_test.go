@@ -1,6 +1,7 @@
 package machinegroup
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestMachineGroup(t *testing.T) {
 	}
 
 	// Test to retrieve all machine groups
-	groups, _, err := GetAll(service)
+	groups, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting machine groups: %v", err)
 		return
@@ -29,7 +30,7 @@ func TestMachineGroup(t *testing.T) {
 	// Test to retrieve a group by its name
 	name := groups[0].Name
 	t.Log("Getting machine group by name:" + name)
-	group, _, err := GetByName(service, name)
+	group, _, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting machine group by name: %v", err)
 		return
@@ -41,7 +42,7 @@ func TestMachineGroup(t *testing.T) {
 
 	// Additional step: Use the ID of the first machine group to test the Get function
 	t.Log("Getting machine group by ID:" + groups[0].ID)
-	groupByID, _, err := Get(service, groups[0].ID)
+	groupByID, _, err := Get(context.Background(), service, groups[0].ID)
 	if err != nil {
 		t.Errorf("Error getting machine group by ID: %v", err)
 		return
@@ -53,7 +54,7 @@ func TestMachineGroup(t *testing.T) {
 
 	// Negative Test: Try to retrieve a group with a non-existent name
 	nonExistentName := "ThisMachineGroupNameDoesNotExist"
-	_, _, err = GetByName(service, nonExistentName)
+	_, _, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -61,7 +62,7 @@ func TestMachineGroup(t *testing.T) {
 
 	// Negative Test: Try to retrieve a group with a non-existent ID
 	nonExistentID := "non_existent_id"
-	_, _, err = Get(service, nonExistentID)
+	_, _, err = Get(context.Background(), service, nonExistentID)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
@@ -74,7 +75,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	groups, _, err := GetAll(service)
+	groups, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting machine groups: %v", err)
 		return
@@ -114,7 +115,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, _, err := GetByName(service, variation)
+		group, _, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name variation '%s': %v", variation, err)
 			continue
@@ -141,7 +142,7 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name: %s", variation)
-		group, _, err := GetByName(service, variation)
+		group, _, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name '%s': %v", variation, err)
 			continue
@@ -160,7 +161,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent_name name, but got nil")
 	}

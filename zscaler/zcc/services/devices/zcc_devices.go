@@ -1,6 +1,10 @@
 package devices
 
-import "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+import (
+	"context"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+)
 
 const (
 	getDevicesEndpoint = "/zcc/papi/public/v1/getDevices"
@@ -39,13 +43,13 @@ type GetDevicesQueryParams struct {
 	OsType   string `url:"osType,omitempty"`
 }
 
-func GetAll(service *zscaler.Service, username, osType string) ([]GetDevices, error) {
+func GetAll(ctx context.Context, service *zscaler.Service, username, osType string) ([]GetDevices, error) {
 	var devices []GetDevices
 	queryParams := GetDevicesQueryParams{
 		Username: username,
 		OsType:   osType,
 	}
-	_, err := service.Client.NewZccRequestDo("GET", getDevicesEndpoint, queryParams, nil, &devices)
+	_, err := service.Client.NewZccRequestDo(ctx, "GET", getDevicesEndpoint, queryParams, nil, &devices)
 	if err != nil {
 		return nil, err
 	}

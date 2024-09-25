@@ -58,7 +58,8 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
 	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
-	zscalerCloud := os.Getenv("ZSCALER_CLOUD") // Optional, set this if needed
+	zscalerCloud := os.Getenv("ZSCALER_CLOUD")         // Optional, set this if needed
+	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD") // Optional, set this if needed
 
 	// Ensure required environment variables are set
 	if clientID == "" || clientSecret == "" || vanityDomain == "" {
@@ -70,8 +71,10 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 		zscaler.WithClientID(clientID),
 		zscaler.WithClientSecret(clientSecret),
 		zscaler.WithVanityDomain(vanityDomain),
-		zscaler.WithZscalerCloud(zscalerCloud), // Optional, default can be set
-		zscaler.WithDebug(true),
+		zscaler.WithZscalerCloud(zscalerCloud),
+		zscaler.WithSandboxCloud(sandboxCloud),
+		zscaler.WithDebug(false),
+		zscaler.WithTestingDisableHttpsCheck(false),
 		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)
 	if err != nil {

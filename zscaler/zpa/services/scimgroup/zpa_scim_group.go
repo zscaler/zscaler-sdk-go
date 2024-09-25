@@ -1,6 +1,7 @@
 package scimgroup
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -26,10 +27,10 @@ type ScimGroup struct {
 	InternalID   string `json:"internalId,omitempty"`
 }
 
-func Get(service *zscaler.Service, scimGroupID string) (*ScimGroup, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, scimGroupID string) (*ScimGroup, *http.Response, error) {
 	v := new(ScimGroup)
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint, scimGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -37,11 +38,11 @@ func Get(service *zscaler.Service, scimGroupID string) (*ScimGroup, *http.Respon
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, scimName, idpId string) (*ScimGroup, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, scimName, idpId string) (*ScimGroup, *http.Response, error) {
 	// Construct the API endpoint URL with query parameters
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
 	// Fetch the pages
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](ctx, service.Client, relativeURL, common.Filter{
 		Search:    scimName,
 		SortBy:    string(service.SortBy),
 		SortOrder: string(service.SortOrder),
@@ -60,9 +61,9 @@ func GetByName(service *zscaler.Service, scimName, idpId string) (*ScimGroup, *h
 	return nil, resp, fmt.Errorf("no SCIM group named '%s' was found", scimName)
 }
 
-func GetAllByIdpId(service *zscaler.Service, idpId string) ([]ScimGroup, *http.Response, error) {
+func GetAllByIdpId(ctx context.Context, service *zscaler.Service, idpId string) ([]ScimGroup, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](ctx, service.Client, relativeURL, common.Filter{
 		SortBy:    string(service.SortBy),
 		SortOrder: string(service.SortOrder),
 	})

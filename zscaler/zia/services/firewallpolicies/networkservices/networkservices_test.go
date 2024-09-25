@@ -47,7 +47,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, err := Create(service, &networkServices)
+	createdResource, err := Create(context.Background(), service, &networkServices)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -61,7 +61,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, err := Get(service, createdResource.ID)
+	retrievedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -94,11 +94,11 @@ func TestFWFilteringNWServices(t *testing.T) {
 			End:   5005,
 		},
 	}
-	_, _, err = Update(service, createdResource.ID, retrievedResource)
+	_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = GetByName(service, updateName)
+	retrievedResource, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -139,14 +139,14 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -159,7 +159,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -172,7 +172,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -185,7 +185,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, _, err = Update(service, 0, &NetworkServices{})
+	_, _, err = Update(context.Background(), service, 0, &NetworkServices{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -198,7 +198,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = GetByName(service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

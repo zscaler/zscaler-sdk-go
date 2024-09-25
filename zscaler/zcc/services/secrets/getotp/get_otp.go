@@ -1,6 +1,7 @@
 package getotp
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -29,7 +30,7 @@ type GetOtpQuery struct {
 	Udid string `json:"udid,omitempty" url:"udid,omitempty"`
 }
 
-func GetOtp(service *zscaler.Service, udid string) (*OtpResponse, error) {
+func GetOtp(ctx context.Context, service *zscaler.Service, udid string) (*OtpResponse, error) {
 	queryParams := url.Values{}
 	if udid != "" {
 		queryParams.Set("udid", udid)
@@ -42,7 +43,7 @@ func GetOtp(service *zscaler.Service, udid string) (*OtpResponse, error) {
 	}
 
 	var otpResponse OtpResponse
-	_, err := service.Client.NewZccRequestDo("GET", fullURL, nil, nil, &otpResponse)
+	_, err := service.Client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &otpResponse)
 	if err != nil {
 		return nil, err
 	}

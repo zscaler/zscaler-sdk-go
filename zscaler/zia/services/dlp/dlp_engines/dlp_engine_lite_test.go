@@ -16,7 +16,7 @@ func TestDLPEngineLite_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	engines, err := GetAll(service)
+	engines, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting predefined engine name: %v", err)
 		return
@@ -52,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all engines to find a valid ID
-	engines, err := GetAll(service)
+	engines, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all dlp predefined engine: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestGetById(t *testing.T) {
 	testID := engines[0].ID
 
 	// Retrieve the engine by ID
-	engine, err := Get(service, testID)
+	engine, err := Get(context.Background(), service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving dlp predefined engine with ID %d: %v", testID, err)
 		return
@@ -119,7 +119,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	engines, err := GetAll(service)
+	engines, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting predefined engine: %v", err)
 		return

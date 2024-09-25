@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// Call the activation API using the instantiated client
-	resp, err := activation.CreateActivation(cli, activation.Activation{
+	resp, err := activation.CreateActivation(context.Background(), cli, activation.Activation{
 		Status: "active",
 	})
 	if err != nil {

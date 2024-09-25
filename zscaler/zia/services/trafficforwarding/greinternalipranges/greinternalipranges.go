@@ -1,6 +1,7 @@
 package greinternalipranges
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -18,9 +19,9 @@ type GREInternalIPRange struct {
 	EndIPAddress string `json:"endIPAddress,omitempty"`
 }
 
-func GetGREInternalIPRange(service *zscaler.Service, count int) (*[]GREInternalIPRange, error) {
+func GetGREInternalIPRange(ctx context.Context, service *zscaler.Service, count int) (*[]GREInternalIPRange, error) {
 	var greInternalIPRanges []GREInternalIPRange
-	err := service.Client.Read(fmt.Sprintf("%s?limit=%d", greTunnelIPRangeEndpoint, count), &greInternalIPRanges)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?limit=%d", greTunnelIPRangeEndpoint, count), &greInternalIPRanges)
 	if err != nil {
 		return nil, err
 	}

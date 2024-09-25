@@ -1,6 +1,7 @@
 package region
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -38,7 +39,7 @@ func TestRegionSearch(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			regions, err := GetDatacenterRegion(service, tc.prefix)
+			regions, err := GetDatacenterRegion(context.Background(), service, tc.prefix)
 			if err != nil {
 				t.Errorf("Error in %v: %v", tc.name, err)
 				return

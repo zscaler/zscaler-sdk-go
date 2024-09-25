@@ -30,7 +30,7 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
@@ -72,7 +72,7 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := applicationsegmentpra.Create(service, appSegment)
+	createdResource, _, err := applicationsegmentpra.Create(context.Background(), service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -99,13 +99,13 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 
-	certificateList, _, err := bacertificate.GetAll(service)
+	certificateList, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -150,7 +150,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := applicationsegmentinspection.Create(service, appSegment)
+	createdResource, _, err := applicationsegmentinspection.Create(context.Background(), service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -177,13 +177,13 @@ func TestBaApplicationSegment(t *testing.T) {
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 
-	certificateList, _, err := bacertificate.GetAll(service)
+	certificateList, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -226,7 +226,7 @@ func TestBaApplicationSegment(t *testing.T) {
 		},
 	}
 	// Test resource creation
-	createdResource, _, err := browseraccess.Create(service, appSegment)
+	createdResource, _, err := browseraccess.Create(context.Background(), service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -325,13 +325,13 @@ func cleanupResources(client *zscaler.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := applicationsegmentinspection.Delete(service, r.ID)
+		_, err := applicationsegmentinspection.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment inspection with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 
-	segmentGroupResources, _, err := segmentgroup.GetAll(service)
+	segmentGroupResources, _, err := segmentgroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get segment groups: %v", err)
 		return err
@@ -342,7 +342,7 @@ func cleanupResources(client *zscaler.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := segmentgroup.Delete(service, r.ID)
+		_, err := segmentgroup.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete segment groups with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}

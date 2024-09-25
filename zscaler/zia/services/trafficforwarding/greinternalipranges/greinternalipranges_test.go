@@ -1,6 +1,7 @@
 package greinternalipranges
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -15,7 +16,7 @@ func TestGREInternalIPRanges(t *testing.T) {
 
 	expectedCount := 10
 
-	ranges, err := GetGREInternalIPRange(service, expectedCount)
+	ranges, err := GetGREInternalIPRange(context.Background(), service, expectedCount)
 	if err != nil {
 		t.Errorf("Error retrieving GRE internal IP ranges: %v", err)
 		return

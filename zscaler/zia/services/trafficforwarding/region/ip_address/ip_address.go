@@ -1,6 +1,7 @@
 package ip_address
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -43,9 +44,9 @@ type ByIPAddress struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func GetByIPAddress(service *zscaler.Service, ipAddress string) (*ByIPAddress, error) {
+func GetByIPAddress(ctx context.Context, service *zscaler.Service, ipAddress string) (*ByIPAddress, error) {
 	var ip ByIPAddress
-	err := service.Client.Read(fmt.Sprintf("%s/%s", byIPAdddressEndpoint, url.QueryEscape(ipAddress)), &ip)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%s", byIPAdddressEndpoint, url.QueryEscape(ipAddress)), &ip)
 	if err != nil {
 		return nil, err
 	}

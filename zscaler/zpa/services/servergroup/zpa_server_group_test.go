@@ -1,6 +1,7 @@
 package servergroup
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -18,7 +19,7 @@ func TestServerGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
+	appConnGroup, _, err := appconnectorgroup.Create(context.Background(), service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
 		Description:              name,
 		Enabled:                  true,
@@ -44,11 +45,11 @@ func TestServerGroup(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appconnectorgroup.Get(service, appConnGroup.ID)
+		_, _, getErr := appconnectorgroup.Get(context.Background(), service, appConnGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appconnectorgroup.Delete(service, appConnGroup.ID)
+			_, err := appconnectorgroup.Delete(context.Background(), service, appConnGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting app connector group: %v", err)
 			}
@@ -67,7 +68,7 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := Create(service, &appGroup)
+	createdResource, _, err := Create(context.Background(), service, &appGroup)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -80,7 +81,7 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -92,11 +93,11 @@ func TestServerGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = Update(service, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -120,7 +121,7 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -139,14 +140,14 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	retrievedAfterDelete, _, err := Get(service, createdResource.ID)
+	retrievedAfterDelete, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
 		// Note: This is a basic check.
@@ -170,7 +171,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -182,7 +183,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -194,7 +195,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &ServerGroup{})
+	_, err = Update(context.Background(), service, "non_existent_id", &ServerGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -206,7 +207,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

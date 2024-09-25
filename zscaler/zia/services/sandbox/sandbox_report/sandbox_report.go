@@ -1,6 +1,7 @@
 package sandbox_report
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 
 const (
 	reportQuotaEndpoint = "/zia/api/v1/sandbox/report/quota"
-	reportMD5Endpoint   = "/sandbox/report/"
+	reportMD5Endpoint   = "/zia/api/v1/sandbox/report/"
 )
 
 type RatingQuota struct {
@@ -85,9 +86,9 @@ type SystemSummaryDetail struct {
 	SignatureSources []string `json:"SignatureSources,omitempty"`
 }
 
-func GetRatingQuota(service *zscaler.Service) ([]RatingQuota, error) {
+func GetRatingQuota(ctx context.Context, service *zscaler.Service) ([]RatingQuota, error) {
 	var quotas []RatingQuota
-	err := service.Client.Read(reportQuotaEndpoint, &quotas)
+	err := service.Client.Read(ctx, reportQuotaEndpoint, &quotas)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func GetRatingQuota(service *zscaler.Service) ([]RatingQuota, error) {
 }
 
 // GetReportMD5Hash retrieves the sandbox report for a specific MD5 hash with either full or summary details.
-func GetReportMD5Hash(service *zscaler.Service, md5Hash, details string) (*ReportMD5Hash, error) {
+func GetReportMD5Hash(ctx context.Context, service *zscaler.Service, md5Hash, details string) (*ReportMD5Hash, error) {
 	// Validate the 'details' parameter to ensure it is either "full" or "summary".
 	if details != "full" && details != "summary" {
 		return nil, fmt.Errorf("details parameter must be 'full' or 'summary'")
@@ -107,7 +108,7 @@ func GetReportMD5Hash(service *zscaler.Service, md5Hash, details string) (*Repor
 	endpoint := fmt.Sprintf("%s%s?details=%s", reportMD5Endpoint, md5Hash, details)
 
 	var resp map[string]interface{}
-	err := service.Client.Read(endpoint, &resp)
+	err := service.Client.Read(ctx, endpoint, &resp)
 	if err != nil {
 		return nil, err
 	}

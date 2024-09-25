@@ -1,6 +1,7 @@
 package virtualipaddress
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -19,7 +20,7 @@ func TestVIPs(t *testing.T) {
 		return
 	}
 
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -28,14 +29,14 @@ func TestVIPs(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticips.Delete(service, staticIP.ID)
+		_, err := staticips.Delete(context.Background(), service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
 	// Search for datacenters by source IP
-	dataCenterList, err := datacenter.SearchByDatacenters(service, common.DatacenterSearchParameters{
+	dataCenterList, err := datacenter.SearchByDatacenters(context.Background(), service, common.DatacenterSearchParameters{
 		SourceIp: ipAddress,
 	})
 	if err != nil {
@@ -56,7 +57,7 @@ func TestVIPs(t *testing.T) {
 
 		// Use the name of the first datacenter from the list
 		datacenterName := dataCenterList[0].Datacenter.Name
-		vips, err := GetZscalerVIPs(service, datacenterName)
+		vips, err := GetZscalerVIPs(context.Background(), service, datacenterName)
 		if err != nil {
 			t.Fatalf("Error fetching VIPs for datacenter %s: %v", datacenterName, err)
 		}
@@ -69,7 +70,7 @@ func TestVIPs(t *testing.T) {
 
 	// Test for GetZSGREVirtualIPList
 	t.Run("TestGetZSGREVirtualIPList", func(t *testing.T) {
-		vips, err := GetZSGREVirtualIPList(service, staticIP.IpAddress, 3)
+		vips, err := GetZSGREVirtualIPList(context.Background(), service, staticIP.IpAddress, 3)
 		if err != nil {
 			t.Fatalf("Error fetching GRE VIP list: %v", err)
 		}
@@ -83,7 +84,7 @@ func TestVIPs(t *testing.T) {
 		sourceIP := ipAddress // Assuming ipAddress from the staticIP
 		countryCode := "US"   // Replace with the appropriate country code
 
-		pairVips, err := GetPairZSGREVirtualIPsWithinCountry(service, sourceIP, countryCode)
+		pairVips, err := GetPairZSGREVirtualIPsWithinCountry(context.Background(), service, sourceIP, countryCode)
 		if err != nil {
 			t.Fatalf("Error fetching pair of VIPs within country: %v", err)
 		}
@@ -97,7 +98,7 @@ func TestVIPs(t *testing.T) {
 
 	// Test for GetAll
 	t.Run("TestGetAll", func(t *testing.T) {
-		allVips, err := GetAll(service, ipAddress)
+		allVips, err := GetAll(context.Background(), service, ipAddress)
 		if err != nil {
 			t.Fatalf("Error fetching all VIPs for source IP: %v", err)
 		}
@@ -108,7 +109,7 @@ func TestVIPs(t *testing.T) {
 
 	// Test for getAllStaticIPs
 	t.Run("TestGetAllStaticIPs", func(t *testing.T) {
-		staticIPs, err := getAllStaticIPs(service)
+		staticIPs, err := getAllStaticIPs(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Error fetching all static IPs: %v", err)
 		}
@@ -119,7 +120,7 @@ func TestVIPs(t *testing.T) {
 
 	// Test for GetAllSourceIPs
 	t.Run("TestGetAllSourceIPs", func(t *testing.T) {
-		allSourceIPs, err := GetAllSourceIPs(service)
+		allSourceIPs, err := GetAllSourceIPs(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Error fetching all source IPs: %v", err)
 		}
@@ -131,7 +132,8 @@ func TestVIPs(t *testing.T) {
 	// Test for GetVIPRecommendedList with all optional parameters
 	t.Run("TestGetVIPRecommendedList", func(t *testing.T) {
 		vips, err := GetVIPRecommendedList(
-			service,
+			context.Background(), // Correctly pass the context here
+			service,              // The second argument is your service client
 			WithSourceIP(ipAddress),
 			WithRoutableIP(true),
 			WithWithinCountryOnly(true),
@@ -148,4 +150,5 @@ func TestVIPs(t *testing.T) {
 			t.Errorf("Expected recommended VIPs, but got none")
 		}
 	})
+
 }

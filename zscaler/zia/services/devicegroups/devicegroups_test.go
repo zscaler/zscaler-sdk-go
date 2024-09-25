@@ -1,6 +1,7 @@
 package devicegroups
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestDevices_data(t *testing.T) {
 	}
 
 	// Retrieve all devices
-	devices, err := GetAllDevices(service)
+	devices, err := GetAllDevices(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting devices: %v", err)
 		return
@@ -31,7 +32,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByID
 	t.Run("GetDevicesByID", func(t *testing.T) {
-		deviceByID, err := GetDevicesByID(service, firstDevice.ID)
+		deviceByID, err := GetDevicesByID(context.Background(), service, firstDevice.ID)
 		if err != nil {
 			t.Errorf("Error getting device by ID: %v", err)
 			return
@@ -43,7 +44,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByName
 	t.Run("GetDevicesByName", func(t *testing.T) {
-		deviceByName, err := GetDevicesByName(service, firstDevice.Name)
+		deviceByName, err := GetDevicesByName(context.Background(), service, firstDevice.Name)
 		if err != nil {
 			t.Errorf("Error getting device by name: %v", err)
 			return
@@ -55,7 +56,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByModel
 	t.Run("GetDevicesByModel", func(t *testing.T) {
-		deviceByModel, err := GetDevicesByModel(service, firstDevice.DeviceModel)
+		deviceByModel, err := GetDevicesByModel(context.Background(), service, firstDevice.DeviceModel)
 		if err != nil {
 			t.Errorf("Error getting device by model: %v", err)
 			return
@@ -67,7 +68,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByOwner
 	t.Run("GetDevicesByOwner", func(t *testing.T) {
-		deviceByOwner, err := GetDevicesByOwner(service, firstDevice.OwnerName)
+		deviceByOwner, err := GetDevicesByOwner(context.Background(), service, firstDevice.OwnerName)
 		if err != nil {
 			t.Errorf("Error getting device by owner: %v", err)
 			return
@@ -79,7 +80,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByOSType
 	t.Run("GetDevicesByOSType", func(t *testing.T) {
-		deviceByOSType, err := GetDevicesByOSType(service, firstDevice.OSType)
+		deviceByOSType, err := GetDevicesByOSType(context.Background(), service, firstDevice.OSType)
 		if err != nil {
 			t.Errorf("Error getting device by OS type: %v", err)
 			return
@@ -91,7 +92,7 @@ func TestDevices_data(t *testing.T) {
 
 	// Test GetDevicesByOSVersion
 	t.Run("GetDevicesByOSVersion", func(t *testing.T) {
-		deviceByOSVersion, err := GetDevicesByOSVersion(service, firstDevice.OSVersion)
+		deviceByOSVersion, err := GetDevicesByOSVersion(context.Background(), service, firstDevice.OSVersion)
 		if err != nil {
 			t.Errorf("Error getting device by OS version: %v", err)
 			return
@@ -108,7 +109,7 @@ func TestDeviceGroup_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	groups, err := GetAllDevicesGroups(service)
+	groups, err := GetAllDevicesGroups(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting device groups: %v", err)
 		return
@@ -119,7 +120,7 @@ func TestDeviceGroup_data(t *testing.T) {
 	}
 	name := groups[0].Name
 	t.Log("Getting device group by name:" + name)
-	server, err := GetDeviceGroupByName(service, name)
+	server, err := GetDeviceGroupByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting device group by name: %v", err)
 		return
@@ -130,14 +131,14 @@ func TestDeviceGroup_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a device group with a non-existent name
 	nonExistentName := "ThisDeviceGroupDoesNotExist"
-	_, err = GetDeviceGroupByName(service, nonExistentName)
+	_, err = GetDeviceGroupByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
 	}
 
 	// Test the GetIncludeDeviceInfo function with includeDeviceInfo=true and includePseudoGroups=false
-	deviceInfos, err := GetIncludeDeviceInfo(service, true, false)
+	deviceInfos, err := GetIncludeDeviceInfo(context.Background(), service, true, false)
 	if err != nil {
 		t.Errorf("Error getting device info with includeDeviceInfo=true: %v", err)
 		return
@@ -149,7 +150,7 @@ func TestDeviceGroup_data(t *testing.T) {
 	}
 
 	// Test the GetIncludeDeviceInfo function with includeDeviceInfo=false and includePseudoGroups=true
-	deviceInfos, err = GetIncludeDeviceInfo(service, false, true)
+	deviceInfos, err = GetIncludeDeviceInfo(context.Background(), service, false, true)
 	if err != nil {
 		t.Errorf("Error getting device info with includePseudoGroups=true: %v", err)
 		return
@@ -161,7 +162,7 @@ func TestDeviceGroup_data(t *testing.T) {
 	}
 
 	// Test the GetIncludeDeviceInfo function with both includeDeviceInfo and includePseudoGroups set to true
-	deviceInfos, err = GetIncludeDeviceInfo(service, true, true)
+	deviceInfos, err = GetIncludeDeviceInfo(context.Background(), service, true, true)
 	if err != nil {
 		t.Errorf("Error getting device info with both includeDeviceInfo and includePseudoGroups=true: %v", err)
 		return
@@ -173,7 +174,7 @@ func TestDeviceGroup_data(t *testing.T) {
 	}
 
 	// Test the GetIncludeDeviceInfo function with both includeDeviceInfo and includePseudoGroups set to false
-	deviceInfos, err = GetIncludeDeviceInfo(service, false, false)
+	deviceInfos, err = GetIncludeDeviceInfo(context.Background(), service, false, false)
 	if err != nil {
 		t.Errorf("Error getting device info with both includeDeviceInfo and includePseudoGroups=false: %v", err)
 		return
@@ -191,7 +192,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	groups, err := GetAllDevicesGroups(service)
+	groups, err := GetAllDevicesGroups(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting device group: %v", err)
 		return
@@ -231,7 +232,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, err := GetDeviceGroupByName(service, variation)
+		group, err := GetDeviceGroupByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting device group with name variation '%s': %v", variation, err)
 			continue
@@ -251,7 +252,7 @@ func TestDeviceGroupFields(t *testing.T) {
 	}
 
 	// Retrieve all device groups
-	groups, err := GetAllDevicesGroups(service)
+	groups, err := GetAllDevicesGroups(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all device groups: %v", err)
 	}

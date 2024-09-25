@@ -1,6 +1,7 @@
 package gretunnels
 
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -53,7 +54,7 @@ func TestGRETunnel(t *testing.T) {
 		return
 	}
 
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -63,18 +64,18 @@ func TestGRETunnel(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, getErr := staticips.Get(service, staticIP.ID)
+		_, getErr := staticips.Get(context.Background(), service, staticIP.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := staticips.Delete(service, staticIP.ID)
+			_, err := staticips.Delete(context.Background(), service, staticIP.ID)
 			if err != nil {
 				t.Errorf("Error deleting static ip: %v", err)
 			}
 		}
 	}()
 
-	vipRecommendedList, err := virtualipaddress.GetAll(service, ipAddress)
+	vipRecommendedList, err := virtualipaddress.GetAll(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Errorf("Error getting recommended vip: %v", err)
 		return
@@ -100,14 +101,14 @@ func TestGRETunnel(t *testing.T) {
 	}
 
 	// Inside TestZPAGateways function
-	createdResource, _, err := CreateGreTunnels(service, &greTunnel)
+	createdResource, _, err := CreateGreTunnels(context.Background(), service, &greTunnel)
 	if err != nil {
 		t.Fatalf("Error creating GRE Tunnel resource: %v", err)
 	}
 
 	defer func() {
 		// Attempt to delete the resource
-		_, delErr := DeleteGreTunnels(service, createdResource.ID)
+		_, delErr := DeleteGreTunnels(context.Background(), service, createdResource.ID)
 		if delErr != nil {
 			// If the error indicates the resource is already deleted, log it as information
 			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
@@ -135,14 +136,14 @@ func TestGRETunnel(t *testing.T) {
 	retrievedResource.Comment = updateComment
 
 	err = retryOnConflict(func() error {
-		_, _, err = UpdateGreTunnels(service, createdResource.ID, retrievedResource)
+		_, _, err = UpdateGreTunnels(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := GetGreTunnels(service, createdResource.ID)
+	updatedResource, err := GetGreTunnels(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -154,7 +155,7 @@ func TestGRETunnel(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetByIPAddress(service, ipAddress)
+	retrievedResource, err = GetByIPAddress(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -165,7 +166,7 @@ func TestGRETunnel(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, createdResource.Comment)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -185,7 +186,7 @@ func TestGRETunnel(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := DeleteGreTunnels(service, createdResource.ID)
+		_, delErr := DeleteGreTunnels(context.Background(), service, createdResource.ID)
 		if delErr != nil {
 			// Check if the error is due to the resource not being found (i.e., already deleted)
 			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
@@ -209,7 +210,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*GreTunnels, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = GetGreTunnels(s, id)
+		resource, err = GetGreTunnels(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -227,7 +228,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = GetGreTunnels(service, 0)
+	_, err = GetGreTunnels(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -240,7 +241,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = DeleteGreTunnels(service, 0)
+	_, err = DeleteGreTunnels(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -253,7 +254,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, _, err = UpdateGreTunnels(service, 0, &GreTunnels{})
+	_, _, err = UpdateGreTunnels(context.Background(), service, 0, &GreTunnels{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -266,7 +267,7 @@ func TestGetByIPAddressNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = GetByIPAddress(service, "non-existent-ip-address")
+	_, err = GetByIPAddress(context.Background(), service, "non-existent-ip-address")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent ip address, but got nil")
 	}

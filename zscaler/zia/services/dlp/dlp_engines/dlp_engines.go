@@ -1,6 +1,7 @@
 package dlp_engines
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -35,9 +36,9 @@ type DLPEngines struct {
 	CustomDlpEngine bool `json:"customDlpEngine,omitempty"`
 }
 
-func Get(service *zscaler.Service, engineID int) (*DLPEngines, error) {
+func Get(ctx context.Context, service *zscaler.Service, engineID int) (*DLPEngines, error) {
 	var dlpEngines DLPEngines
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), &dlpEngines)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), &dlpEngines)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +47,8 @@ func Get(service *zscaler.Service, engineID int) (*DLPEngines, error) {
 	return &dlpEngines, nil
 }
 
-func GetByName(service *zscaler.Service, engineName string) (*DLPEngines, error) {
-	dlpEngines, err := GetAll(service)
+func GetByName(ctx context.Context, service *zscaler.Service, engineName string) (*DLPEngines, error) {
+	dlpEngines, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +60,8 @@ func GetByName(service *zscaler.Service, engineName string) (*DLPEngines, error)
 	return nil, fmt.Errorf("no dlp engine found with name: %s", engineName)
 }
 
-func Create(service *zscaler.Service, engineID *DLPEngines) (*DLPEngines, *http.Response, error) {
-	resp, err := service.Client.Create(dlpEnginesEndpoint, *engineID)
+func Create(ctx context.Context, service *zscaler.Service, engineID *DLPEngines) (*DLPEngines, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, dlpEnginesEndpoint, *engineID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,8 +75,8 @@ func Create(service *zscaler.Service, engineID *DLPEngines) (*DLPEngines, *http.
 	return createdDlpEngine, nil, nil
 }
 
-func Update(service *zscaler.Service, engineID int, engines *DLPEngines) (*DLPEngines, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), *engines)
+func Update(ctx context.Context, service *zscaler.Service, engineID int, engines *DLPEngines) (*DLPEngines, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), *engines)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,8 +86,8 @@ func Update(service *zscaler.Service, engineID int, engines *DLPEngines) (*DLPEn
 	return updatedDlpEngine, nil, nil
 }
 
-func Delete(service *zscaler.Service, engineID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
+func Delete(ctx context.Context, service *zscaler.Service, engineID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
 	if err != nil {
 		return nil, err
 	}
@@ -94,15 +95,15 @@ func Delete(service *zscaler.Service, engineID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]DLPEngines, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DLPEngines, error) {
 	var dlpEngines []DLPEngines
-	err := common.ReadAllPages(service.Client, dlpEnginesEndpoint, &dlpEngines)
+	err := common.ReadAllPages(ctx, service.Client, dlpEnginesEndpoint, &dlpEngines)
 	return dlpEngines, err
 }
 
 // Functions to for DLP Engine Lite query
-func GetEngineLiteID(service *zscaler.Service, engineID int) (*DLPEngines, error) {
-	dlpEngines, err := GetAllEngineLite(service)
+func GetEngineLiteID(ctx context.Context, service *zscaler.Service, engineID int) (*DLPEngines, error) {
+	dlpEngines, err := GetAllEngineLite(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +115,8 @@ func GetEngineLiteID(service *zscaler.Service, engineID int) (*DLPEngines, error
 	return nil, fmt.Errorf("no dlp engine found with ID: %d", engineID)
 }
 
-func GetByPredefinedEngine(service *zscaler.Service, engineName string) (*DLPEngines, error) {
-	dlpEngines, err := GetAllEngineLite(service)
+func GetByPredefinedEngine(ctx context.Context, service *zscaler.Service, engineName string) (*DLPEngines, error) {
+	dlpEngines, err := GetAllEngineLite(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +128,8 @@ func GetByPredefinedEngine(service *zscaler.Service, engineName string) (*DLPEng
 	return nil, fmt.Errorf("no predefined dlp engine found with name: %s", engineName)
 }
 
-func GetAllEngineLite(service *zscaler.Service) ([]DLPEngines, error) {
+func GetAllEngineLite(ctx context.Context, service *zscaler.Service) ([]DLPEngines, error) {
 	var engines []DLPEngines
-	err := common.ReadAllPages(service.Client, dlpEngineLiteEndpoint, &engines)
+	err := common.ReadAllPages(ctx, service.Client, dlpEngineLiteEndpoint, &engines)
 	return engines, err
 }

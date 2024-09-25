@@ -1,6 +1,7 @@
 package downloaddevices
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestDownloadDevices(t *testing.T) {
 	}
 	defer os.Remove(file.Name()) // clean up
 
-	err = DownloadDevices(service, osTypes, registrationTypes, file)
+	err = DownloadDevices(context.Background(), service, osTypes, registrationTypes, file)
 	if err != nil {
 		t.Fatalf("Error downloading devices: %v", err)
 	}

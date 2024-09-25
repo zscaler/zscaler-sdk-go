@@ -77,7 +77,7 @@ func TestUserManagement(t *testing.T) {
 	rPassword := tests.TestPassword(20)
 	user := Users{
 		Name:     name,
-		Email:    email + "@bd-hashicorp.com",
+		Email:    email + "@securitygeek.io",
 		Password: rPassword,
 		Comments: updateComments,
 		Groups: []common.IDNameExtensions{

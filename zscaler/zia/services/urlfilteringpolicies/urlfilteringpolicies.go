@@ -1,6 +1,7 @@
 package urlfilteringpolicies
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -146,9 +147,9 @@ type CBIProfile struct {
 	DefaultProfile bool `json:"defaultProfile"`
 }
 
-func Get(service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
+func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
 	var urlFilteringPolicies URLFilteringRule
-	err := service.Client.Read(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +158,9 @@ func Get(service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
 	return &urlFilteringPolicies, nil
 }
 
-func GetByName(service *zscaler.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
-	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}
@@ -171,8 +172,8 @@ func GetByName(service *zscaler.Service, urlFilteringPolicyName string) (*URLFil
 	return nil, fmt.Errorf("no url filtering rule found with name: %s", urlFilteringPolicyName)
 }
 
-func Create(service *zscaler.Service, ruleID *URLFilteringRule) (*URLFilteringRule, error) {
-	resp, err := service.Client.Create(urlFilteringPoliciesEndpoint, *ruleID)
+func Create(ctx context.Context, service *zscaler.Service, ruleID *URLFilteringRule) (*URLFilteringRule, error) {
+	resp, err := service.Client.Create(ctx, urlFilteringPoliciesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,13 +187,13 @@ func Create(service *zscaler.Service, ruleID *URLFilteringRule) (*URLFilteringRu
 	return createdURLFilteringRule, nil
 }
 
-func Update(service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
 	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
 	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
 		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
 		var urlFilteringPolicies []URLFilteringRule
-		err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+		err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -203,7 +204,7 @@ func Update(service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLF
 			}
 		}
 	}
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -213,8 +214,8 @@ func Update(service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLF
 	return updatedURLFilteringRule, nil, nil
 }
 
-func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
+func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
@@ -223,9 +224,9 @@ func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
 }
 
 // GetAll returns the all rules.
-func GetAll(service *zscaler.Service) ([]URLFilteringRule, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
-	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package dlp_notification_templates
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -37,9 +38,9 @@ type DlpNotificationTemplates struct {
 	TLSEnabled bool `json:"tlsEnabled,omitempty"`
 }
 
-func Get(service *zscaler.Service, dlpTemplateID int) (*DlpNotificationTemplates, error) {
+func Get(ctx context.Context, service *zscaler.Service, dlpTemplateID int) (*DlpNotificationTemplates, error) {
 	var dlpTemplates DlpNotificationTemplates
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), &dlpTemplates)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), &dlpTemplates)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +49,9 @@ func Get(service *zscaler.Service, dlpTemplateID int) (*DlpNotificationTemplates
 	return &dlpTemplates, nil
 }
 
-func GetByName(service *zscaler.Service, templateName string) (*DlpNotificationTemplates, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, templateName string) (*DlpNotificationTemplates, error) {
 	var dlpTemplates []DlpNotificationTemplates
-	err := common.ReadAllPages(service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
+	err := common.ReadAllPages(ctx, service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +63,8 @@ func GetByName(service *zscaler.Service, templateName string) (*DlpNotificationT
 	return nil, fmt.Errorf("no dictionary found with name: %s", templateName)
 }
 
-func Create(service *zscaler.Service, dlpTemplateID *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
-	resp, err := service.Client.Create(dlpNotificationTemplatesEndpoint, *dlpTemplateID)
+func Create(ctx context.Context, service *zscaler.Service, dlpTemplateID *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, dlpNotificationTemplatesEndpoint, *dlpTemplateID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -77,8 +78,8 @@ func Create(service *zscaler.Service, dlpTemplateID *DlpNotificationTemplates) (
 	return createdDlpTemplate, nil, nil
 }
 
-func Update(service *zscaler.Service, dlpTemplateID int, dlpTemplates *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), *dlpTemplates)
+func Update(ctx context.Context, service *zscaler.Service, dlpTemplateID int, dlpTemplates *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), *dlpTemplates)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,8 +89,8 @@ func Update(service *zscaler.Service, dlpTemplateID int, dlpTemplates *DlpNotifi
 	return updatedDlpTemplate, nil, nil
 }
 
-func Delete(service *zscaler.Service, dlpTemplateID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID))
+func Delete(ctx context.Context, service *zscaler.Service, dlpTemplateID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID))
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +98,8 @@ func Delete(service *zscaler.Service, dlpTemplateID int) (*http.Response, error)
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]DlpNotificationTemplates, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DlpNotificationTemplates, error) {
 	var dlpTemplates []DlpNotificationTemplates
-	err := common.ReadAllPages(service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
+	err := common.ReadAllPages(ctx, service.Client, dlpNotificationTemplatesEndpoint, &dlpTemplates)
 	return dlpTemplates, err
 }

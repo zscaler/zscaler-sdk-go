@@ -1,6 +1,7 @@
 package customerversionprofile
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -53,9 +54,9 @@ type Versions struct {
 	VersionProfileGID        string `json:"version_profile_gid"`
 }
 
-func GetByName(service *zscaler.Service, versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customerVersionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,9 +68,9 @@ func GetByName(service *zscaler.Service, versionProfileName string) (*CustomerVe
 	return nil, resp, fmt.Errorf("no version profile named '%s' was found", versionProfileName)
 }
 
-func GetAll(service *zscaler.Service) ([]CustomerVersionProfile, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customerVersionProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

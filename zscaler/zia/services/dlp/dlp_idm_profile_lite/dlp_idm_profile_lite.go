@@ -1,6 +1,7 @@
 package dlp_idm_profile_lite
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -34,7 +35,7 @@ type DLPIDMProfileLite struct {
 	ModifiedBy *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
-func GetDLPProfileLiteID(service *zscaler.Service, ProfileLiteID int, activeOnly bool) (*DLPIDMProfileLite, error) {
+func GetDLPProfileLiteID(ctx context.Context, service *zscaler.Service, ProfileLiteID int, activeOnly bool) (*DLPIDMProfileLite, error) {
 	endpoint := dlpIDMProfileLiteEndpoint
 	if activeOnly {
 		endpoint += "?activeOnly=true"
@@ -43,7 +44,7 @@ func GetDLPProfileLiteID(service *zscaler.Service, ProfileLiteID int, activeOnly
 	}
 
 	var profiles []DLPIDMProfileLite
-	err := service.Client.Read(endpoint, &profiles)
+	err := service.Client.Read(ctx, endpoint, &profiles)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func GetDLPProfileLiteID(service *zscaler.Service, ProfileLiteID int, activeOnly
 	return nil, fmt.Errorf("no DLP profile found with ProfileLiteID: %d", ProfileLiteID)
 }
 
-func GetDLPProfileLiteByName(service *zscaler.Service, profileLiteName string, activeOnly bool) (*DLPIDMProfileLite, error) {
+func GetDLPProfileLiteByName(ctx context.Context, service *zscaler.Service, profileLiteName string, activeOnly bool) (*DLPIDMProfileLite, error) {
 	queryParameters := url.Values{}
 	queryParameters.Set("name", profileLiteName)
 	if activeOnly {
@@ -67,7 +68,7 @@ func GetDLPProfileLiteByName(service *zscaler.Service, profileLiteName string, a
 
 	endpoint := fmt.Sprintf("%s?%s", dlpIDMProfileLiteEndpoint, queryParameters.Encode())
 	var profileLite []DLPIDMProfileLite
-	err := common.ReadAllPages(service.Client, endpoint, &profileLite)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &profileLite)
 	if err != nil {
 		return nil, err
 	}
@@ -79,13 +80,13 @@ func GetDLPProfileLiteByName(service *zscaler.Service, profileLiteName string, a
 	return nil, fmt.Errorf("no idm profile template found with name: %s", profileLiteName)
 }
 
-func GetAll(service *zscaler.Service, activeOnly bool) ([]DLPIDMProfileLite, error) {
+func GetAll(ctx context.Context, service *zscaler.Service, activeOnly bool) ([]DLPIDMProfileLite, error) {
 	endpoint := dlpIDMProfileLiteEndpoint
 	if activeOnly {
 		endpoint += "?activeOnly=true"
 	}
 
 	var idmpProfile []DLPIDMProfileLite
-	err := common.ReadAllPages(service.Client, endpoint, &idmpProfile)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &idmpProfile)
 	return idmpProfile, err
 }

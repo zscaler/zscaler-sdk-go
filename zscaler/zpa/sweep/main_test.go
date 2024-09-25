@@ -1,6 +1,7 @@
 package sweep
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -122,7 +123,7 @@ func sweep() error {
 
 func sweepAppConnectorGroups(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := appconnectorgroup.GetAll(service)
+	resources, _, err := appconnectorgroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get app connector groups: %v", err)
 		return err
@@ -133,7 +134,7 @@ func sweepAppConnectorGroups(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := appconnectorgroup.Delete(service, r.ID)
+		_, err := appconnectorgroup.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete app connector group with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -143,7 +144,7 @@ func sweepAppConnectorGroups(client *zscaler.Client) error {
 
 func sweepApplicationServers(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := appservercontroller.GetAll(service)
+	resources, _, err := appservercontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application server: %v", err)
 		return err
@@ -154,7 +155,7 @@ func sweepApplicationServers(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := appservercontroller.Delete(service, r.ID)
+		_, err := appservercontroller.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application server with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -164,7 +165,7 @@ func sweepApplicationServers(client *zscaler.Client) error {
 
 func sweepApplicationSegment(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := applicationsegment.GetAll(service)
+	resources, _, err := applicationsegment.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment: %v", err)
 		return err
@@ -175,7 +176,7 @@ func sweepApplicationSegment(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := applicationsegment.Delete(service, r.ID)
+		_, err := applicationsegment.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -185,7 +186,7 @@ func sweepApplicationSegment(client *zscaler.Client) error {
 
 func sweepBaCertificateController(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := bacertificate.GetAll(service)
+	resources, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get browser access certificate: %v", err)
 		return err
@@ -196,7 +197,7 @@ func sweepBaCertificateController(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := bacertificate.Delete(service, r.ID)
+		_, err := bacertificate.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete browser access certificate with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -206,7 +207,7 @@ func sweepBaCertificateController(client *zscaler.Client) error {
 
 func sweepCBIBannerController(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := cbibannercontroller.GetAll(service)
+	resources, _, err := cbibannercontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi banner controller: %v", err)
 		return err
@@ -217,7 +218,7 @@ func sweepCBIBannerController(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := cbibannercontroller.Delete(service, r.ID)
+		_, err := cbibannercontroller.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete cbi banner controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -227,7 +228,7 @@ func sweepCBIBannerController(client *zscaler.Client) error {
 
 func sweepCBICertificateController(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := cbicertificatecontroller.GetAll(service)
+	resources, _, err := cbicertificatecontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi certificate controller: %v", err)
 		return err
@@ -237,7 +238,7 @@ func sweepCBICertificateController(client *zscaler.Client) error {
 		// Check if the resource's name starts with "tests-" or "updated-"
 		if strings.HasPrefix(r.Name, "tests-") || strings.HasPrefix(r.Name, "updated-") {
 			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-			_, err := cbicertificatecontroller.Delete(service, r.ID)
+			_, err := cbicertificatecontroller.Delete(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete cbi certificate controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 			}
@@ -248,7 +249,7 @@ func sweepCBICertificateController(client *zscaler.Client) error {
 
 func sweepCBIProfileController(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := cbiprofilecontroller.GetAll(service)
+	resources, _, err := cbiprofilecontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi profile controller: %v", err)
 		return err
@@ -259,7 +260,7 @@ func sweepCBIProfileController(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := cbiprofilecontroller.Delete(service, r.ID)
+		_, err := cbiprofilecontroller.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete cbi profile controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -269,7 +270,7 @@ func sweepCBIProfileController(client *zscaler.Client) error {
 
 func sweepInspectionCustomControl(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := inspection_custom_controls.GetAll(service)
+	resources, _, err := inspection_custom_controls.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get inspection custom control: %v", err)
 		return err
@@ -280,7 +281,7 @@ func sweepInspectionCustomControl(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := inspection_custom_controls.Delete(service, r.ID)
+		_, err := inspection_custom_controls.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete inspection custom control with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -290,7 +291,7 @@ func sweepInspectionCustomControl(client *zscaler.Client) error {
 
 func sweepInspectionProfile(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := inspection_profile.GetAll(service)
+	resources, _, err := inspection_profile.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get inspection profile: %v", err)
 		return err
@@ -301,7 +302,7 @@ func sweepInspectionProfile(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := inspection_profile.Delete(service, r.ID)
+		_, err := inspection_profile.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete inspection profile with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -311,7 +312,7 @@ func sweepInspectionProfile(client *zscaler.Client) error {
 
 func sweepLSSController(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := lssconfigcontroller.GetAll(service)
+	resources, _, err := lssconfigcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get lss config controller: %v", err)
 		return err
@@ -322,7 +323,7 @@ func sweepLSSController(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.LSSConfig.Name)
-		_, err := lssconfigcontroller.Delete(service, r.ID)
+		_, err := lssconfigcontroller.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete lss config controller with ID: %s, Name: %s: %v", r.ID, r.LSSConfig.Name, err)
 		}
@@ -332,7 +333,7 @@ func sweepLSSController(client *zscaler.Client) error {
 
 func sweepMicrotenants(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := microtenants.GetAll(service)
+	resources, _, err := microtenants.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get microtenants: %v", err)
 		return err
@@ -343,7 +344,7 @@ func sweepMicrotenants(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := microtenants.Delete(service, r.ID)
+		_, err := microtenants.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete microtenants with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -353,7 +354,7 @@ func sweepMicrotenants(client *zscaler.Client) error {
 
 func sweepSegmentGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := segmentgroup.GetAll(service)
+	resources, _, err := segmentgroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get segment group: %v", err)
 		return err
@@ -364,7 +365,7 @@ func sweepSegmentGroup(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := segmentgroup.Delete(service, r.ID)
+		_, err := segmentgroup.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete segment group with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -374,7 +375,7 @@ func sweepSegmentGroup(client *zscaler.Client) error {
 
 func sweepServerGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := servergroup.GetAll(service)
+	resources, _, err := servergroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get server group: %v", err)
 		return err
@@ -385,7 +386,7 @@ func sweepServerGroup(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := servergroup.Delete(service, r.ID)
+		_, err := servergroup.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete server group with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -395,7 +396,7 @@ func sweepServerGroup(client *zscaler.Client) error {
 
 func sweepServiceEdgeGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := serviceedgegroup.GetAll(service)
+	resources, _, err := serviceedgegroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get service edge group: %v", err)
 		return err
@@ -406,7 +407,7 @@ func sweepServiceEdgeGroup(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := serviceedgegroup.Delete(service, r.ID)
+		_, err := serviceedgegroup.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete service edge group with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -421,7 +422,7 @@ func sweepProvisioningKey(client *zscaler.Client) error {
 	associationTypes := []string{"CONNECTOR_GRP", "SERVICE_EDGE_GRP"}
 
 	for _, associationType := range associationTypes {
-		resources, err := provisioningkey.GetAllByAssociationType(service, associationType)
+		resources, err := provisioningkey.GetAllByAssociationType(context.Background(), service, associationType)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get provisioning keys for association type %s: %v", associationType, err)
 			return err
@@ -432,7 +433,7 @@ func sweepProvisioningKey(client *zscaler.Client) error {
 				continue
 			}
 			log.Printf("Deleting provisioning key with ID: %s, Name: %s, AssociationType: %s", r.ID, r.Name, associationType)
-			_, err := provisioningkey.Delete(service, associationType, r.ID) // Assuming Delete method requires ID and associationType
+			_, err := provisioningkey.Delete(context.Background(), service, associationType, r.ID) // Assuming Delete method requires ID and associationType
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete provisioning key with ID: %s, Name: %s, AssociationType: %s: %v", r.ID, r.Name, associationType, err)
 			}
@@ -448,14 +449,14 @@ func sweepPolicySetController(client *zscaler.Client) error {
 
 	for _, policyType := range policyTypes {
 		// Fetch the global policy set ID for the current policy type
-		globalPolicySet, _, err := policysetcontroller.GetByPolicyType(service, policyType)
+		globalPolicySet, _, err := policysetcontroller.GetByPolicyType(context.Background(), service, policyType)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get global policy set for policy type %s: %v", policyType, err)
 			return err
 		}
 
 		// Fetch all rules for the current policy type
-		resources, _, err := policysetcontroller.GetAllByType(service, policyType)
+		resources, _, err := policysetcontroller.GetAllByType(context.Background(), service, policyType)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get access rules for policy type %s: %v", policyType, err)
 			return err
@@ -466,7 +467,7 @@ func sweepPolicySetController(client *zscaler.Client) error {
 				continue
 			}
 			log.Printf("Deleting access rule with ID: %s, Name: %s, PolicyType: %s, PolicySetID: %s", r.ID, r.Name, policyType, globalPolicySet.ID)
-			_, err := policysetcontroller.Delete(service, globalPolicySet.ID, r.ID) // Use the fetched policySetID for deletion
+			_, err := policysetcontroller.Delete(context.Background(), service, globalPolicySet.ID, r.ID) // Use the fetched policySetID for deletion
 			if err != nil {
 				log.Printf("[ERROR] Failed to delete access rule with ID: %s, Name: %s, PolicyType: %s, PolicySetID: %s: %v", r.ID, r.Name, policyType, globalPolicySet.ID, err)
 			}
@@ -477,7 +478,7 @@ func sweepPolicySetController(client *zscaler.Client) error {
 
 func sweeppracredential(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := pracredential.GetAll(service)
+	resources, _, err := pracredential.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get credential controller: %v", err)
 		return err
@@ -488,7 +489,7 @@ func sweeppracredential(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := pracredential.Delete(service, r.ID)
+		_, err := pracredential.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete credential controller with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -498,7 +499,7 @@ func sweeppracredential(client *zscaler.Client) error {
 
 func sweepPRAConsole(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := praconsole.GetAll(service)
+	resources, _, err := praconsole.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get pra console: %v", err)
 		return err
@@ -509,7 +510,7 @@ func sweepPRAConsole(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := praconsole.Delete(service, r.ID)
+		_, err := praconsole.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete pra console with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -519,7 +520,7 @@ func sweepPRAConsole(client *zscaler.Client) error {
 
 func sweepPRAPortal(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
-	resources, _, err := praportal.GetAll(service)
+	resources, _, err := praportal.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get pra portal: %v", err)
 		return err
@@ -530,7 +531,7 @@ func sweepPRAPortal(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := praportal.Delete(service, r.ID)
+		_, err := praportal.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete pra portal with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -542,7 +543,7 @@ func sweepPrivilegedApproval(client *zscaler.Client) error {
 	service := zscaler.NewService(client)
 
 	// Retrieve all privileged approvals
-	approvals, _, err := praapproval.GetAll(service)
+	approvals, _, err := praapproval.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get all privileged approvals: %v", err)
 		return err
@@ -551,7 +552,7 @@ func sweepPrivilegedApproval(client *zscaler.Client) error {
 	// Delete each privileged approval by ID
 	for _, approval := range approvals {
 		log.Printf("Deleting privileged approval with ID: %s", approval.ID)
-		resp, err := praapproval.Delete(service, approval.ID)
+		resp, err := praapproval.Delete(context.Background(), service, approval.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete privileged approval with ID: %s: %v", approval.ID, err)
 			return err

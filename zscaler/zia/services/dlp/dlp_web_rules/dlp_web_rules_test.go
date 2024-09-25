@@ -108,7 +108,7 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &rule)
+		createdResource, err = Create(context.Background(), service, &rule)
 		return err
 	})
 	if err != nil {
@@ -138,14 +138,14 @@ func TestDLPWebRule(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, err = Update(service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(service, updateName)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := GetAll(service)
+	allResources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -194,14 +194,14 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(service, createdResource.ID)
+		_, getErr := Get(context.Background(), service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -230,7 +230,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -242,7 +242,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -254,7 +254,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, 0, &WebDLPRules{})
+	_, err = Update(context.Background(), service, 0, &WebDLPRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -266,7 +266,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetByName(service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

@@ -1,6 +1,7 @@
 package cloudconnectorgroup
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -44,10 +45,10 @@ type CloudConnectors struct {
 	MicroTenantName string                 `json:"microtenantName,omitempty"`
 }
 
-func Get(service *zscaler.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
 	v := new(CloudConnectorGroup)
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,9 +56,9 @@ func Get(service *zscaler.Service, cloudConnectorGroupID string) (*CloudConnecto
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,9 +70,9 @@ func GetByName(service *zscaler.Service, cloudConnectorGroupName string) (*Cloud
 	return nil, resp, fmt.Errorf("no application named '%s' was found", cloudConnectorGroupName)
 }
 
-func GetAll(service *zscaler.Service) ([]CloudConnectorGroup, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

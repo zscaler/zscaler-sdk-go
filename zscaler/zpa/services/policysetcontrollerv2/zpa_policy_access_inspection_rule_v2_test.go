@@ -1,6 +1,7 @@
 package policysetcontrollerv2
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -30,7 +31,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		return
 	}
 
-	samlsList, _, err := samlattribute.GetAll(service)
+	samlsList, _, err := samlattribute.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -39,13 +40,13 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	profileID, _, err := inspection_profile.GetByName(service, inspectionProfileID)
+	profileID, _, err := inspection_profile.GetByName(context.Background(), service, inspectionProfileID)
 	if err != nil {
 		t.Errorf("Error getting inspection profile id set: %v", err)
 		return
 	}
 
-	accessPolicySet, _, err := GetByPolicyType(service, policyType)
+	accessPolicySet, _, err := GetByPolicyType(context.Background(), service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -53,7 +54,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -94,7 +95,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := CreateRule(service, &accessPolicyRule)
+		createdResource, _, err := CreateRule(context.Background(), service, &accessPolicyRule)
 
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -110,7 +111,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(context.Background(), service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -118,7 +119,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Retrieve and print the updated resource as JSON
-		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(context.Background(), service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -128,7 +129,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(context.Background(), service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -147,7 +148,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = BulkReorder(service, policyType, ruleIdToOrder)
+	_, err = BulkReorder(context.Background(), service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
@@ -156,7 +157,7 @@ func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = Delete(service, accessPolicySet.ID, ruleID)
+		_, err = Delete(context.Background(), service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

@@ -22,11 +22,11 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// Create new resource
-	createdResource, _, err := Create(service, &EmergencyAccess{
+	createdResource, _, err := Create(context.Background(), service, &EmergencyAccess{
 		ActivatedOn:       "1",
 		AllowedActivate:   true,
 		AllowedDeactivate: true,
-		EmailID:           randomName + "@bd-hashicorp.com",
+		EmailID:           randomName + "@securitygeek.io",
 		FirstName:         "John",
 		LastName:          "Smith",
 		UserID:            "jsmith",
@@ -36,7 +36,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// *** New Step: Test GetByEmailID ***
-	searchedResource, _, err := GetByEmailID(service, createdResource.EmailID)
+	searchedResource, _, err := GetByEmailID(context.Background(), service, createdResource.EmailID)
 	if err != nil {
 		t.Errorf("Failed to get emergency user by EmailID: %v", err)
 	} else {
@@ -45,7 +45,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// Test Get
-	gotResource, _, err := Get(service, createdResource.UserID)
+	gotResource, _, err := Get(context.Background(), service, createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to get emergency user by UserID: %v", err)
 	}
@@ -56,20 +56,20 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	//Test Update
 	updatedResource := *createdResource
 	updatedResource.FirstName = randomName
-	_, err = Update(service, createdResource.UserID, &updatedResource)
+	_, err = Update(context.Background(), service, createdResource.UserID, &updatedResource)
 	if err != nil {
 		t.Errorf("Failed to update emergency user: %v", err)
 	}
 
 	// Verify Update
-	updated, _, err := Get(service, createdResource.UserID)
+	updated, _, err := Get(context.Background(), service, createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to get updated emergency user: %v", err)
 	}
 	assert.Equal(t, randomName, updated.FirstName, "FirstName was not updated")
 
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// Test Emergency Access User Deactivation
-	_, err = Deactivate(service, createdResource.UserID)
+	_, err = Deactivate(context.Background(), service, createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to deactivate emergency user: %v", err)
 	}
@@ -98,13 +98,13 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	// Test Emergency Access User Activate
-	_, err = Activate(service, createdResource.UserID)
+	_, err = Activate(context.Background(), service, createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to activate emergency user: %v", err)
 	}
 
 	// Test Emergency Access User Deactivation
-	_, err = Deactivate(service, createdResource.UserID)
+	_, err = Deactivate(context.Background(), service, createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to deactivate emergency user: %v", err)
 	}

@@ -1,6 +1,7 @@
 package praconsole
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -59,10 +60,10 @@ type PRAPortals struct {
 	Name string `json:"name,omitempty"`
 }
 
-func Get(service *zscaler.Service, consoleID string) (*PRAConsole, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, consoleID string) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -70,10 +71,10 @@ func Get(service *zscaler.Service, consoleID string) (*PRAConsole, *http.Respons
 	return v, resp, nil
 }
 
-func GetPraPortal(service *zscaler.Service, portalID string) (*PRAConsole, *http.Response, error) {
+func GetPraPortal(ctx context.Context, service *zscaler.Service, portalID string) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint+"/praPortal", portalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -81,9 +82,9 @@ func GetPraPortal(service *zscaler.Service, portalID string) (*PRAConsole, *http
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, consoleName string) (*PRAConsole, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, consoleName string) (*PRAConsole, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praConsoleEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{Search: consoleName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](ctx, service.Client, relativeURL, common.Filter{Search: consoleName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,28 +96,28 @@ func GetByName(service *zscaler.Service, consoleName string) (*PRAConsole, *http
 	return nil, resp, fmt.Errorf("no pra  console named '%s' was found", consoleName)
 }
 
-func Create(service *zscaler.Service, praConsole *PRAConsole) (*PRAConsole, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, praConsole *PRAConsole) (*PRAConsole, *http.Response, error) {
 	v := new(PRAConsole)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func CreatePraBulk(service *zscaler.Service, praConsoles []PRAConsole) ([]PRAConsole, *http.Response, error) {
+func CreatePraBulk(ctx context.Context, service *zscaler.Service, praConsoles []PRAConsole) ([]PRAConsole, *http.Response, error) {
 	var responseConsoles []PRAConsole
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praConsoleBulkEndpoint
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsoles, &responseConsoles)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsoles, &responseConsoles)
 	if err != nil {
 		return nil, nil, err
 	}
 	return responseConsoles, resp, nil
 }
 
-func Update(service *zscaler.Service, consoleID string, praConsole *PRAConsole) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, consoleID string, praConsole *PRAConsole) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, praConsole, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -124,18 +125,18 @@ func Update(service *zscaler.Service, consoleID string, praConsole *PRAConsole) 
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, consoleID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, consoleID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praConsoleEndpoint, consoleID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]PRAConsole, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]PRAConsole, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praConsoleEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAConsole](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

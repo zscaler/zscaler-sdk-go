@@ -1,6 +1,7 @@
 package locationlite
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -77,9 +78,9 @@ type LocationLite struct {
 	DigestAuthEnabled bool `json:"digestAuthEnabled,omitempty"`
 }
 
-func GetLocationLiteID(service *zscaler.Service, locationID int) (*LocationLite, error) {
+func GetLocationLiteID(ctx context.Context, service *zscaler.Service, locationID int) (*LocationLite, error) {
 	var locationLite LocationLite
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationLiteEndpoint, locationID), &locationLite)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", locationLiteEndpoint, locationID), &locationLite)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +89,9 @@ func GetLocationLiteID(service *zscaler.Service, locationID int) (*LocationLite,
 	return &locationLite, nil
 }
 
-func GetLocationLiteByName(service *zscaler.Service, locationLiteName string) (*LocationLite, error) {
+func GetLocationLiteByName(ctx context.Context, service *zscaler.Service, locationLiteName string) (*LocationLite, error) {
 	var locationsLite []LocationLite
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationLiteEndpoint, url.QueryEscape(locationLiteName)), &locationsLite)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?name=%s", locationLiteEndpoint, url.QueryEscape(locationLiteName)), &locationsLite)
 	if err != nil {
 		return nil, err
 	}
@@ -102,8 +103,8 @@ func GetLocationLiteByName(service *zscaler.Service, locationLiteName string) (*
 	return nil, fmt.Errorf("no location found with name: %s", locationLiteName)
 }
 
-func GetAll(service *zscaler.Service) ([]LocationLite, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]LocationLite, error) {
 	var locations []LocationLite
-	err := common.ReadAllPages(service.Client, locationLiteEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationLiteEndpoint, &locations)
 	return locations, err
 }

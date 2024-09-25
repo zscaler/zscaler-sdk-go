@@ -1,6 +1,7 @@
 package ipdestinationgroups
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -40,9 +41,9 @@ type IPDestinationGroups struct {
 	IsNonEditable bool `json:"isNonEditable,omitempty"`
 }
 
-func Get(service *zscaler.Service, ipGroupID int) (*IPDestinationGroups, error) {
+func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPDestinationGroups, error) {
 	var ipDestinationGroups IPDestinationGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), &ipDestinationGroups)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), &ipDestinationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +52,9 @@ func Get(service *zscaler.Service, ipGroupID int) (*IPDestinationGroups, error) 
 	return &ipDestinationGroups, nil
 }
 
-func GetByName(service *zscaler.Service, ipDestinationGroupsName string) (*IPDestinationGroups, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, ipDestinationGroupsName string) (*IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
-	err := common.ReadAllPages(service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
+	err := common.ReadAllPages(ctx, service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +66,8 @@ func GetByName(service *zscaler.Service, ipDestinationGroupsName string) (*IPDes
 	return nil, fmt.Errorf("no ip destination group found with name: %s", ipDestinationGroupsName)
 }
 
-func Create(service *zscaler.Service, ipGroupID *IPDestinationGroups) (*IPDestinationGroups, error) {
-	resp, err := service.Client.Create(ipDestinationGroupsEndpoint, *ipGroupID)
+func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPDestinationGroups) (*IPDestinationGroups, error) {
+	resp, err := service.Client.Create(ctx, ipDestinationGroupsEndpoint, *ipGroupID)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +81,8 @@ func Create(service *zscaler.Service, ipGroupID *IPDestinationGroups) (*IPDestin
 	return createdIPDestinationGroups, nil
 }
 
-func Update(service *zscaler.Service, ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
+func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -91,8 +92,8 @@ func Update(service *zscaler.Service, ipGroupID int, ipGroup *IPDestinationGroup
 	return updatedIPDestinationGroups, nil, nil
 }
 
-func Delete(service *zscaler.Service, ipGroupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID))
+func Delete(ctx context.Context, service *zscaler.Service, ipGroupID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID))
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +101,8 @@ func Delete(service *zscaler.Service, ipGroupID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]IPDestinationGroups, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
-	err := common.ReadAllPages(service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
+	err := common.ReadAllPages(ctx, service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
 	return ipDestinationGroups, err
 }

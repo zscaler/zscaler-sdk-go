@@ -132,7 +132,7 @@ func (c *Client) startTokenRenewalTicker() {
 					select {
 					case <-ticker.C:
 						// Refresh the token
-						authToken, err := Authenticate(c.oauth2Credentials, c.Logger)
+						authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.Logger)
 						if err != nil {
 							c.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
 						} else {
@@ -269,7 +269,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
-func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) (*http.Request, error) {
+func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) (*http.Request, error) {
 
 	if contentType == "" {
 		contentType = contentTypeJSON
@@ -290,8 +290,8 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
 		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token
 	} else if isZPARequest {
-		// Append customerId for ZPA requests
-		if c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
+		// Only append customerId to query parameters if it's not already in the URL path
+		if !strings.Contains(endpoint, fmt.Sprintf("/customers/%s", c.oauth2Credentials.Zscaler.Client.CustomerID)) && c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
 			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
 		}
 		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
@@ -312,8 +312,8 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		fullURL += "?" + params
 	}
 
-	// Create the HTTP request
-	req, err := http.NewRequest(method, fullURL, body)
+	// Create the HTTP request with context
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -328,13 +328,19 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+		// Extract token from context if available
+		if token, ok := ctx.Value(ContextAccessToken).(string); ok && token != "" {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		} else {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+		}
 	}
+
 	return req, nil
 }
 
-func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
-	req, err := c.buildRequest(method, endpoint, body, urlParams, contentType)
+func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -425,8 +431,10 @@ func (c *Client) authenticate() error {
 	c.Lock()
 	defer c.Unlock()
 
+	// Check if the AuthToken is nil, empty, or expired
 	if c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken) {
-		authToken, err := Authenticate(c.oauth2Credentials, c.Logger)
+		// Pass the context from the Configuration along with the other arguments
+		authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.Logger)
 		if err != nil {
 			return err
 		}

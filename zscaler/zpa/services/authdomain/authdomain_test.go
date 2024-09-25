@@ -1,6 +1,7 @@
 package authdomain
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -12,7 +13,7 @@ func TestGetAllAuthDomains(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	domains, resp, err := GetAllAuthDomains(service)
+	domains, resp, err := GetAllAuthDomains(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Failed to fetch authentication domains: %v", err)
 	}

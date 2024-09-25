@@ -1,6 +1,7 @@
 package applicationsegmentinspection
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -25,25 +26,25 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		Description: segmentGroupName,
 		Enabled:     true,
 	}
-	createdAppGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdAppGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating application segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentgroup.Get(service, createdAppGroup.ID)
+		_, _, getErr := segmentgroup.Get(context.Background(), service, createdAppGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentgroup.Delete(service, createdAppGroup.ID)
+			_, err := segmentgroup.Delete(context.Background(), service, createdAppGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting application segment group: %v", err)
 			}
 		}
 	}()
 
-	certificateList, _, err := bacertificate.GetAll(service)
+	certificateList, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -88,7 +89,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := Create(service, appSegment)
+	createdResource, _, err := Create(context.Background(), service, appSegment)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -102,7 +103,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -114,11 +115,11 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 	retrievedResource.Name = updateName
 
-	_, err = Update(service, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -130,7 +131,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -141,14 +142,14 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, createdResource.ID)
+	_, _, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -160,7 +161,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -172,7 +173,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -184,7 +185,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &AppSegmentInspection{})
+	_, err = Update(context.Background(), service, "non_existent_id", &AppSegmentInspection{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -196,7 +197,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

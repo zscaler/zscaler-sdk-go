@@ -1,6 +1,7 @@
 package dlp_idm_profiles
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -77,9 +78,9 @@ type DLPIDMProfile struct {
 	ModifiedBy *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
-func Get(service *zscaler.Service, idmProfileID int) (*DLPIDMProfile, error) {
+func Get(ctx context.Context, service *zscaler.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	var idmpProfile DLPIDMProfile
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +89,9 @@ func Get(service *zscaler.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	return &idmpProfile, nil
 }
 
-func GetByName(service *zscaler.Service, idmProfileName string) (*DLPIDMProfile, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, idmProfileName string) (*DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
-	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
+	err := common.ReadAllPages(ctx, service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -102,8 +103,8 @@ func GetByName(service *zscaler.Service, idmProfileName string) (*DLPIDMProfile,
 	return nil, fmt.Errorf("no dlp icap server found with name: %s", idmProfileName)
 }
 
-func GetAll(service *zscaler.Service) ([]DLPIDMProfile, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
-	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
+	err := common.ReadAllPages(ctx, service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	return idmpProfile, err
 }

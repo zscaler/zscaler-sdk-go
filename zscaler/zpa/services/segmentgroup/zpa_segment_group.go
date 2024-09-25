@@ -1,6 +1,7 @@
 package segmentgroup
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -68,19 +69,19 @@ type AppServerGroup struct {
 	Name             string `json:"name"`
 }
 
-func Get(service *zscaler.Service, segmentGroupID string) (*SegmentGroup, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, segmentGroupID string) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, segmentName string) (*SegmentGroup, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, segmentName string) (*SegmentGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{Search: segmentName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](ctx, service.Client, relativeURL, common.Filter{Search: segmentName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -92,36 +93,36 @@ func GetByName(service *zscaler.Service, segmentName string) (*SegmentGroup, *ht
 	return nil, resp, fmt.Errorf("no application named '%s' was found", segmentName)
 }
 
-func Create(service *zscaler.Service, segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroup, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, segmentGroupId string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, segmentGroupId string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]SegmentGroup, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]SegmentGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package devicegroups
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -70,9 +71,9 @@ type Devices struct {
 	HostName string `json:"hostName,omitempty"`
 }
 
-func GetDeviceGroupByName(service *zscaler.Service, deviceGroupName string) (*DeviceGroups, error) {
+func GetDeviceGroupByName(ctx context.Context, service *zscaler.Service, deviceGroupName string) (*DeviceGroups, error) {
 	var deviceGroups []DeviceGroups
-	err := service.Client.Read(deviceGroupEndpoint, &deviceGroups)
+	err := service.Client.Read(ctx, deviceGroupEndpoint, &deviceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +85,7 @@ func GetDeviceGroupByName(service *zscaler.Service, deviceGroupName string) (*De
 	return nil, fmt.Errorf("no device group found with name: %s", deviceGroupName)
 }
 
-func GetIncludeDeviceInfo(service *zscaler.Service, includeDeviceInfo, includePseudoGroups bool) ([]DeviceGroups, error) {
+func GetIncludeDeviceInfo(ctx context.Context, service *zscaler.Service, includeDeviceInfo, includePseudoGroups bool) ([]DeviceGroups, error) {
 	queryParams := url.Values{}
 	if includeDeviceInfo {
 		queryParams.Set("includeDeviceInfo", "true")
@@ -95,21 +96,21 @@ func GetIncludeDeviceInfo(service *zscaler.Service, includeDeviceInfo, includePs
 
 	endpoint := fmt.Sprintf("%s?%s", deviceGroupEndpoint, queryParams.Encode())
 	var deviceInfos []DeviceGroups
-	err := service.Client.Read(endpoint, &deviceInfos)
+	err := service.Client.Read(ctx, endpoint, &deviceInfos)
 	if err != nil {
 		return nil, err
 	}
 	return deviceInfos, nil
 }
 
-func GetAllDevicesGroups(service *zscaler.Service) ([]DeviceGroups, error) {
+func GetAllDevicesGroups(ctx context.Context, service *zscaler.Service) ([]DeviceGroups, error) {
 	var owners []DeviceGroups
-	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
+	err := common.ReadAllPages(ctx, service.Client, deviceGroupEndpoint, &owners)
 	return owners, err
 }
 
-func GetDevicesByID(service *zscaler.Service, deviceID int) (*Devices, error) {
-	devices, err := GetAllDevices(service)
+func GetDevicesByID(ctx context.Context, service *zscaler.Service, deviceID int) (*Devices, error) {
+	devices, err := GetAllDevices(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +125,10 @@ func GetDevicesByID(service *zscaler.Service, deviceID int) (*Devices, error) {
 }
 
 // Get Devices by Name.
-func GetDevicesByName(service *zscaler.Service, deviceName string) (*Devices, error) {
+func GetDevicesByName(ctx context.Context, service *zscaler.Service, deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
 	if err != nil {
 		return nil, err
 	}
@@ -139,9 +140,9 @@ func GetDevicesByName(service *zscaler.Service, deviceName string) (*Devices, er
 	return nil, fmt.Errorf("no device found with name: %s", deviceName)
 }
 
-func GetDevicesByModel(service *zscaler.Service, deviceModel string) (*Devices, error) {
+func GetDevicesByModel(ctx context.Context, service *zscaler.Service, deviceModel string) (*Devices, error) {
 	var models []Devices
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?model=%s", devicesEndpoint, url.QueryEscape(deviceModel)), &models)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?model=%s", devicesEndpoint, url.QueryEscape(deviceModel)), &models)
 	if err != nil {
 		return nil, err
 	}
@@ -153,9 +154,9 @@ func GetDevicesByModel(service *zscaler.Service, deviceModel string) (*Devices, 
 	return nil, fmt.Errorf("no device found with model: %s", deviceModel)
 }
 
-func GetDevicesByOwner(service *zscaler.Service, ownerName string) (*Devices, error) {
+func GetDevicesByOwner(ctx context.Context, service *zscaler.Service, ownerName string) (*Devices, error) {
 	var owners []Devices
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?owner=%s", devicesEndpoint, url.QueryEscape(ownerName)), &owners)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?owner=%s", devicesEndpoint, url.QueryEscape(ownerName)), &owners)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +168,9 @@ func GetDevicesByOwner(service *zscaler.Service, ownerName string) (*Devices, er
 	return nil, fmt.Errorf("no device found for owner: %s", ownerName)
 }
 
-func GetDevicesByOSType(service *zscaler.Service, osTypeName string) (*Devices, error) {
+func GetDevicesByOSType(ctx context.Context, service *zscaler.Service, osTypeName string) (*Devices, error) {
 	var osTypes []Devices
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osType=%s", devicesEndpoint, url.QueryEscape(osTypeName)), &osTypes)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?osType=%s", devicesEndpoint, url.QueryEscape(osTypeName)), &osTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -181,9 +182,9 @@ func GetDevicesByOSType(service *zscaler.Service, osTypeName string) (*Devices, 
 	return nil, fmt.Errorf("no device found for type: %s", osTypeName)
 }
 
-func GetDevicesByOSVersion(service *zscaler.Service, osVersionName string) (*Devices, error) {
+func GetDevicesByOSVersion(ctx context.Context, service *zscaler.Service, osVersionName string) (*Devices, error) {
 	var osVersions []Devices
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osVersion=%s", devicesEndpoint, url.QueryEscape(osVersionName)), &osVersions)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?osVersion=%s", devicesEndpoint, url.QueryEscape(osVersionName)), &osVersions)
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +196,8 @@ func GetDevicesByOSVersion(service *zscaler.Service, osVersionName string) (*Dev
 	return nil, fmt.Errorf("no device found for version: %s", osVersionName)
 }
 
-func GetAllDevices(service *zscaler.Service) ([]Devices, error) {
+func GetAllDevices(ctx context.Context, service *zscaler.Service) ([]Devices, error) {
 	var owners []Devices
-	err := common.ReadAllPages(service.Client, devicesEndpoint, &owners)
+	err := common.ReadAllPages(ctx, service.Client, devicesEndpoint, &owners)
 	return owners, err
 }

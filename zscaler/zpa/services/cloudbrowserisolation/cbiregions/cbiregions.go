@@ -1,6 +1,7 @@
 package cbiregions
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -19,8 +20,8 @@ type CBIRegions struct {
 }
 
 // The current API does not seem to support search by Name
-func GetByName(service *zscaler.Service, cbiRegionName string) (*CBIRegions, *http.Response, error) {
-	list, resp, err := GetAll(service)
+func GetByName(ctx context.Context, service *zscaler.Service, cbiRegionName string) (*CBIRegions, *http.Response, error) {
+	list, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -32,10 +33,10 @@ func GetByName(service *zscaler.Service, cbiRegionName string) (*CBIRegions, *ht
 	return nil, resp, fmt.Errorf("no region named '%s' was found", cbiRegionName)
 }
 
-func GetAll(service *zscaler.Service) ([]CBIRegions, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CBIRegions, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiRegionsEndpoint
 	var list []CBIRegions
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

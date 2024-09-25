@@ -1,6 +1,7 @@
 package locationmanagement
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 const (
 	locationsEndpoint   = "/zia/api/v1/locations"
-	subLocationEndpoint = "/zia/api/v1/sublocations"
+	subLocationEndpoint = "/sublocations"
 	maxBulkDeleteIDs    = 100
 )
 
@@ -223,9 +224,9 @@ type DynamiclocationGroups struct {
 }
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
-func GetLocation(service *zscaler.Service, locationID int) (*Locations, error) {
+func GetLocation(ctx context.Context, service *zscaler.Service, locationID int) (*Locations, error) {
 	var location Locations
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
 		return nil, err
 	}
@@ -235,13 +236,13 @@ func GetLocation(service *zscaler.Service, locationID int) (*Locations, error) {
 }
 
 // GetSubLocationBySubID gets a sub-location by its ID (fetches all locations's sub-location to find a match).
-func GetSubLocationBySubID(service *zscaler.Service, subLocationID int) (*Locations, error) {
-	locations, err := GetAll(service)
+func GetSubLocationBySubID(ctx context.Context, service *zscaler.Service, subLocationID int) (*Locations, error) {
+	locations, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
 	for _, location := range locations {
-		subLoc, err := GetSubLocation(service, location.ID, subLocationID)
+		subLoc, err := GetSubLocation(context.Background(), service, location.ID, subLocationID)
 		if err == nil && subLoc != nil {
 			return subLoc, nil
 		}
@@ -250,15 +251,15 @@ func GetSubLocationBySubID(service *zscaler.Service, subLocationID int) (*Locati
 }
 
 // GetSublocations gets all sub-locations for a given location ID.
-func GetSublocations(service *zscaler.Service, locationID int) ([]Locations, error) {
+func GetSublocations(ctx context.Context, service *zscaler.Service, locationID int) ([]Locations, error) {
 	var locations []Locations
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, locationID, subLocationEndpoint), &locations)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, locationID, subLocationEndpoint), &locations)
 	return locations, err
 }
 
 // GetSubLocation gets a sub-location by its ID and parent ID.
-func GetSubLocation(service *zscaler.Service, locationID, subLocationID int) (*Locations, error) {
-	locations, err := GetSublocations(service, locationID)
+func GetSubLocation(ctx context.Context, service *zscaler.Service, locationID, subLocationID int) (*Locations, error) {
+	locations, err := GetSublocations(context.Background(), service, locationID)
 	if err != nil {
 		return nil, err
 	}
@@ -271,10 +272,10 @@ func GetSubLocation(service *zscaler.Service, locationID, subLocationID int) (*L
 }
 
 // GetLocationByName gets a location by its name.
-func GetLocationByName(service *zscaler.Service, locationName string) (*Locations, error) {
+func GetLocationByName(ctx context.Context, service *zscaler.Service, locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
 	if err != nil {
 		return nil, err
 	}
@@ -287,12 +288,12 @@ func GetLocationByName(service *zscaler.Service, locationName string) (*Location
 }
 
 // GetSubLocationByNames gets a sub-location by its name and parent location name
-func GetSubLocationByNames(service *zscaler.Service, locationName, subLocatioName string) (*Locations, error) {
-	location, err := GetLocationByName(service, locationName)
+func GetSubLocationByNames(ctx context.Context, service *zscaler.Service, locationName, subLocatioName string) (*Locations, error) {
+	location, err := GetLocationByName(context.Background(), service, locationName)
 	if err != nil {
 		return nil, err
 	}
-	subLocations, err := GetSublocations(service, location.ID)
+	subLocations, err := GetSublocations(context.Background(), service, location.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -305,13 +306,13 @@ func GetSubLocationByNames(service *zscaler.Service, locationName, subLocatioNam
 }
 
 // GetSubLocationByName gets a sub-location by its name (fetches all locations's sub-location to find a match).
-func GetSubLocationByName(service *zscaler.Service, subLocatioName string) (*Locations, error) {
-	locations, err := GetAll(service)
+func GetSubLocationByName(ctx context.Context, service *zscaler.Service, subLocatioName string) (*Locations, error) {
+	locations, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
 	for _, location := range locations {
-		subLocs, _ := GetSublocations(service, location.ID)
+		subLocs, _ := GetSublocations(context.Background(), service, location.ID)
 		for _, subLoc := range subLocs {
 			if strings.EqualFold(subLoc.Name, subLocatioName) {
 				return &subLoc, nil
@@ -321,8 +322,8 @@ func GetSubLocationByName(service *zscaler.Service, subLocatioName string) (*Loc
 	return nil, fmt.Errorf("no sublocation found with name: %s", subLocatioName)
 }
 
-func Create(service *zscaler.Service, locations *Locations) (*Locations, error) {
-	resp, err := service.Client.Create(locationsEndpoint, *locations)
+func Create(ctx context.Context, service *zscaler.Service, locations *Locations) (*Locations, error) {
+	resp, err := service.Client.Create(ctx, locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
 	}
@@ -336,8 +337,8 @@ func Create(service *zscaler.Service, locations *Locations) (*Locations, error) 
 	return createdLocations, nil
 }
 
-func Update(service *zscaler.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
+func Update(ctx context.Context, service *zscaler.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -347,8 +348,8 @@ func Update(service *zscaler.Service, locationID int, locations *Locations) (*Lo
 	return updatedLocations, nil, nil
 }
 
-func Delete(service *zscaler.Service, locationID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
+func Delete(ctx context.Context, service *zscaler.Service, locationID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +357,7 @@ func Delete(service *zscaler.Service, locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func BulkDelete(service *zscaler.Service, ids []int) (*http.Response, error) {
+func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http.Response, error) {
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
@@ -367,19 +368,19 @@ func BulkDelete(service *zscaler.Service, ids []int) (*http.Response, error) {
 	payload := map[string][]int{
 		"ids": ids,
 	}
-	return service.Client.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
+	return service.Client.BulkDelete(ctx, locationsEndpoint+"/bulkDelete", payload)
 }
 
-func GetAll(service *zscaler.Service) ([]Locations, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
 	return locations, err
 }
 
-func GetAllSublocations(service *zscaler.Service) ([]Locations, error) {
+func GetAllSublocations(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
 	// Step 1: Fetch all parent locations.
-	parentLocations, err := GetAll(service)
+	parentLocations, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +393,7 @@ func GetAllSublocations(service *zscaler.Service) ([]Locations, error) {
 		// Create the sub-location endpoint for the current parent location.
 		subEndpoint := fmt.Sprintf("%s/%d%s", locationsEndpoint, parent.ID, subLocationEndpoint)
 
-		err := common.ReadAllPages(service.Client, subEndpoint, &sublocations)
+		err := common.ReadAllPages(ctx, service.Client, subEndpoint, &sublocations)
 		if err != nil {
 			return nil, err
 		}
@@ -403,19 +404,19 @@ func GetAllSublocations(service *zscaler.Service) ([]Locations, error) {
 }
 
 // GetLocationOrSublocationByID gets a location or sub-location by its ID.
-func GetLocationOrSublocationByID(service *zscaler.Service, id int) (*Locations, error) {
-	location, err := GetLocation(service, id)
+func GetLocationOrSublocationByID(ctx context.Context, service *zscaler.Service, id int) (*Locations, error) {
+	location, err := GetLocation(context.Background(), service, id)
 	if err == nil && location != nil {
 		return location, nil
 	}
-	return GetSubLocationBySubID(service, id)
+	return GetSubLocationBySubID(context.Background(), service, id)
 }
 
 // GetLocationOrSublocationByName gets a location or sub-location by its name.
-func GetLocationOrSublocationByName(service *zscaler.Service, name string) (*Locations, error) {
-	location, err := GetLocationByName(service, name)
+func GetLocationOrSublocationByName(ctx context.Context, service *zscaler.Service, name string) (*Locations, error) {
+	location, err := GetLocationByName(context.Background(), service, name)
 	if err == nil && location != nil {
 		return location, nil
 	}
-	return GetSubLocationByName(service, name)
+	return GetSubLocationByName(context.Background(), service, name)
 }

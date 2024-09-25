@@ -1,6 +1,7 @@
 package praapproval
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -91,19 +92,19 @@ type WorkingHours struct {
 	// TimeZone *time.Location `json:"timeZone,omitempty"`
 }
 
-func Get(service *zscaler.Service, approvalID string) (*PrivilegedApproval, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, approvalID string) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetByEmailID(service *zscaler.Service, emailID string) (*PrivilegedApproval, *http.Response, error) {
+func GetByEmailID(ctx context.Context, service *zscaler.Service, emailID string) (*PrivilegedApproval, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + privilegedApprovalEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -117,45 +118,45 @@ func GetByEmailID(service *zscaler.Service, emailID string) (*PrivilegedApproval
 	return nil, resp, fmt.Errorf("no privileged approval with emailID '%s' was found", emailID)
 }
 
-func Create(service *zscaler.Service, privilegedApproval *PrivilegedApproval) (*PrivilegedApproval, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, privilegedApproval *PrivilegedApproval) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, approvalID string, privilegedApproval *PrivilegedApproval) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, approvalID string, privilegedApproval *PrivilegedApproval) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, approvalID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, approvalID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func DeleteExpired(service *zscaler.Service) (*http.Response, error) {
+func DeleteExpired(ctx context.Context, service *zscaler.Service) (*http.Response, error) {
 	path := fmt.Sprintf("%s%s%s/expired", mgmtConfig, service.Client.GetCustomerID(), privilegedApprovalEndpoint)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]PrivilegedApproval, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]PrivilegedApproval, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + privilegedApprovalEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package scimattributeheader
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -35,10 +36,10 @@ type ScimAttributeHeader struct {
 	Uniqueness      bool     `json:"uniqueness,omitempty"`
 }
 
-func Get(service *zscaler.Service, idpId, scimAttrHeaderID string) (*ScimAttributeHeader, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, idpId, scimAttrHeaderID string) (*ScimAttributeHeader, *http.Response, error) {
 	v := new(ScimAttributeHeader)
 	relativeURL := fmt.Sprintf("%s/idp/%s/scimattribute/%s", mgmtConfig+service.Client.GetCustomerID(), idpId, scimAttrHeaderID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -47,22 +48,22 @@ func Get(service *zscaler.Service, idpId, scimAttrHeaderID string) (*ScimAttribu
 }
 
 // SearchValues searchs by features and fields for the API.
-func SearchValues(service *zscaler.Service, idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
+func SearchValues(ctx context.Context, service *zscaler.Service, idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
 	searchQuery = strings.Split(searchQuery, "@")[0]
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.GetCustomerID(), idpId, ScimAttrHeaderID)
-	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, searchQuery)
+	l, _, err := common.GetAllPagesGeneric[string](ctx, service.Client, relativeURL, searchQuery)
 	return l, err
 }
 
-func GetValues(service *zscaler.Service, idpId, ScimAttrHeaderID string) ([]string, error) {
+func GetValues(ctx context.Context, service *zscaler.Service, idpId, ScimAttrHeaderID string) ([]string, error) {
 	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.GetCustomerID(), idpId, ScimAttrHeaderID)
-	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
+	l, _, err := common.GetAllPagesGeneric[string](ctx, service.Client, relativeURL, "")
 	return l, err
 }
 
-func GetByName(service *zscaler.Service, scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.GetCustomerID()+idpId, IdpId, scimAttrEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,9 +76,9 @@ func GetByName(service *zscaler.Service, scimAttributeName, IdpId string) (*Scim
 }
 
 // mgmtconfig/v1/admin/customers/{customerId}/idp/{idpId}/scimattribute
-func GetAllByIdpId(service *zscaler.Service, IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
+func GetAllByIdpId(ctx context.Context, service *zscaler.Service, IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.GetCustomerID()+idpId, IdpId, scimAttrEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

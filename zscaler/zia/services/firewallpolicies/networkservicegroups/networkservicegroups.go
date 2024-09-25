@@ -1,6 +1,7 @@
 package networkservicegroups
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -35,9 +36,9 @@ type Services struct {
 	IsNameL10nTag bool                           `json:"isNameL10nTag,omitempty"`
 }
 
-func GetNetworkServiceGroups(service *zscaler.Service, serviceGroupID int) (*NetworkServiceGroups, error) {
+func GetNetworkServiceGroups(ctx context.Context, service *zscaler.Service, serviceGroupID int) (*NetworkServiceGroups, error) {
 	var networkServiceGroups NetworkServiceGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), &networkServiceGroups)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), &networkServiceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -46,9 +47,9 @@ func GetNetworkServiceGroups(service *zscaler.Service, serviceGroupID int) (*Net
 	return &networkServiceGroups, nil
 }
 
-func GetNetworkServiceGroupsByName(service *zscaler.Service, serviceGroupsName string) (*NetworkServiceGroups, error) {
+func GetNetworkServiceGroupsByName(ctx context.Context, service *zscaler.Service, serviceGroupsName string) (*NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
-	err := common.ReadAllPages(service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
+	err := common.ReadAllPages(ctx, service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +61,8 @@ func GetNetworkServiceGroupsByName(service *zscaler.Service, serviceGroupsName s
 	return nil, fmt.Errorf("no network service groups found with name: %s", serviceGroupsName)
 }
 
-func CreateNetworkServiceGroups(service *zscaler.Service, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, error) {
-	resp, err := service.Client.Create(networkServiceGroupsEndpoint, *networkServiceGroups)
+func CreateNetworkServiceGroups(ctx context.Context, service *zscaler.Service, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, error) {
+	resp, err := service.Client.Create(ctx, networkServiceGroupsEndpoint, *networkServiceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +76,8 @@ func CreateNetworkServiceGroups(service *zscaler.Service, networkServiceGroups *
 	return createdNetworkServiceGroups, nil
 }
 
-func UpdateNetworkServiceGroups(service *zscaler.Service, serviceGroupID int, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), *networkServiceGroups)
+func UpdateNetworkServiceGroups(ctx context.Context, service *zscaler.Service, serviceGroupID int, networkServiceGroups *NetworkServiceGroups) (*NetworkServiceGroups, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID), *networkServiceGroups)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,8 +87,8 @@ func UpdateNetworkServiceGroups(service *zscaler.Service, serviceGroupID int, ne
 	return updatedNetworkServiceGroups, nil, nil
 }
 
-func DeleteNetworkServiceGroups(service *zscaler.Service, serviceGroupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID))
+func DeleteNetworkServiceGroups(ctx context.Context, service *zscaler.Service, serviceGroupID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", networkServiceGroupsEndpoint, serviceGroupID))
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +96,8 @@ func DeleteNetworkServiceGroups(service *zscaler.Service, serviceGroupID int) (*
 	return nil, nil
 }
 
-func GetAllNetworkServiceGroups(service *zscaler.Service) ([]NetworkServiceGroups, error) {
+func GetAllNetworkServiceGroups(ctx context.Context, service *zscaler.Service) ([]NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
-	err := common.ReadAllPages(service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
+	err := common.ReadAllPages(ctx, service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
 	return networkServiceGroups, err
 }

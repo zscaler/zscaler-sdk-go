@@ -1,6 +1,7 @@
 package dlp_icap_servers
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestDLPICAPServer_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting icap servers: %v", err)
 		return
@@ -26,7 +27,7 @@ func TestDLPICAPServer_data(t *testing.T) {
 	}
 	name := servers[0].Name
 	t.Log("Getting icap server by name:" + name)
-	server, err := GetByName(service, name)
+	server, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting icap server by name: %v", err)
 		return
@@ -37,7 +38,7 @@ func TestDLPICAPServer_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an icap server with a non-existent name
 	nonExistentName := "ThisIcapServerDoesNotExist"
-	_, err = GetByName(service, nonExistentName)
+	_, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -51,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all servers to find a valid ID
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all icap servers: %v", err)
 	}
@@ -63,7 +64,7 @@ func TestGetById(t *testing.T) {
 	testID := servers[0].ID
 
 	// Retrieve the server by ID
-	server, err := Get(service, testID)
+	server, err := Get(context.Background(), service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving icap server with ID %d: %v", testID, err)
 		return
@@ -87,7 +88,7 @@ func TestURLAndStatusFields(t *testing.T) {
 	}
 
 	// Retrieve all servers
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all icap servers: %v", err)
 	}
@@ -116,7 +117,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting icap server: %v", err)
 		return
@@ -156,7 +157,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		server, err := GetByName(service, variation)
+		server, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting icap server with name variation '%s': %v", variation, err)
 			continue

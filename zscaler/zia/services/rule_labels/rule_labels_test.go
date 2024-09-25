@@ -1,6 +1,7 @@
 package rule_labels
 
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -60,7 +61,7 @@ func TestRuleLabels(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = Create(service, &label)
+		createdResource, _, err = Create(context.Background(), service, &label)
 		return err
 	})
 	if err != nil {
@@ -74,7 +75,7 @@ func TestRuleLabels(t *testing.T) {
 		t.Errorf("Expected created rule label '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -88,14 +89,14 @@ func TestRuleLabels(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -107,7 +108,7 @@ func TestRuleLabels(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetRuleLabelByName(service, name)
+	retrievedResource, err = GetRuleLabelByName(context.Background(), service, name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -118,7 +119,7 @@ func TestRuleLabels(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -138,22 +139,23 @@ func TestRuleLabels(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(service *zscaler.Service, id int) (*RuleLabels, error) {
+func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*RuleLabels, error) {
 	var resource *RuleLabels
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(service, id)
+		// Use the passed context (ctx) instead of context.Background()
+		resource, err = Get(ctx, service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -170,7 +172,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -181,7 +183,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -193,7 +195,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(service, 0, &RuleLabels{})
+	_, _, err = Update(context.Background(), service, 0, &RuleLabels{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -205,7 +207,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetRuleLabelByName(service, "non_existent_name")
+	_, err = GetRuleLabelByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

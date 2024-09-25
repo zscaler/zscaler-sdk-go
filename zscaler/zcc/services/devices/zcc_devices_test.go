@@ -1,6 +1,7 @@
 package devices_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestGetDevices(t *testing.T) {
 		t.Run(fmt.Sprintf("GetAll with filters - username: %s, osType: %s", tc.username, tc.osType), func(t *testing.T) {
 			t.Logf("Testing with filters - username: %s, osType: %s", tc.username, tc.osType)
 
-			devicesList, err := devices.GetAll(service, tc.username, tc.osType)
+			devicesList, err := devices.GetAll(context.Background(), service, tc.username, tc.osType)
 			if err != nil {
 				t.Errorf("Error while getting devices with username=%s, osType=%s: %v", tc.username, tc.osType, err)
 				return

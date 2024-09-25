@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -18,10 +19,10 @@ type LSSStatusCodes struct {
 	ZPNSysAuthLog map[string]interface{} `json:"zpn_sys_auth_log"`
 }
 
-func GetStatusCodes(service *zscaler.Service) (*LSSStatusCodes, *http.Response, error) {
+func GetStatusCodes(ctx context.Context, service *zscaler.Service) (*LSSStatusCodes, *http.Response, error) {
 	v := new(LSSStatusCodes)
 	relativeURL := fmt.Sprintf(mgmtConfigTypesAndFormats + lssStatusCodesEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

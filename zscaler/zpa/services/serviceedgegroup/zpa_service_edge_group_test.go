@@ -1,6 +1,7 @@
 package serviceedgegroup
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -16,7 +17,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	}
 
 	// Create new resource
-	createdResource, _, err := Create(service, ServiceEdgeGroup{
+	createdResource, _, err := Create(context.Background(), service, ServiceEdgeGroup{
 		Name:                   name,
 		Description:            name,
 		Enabled:                true,
@@ -47,7 +48,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestResourceRetrieval", func(t *testing.T) {
-		retrievedResource, _, err := Get(service, createdResource.ID)
+		retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource: %v", err)
 		}
@@ -62,14 +63,14 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = Update(service, createdResource.ID, &updatedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
 	})
 
 	t.Run("TestResourceRetrievalByName", func(t *testing.T) {
-		retrievedResource, _, err := GetByName(service, updateName)
+		retrievedResource, _, err := GetByName(context.Background(), service, updateName)
 		if err != nil {
 			t.Fatalf("Error retrieving resource by name: %v", err)
 		}
@@ -82,7 +83,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
-		resources, _, err := GetAll(service)
+		resources, _, err := GetAll(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Error retrieving groups: %v", err)
 		}
@@ -102,7 +103,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	})
 
 	t.Run("TestResourceRemoval", func(t *testing.T) {
-		_, err := Delete(service, createdResource.ID)
+		_, err := Delete(context.Background(), service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error deleting resource: %v", err)
 		}
@@ -115,7 +116,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -127,7 +128,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -139,7 +140,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &ServiceEdgeGroup{})
+	_, err = Update(context.Background(), service, "non_existent_id", &ServiceEdgeGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -151,7 +152,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

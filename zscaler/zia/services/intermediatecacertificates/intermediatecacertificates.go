@@ -1,6 +1,7 @@
 package intermediatecacertificates
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -109,9 +110,9 @@ type CertSigningRequest struct {
 	PathLengthConstraint int `json:"pathLengthConstraint,omitempty"`
 }
 
-func GetCertificate(service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
+func GetCertificate(ctx context.Context, service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
 	var intermediateCACertificate IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), &intermediateCACertificate)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), &intermediateCACertificate)
 	if err != nil {
 		return nil, err
 	}
@@ -120,9 +121,9 @@ func GetCertificate(service *zscaler.Service, certID int) (*IntermediateCACertif
 	return &intermediateCACertificate, nil
 }
 
-func GetByName(service *zscaler.Service, certName string) (*IntermediateCACertificate, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, certName string) (*IntermediateCACertificate, error) {
 	var intermediateCACertificate []IntermediateCACertificate
-	err := common.ReadAllPages(service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
+	err := common.ReadAllPages(ctx, service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
 	if err != nil {
 		return nil, err
 	}
@@ -134,9 +135,9 @@ func GetByName(service *zscaler.Service, certName string) (*IntermediateCACertif
 	return nil, fmt.Errorf("no intermediate ca certificate found with name: %s", certName)
 }
 
-func GetDownloadAttestation(service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
+func GetDownloadAttestation(ctx context.Context, service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadAttestation IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadAttestationEndpoint, certID), &downloadAttestation)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intCADownloadAttestationEndpoint, certID), &downloadAttestation)
 	if err != nil {
 		return nil, err
 	}
@@ -145,9 +146,9 @@ func GetDownloadAttestation(service *zscaler.Service, certID int) (*Intermediate
 	return &downloadAttestation, nil
 }
 
-func GetDownloadCSR(service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
+func GetDownloadCSR(ctx context.Context, service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadCSR IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadCSREndpoint, certID), &downloadCSR)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intCADownloadCSREndpoint, certID), &downloadCSR)
 	if err != nil {
 		return nil, err
 	}
@@ -156,9 +157,9 @@ func GetDownloadCSR(service *zscaler.Service, certID int) (*IntermediateCACertif
 	return &downloadCSR, nil
 }
 
-func GetDownloadPublicKey(service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
+func GetDownloadPublicKey(ctx context.Context, service *zscaler.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadPublicKey IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadPublicKeyEndpoint, certID), &downloadPublicKey)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intCADownloadPublicKeyEndpoint, certID), &downloadPublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +168,9 @@ func GetDownloadPublicKey(service *zscaler.Service, certID int) (*IntermediateCA
 	return &downloadPublicKey, nil
 }
 
-func GetIntCAReadyToUse(service *zscaler.Service) ([]IntermediateCACertificate, error) {
+func GetIntCAReadyToUse(ctx context.Context, service *zscaler.Service) ([]IntermediateCACertificate, error) {
 	var readyToUse []IntermediateCACertificate
-	err := service.Client.Read(intCAReadyToUseEndpoint, &readyToUse)
+	err := service.Client.Read(ctx, intCAReadyToUseEndpoint, &readyToUse)
 	if err != nil {
 		return nil, err
 	}
@@ -178,9 +179,9 @@ func GetIntCAReadyToUse(service *zscaler.Service) ([]IntermediateCACertificate, 
 	return readyToUse, nil
 }
 
-func GetShowCert(service *zscaler.Service, certID int) (*CertSigningRequest, error) {
+func GetShowCert(ctx context.Context, service *zscaler.Service, certID int) (*CertSigningRequest, error) {
 	var showCert CertSigningRequest
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCAShowCertEndpoint, certID), &showCert)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intCAShowCertEndpoint, certID), &showCert)
 	if err != nil {
 		return nil, err
 	}
@@ -189,9 +190,9 @@ func GetShowCert(service *zscaler.Service, certID int) (*CertSigningRequest, err
 	return &showCert, nil
 }
 
-func GetShowCSR(service *zscaler.Service, certID int) (*CertSigningRequest, error) {
+func GetShowCSR(ctx context.Context, service *zscaler.Service, certID int) (*CertSigningRequest, error) {
 	var showCSR CertSigningRequest
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCAShowCSREndpoint, certID), &showCSR)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", intCAShowCSREndpoint, certID), &showCSR)
 	if err != nil {
 		return nil, err
 	}
@@ -200,14 +201,17 @@ func GetShowCSR(service *zscaler.Service, certID int) (*CertSigningRequest, erro
 	return &showCSR, nil
 }
 
-func GetAll(service *zscaler.Service) ([]IntermediateCACertificate, error) {
-	var intermediateCACertificate []IntermediateCACertificate
-	err := common.ReadAllPages(service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
-	return intermediateCACertificate, err
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IntermediateCACertificate, error) {
+	var intermediateCACertificates []IntermediateCACertificate
+	err := common.ReadAllPages(ctx, service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificates)
+	if err != nil {
+		return nil, err
+	}
+	return intermediateCACertificates, nil
 }
 
-func CreateIntCACertificate(service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intermediateCaCertificatesEndpoint, *cert)
+func CreateIntCACertificate(ctx context.Context, service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intermediateCaCertificatesEndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +225,8 @@ func CreateIntCACertificate(service *zscaler.Service, cert *IntermediateCACertif
 	return createdIntermediateCACert, nil
 }
 
-func CreateIntCAGenerateCSR(service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAGenerateCSREndpoint, *cert)
+func CreateIntCAGenerateCSR(ctx context.Context, service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAGenerateCSREndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -236,8 +240,8 @@ func CreateIntCAGenerateCSR(service *zscaler.Service, cert *IntermediateCACertif
 	return createdIntCAGenerateCSR, nil
 }
 
-func CreateIntCAFinalizeCert(service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAFinalizeCSREndpoint, *cert)
+func CreateIntCAFinalizeCert(ctx context.Context, service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAFinalizeCSREndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -251,8 +255,8 @@ func CreateIntCAFinalizeCert(service *zscaler.Service, cert *IntermediateCACerti
 	return createdIntCAFinalizeCSR, nil
 }
 
-func CreateIntCAKeyPair(service *zscaler.Service, keyPair *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAKeyPairEndpoint, *keyPair)
+func CreateIntCAKeyPair(ctx context.Context, service *zscaler.Service, keyPair *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAKeyPairEndpoint, *keyPair)
 	if err != nil {
 		return nil, err
 	}
@@ -266,8 +270,8 @@ func CreateIntCAKeyPair(service *zscaler.Service, keyPair *IntermediateCACertifi
 	return createdIntCAKeyPair, nil
 }
 
-func CreateUploadCert(service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAUploadCert, *certID)
+func CreateUploadCert(ctx context.Context, service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAUploadCert, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -281,8 +285,8 @@ func CreateUploadCert(service *zscaler.Service, certID *IntermediateCACertificat
 	return createdIntCAUploadCert, nil
 }
 
-func CreateUploadCertChain(service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAUploadCertChain, *certID)
+func CreateUploadCertChain(ctx context.Context, service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAUploadCertChain, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -296,8 +300,8 @@ func CreateUploadCertChain(service *zscaler.Service, certID *IntermediateCACerti
 	return createdIntCAUploadChain, nil
 }
 
-func CreateVerifyKeyAttestation(service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAVerifyKeyAttestation, *certID)
+func CreateVerifyKeyAttestation(ctx context.Context, service *zscaler.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.Create(ctx, intCAVerifyKeyAttestation, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -311,8 +315,8 @@ func CreateVerifyKeyAttestation(service *zscaler.Service, certID *IntermediateCA
 	return createdVerifyKeyAttestation, nil
 }
 
-func Update(service *zscaler.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), *certificates)
+func Update(ctx context.Context, service *zscaler.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), *certificates)
 	if err != nil {
 		return nil, err
 	}
@@ -321,8 +325,8 @@ func Update(service *zscaler.Service, certID int, certificates *IntermediateCACe
 	return updatedIntermediateCaCert, nil
 }
 
-func UpdateMakeDefault(service *zscaler.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", intCACertMakeDefaultEndpoint, certID), *certificates)
+func UpdateMakeDefault(ctx context.Context, service *zscaler.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", intCACertMakeDefaultEndpoint, certID), *certificates)
 	if err != nil {
 		return nil, err
 	}
@@ -331,8 +335,8 @@ func UpdateMakeDefault(service *zscaler.Service, certID int, certificates *Inter
 	return updatedIntermediateCaCert, nil
 }
 
-func Delete(service *zscaler.Service, certID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID))
+func Delete(ctx context.Context, service *zscaler.Service, certID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID))
 	if err != nil {
 		return nil, err
 	}

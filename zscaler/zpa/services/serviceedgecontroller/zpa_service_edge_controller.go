@@ -1,6 +1,7 @@
 package serviceedgecontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -94,19 +95,19 @@ type AssistantSchedule struct {
 	FrequencyInterval string `json:"frequencyInterval"`
 }
 
-func Get(service *zscaler.Service, serviceEdgeID string) (*ServiceEdgeController, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, serviceEdgeID string) (*ServiceEdgeController, *http.Response, error) {
 	v := new(ServiceEdgeController)
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, serviceEdgeName string) (*ServiceEdgeController, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, serviceEdgeName string) (*ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{Search: serviceEdgeName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](ctx, service.Client, relativeURL, common.Filter{Search: serviceEdgeName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,9 +119,9 @@ func GetByName(service *zscaler.Service, serviceEdgeName string) (*ServiceEdgeCo
 	return nil, resp, fmt.Errorf("no service edge named '%s' was found", serviceEdgeName)
 }
 
-func GetAll(service *zscaler.Service) ([]ServiceEdgeController, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]ServiceEdgeController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + serviceEdgeControllerEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeController](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -132,13 +133,13 @@ type BulkDeleteRequest struct {
 }
 
 // Update Updates the Service Edge details for the specified ID.
-func Update(service *zscaler.Service, serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, serviceEdgeID string, serviceEdge ServiceEdgeController) (*ServiceEdgeController, *http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeControllerEndpoint, serviceEdgeID)
-	_, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, nil)
+	_, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	resource, resp, err := Get(service, serviceEdgeID)
+	resource, resp, err := Get(ctx, service, serviceEdgeID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -146,9 +147,9 @@ func Update(service *zscaler.Service, serviceEdgeID string, serviceEdge ServiceE
 }
 
 // Delete Deletes the Service Edge for the specified ID.
-func Delete(service *zscaler.Service, serviceEdgeID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, serviceEdgeID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeControllerEndpoint, serviceEdgeID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -156,9 +157,9 @@ func Delete(service *zscaler.Service, serviceEdgeID string) (*http.Response, err
 }
 
 // BulkDelete Bulk deletes the Service Edge.
-func BulkDelete(service *zscaler.Service, serviceEdgeIDs []string) (*http.Response, error) {
+func BulkDelete(ctx context.Context, service *zscaler.Service, serviceEdgeIDs []string) (*http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + serviceEdgeControllerEndpoint + "/bulkDelete"
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, BulkDeleteRequest{IDs: serviceEdgeIDs}, nil)
 	if err != nil {
 		return nil, err
 	}

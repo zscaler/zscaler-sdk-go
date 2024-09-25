@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -93,7 +94,7 @@ func GetPageSize() int {
 	return pageSize
 }
 
-func ReadAllPages[T any](client *zscaler.Client, endpoint string, list *[]T) error {
+func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -104,7 +105,7 @@ func ReadAllPages[T any](client *zscaler.Client, endpoint string, list *[]T) err
 
 	for {
 		pageItems := []T{}
-		err := client.Read(fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
+		err := client.Read(ctx, fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
 		if err != nil {
 			return err
 		}
@@ -117,7 +118,7 @@ func ReadAllPages[T any](client *zscaler.Client, endpoint string, list *[]T) err
 	return nil
 }
 
-func ReadPage[T any](client *zscaler.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -138,7 +139,7 @@ func ReadPage[T any](client *zscaler.Client, endpoint string, page int, list *[]
 
 	// Convert the URL back to a string and read the page.
 	pageItems := []T{}
-	err = client.Read(u.String(), &pageItems)
+	err = client.Read(ctx, u.String(), &pageItems)
 	if err != nil {
 		return err
 	}

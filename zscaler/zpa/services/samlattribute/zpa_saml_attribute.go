@@ -1,6 +1,7 @@
 package samlattribute
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -26,10 +27,10 @@ type SamlAttribute struct {
 	UserAttribute bool   `json:"userAttribute,omitempty"`
 }
 
-func Get(service *zscaler.Service, samlAttributeID string) (*SamlAttribute, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, samlAttributeID string) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, samlAttributeID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -37,9 +38,9 @@ func Get(service *zscaler.Service, samlAttributeID string) (*SamlAttribute, *htt
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, samlAttrName string) (*SamlAttribute, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, samlAttrName string) (*SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,9 +52,9 @@ func GetByName(service *zscaler.Service, samlAttrName string) (*SamlAttribute, *
 	return nil, resp, fmt.Errorf("no saml attribute named '%s' was found", samlAttrName)
 }
 
-func GetAll(service *zscaler.Service) ([]SamlAttribute, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]SamlAttribute, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

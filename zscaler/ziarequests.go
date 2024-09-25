@@ -2,6 +2,7 @@ package zscaler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,7 @@ import (
 )
 
 // Create sends a POST request to create an object.
-func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
+func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
 	}
@@ -24,7 +25,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 
 	// Adjusting to handle the extra return value from ExecuteRequest
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	resp, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +45,8 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 }
 
 // Read ...
-func (c *Client) Read(endpoint string, o interface{}) error {
-	resp, _, err := c.ExecuteRequest("GET", endpoint, nil, nil, contentTypeJSON)
+func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error {
+	resp, _, err := c.ExecuteRequest(ctx, "GET", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}
@@ -58,17 +59,17 @@ func (c *Client) Read(endpoint string, o interface{}) error {
 }
 
 // UpdateWithPut sends an update (PUT request) with the given object.
-func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", contentTypeJSON)
+func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PUT", contentTypeJSON)
 }
 
 // Update sends an update (PATCH request) with the given object.
-func (c *Client) Update(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PATCH", "application/merge-patch+json")
+func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
 
 // General method to update an object using the specified HTTP method.
-func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentType string) (interface{}, error) {
+func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface{}, method, contentType string) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to update with a nil payload not a Struct")
 	}
@@ -81,7 +82,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 		return nil, err
 	}
 
-	resp, _, err := c.ExecuteRequest(method, endpoint, bytes.NewReader(data), nil, contentType)
+	resp, _, err := c.ExecuteRequest(ctx, method, endpoint, bytes.NewReader(data), nil, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +93,8 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 }
 
 // Delete sends a DELETE request to the specified endpoint.
-func (c *Client) Delete(endpoint string) error {
-	_, _, err := c.ExecuteRequest("DELETE", endpoint, nil, nil, contentTypeJSON)
+func (c *Client) Delete(ctx context.Context, endpoint string) error {
+	_, _, err := c.ExecuteRequest(ctx, "DELETE", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (c *Client) Delete(endpoint string) error {
 }
 
 // BulkDelete sends a POST request for bulk deletion.
-func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	if payload == nil {
 		return nil, errors.New("tried to delete with a nil payload, expected a struct")
 	}
@@ -111,7 +112,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 		return nil, err
 	}
 
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	resp, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +125,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }
 
-func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to create with a nil payload not a Slice")
 	}
@@ -140,7 +141,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	resp, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +154,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 }
 
-func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to update with a nil payload not a Slice")
 	}
@@ -169,7 +170,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, _, err := c.ExecuteRequest("PUT", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	resp, _, err := c.ExecuteRequest(ctx, "PUT", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}

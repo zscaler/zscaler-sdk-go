@@ -1,6 +1,7 @@
 package rule_labels
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -37,9 +38,9 @@ type RuleLabels struct {
 	ReferencedRuleCount int `json:"referencedRuleCount,omitempty"`
 }
 
-func Get(service *zscaler.Service, ruleLabelID int) (*RuleLabels, error) {
+func Get(ctx context.Context, service *zscaler.Service, ruleLabelID int) (*RuleLabels, error) {
 	var ruleLabel RuleLabels
-	err := service.Client.Read(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +49,9 @@ func Get(service *zscaler.Service, ruleLabelID int) (*RuleLabels, error) {
 	return &ruleLabel, nil
 }
 
-func GetRuleLabelByName(service *zscaler.Service, labelName string) (*RuleLabels, error) {
+func GetRuleLabelByName(ctx context.Context, service *zscaler.Service, labelName string) (*RuleLabels, error) {
 	var ruleLabels []RuleLabels
-	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
+	err := common.ReadAllPages(ctx, service.Client, ruleLabelsEndpoint, &ruleLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +63,8 @@ func GetRuleLabelByName(service *zscaler.Service, labelName string) (*RuleLabels
 	return nil, fmt.Errorf("no rule label found with name: %s", labelName)
 }
 
-func Create(service *zscaler.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
-	resp, err := service.Client.Create(ruleLabelsEndpoint, *ruleLabelID)
+func Create(ctx context.Context, service *zscaler.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, ruleLabelsEndpoint, *ruleLabelID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -77,8 +78,8 @@ func Create(service *zscaler.Service, ruleLabelID *RuleLabels) (*RuleLabels, *ht
 	return createdRuleLabel, nil, nil
 }
 
-func Update(service *zscaler.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
+func Update(ctx context.Context, service *zscaler.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,8 +89,8 @@ func Update(service *zscaler.Service, ruleLabelID int, ruleLabels *RuleLabels) (
 	return updatedRuleLabel, nil, nil
 }
 
-func Delete(service *zscaler.Service, ruleLabelID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
+func Delete(ctx context.Context, service *zscaler.Service, ruleLabelID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +98,8 @@ func Delete(service *zscaler.Service, ruleLabelID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]RuleLabels, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]RuleLabels, error) {
 	var ruleLabels []RuleLabels
-	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
+	err := common.ReadAllPages(ctx, service.Client, ruleLabelsEndpoint, &ruleLabels)
 	return ruleLabels, err
 }

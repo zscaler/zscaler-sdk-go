@@ -1,6 +1,7 @@
 package timewindow
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -20,9 +21,9 @@ type TimeWindow struct {
 	DayOfWeek []string `json:"dayOfWeek,omitempty"`
 }
 
-func GetTimeWindowByName(service *zscaler.Service, timeWindowName string) (*TimeWindow, error) {
+func GetTimeWindowByName(ctx context.Context, service *zscaler.Service, timeWindowName string) (*TimeWindow, error) {
 	var timeWindow []TimeWindow
-	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
+	err := common.ReadAllPages(ctx, service.Client, timeWindowEndpoint, &timeWindow)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +35,8 @@ func GetTimeWindowByName(service *zscaler.Service, timeWindowName string) (*Time
 	return nil, fmt.Errorf("no time window found with name: %s", timeWindowName)
 }
 
-func GetAll(service *zscaler.Service) ([]TimeWindow, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]TimeWindow, error) {
 	var timeWindow []TimeWindow
-	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
+	err := common.ReadAllPages(ctx, service.Client, timeWindowEndpoint, &timeWindow)
 	return timeWindow, err
 }

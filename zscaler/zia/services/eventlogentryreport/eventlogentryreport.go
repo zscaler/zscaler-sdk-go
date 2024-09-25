@@ -1,6 +1,7 @@
 package eventlogentryreport
 
 import (
+	"context"
 	"errors"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -53,14 +54,14 @@ type EventLogEntryReport struct {
 	StatusCode string `json:"statusCode,omitempty"`
 }
 
-func GetAll(service *zscaler.Service) ([]EventLogEntryReportTaskInfo, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]EventLogEntryReportTaskInfo, error) {
 	var eventLogEntryReport []EventLogEntryReportTaskInfo
-	err := service.Client.Read(eventlogEntryReportEndpoint, &eventLogEntryReport)
+	err := service.Client.Read(ctx, eventlogEntryReportEndpoint, &eventLogEntryReport)
 	return eventLogEntryReport, err
 }
 
-func Create(service *zscaler.Service, eventLog *EventLogEntryReport) (*EventLogEntryReport, error) {
-	resp, err := service.Client.Create(eventlogEntryReportEndpoint, eventLog)
+func Create(ctx context.Context, service *zscaler.Service, eventLog *EventLogEntryReport) (*EventLogEntryReport, error) {
+	resp, err := service.Client.Create(ctx, eventlogEntryReportEndpoint, eventLog)
 	if err != nil {
 		return nil, err
 	}

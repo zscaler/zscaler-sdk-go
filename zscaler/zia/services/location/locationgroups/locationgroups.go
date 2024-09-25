@@ -1,6 +1,7 @@
 package locationgroups
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -109,9 +110,9 @@ type ManagedBy struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-func GetLocationGroup(service *zscaler.Service, groupID int) (*LocationGroup, error) {
+func GetLocationGroup(ctx context.Context, service *zscaler.Service, groupID int) (*LocationGroup, error) {
 	var locationGroup LocationGroup
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -120,9 +121,9 @@ func GetLocationGroup(service *zscaler.Service, groupID int) (*LocationGroup, er
 	return &locationGroup, nil
 }
 
-func GetLocationGroupByName(service *zscaler.Service, locationGroupName string) (*LocationGroup, error) {
+func GetLocationGroupByName(ctx context.Context, service *zscaler.Service, locationGroupName string) (*LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
+	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -135,9 +136,9 @@ func GetLocationGroupByName(service *zscaler.Service, locationGroupName string) 
 }
 
 // GetGroupType queries the location group by its type
-func GetGroupType(service *zscaler.Service, gType string) (*LocationGroup, error) {
+func GetGroupType(ctx context.Context, service *zscaler.Service, gType string) (*LocationGroup, error) {
 	var groupTypes []LocationGroup
-	err := service.Client.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +150,8 @@ func GetGroupType(service *zscaler.Service, gType string) (*LocationGroup, error
 	return nil, fmt.Errorf("no group type found with name: %s", gType)
 }
 
-func GetAll(service *zscaler.Service) ([]LocationGroup, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := common.ReadAllPages(service.Client, locationGroupEndpoint, &locationGroups)
+	err := common.ReadAllPages(ctx, service.Client, locationGroupEndpoint, &locationGroups)
 	return locationGroups, err
 }

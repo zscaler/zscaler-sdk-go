@@ -1,6 +1,7 @@
 package staticips
 
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -59,7 +60,7 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 	var createdResource *StaticIP
 
 	err = retryOnConflict(func() error {
-		createdResource, _, err = Create(service, &ip)
+		createdResource, _, err = Create(context.Background(), service, &ip)
 		return err
 	})
 	if err != nil {
@@ -90,13 +91,13 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 	// Test resource update
 	retrievedResource.Comment = updateComment
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 	}
 
 	// Test resource retrieval by ip address
-	retrievedResource, err = GetByIPAddress(service, ipAddress)
+	retrievedResource, err = GetByIPAddress(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -119,7 +120,7 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, createdResource.Comment)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -141,10 +142,10 @@ func TestTrafficForwardingStaticIPs(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -156,7 +157,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*StaticIP, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -174,7 +175,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = Get(service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -187,7 +188,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -200,7 +201,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, _, err = Update(service, 0, &StaticIP{})
+	_, _, err = Update(context.Background(), service, 0, &StaticIP{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -213,7 +214,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = GetByIPAddress(service, "non-existent-ip-address")
+	_, err = GetByIPAddress(context.Background(), service, "non-existent-ip-address")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent ip-address, but got nil")
 	}

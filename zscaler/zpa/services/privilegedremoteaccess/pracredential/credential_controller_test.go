@@ -1,6 +1,7 @@
 package pracredential
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -25,7 +26,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := Create(service, &credController)
+	createdResource, _, err := Create(context.Background(), service, &credController)
 
 	// Check if the request was successful
 	if err != nil {
@@ -40,7 +41,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -55,11 +56,11 @@ func TestCredentialController(t *testing.T) {
 	retrievedResource.Name = updateName
 	retrievedResource.Password = tests.TestPassword(10) // Ensure the password is not being reset during update
 
-	_, err = Update(service, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -71,7 +72,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -83,7 +84,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -104,14 +105,14 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, createdResource.ID)
+	_, _, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -123,7 +124,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -135,7 +136,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -147,7 +148,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &Credential{})
+	_, err = Update(context.Background(), service, "non_existent_id", &Credential{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -159,7 +160,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
@@ -196,14 +197,14 @@ func TestPRACredentialMove(t *testing.T) {
 		CriteriaAttribute:          "AuthDomain",
 		CriteriaAttributeValues:    []string{authDomainList.AuthDomains[0]},
 	}
-	createdMicrotenant, _, err := microtenants.Create(service, newMicrotenant)
+	createdMicrotenant, _, err := microtenants.Create(context.Background(), service, newMicrotenant)
 	if err != nil {
 		t.Fatalf("Failed to create microtenant: %v", err)
 	}
 
 	// Ensure the microtenant is deleted at the end of the test
 	defer func() {
-		_, err := microtenants.Delete(service, createdMicrotenant.ID)
+		_, err := microtenants.Delete(context.Background(), service, createdMicrotenant.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant: %v", err)
 		}
@@ -220,7 +221,7 @@ func TestPRACredentialMove(t *testing.T) {
 		UserDomain:     "acme.com",
 	}
 
-	createdCredential, _, err := Create(service, &credController)
+	createdCredential, _, err := Create(context.Background(), service, &credController)
 	if err != nil {
 		t.Fatalf("Failed to create credential: %v", err)
 	}

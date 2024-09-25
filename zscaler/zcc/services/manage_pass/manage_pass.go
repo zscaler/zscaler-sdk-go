@@ -2,6 +2,7 @@ package manage_pass
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,13 +32,13 @@ type ManagePassResponseContract struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-func UpdateManagePass(service *zscaler.Service, managePass *ManagePass) (*ManagePassResponseContract, error) {
+func UpdateManagePass(ctx context.Context, service *zscaler.Service, managePass *ManagePass) (*ManagePassResponseContract, error) {
 	body, err := json.Marshal(managePass)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal manage pass request: %w", err)
 	}
 
-	resp, err := service.Client.NewZccRequestDo("POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
+	resp, err := service.Client.NewZccRequestDo(ctx, "POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update manage pass: %w", err)
 	}

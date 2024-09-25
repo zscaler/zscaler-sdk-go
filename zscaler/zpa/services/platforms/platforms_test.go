@@ -1,6 +1,7 @@
 package platforms
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestGetAllPlatforms(t *testing.T) {
 
 	// Test case: Normal scenario
 	t.Run("TestGetAllPlatformsNormal", func(t *testing.T) {
-		platforms, resp, err := GetAllPlatforms(service)
+		platforms, resp, err := GetAllPlatforms(context.Background(), service)
 		if err != nil {
 			t.Fatalf("Failed to fetch platforms: %v", err)
 		}

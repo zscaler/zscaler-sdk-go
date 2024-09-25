@@ -1,6 +1,7 @@
 package dlp_icap_servers
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -26,9 +27,9 @@ type DLPICAPServers struct {
 	Status string `json:"status,omitempty"`
 }
 
-func Get(service *zscaler.Service, icapServerID int) (*DLPICAPServers, error) {
+func Get(ctx context.Context, service *zscaler.Service, icapServerID int) (*DLPICAPServers, error) {
 	var icapServers DLPICAPServers
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIcapServersEndpoint, icapServerID), &icapServers)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpIcapServersEndpoint, icapServerID), &icapServers)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +38,9 @@ func Get(service *zscaler.Service, icapServerID int) (*DLPICAPServers, error) {
 	return &icapServers, nil
 }
 
-func GetByName(service *zscaler.Service, icapServerName string) (*DLPICAPServers, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, icapServerName string) (*DLPICAPServers, error) {
 	var icapServers []DLPICAPServers
-	err := common.ReadAllPages(service.Client, dlpIcapServersEndpoint, &icapServers)
+	err := common.ReadAllPages(ctx, service.Client, dlpIcapServersEndpoint, &icapServers)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +52,8 @@ func GetByName(service *zscaler.Service, icapServerName string) (*DLPICAPServers
 	return nil, fmt.Errorf("no dlp icap server found with name: %s", icapServerName)
 }
 
-func GetAll(service *zscaler.Service) ([]DLPICAPServers, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]DLPICAPServers, error) {
 	var icapServers []DLPICAPServers
-	err := common.ReadAllPages(service.Client, dlpIcapServersEndpoint, &icapServers)
+	err := common.ReadAllPages(ctx, service.Client, dlpIcapServersEndpoint, &icapServers)
 	return icapServers, err
 }

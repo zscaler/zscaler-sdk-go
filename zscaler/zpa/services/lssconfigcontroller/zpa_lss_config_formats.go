@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -13,10 +14,10 @@ type LSSFormats struct {
 	Json string `json:"json"`
 }
 
-func GetFormats(service *zscaler.Service, logType string) (*LSSFormats, *http.Response, error) {
+func GetFormats(ctx context.Context, service *zscaler.Service, logType string) (*LSSFormats, *http.Response, error) {
 	v := new(LSSFormats)
 	relativeURL := fmt.Sprintf("%slssConfig/logType/formats", mgmtConfigTypesAndFormats)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, struct {
 		LogType string `url:"logType"`
 	}{
 		LogType: logType,

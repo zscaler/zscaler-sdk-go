@@ -1,6 +1,7 @@
 package geo_coordinates
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -18,7 +19,7 @@ func TestGeoCoordinates(t *testing.T) {
 	}
 
 	// Create static IP for testing
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -28,14 +29,14 @@ func TestGeoCoordinates(t *testing.T) {
 
 	// Clean up: delete the static IP after test
 	defer func() {
-		_, err := staticips.Delete(service, staticIP.ID)
+		_, err := staticips.Delete(context.Background(), service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
 	// Retrieve the GeoCoordinates using the latitude and longitude from the staticIP
-	coordinate, err := GetByGeoCoordinates(service,
+	coordinate, err := GetByGeoCoordinates(context.Background(), service,
 		float64(staticIP.Latitude),
 		float64(staticIP.Longitude),
 	)

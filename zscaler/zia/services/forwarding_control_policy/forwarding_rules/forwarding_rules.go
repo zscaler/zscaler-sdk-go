@@ -1,6 +1,7 @@
 package forwarding_rules
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -172,9 +173,9 @@ type ZPAApplicationSegmentGroups struct {
 	ZPAAppSegmentsCount int `json:"zpaAppSegmentsCount,omitempty"`
 }
 
-func Get(service *zscaler.Service, ruleID int) (*ForwardingRules, error) {
+func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*ForwardingRules, error) {
 	var rule ForwardingRules
-	err := service.Client.Read(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), &rule)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +184,9 @@ func Get(service *zscaler.Service, ruleID int) (*ForwardingRules, error) {
 	return &rule, nil
 }
 
-func GetByName(service *zscaler.Service, ruleName string) (*ForwardingRules, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*ForwardingRules, error) {
 	var rules []ForwardingRules
-	err := common.ReadAllPages(service.Client, forwardingRulesEndpoint, &rules)
+	err := common.ReadAllPages(ctx, service.Client, forwardingRulesEndpoint, &rules)
 	if err != nil {
 		return nil, err
 	}
@@ -197,8 +198,8 @@ func GetByName(service *zscaler.Service, ruleName string) (*ForwardingRules, err
 	return nil, fmt.Errorf("no forwarding rule found with name: %s", ruleName)
 }
 
-func Create(service *zscaler.Service, rule *ForwardingRules) (*ForwardingRules, error) {
-	resp, err := service.Client.Create(forwardingRulesEndpoint, *rule)
+func Create(ctx context.Context, service *zscaler.Service, rule *ForwardingRules) (*ForwardingRules, error) {
+	resp, err := service.Client.Create(ctx, forwardingRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +213,8 @@ func Create(service *zscaler.Service, rule *ForwardingRules) (*ForwardingRules, 
 	return createdRules, nil
 }
 
-func Update(service *zscaler.Service, ruleID int, rules *ForwardingRules) (*ForwardingRules, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), *rules)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *ForwardingRules) (*ForwardingRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +223,8 @@ func Update(service *zscaler.Service, ruleID int, rules *ForwardingRules) (*Forw
 	return updatedRules, nil
 }
 
-func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID))
+func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +232,8 @@ func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]ForwardingRules, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]ForwardingRules, error) {
 	var rules []ForwardingRules
-	err := common.ReadAllPages(service.Client, forwardingRulesEndpoint, &rules)
+	err := common.ReadAllPages(ctx, service.Client, forwardingRulesEndpoint, &rules)
 	return rules, err
 }

@@ -75,7 +75,7 @@ func TestFilteringByParentCategory(t *testing.T) {
 	locale := "en-US" // or any other locale you wish to use
 
 	// Fetching applications filtered by parentCategory
-	filteredApplication, err := GetByName(service, filterCategory, locale)
+	filteredApplication, err := GetByName(context.Background(), service, filterCategory, locale)
 	if err != nil {
 		t.Fatalf("Error fetching application by category: %v", err)
 	}
@@ -237,13 +237,13 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 // GetFirstPage fetches the first page of network applications for a specific locale
-func GetFirstPage(service *zscaler.Service, locale string) ([]NetworkApplications, error) {
+func GetFirstPage(ctx context.Context, service *zscaler.Service, locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint
 	if locale != "" {
 		endpoint = fmt.Sprintf("%s?locale=%s", networkApplicationsEndpoint, url.QueryEscape(locale))
 	}
-	err := service.Client.Read(endpoint, &networkApplications)
+	err := service.Client.Read(ctx, endpoint, &networkApplications)
 	return networkApplications, err
 }
 */

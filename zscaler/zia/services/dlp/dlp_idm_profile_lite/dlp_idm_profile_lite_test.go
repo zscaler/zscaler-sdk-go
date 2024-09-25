@@ -17,7 +17,7 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 	}
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := GetAll(service, activeOnly)
+		profiles, err := GetAll(context.Background(), service, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profiles with activeOnly %t: %v", activeOnly, err)
 			return
@@ -61,7 +61,7 @@ func TestGetDLPProfileLiteById(t *testing.T) {
 	}
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := GetAll(service, activeOnly)
+		profiles, err := GetAll(context.Background(), service, activeOnly)
 		if err != nil {
 			t.Fatalf("Error getting all IDM profiles with activeOnly %t: %v", activeOnly, err)
 		}
@@ -87,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 
 	for _, activeOnly := range []bool{true, false} {
-		profiles, err := GetAll(service, activeOnly)
+		profiles, err := GetAll(context.Background(), service, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profile with activeOnly %t: %v", activeOnly, err)
 			return

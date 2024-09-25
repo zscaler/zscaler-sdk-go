@@ -1,6 +1,7 @@
 package networkservices
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -33,9 +34,9 @@ type NetworkPorts struct {
 	End   int `json:"end,omitempty"`
 }
 
-func Get(service *zscaler.Service, serviceID int) (*NetworkServices, error) {
+func Get(ctx context.Context, service *zscaler.Service, serviceID int) (*NetworkServices, error) {
 	var networkServices NetworkServices
-	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +45,9 @@ func Get(service *zscaler.Service, serviceID int) (*NetworkServices, error) {
 	return &networkServices, nil
 }
 
-func GetByName(service *zscaler.Service, networkServiceName string) (*NetworkServices, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, networkServiceName string) (*NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
+	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +59,8 @@ func GetByName(service *zscaler.Service, networkServiceName string) (*NetworkSer
 	return nil, fmt.Errorf("no network services found with name: %s", networkServiceName)
 }
 
-func Create(service *zscaler.Service, networkService *NetworkServices) (*NetworkServices, error) {
-	resp, err := service.Client.Create(networkServicesEndpoint, *networkService)
+func Create(ctx context.Context, service *zscaler.Service, networkService *NetworkServices) (*NetworkServices, error) {
+	resp, err := service.Client.Create(ctx, networkServicesEndpoint, *networkService)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +74,8 @@ func Create(service *zscaler.Service, networkService *NetworkServices) (*Network
 	return createdNetworkServices, nil
 }
 
-func Update(service *zscaler.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
+func Update(ctx context.Context, service *zscaler.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,8 +85,8 @@ func Update(service *zscaler.Service, serviceID int, networkService *NetworkServ
 	return updatedNetworkServices, nil, nil
 }
 
-func Delete(service *zscaler.Service, serviceID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
+func Delete(ctx context.Context, service *zscaler.Service, serviceID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +94,8 @@ func Delete(service *zscaler.Service, serviceID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAllNetworkServices(service *zscaler.Service) ([]NetworkServices, error) {
+func GetAllNetworkServices(ctx context.Context, service *zscaler.Service) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
+	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
 	return networkServices, err
 }

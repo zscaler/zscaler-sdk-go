@@ -1,6 +1,7 @@
 package cbiregions
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -17,7 +18,7 @@ func TestGetAllRegions(t *testing.T) {
 	}
 
 	// 1. First GetAll regions and ensure a response is returned.
-	regions, resp, err := GetAll(service)
+	regions, resp, err := GetAll(context.Background(), service)
 	if err != nil || resp.StatusCode >= 400 || len(regions) == 0 {
 		t.Fatalf("Failed to fetch regions: %v", err)
 	}
@@ -30,7 +31,7 @@ func TestGetAllRegions(t *testing.T) {
 
 	// 3. Test the GetByName method by querying the Name of any of the returned regions from GetAll.
 	firstRegionName := regions[0].Name
-	singleRegionByName, resp, err := GetByName(service, firstRegionName)
+	singleRegionByName, resp, err := GetByName(context.Background(), service, firstRegionName)
 	if err != nil || resp.StatusCode >= 400 || singleRegionByName == nil {
 		t.Errorf("Failed to fetch region by Name %s: %v", firstRegionName, err)
 	} else if singleRegionByName.Name != firstRegionName {
@@ -58,7 +59,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve region with name variation: %s", variation)
-				region, _, err := GetByName(service, variation)
+				region, _, err := GetByName(context.Background(), service, variation)
 
 				if err != nil {
 					if strings.Contains(err.Error(), "no region named") {
@@ -92,7 +93,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

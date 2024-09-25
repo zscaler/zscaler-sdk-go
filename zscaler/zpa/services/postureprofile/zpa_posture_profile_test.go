@@ -1,6 +1,7 @@
 package postureprofile
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -17,7 +18,7 @@ func TestPostureProfiles(t *testing.T) {
 	}
 
 	// Test to retrieve all profiles
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting posture profiles: %v", err)
 		return
@@ -31,7 +32,7 @@ func TestPostureProfiles(t *testing.T) {
 	name := profiles[0].Name
 	adaptedName := common.RemoveCloudSuffix(name)
 	t.Log("Getting posture profile by name:" + adaptedName)
-	profile, _, err := GetByName(service, adaptedName)
+	profile, _, err := GetByName(context.Background(), service, adaptedName)
 	if err != nil {
 		t.Errorf("Error getting posture profile by name: %v", err)
 		return
@@ -44,7 +45,7 @@ func TestPostureProfiles(t *testing.T) {
 	// Additional step: Use the ID of the first profile to test the Get function
 	firstProfileID := profiles[0].ID
 	t.Run("Get by ID for first profile", func(t *testing.T) {
-		profileByID, _, err := Get(service, firstProfileID)
+		profileByID, _, err := Get(context.Background(), service, firstProfileID)
 		if err != nil {
 			t.Fatalf("Error getting profile by ID %s: %v", firstProfileID, err)
 		}
@@ -55,7 +56,7 @@ func TestPostureProfiles(t *testing.T) {
 
 	// Negative Test: Try to retrieve a profile with a non-existent name
 	nonExistentName := "ThisPostureProfileNameDoesNotExist"
-	_, _, err = GetByName(service, nonExistentName)
+	_, _, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -64,7 +65,7 @@ func TestPostureProfiles(t *testing.T) {
 	// Negative Test: Try to retrieve a profile with a non-existent ID
 	nonExistentID := "non_existent_id"
 	t.Run("Get by non-existent ID", func(t *testing.T) {
-		_, _, err := Get(service, nonExistentID)
+		_, _, err := Get(context.Background(), service, nonExistentID)
 		if err == nil {
 			t.Errorf("Expected error when getting by non-existent ID, got nil")
 		}
@@ -77,7 +78,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting posture profiles: %v", err)
 		return
@@ -120,7 +121,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve profile with name variation: %s", variation)
-		profile, _, err := GetByName(service, variation)
+		profile, _, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting posture profile with name variation '%s': %v", variation, err)
 			continue
@@ -152,7 +153,7 @@ func TestPostureProfileNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve profile with name: %s", variation)
-		profile, _, err := GetByName(service, variation)
+		profile, _, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
 			continue
@@ -174,7 +175,7 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 
 	// Use GetByName to fetch a known Posture Profile
 	knownName := "CrowdStrike_ZPA_ZTA_40"
-	posture, _, err := GetByName(service, knownName)
+	posture, _, err := GetByName(context.Background(), service, knownName)
 	if err != nil || posture == nil {
 		t.Errorf("Error getting posture profile with name '%s': %v", knownName, err)
 		return
@@ -182,7 +183,7 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 
 	// Use the PostureudID from the above posture profile to test GetByPostureUDID
 	t.Logf("Attempting to retrieve posture with PostureudID: %s", posture.PostureudID)
-	postureByUDID, _, err := GetByPostureUDID(service, posture.PostureudID)
+	postureByUDID, _, err := GetByPostureUDID(context.Background(), service, posture.PostureudID)
 	if err != nil {
 		t.Errorf("Error getting posture profile with PostureudID '%s': %v", posture.PostureudID, err)
 		return
@@ -200,7 +201,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

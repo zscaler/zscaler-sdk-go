@@ -1,6 +1,7 @@
 package praapproval
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -74,18 +75,18 @@ func TestCredentialController(t *testing.T) {
 		Description: name,
 		Enabled:     true,
 	}
-	createdSegGroup, _, err := segmentgroup.Create(service, &appGroup)
+	createdSegGroup, _, err := segmentgroup.Create(context.Background(), service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentgroup.Get(service, createdSegGroup.ID)
+		_, _, getErr := segmentgroup.Get(context.Background(), service, createdSegGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentgroup.Delete(service, createdSegGroup.ID)
+			_, err := segmentgroup.Delete(context.Background(), service, createdSegGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -138,14 +139,14 @@ func TestCredentialController(t *testing.T) {
 			},
 		},
 	}
-	createdpraAppSeg, _, err := applicationsegmentpra.Create(service, praAppSeg)
+	createdpraAppSeg, _, err := applicationsegmentpra.Create(context.Background(), service, praAppSeg)
 	if err != nil {
 		t.Errorf("Error creating pra application segment: %v", err)
 		return
 	}
 
 	// Assuming the praSegmentService.Get correctly returns the payload as described
-	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
+	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(context.Background(), service, createdpraAppSeg.ID)
 	if err != nil {
 		t.Errorf("Error retrieving created pra application segment: %v", err)
 		return
@@ -153,11 +154,11 @@ func TestCredentialController(t *testing.T) {
 
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
+		_, _, getErr := applicationsegmentpra.Get(context.Background(), service, createdpraAppSeg.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := applicationsegmentpra.Delete(service, createdpraAppSeg.ID)
+			_, err := applicationsegmentpra.Delete(context.Background(), service, createdpraAppSeg.ID)
 			if err != nil {
 				t.Errorf("Error deleting pra application segment: %v", err)
 			}
@@ -188,7 +189,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource creation
-	createdResource, _, err := Create(service, &credController)
+	createdResource, _, err := Create(context.Background(), service, &credController)
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
@@ -197,7 +198,7 @@ func TestCredentialController(t *testing.T) {
 		t.Fatal("Expected created resource ID to be non-empty")
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -213,14 +214,14 @@ func TestCredentialController(t *testing.T) {
 	credController.WorkingHours.EndTimeCron = "0 0 1 ? * TUE,THU,SAT"
 
 	// Call the Update function with the modified 'credController' struct
-	_, err = Update(service, createdResource.ID, &credController)
+	_, err = Update(context.Background(), service, createdResource.ID, &credController)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 		return
 	}
 
 	// Retrieve the resource again to verify the update was successful
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving updated resource: %v", err)
 		return
@@ -232,7 +233,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -251,14 +252,14 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, createdResource.ID)
+	_, _, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -270,7 +271,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -282,7 +283,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &PrivilegedApproval{})
+	_, err = Update(context.Background(), service, "non_existent_id", &PrivilegedApproval{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -294,7 +295,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -306,7 +307,7 @@ func TestDeleteExpiredResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	resp, err := DeleteExpired(service)
+	resp, err := DeleteExpired(context.Background(), service)
 	if err != nil {
 		t.Errorf("Unexpected error when calling DeleteExpired: %v", err)
 	} else if resp.StatusCode != http.StatusOK {

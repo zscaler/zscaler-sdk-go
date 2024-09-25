@@ -1,6 +1,7 @@
 package dlp_web_rules
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -155,9 +156,9 @@ type SubRule struct {
 	ID int `json:"id,omitempty"`
 }
 
-func Get(service *zscaler.Service, ruleID int) (*WebDLPRules, error) {
+func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*WebDLPRules, error) {
 	var webDlpRules WebDLPRules
-	err := service.Client.Read(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), &webDlpRules)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), &webDlpRules)
 	if err != nil {
 		return nil, err
 	}
@@ -166,9 +167,9 @@ func Get(service *zscaler.Service, ruleID int) (*WebDLPRules, error) {
 	return &webDlpRules, nil
 }
 
-func GetByName(service *zscaler.Service, ruleName string) (*WebDLPRules, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*WebDLPRules, error) {
 	var webDlpRules []WebDLPRules
-	err := common.ReadAllPages(service.Client, webDlpRulesEndpoint, &webDlpRules)
+	err := common.ReadAllPages(ctx, service.Client, webDlpRulesEndpoint, &webDlpRules)
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +181,8 @@ func GetByName(service *zscaler.Service, ruleName string) (*WebDLPRules, error) 
 	return nil, fmt.Errorf("no web dlp rule found with name: %s", ruleName)
 }
 
-func Create(service *zscaler.Service, ruleID *WebDLPRules) (*WebDLPRules, error) {
-	resp, err := service.Client.Create(webDlpRulesEndpoint, *ruleID)
+func Create(ctx context.Context, service *zscaler.Service, ruleID *WebDLPRules) (*WebDLPRules, error) {
+	resp, err := service.Client.Create(ctx, webDlpRulesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +196,8 @@ func Create(service *zscaler.Service, ruleID *WebDLPRules) (*WebDLPRules, error)
 	return createdWebDlpRules, nil
 }
 
-func Update(service *zscaler.Service, ruleID int, webDlpRules *WebDLPRules) (*WebDLPRules, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), *webDlpRules)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, webDlpRules *WebDLPRules) (*WebDLPRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), *webDlpRules)
 	if err != nil {
 		return nil, err
 	}
@@ -206,8 +207,8 @@ func Update(service *zscaler.Service, ruleID int, webDlpRules *WebDLPRules) (*We
 	return updatedWebDlpRules, nil
 }
 
-func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID))
+func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
@@ -215,8 +216,8 @@ func Delete(service *zscaler.Service, ruleID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *zscaler.Service) ([]WebDLPRules, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]WebDLPRules, error) {
 	var webDlpRules []WebDLPRules
-	err := common.ReadAllPages(service.Client, webDlpRulesEndpoint, &webDlpRules)
+	err := common.ReadAllPages(ctx, service.Client, webDlpRulesEndpoint, &webDlpRules)
 	return webDlpRules, err
 }

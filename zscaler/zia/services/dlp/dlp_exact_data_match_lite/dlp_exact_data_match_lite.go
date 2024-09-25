@@ -1,6 +1,7 @@
 package dlp_exact_data_match_lite
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -56,7 +57,7 @@ type TokenList struct {
 	ColLengthBitmap int `json:"colLengthBitmap,omitempty"`
 }
 
-func GetBySchemaName(service *zscaler.Service, schemaName string, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
+func GetBySchemaName(ctx context.Context, service *zscaler.Service, schemaName string, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
 	queryParameters := url.Values{}
 	queryParameters.Set("schemaName", schemaName)
 	if activeOnly {
@@ -68,14 +69,14 @@ func GetBySchemaName(service *zscaler.Service, schemaName string, activeOnly, fe
 
 	endpoint := fmt.Sprintf("%s?%s", dlpEDMELiteEndpoint, queryParameters.Encode())
 	var edmData []DLPEDMLite
-	err := common.ReadAllPages(service.Client, endpoint, &edmData)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &edmData)
 	if err != nil {
 		return nil, err
 	}
 	return edmData, nil
 }
 
-func GetAllEDMSchema(service *zscaler.Service, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
+func GetAllEDMSchema(ctx context.Context, service *zscaler.Service, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
 	queryParameters := url.Values{}
 	if activeOnly {
 		queryParameters.Set("activeOnly", "true")
@@ -90,6 +91,6 @@ func GetAllEDMSchema(service *zscaler.Service, activeOnly, fetchTokens bool) ([]
 	}
 
 	var edmData []DLPEDMLite
-	err := common.ReadAllPages(service.Client, endpoint, &edmData)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &edmData)
 	return edmData, err
 }

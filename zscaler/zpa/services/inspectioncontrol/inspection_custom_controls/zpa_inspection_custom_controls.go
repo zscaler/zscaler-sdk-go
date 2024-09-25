@@ -1,6 +1,7 @@
 package inspection_custom_controls
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -61,10 +62,10 @@ func unmarshalRulesJson(rulesJsonStr string) ([]Rules, error) {
 	return rules, err
 }
 
-func Get(service *zscaler.Service, customID string) (*InspectionCustomControl, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, customID string) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,9 +74,9 @@ func Get(service *zscaler.Service, customID string) (*InspectionCustomControl, *
 	return v, resp, err
 }
 
-func GetByName(service *zscaler.Service, controlName string) (*InspectionCustomControl, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, controlName string) (*InspectionCustomControl, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customControlsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -89,9 +90,9 @@ func GetByName(service *zscaler.Service, controlName string) (*InspectionCustomC
 	return nil, resp, fmt.Errorf("no custom inspection control named '%s' was found", controlName)
 }
 
-func Create(service *zscaler.Service, customControls InspectionCustomControl) (*InspectionCustomControl, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, customControls InspectionCustomControl) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, nil, customControls, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, nil, customControls, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -99,9 +100,9 @@ func Create(service *zscaler.Service, customControls InspectionCustomControl) (*
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, customID string, customControls *InspectionCustomControl) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, customID string, customControls *InspectionCustomControl) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, customControls, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, nil, customControls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +110,9 @@ func Update(service *zscaler.Service, customID string, customControls *Inspectio
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, customID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, customID string) (*http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -119,9 +120,9 @@ func Delete(service *zscaler.Service, customID string) (*http.Response, error) {
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]InspectionCustomControl, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]InspectionCustomControl, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customControlsEndpoint
-	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

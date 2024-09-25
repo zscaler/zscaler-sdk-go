@@ -1,6 +1,7 @@
 package isolationprofile
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -27,14 +28,14 @@ type IsolationProfile struct {
 	IsolationURL       string `json:"isolationUrl"`
 }
 
-func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: profileName} // We only have the Search filter as per your example. You can add more filters if required.
 
 	// Use the custom pagination function
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IsolationProfile](service.Client, relativeURL, filters)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IsolationProfile](ctx, service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,9 +49,9 @@ func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile,
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func GetAll(service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
-	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -19,10 +20,10 @@ type LSSClientTypes struct {
 	ZPNClientTypeSlogger       string `json:"zpn_client_type_slogger,omitempty"`
 }
 
-func GetClientTypes(service *zscaler.Service) (*LSSClientTypes, *http.Response, error) {
+func GetClientTypes(ctx context.Context, service *zscaler.Service) (*LSSClientTypes, *http.Response, error) {
 	v := new(LSSClientTypes)
 	relativeURL := mgmtConfigTypesAndFormats + lssClientTypesEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

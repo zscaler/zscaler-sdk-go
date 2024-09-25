@@ -1,6 +1,7 @@
 package datacenter
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 	"strings"
@@ -32,7 +33,7 @@ type GreVIP struct {
 	Datacenter         string `json:"datacenter,omitempty"`
 }
 
-func SearchByDatacenters(service *zscaler.Service, params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
+func SearchByDatacenters(ctx context.Context, service *zscaler.Service, params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
 	var zscalerVips []DatacenterVIPS
 	var queryParams []string
 
@@ -68,7 +69,7 @@ func SearchByDatacenters(service *zscaler.Service, params common.DatacenterSearc
 		endpoint += "?" + strings.Join(queryParams, "&")
 	}
 
-	err := common.ReadAllPages(service.Client, endpoint, &zscalerVips)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &zscalerVips)
 	if err != nil {
 		return nil, err
 	}

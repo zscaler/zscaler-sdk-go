@@ -1,6 +1,7 @@
 package downloaddevices
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,13 +18,13 @@ type DownloadDevicesQueryParams struct {
 	RegistrationTypes string `url:"registrationTypes,omitempty"`
 }
 
-func DownloadDevices(service *zscaler.Service, osTypes, registrationTypes string, writer io.Writer) error {
+func DownloadDevices(ctx context.Context, service *zscaler.Service, osTypes, registrationTypes string, writer io.Writer) error {
 	queryParams := DownloadDevicesQueryParams{
 		OSTypes:           osTypes,
 		RegistrationTypes: registrationTypes,
 	}
 
-	resp, err := service.Client.NewZccRequestDo("GET", downloadDevicesEndpoint, queryParams, nil, nil)
+	resp, err := service.Client.NewZccRequestDo(ctx, "GET", downloadDevicesEndpoint, queryParams, nil, nil)
 	if err != nil {
 		return err
 	}

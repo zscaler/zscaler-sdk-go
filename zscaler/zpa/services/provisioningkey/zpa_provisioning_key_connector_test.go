@@ -1,6 +1,7 @@
 package provisioningkey
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -43,7 +44,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		TCPQuickAckReadAssistant: true,
 	}
 
-	createdAppConnGroup, _, err := appconnectorgroup.Create(service, appGroup)
+	createdAppConnGroup, _, err := appconnectorgroup.Create(context.Background(), service, appGroup)
 	if err != nil || createdAppConnGroup == nil || createdAppConnGroup.ID == "" {
 		t.Fatalf("Error creating application connector group or ID is empty")
 		return
@@ -51,9 +52,9 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 
 	defer func() {
 		if createdAppConnGroup != nil && createdAppConnGroup.ID != "" {
-			existingGroup, _, errCheck := appconnectorgroup.Get(service, createdAppConnGroup.ID)
+			existingGroup, _, errCheck := appconnectorgroup.Get(context.Background(), service, createdAppConnGroup.ID)
 			if errCheck == nil && existingGroup != nil {
-				_, errDelete := appconnectorgroup.Delete(service, createdAppConnGroup.ID)
+				_, errDelete := appconnectorgroup.Delete(context.Background(), service, createdAppConnGroup.ID)
 				if errDelete != nil {
 					t.Errorf("Error deleting application connector group: %v", errDelete)
 				}
@@ -61,7 +62,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		}
 	}()
 
-	enrollmentCert, _, err := enrollmentcert.GetByName(service, "Connector")
+	enrollmentCert, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
 	if err != nil {
 		t.Errorf("Error getting enrollment cert: %v", err)
 		return
@@ -77,7 +78,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		MaxUsage:              "10",
 	}
 	// Test resource creation
-	createdResource, _, err := Create(service, connGrpAssociationType, &resource)
+	createdResource, _, err := Create(context.Background(), service, connGrpAssociationType, &resource)
 	if err != nil || createdResource == nil || createdResource.ID == "" {
 		t.Fatalf("Error making POST request or created resource is nil/empty: %v", err)
 		return
@@ -90,7 +91,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, connGrpAssociationType, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -102,11 +103,11 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = Update(service, connGrpAssociationType, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, connGrpAssociationType, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, connGrpAssociationType, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -117,7 +118,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, connGrpAssociationType, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, connGrpAssociationType, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 		return
@@ -134,7 +135,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 		return
@@ -157,7 +158,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	// Additional Tests for missing functions
 
 	// Test GetByNameAllAssociations
-	retrievedResource, assocType, _, err := GetByNameAllAssociations(service, updateName)
+	retrievedResource, assocType, _, err := GetByNameAllAssociations(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name across all associations: %v", err)
 	}
@@ -172,7 +173,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	}
 
 	// Test GetByIDAllAssociations
-	retrievedResource, assocType, _, err = GetByIDAllAssociations(service, createdResource.ID)
+	retrievedResource, assocType, _, err = GetByIDAllAssociations(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource by ID across all associations: %v", err)
 	}
@@ -187,7 +188,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	}
 
 	// Test GetAllByAssociationType
-	associationTypeResources, err := GetAllByAssociationType(service, connGrpAssociationType)
+	associationTypeResources, err := GetAllByAssociationType(context.Background(), service, connGrpAssociationType)
 	if err != nil {
 		t.Errorf("Error retrieving resources by association type: %v", err)
 	}
@@ -207,14 +208,14 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 	}
 
 	// Test resource removal
-	_, err = Delete(service, connGrpAssociationType, createdResource.ID)
+	_, err = Delete(context.Background(), service, connGrpAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, connGrpAssociationType, createdResource.ID)
+	_, _, err = Get(context.Background(), service, connGrpAssociationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

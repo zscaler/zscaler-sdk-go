@@ -2,6 +2,7 @@ package zscaler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,7 +18,7 @@ const (
 	mgmtConfig = "/mgmtconfig/v1/admin/customers/"
 )
 
-func (client *Client) NewRequestDo(method, endpoint string, options, body, v interface{}) (*http.Response, error) {
+func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
 	// Call the custom request handler
 	// Handle query parameters from options and any additional logic
 	if options == nil {
@@ -70,7 +71,7 @@ func (client *Client) NewRequestDo(method, endpoint string, options, body, v int
 	}
 
 	// Capture the three return values from ExecuteRequest
-	respBody, _, err := client.ExecuteRequest(method, endpoint, bodyReader, nil, contentTypeJSON)
+	respBody, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}

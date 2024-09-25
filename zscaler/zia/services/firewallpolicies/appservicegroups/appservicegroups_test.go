@@ -17,7 +17,7 @@ func TestAppServiceGroups_data(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	appServices, err := GetAll(service)
+	appServices, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting app service groups: %v", err)
 		return
@@ -28,7 +28,7 @@ func TestAppServiceGroups_data(t *testing.T) {
 	}
 	appServiceName := appServices[0].Name
 	t.Log("Getting app service group by name:" + appServiceName)
-	appService, err := GetByName(service, appServiceName)
+	appService, err := GetByName(context.Background(), service, appServiceName)
 	if err != nil {
 		t.Errorf("Error getting app service groups by name: %v", err)
 		return
@@ -39,7 +39,7 @@ func TestAppServiceGroups_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a app service group with a non-existent name
 	nonExistentName := "ThisAppServiceGroupDoesNotExist"
-	_, err = GetByName(service, nonExistentName)
+	_, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -52,7 +52,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	appServices, err := GetAll(service)
+	appServices, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting app service group : %v", err)
 		return
@@ -92,7 +92,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, err := GetByName(service, variation)
+		group, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting service with name variation '%s': %v", variation, err)
 			continue

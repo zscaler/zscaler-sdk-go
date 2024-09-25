@@ -1,6 +1,7 @@
 package activation
 
 import (
+	"context"
 	"errors"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -15,9 +16,9 @@ type Activation struct {
 	Status string `json:"status"`
 }
 
-func GetActivationStatus(service *zscaler.Service) (*Activation, error) {
+func GetActivationStatus(ctx context.Context, service *zscaler.Service) (*Activation, error) {
 	var activation Activation
-	err := service.Client.Read(activationStatusEndpoint, &activation)
+	err := service.Client.Read(ctx, activationStatusEndpoint, &activation)
 	if err != nil {
 		return nil, err
 	}
@@ -25,8 +26,8 @@ func GetActivationStatus(service *zscaler.Service) (*Activation, error) {
 	return &activation, nil
 }
 
-func CreateActivation(service *zscaler.Service, activation Activation) (*Activation, error) {
-	resp, err := service.Client.Create(activationEndpoint, activation)
+func CreateActivation(ctx context.Context, service *zscaler.Service, activation Activation) (*Activation, error) {
+	resp, err := service.Client.Create(ctx, activationEndpoint, activation)
 	if err != nil {
 		return nil, err
 	}

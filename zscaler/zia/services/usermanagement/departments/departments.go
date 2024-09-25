@@ -1,9 +1,11 @@
 package departments
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
@@ -26,9 +28,9 @@ type Department struct {
 	Deleted  bool   `json:"deleted"`
 }
 
-func (service *Service) GetDepartments(departmentID int) (*Department, error) {
+func GetDepartments(ctx context.Context, service *zscaler.Service, departmentID int) (*Department, error) {
 	var departments Department
-	err := service.Client.Read(fmt.Sprintf("%s/%d", departmentEndpoint, departmentID), &departments)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", departmentEndpoint, departmentID), &departments)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +39,9 @@ func (service *Service) GetDepartments(departmentID int) (*Department, error) {
 	return &departments, nil
 }
 
-func (service *Service) GetDepartmentsByName(departmentName string) (*Department, error) {
+func GetDepartmentsByName(ctx context.Context, service *zscaler.Service, departmentName string) (*Department, error) {
 	var departments []Department
-	err := common.ReadAllPages(service.Client, departmentEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &departments)
+	err := common.ReadAllPages(ctx, service.Client, departmentEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &departments)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +53,8 @@ func (service *Service) GetDepartmentsByName(departmentName string) (*Department
 	return nil, fmt.Errorf("no department found with name: %s", departmentName)
 }
 
-func (service *Service) GetAll() ([]Department, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]Department, error) {
 	var departments []Department
-	err := common.ReadAllPages(service.Client, departmentEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &departments)
+	err := common.ReadAllPages(ctx, service.Client, departmentEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &departments)
 	return departments, err
 }

@@ -1,6 +1,7 @@
 package roles
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestAdminRoles_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	roles, err := GetAllAdminRoles(service)
+	roles, err := GetAllAdminRoles(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting admin roles: %v", err)
 		return
@@ -28,7 +29,7 @@ func TestAdminRoles_data(t *testing.T) {
 	t.Log("Getting admin roles by name: " + name)
 
 	// Test GetByName function
-	role, err := GetByName(service, name)
+	role, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting admin role by name: %v", err)
 		return
@@ -39,7 +40,7 @@ func TestAdminRoles_data(t *testing.T) {
 	}
 
 	// Test GetAPIRole function with includeApiRole=true
-	apiRole, err := GetAPIRole(service, name, "true")
+	apiRole, err := GetAPIRole(context.Background(), service, name, "true")
 	if err != nil {
 		t.Errorf("Error getting API role: %v", err)
 		return
@@ -50,7 +51,7 @@ func TestAdminRoles_data(t *testing.T) {
 	}
 
 	// Test GetAuditorRole function with includeAuditorRole=true
-	auditorRole, err := GetAuditorRole(service, name, "true")
+	auditorRole, err := GetAuditorRole(context.Background(), service, name, "true")
 	if err != nil {
 		t.Errorf("Error getting Auditor role: %v", err)
 		return
@@ -61,7 +62,7 @@ func TestAdminRoles_data(t *testing.T) {
 	}
 
 	// Test GetPartnerRole function with includePartnerRole=true
-	partnerRole, err := GetPartnerRole(service, name, "true")
+	partnerRole, err := GetPartnerRole(context.Background(), service, name, "true")
 	if err != nil {
 		t.Errorf("Error getting Partner role: %v", err)
 		return
@@ -73,7 +74,7 @@ func TestAdminRoles_data(t *testing.T) {
 
 	// Negative Test: Try to retrieve an admin role with a non-existent name
 	nonExistentName := "ThisAdminRoleDoesNotExist"
-	_, err = GetByName(service, nonExistentName)
+	_, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -86,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	roles, err := GetAllAdminRoles(service)
+	roles, err := GetAllAdminRoles(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting admin role: %v", err)
 		return
@@ -126,7 +127,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve role with name variation: %s", variation)
-		role, err := GetByName(service, variation)
+		role, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting role with name variation '%s': %v", variation, err)
 			continue

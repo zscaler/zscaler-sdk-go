@@ -1,12 +1,14 @@
 package users
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
@@ -62,9 +64,9 @@ type EnrollUserRequest struct {
 	Password    string   `json:"password"`
 }
 
-func (service *Service) Get(userID int) (*Users, error) {
+func Get(ctx context.Context, service *zscaler.Service, userID int) (*Users, error) {
 	var user Users
-	err := service.Client.Read(fmt.Sprintf("%s/%d", usersEndpoint, userID), &user)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", usersEndpoint, userID), &user)
 	if err != nil {
 		return nil, err
 	}
@@ -73,9 +75,9 @@ func (service *Service) Get(userID int) (*Users, error) {
 	return &user, nil
 }
 
-func (service *Service) GetUserByName(userName string) (*Users, error) {
+func GetUserByName(ctx context.Context, service *zscaler.Service, userName string) (*Users, error) {
 	var users []Users
-	err := service.Client.Read(fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(service.sortBy, service.sortOrder)), &users)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder))), &users)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +89,7 @@ func (service *Service) GetUserByName(userName string) (*Users, error) {
 	return nil, fmt.Errorf("no user found with name: %s", userName)
 }
 
-func (service *Service) EnrollUser(userID int, request EnrollUserRequest) (*EnrollResult, error) {
+func EnrollUser(ctx context.Context, service *zscaler.Service, userID int, request EnrollUserRequest) (*EnrollResult, error) {
 	if len(request.AuthMethods) == 0 {
 		err := errors.New("authMethods is required")
 		service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
@@ -100,15 +102,15 @@ func (service *Service) EnrollUser(userID int, request EnrollUserRequest) (*Enro
 			return nil, err
 		}
 	}
-	_, err := service.Client.Create(fmt.Sprintf("%s/%d%s", usersEndpoint, userID, enrollEndpoint), request)
+	_, err := service.Client.Create(ctx, fmt.Sprintf("%s/%d%s", usersEndpoint, userID, enrollEndpoint), request)
 	if err != nil {
 		return nil, err
 	}
 	return &EnrollResult{UserID: userID}, nil
 }
 
-func (service *Service) Create(user *Users) (*Users, error) {
-	resp, err := service.Client.Create(usersEndpoint, *user)
+func Create(ctx context.Context, service *zscaler.Service, user *Users) (*Users, error) {
+	resp, err := service.Client.Create(ctx, usersEndpoint, *user)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +124,8 @@ func (service *Service) Create(user *Users) (*Users, error) {
 	return createdUsers, nil
 }
 
-func (service *Service) Update(userID int, users *Users) (*Users, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", usersEndpoint, userID), *users)
+func Update(ctx context.Context, service *zscaler.Service, userID int, users *Users) (*Users, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", usersEndpoint, userID), *users)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -132,8 +134,8 @@ func (service *Service) Update(userID int, users *Users) (*Users, *http.Response
 	return updatedUser, nil, nil
 }
 
-func (service *Service) Delete(userID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", usersEndpoint, userID))
+func Delete(ctx context.Context, service *zscaler.Service, userID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", usersEndpoint, userID))
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +143,7 @@ func (service *Service) Delete(userID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func BulkDelete(service *Service, ids []int) (*http.Response, error) {
+func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http.Response, error) {
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
@@ -152,12 +154,12 @@ func BulkDelete(service *Service, ids []int) (*http.Response, error) {
 	payload := map[string][]int{
 		"ids": ids,
 	}
-	return service.Client.BulkDelete(usersEndpoint+"/bulkDelete", payload)
+	return service.Client.BulkDelete(ctx, usersEndpoint+"/bulkDelete", payload)
 }
 
-func (service *Service) GetAllUsers() ([]Users, error) {
+func GetAllUsers(ctx context.Context, service *zscaler.Service) ([]Users, error) {
 	var users []Users
-	err := common.ReadAllPages(service.Client, usersEndpoint+"?"+common.GetSortParams(service.sortBy, service.sortOrder), &users)
+	err := common.ReadAllPages(ctx, service.Client, usersEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &users)
 	if err != nil {
 		return nil, err
 	}

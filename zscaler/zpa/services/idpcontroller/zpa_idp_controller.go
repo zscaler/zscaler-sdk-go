@@ -1,6 +1,7 @@
 package idpcontroller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -62,10 +63,10 @@ type UserMetadata struct {
 	SpPostURL      string `json:"spPostUrl,omitempty"`
 }
 
-func Get(service *zscaler.Service, IdpID string) (*IdpController, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, IdpID string) (*IdpController, *http.Response, error) {
 	v := new(IdpController)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+idpControllerEndpoint, IdpID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,9 +74,9 @@ func Get(service *zscaler.Service, IdpID string) (*IdpController, *http.Response
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, idpName string) (*IdpController, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, idpName string) (*IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[IdpController](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -87,9 +88,9 @@ func GetByName(service *zscaler.Service, idpName string) (*IdpController, *http.
 	return nil, resp, fmt.Errorf("no Idp-Controller named '%s' was found", idpName)
 }
 
-func GetAll(service *zscaler.Service) ([]IdpController, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IdpController, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGeneric[IdpController](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

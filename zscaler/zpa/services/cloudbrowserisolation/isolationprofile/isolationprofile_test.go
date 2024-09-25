@@ -1,6 +1,7 @@
 package isolationprofile
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -18,7 +19,7 @@ func TestIsolationProfile(t *testing.T) {
 	}
 
 	// Test to retrieve all profiles
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return
@@ -31,7 +32,7 @@ func TestIsolationProfile(t *testing.T) {
 	// Test to retrieve a profile by its name
 	name := profiles[0].Name
 	t.Log("Getting isolation profile by name:" + name)
-	profile, _, err := GetByName(service, name)
+	profile, _, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting isolation profile by name: %v", err)
 		return
@@ -48,7 +49,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	profiles, _, err := GetAll(service)
+	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
 		return
@@ -92,7 +93,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve isolation profile with name variation: %s", variation)
-				version, _, err := GetByName(service, variation)
+				version, _, err := GetByName(context.Background(), service, variation)
 				if err != nil {
 					t.Errorf("Error getting isolation profile with name variation '%s': %v", variation, err)
 					return
@@ -122,7 +123,7 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve profile with name: %s", variation)
-		profile, _, err := GetByName(service, variation)
+		profile, _, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting isolation profile with name '%s': %v", variation, err)
 			continue
@@ -141,7 +142,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non_existent_name name, but got nil")
 	}

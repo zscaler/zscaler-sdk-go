@@ -1,6 +1,7 @@
 package applicationsegmentbytype
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,7 +30,7 @@ type AppSegmentBaseAppDto struct {
 	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
 
-func GetByApplicationType(service *zscaler.Service, appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
+func GetByApplicationType(ctx context.Context, service *zscaler.Service, appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
 	validApplicationTypes := map[string]bool{
 		"BROWSER_ACCESS":       true,
 		"INSPECT":              true,
@@ -61,7 +62,7 @@ func GetByApplicationType(service *zscaler.Service, appName, applicationType str
 		filter.Search = appName
 	}
 
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentBaseAppDto](service.Client, constructedURL, filter)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentBaseAppDto](ctx, service.Client, constructedURL, filter)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package ip_address
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -17,7 +18,7 @@ func TestByIPAddress(t *testing.T) {
 		return
 	}
 
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -26,13 +27,13 @@ func TestByIPAddress(t *testing.T) {
 	}
 
 	defer func() {
-		_, err := staticips.Delete(service, staticIP.ID)
+		_, err := staticips.Delete(context.Background(), service, staticIP.ID)
 		if err != nil {
 			t.Errorf("Error deleting static IP: %v", err)
 		}
 	}()
 
-	result, err := GetByIPAddress(service, ipAddress)
+	result, err := GetByIPAddress(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error searching by IP address: %v", err)
 	}

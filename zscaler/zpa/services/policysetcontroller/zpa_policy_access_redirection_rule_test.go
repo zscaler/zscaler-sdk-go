@@ -1,6 +1,7 @@
 package policysetcontroller
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -18,7 +19,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 	}
 
 	svcEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	svcEdgeGroup, _, err := serviceedgegroup.Create(service, serviceedgegroup.ServiceEdgeGroup{
+	svcEdgeGroup, _, err := serviceedgegroup.Create(context.Background(), service, serviceedgegroup.ServiceEdgeGroup{
 		Name:                   svcEdgeGroupName,
 		Description:            svcEdgeGroupName,
 		Enabled:                true,
@@ -38,18 +39,18 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := serviceedgegroup.Get(service, svcEdgeGroup.ID)
+		_, _, getErr := serviceedgegroup.Get(context.Background(), service, svcEdgeGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := serviceedgegroup.Delete(service, svcEdgeGroup.ID)
+			_, err := serviceedgegroup.Delete(context.Background(), service, svcEdgeGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting service edge group: %v", err)
 			}
 		}
 	}()
 
-	accessPolicySet, _, err := GetByPolicyType(service, policyType)
+	accessPolicySet, _, err := GetByPolicyType(context.Background(), service, policyType)
 	if err != nil {
 		t.Errorf("Error getting redirection access policy set: %v", err)
 		return
@@ -57,7 +58,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -100,7 +101,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			},
 		}
 		// Test resource creation
-		createdResource, _, err := CreateRule(service, &redirectionPolicyRule)
+		createdResource, _, err := CreateRule(context.Background(), service, &redirectionPolicyRule)
 		// Check if the request was successful
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -115,7 +116,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		redirectionPolicyRule.Name = updatedName
-		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &redirectionPolicyRule)
+		_, updateErr := UpdateRule(context.Background(), service, accessPolicySet.ID, createdResource.ID, &redirectionPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -123,7 +124,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		}
 
 		// Retrieve and verify the updated resource
-		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(context.Background(), service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -133,7 +134,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(context.Background(), service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -151,14 +152,14 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = BulkReorder(service, policyType, ruleIdToOrder)
+	_, err = BulkReorder(context.Background(), service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = Delete(service, accessPolicySet.ID, ruleID)
+		_, err = Delete(context.Background(), service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

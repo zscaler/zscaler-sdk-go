@@ -1,6 +1,7 @@
 package getotp
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -14,7 +15,7 @@ func TestGetOtp(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	deviceList, err := devices.GetAll(service, "", "")
+	deviceList, err := devices.GetAll(context.Background(), service, "", "")
 	if err != nil {
 		t.Errorf("Error getting devices: %v", err)
 		return
@@ -37,7 +38,7 @@ func TestGetOtp(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("udid=%s", tc.udid), func(t *testing.T) {
-			otpResponse, err := GetOtp(service, tc.udid)
+			otpResponse, err := GetOtp(context.Background(), service, tc.udid)
 			if err != nil {
 				t.Fatalf("Error retrieving OTP for UDID %s: %v", tc.udid, err)
 			}

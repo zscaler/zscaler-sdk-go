@@ -1,6 +1,7 @@
 package applicationsegment_move
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -21,7 +22,7 @@ type AppSegmentMicrotenantMoveRequest struct {
 	TargetServerGroupID  string `json:"targetServerGroupId,omitempty"`
 }
 
-func AppSegmentMicrotenantMove(service *zscaler.Service, applicationID string, move AppSegmentMicrotenantMoveRequest) (*http.Response, error) {
+func AppSegmentMicrotenantMove(ctx context.Context, service *zscaler.Service, applicationID string, move AppSegmentMicrotenantMoveRequest) (*http.Response, error) {
 	// Check if a microtenant ID was provided in the move struct, else use the one from the service
 	microTenantID := move.MicroTenantID
 	if microTenantID == "" && service.MicroTenantID() != nil {
@@ -34,7 +35,7 @@ func AppSegmentMicrotenantMove(service *zscaler.Service, applicationID string, m
 	if microTenantID != "" {
 		filter.MicroTenantID = &microTenantID
 	}
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, filter, move, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", relativeURL, filter, move, nil)
 	if err != nil {
 		return nil, err
 	}

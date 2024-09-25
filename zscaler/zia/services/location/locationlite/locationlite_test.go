@@ -1,6 +1,7 @@
 package locationlite
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestLocationLite_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting locations: %v", err)
 		return
@@ -26,7 +27,7 @@ func TestLocationLite_data(t *testing.T) {
 	}
 	name := servers[0].Name
 	t.Log("Getting location lite by name:" + name)
-	server, err := GetLocationLiteByName(service, name)
+	server, err := GetLocationLiteByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting location lite by name: %v", err)
 		return
@@ -37,7 +38,7 @@ func TestLocationLite_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an location lite with a non-existent name
 	nonExistentName := "ThisLocationDoesNotExist"
-	_, err = GetLocationLiteByName(service, nonExistentName)
+	_, err = GetLocationLiteByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -51,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all servers to find a valid ID
-	servers, err := GetAll(service)
+	servers, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all location lites: %v", err)
 	}
@@ -63,7 +64,7 @@ func TestGetById(t *testing.T) {
 	testID := servers[0].ID
 
 	// Retrieve the server by ID
-	server, err := GetLocationLiteID(service, testID)
+	server, err := GetLocationLiteID(context.Background(), service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving location lite with ID %d: %v", testID, err)
 		return
@@ -86,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	locations, err := GetAll(service)
+	locations, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting location lite: %v", err)
 		return
@@ -126,7 +127,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, err := GetLocationLiteByName(service, variation)
+		group, err := GetLocationLiteByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name variation '%s': %v", variation, err)
 			continue

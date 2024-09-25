@@ -1,6 +1,7 @@
 package dlp_incident_receiver_servers
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -29,9 +30,9 @@ type IncidentReceiverServers struct {
 	Flags int `json:"flags,omitempty"`
 }
 
-func Get(service *zscaler.Service, receiverID int) (*IncidentReceiverServers, error) {
+func Get(ctx context.Context, service *zscaler.Service, receiverID int) (*IncidentReceiverServers, error) {
 	var incidentReceiver IncidentReceiverServers
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIncidentReceiverEndpoint, receiverID), &incidentReceiver)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", dlpIncidentReceiverEndpoint, receiverID), &incidentReceiver)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +41,9 @@ func Get(service *zscaler.Service, receiverID int) (*IncidentReceiverServers, er
 	return &incidentReceiver, nil
 }
 
-func GetByName(service *zscaler.Service, receiverName string) (*IncidentReceiverServers, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, receiverName string) (*IncidentReceiverServers, error) {
 	var incidentReceiver []IncidentReceiverServers
-	err := common.ReadAllPages(service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
+	err := common.ReadAllPages(ctx, service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +55,8 @@ func GetByName(service *zscaler.Service, receiverName string) (*IncidentReceiver
 	return nil, fmt.Errorf("no dlp incident receiver found with name: %s", receiverName)
 }
 
-func GetAll(service *zscaler.Service) ([]IncidentReceiverServers, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IncidentReceiverServers, error) {
 	var incidentReceiver []IncidentReceiverServers
-	err := common.ReadAllPages(service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
+	err := common.ReadAllPages(ctx, service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
 	return incidentReceiver, err
 }

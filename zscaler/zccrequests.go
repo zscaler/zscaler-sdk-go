@@ -2,6 +2,7 @@ package zscaler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 
 // NewRequestDo for ZCC with OAuth2 authentication and centralized request handling.
 // This function is consistent with the ZPA request handler.
-func (client *Client) NewZccRequestDo(method, endpoint string, options, body, v interface{}) (*http.Response, error) {
+func (client *Client) NewZccRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
 	// Handle query parameters from options and any additional logic
 	if options == nil {
 		options = struct{}{}
@@ -65,12 +66,11 @@ func (client *Client) NewZccRequestDo(method, endpoint string, options, body, v 
 	}
 
 	// Make the request and get the response
-	respBody, _, err := client.ExecuteRequest(method, endpoint, bodyReader, nil, contentTypeJSON)
+	respBody, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a dummy HTTP response using the request body for response body
 	resp := &http.Response{
 		StatusCode: http.StatusOK,
 		Body:       io.NopCloser(bytes.NewBuffer(respBody)),

@@ -1,6 +1,7 @@
 package bacertificate
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -38,10 +39,10 @@ type BaCertificate struct {
 	MicrotenantName     string   `json:"microtenantName,omitempty"`
 }
 
-func Get(service *zscaler.Service, baCertificateID string) (*BaCertificate, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, baCertificateID string) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
 	relativeURL := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,9 +50,9 @@ func Get(service *zscaler.Service, baCertificateID string) (*BaCertificate, *htt
 	return v, resp, nil
 }
 
-func GetIssuedByName(service *zscaler.Service, CertName string) (*BaCertificate, *http.Response, error) {
+func GetIssuedByName(ctx context.Context, service *zscaler.Service, CertName string) (*BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](ctx, service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -63,9 +64,9 @@ func GetIssuedByName(service *zscaler.Service, CertName string) (*BaCertificate,
 	return nil, resp, fmt.Errorf("no issued certificate named '%s' was found", CertName)
 }
 
-func Create(service *zscaler.Service, baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, baCertificate, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, baCertificate, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,18 +74,18 @@ func Create(service *zscaler.Service, baCertificate BaCertificate) (*BaCertifica
 	return v, resp, nil
 }
 
-func Delete(service *zscaler.Service, baCertificateID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, baCertificateID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func GetAll(service *zscaler.Service) ([]BaCertificate, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]BaCertificate, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,6 +1,7 @@
 package gretunnelinfo
 
 import (
+	"context"
 	"log"
 	"os"
 	"strings"
@@ -44,7 +45,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	resources, err := gretunnels.GetAll(service)
+	resources, err := gretunnels.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -52,7 +53,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.SourceIP, "tests-") {
-			_, err := gretunnels.DeleteGreTunnels(service, r.ID)
+			_, err := gretunnels.DeleteGreTunnels(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -69,7 +70,7 @@ func TestGRETunnelInfo(t *testing.T) {
 		return
 	}
 
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -77,9 +78,9 @@ func TestGRETunnelInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating static IP for testing: %v", err)
 	}
-	defer deleteStaticIP(service, staticIP.ID, t)
+	defer deleteStaticIP(context.Background(), service, staticIP.ID, t)
 
-	vipRecommendedList, err := virtualipaddress.GetAll(service, ipAddress)
+	vipRecommendedList, err := virtualipaddress.GetAll(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Errorf("Error getting recommended vip: %v", err)
 		return
@@ -90,7 +91,7 @@ func TestGRETunnelInfo(t *testing.T) {
 
 	withinCountry := true // Create a boolean variable
 
-	greTunnel, _, err := gretunnels.CreateGreTunnels(service, &gretunnels.GreTunnels{
+	greTunnel, _, err := gretunnels.CreateGreTunnels(context.Background(), service, &gretunnels.GreTunnels{
 		SourceIP:      staticIP.IpAddress,
 		Comment:       comment,
 		WithinCountry: &withinCountry,
@@ -108,11 +109,11 @@ func TestGRETunnelInfo(t *testing.T) {
 		t.Fatalf("Error creating GRE tunnel: %v", err)
 	}
 
-	defer deleteGRETunnel(service, greTunnel.ID, t)
+	defer deleteGRETunnel(context.Background(), service, greTunnel.ID, t)
 
 	// Get GRE tunnel information
 
-	greTunnelInfo, err := GetGRETunnelInfo(service, ipAddress)
+	greTunnelInfo, err := GetGRETunnelInfo(context.Background(), service, ipAddress)
 	if err != nil {
 		t.Fatalf("Error retrieving GRE tunnel info: %v", err)
 	}
@@ -135,7 +136,7 @@ func TestGRETunnelInfo(t *testing.T) {
 
 	t.Run("TestInvalidGRETunnelRetrieval", func(t *testing.T) {
 		invalidIpAddress := "invalid-ip-address"
-		_, err := GetGRETunnelInfo(service, invalidIpAddress)
+		_, err := GetGRETunnelInfo(context.Background(), service, invalidIpAddress)
 		if err == nil {
 			t.Errorf("Expected an error for invalid IP address, but got nil")
 		} else {
@@ -145,16 +146,16 @@ func TestGRETunnelInfo(t *testing.T) {
 }
 
 // deleteStaticIP deletes a static IP resource
-func deleteStaticIP(service *zscaler.Service, id int, t *testing.T) {
-	_, err := staticips.Delete(service, id)
+func deleteStaticIP(ctx context.Context, service *zscaler.Service, id int, t *testing.T) {
+	_, err := staticips.Delete(ctx, service, id) // Use the passed context instead of context.Background()
 	if err != nil {
 		t.Errorf("Error deleting static IP: %v", err)
 	}
 }
 
 // deleteGRETunnel deletes a GRE tunnel resource
-func deleteGRETunnel(service *zscaler.Service, id int, t *testing.T) {
-	_, err := gretunnels.DeleteGreTunnels(service, id)
+func deleteGRETunnel(ctx context.Context, service *zscaler.Service, id int, t *testing.T) {
+	_, err := gretunnels.DeleteGreTunnels(ctx, service, id) // Use the passed context instead of context.Background()
 	if err != nil {
 		t.Errorf("Error deleting GRE tunnel: %v", err)
 	}

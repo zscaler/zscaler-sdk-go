@@ -1,6 +1,7 @@
 package praportal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -60,19 +61,19 @@ type PRAPortal struct {
 	MicroTenantName string `json:"microtenantName,omitempty"`
 }
 
-func Get(service *zscaler.Service, portalID string) (*PRAPortal, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, portalID string) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetByName(service *zscaler.Service, portalName string) (*PRAPortal, *http.Response, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, portalName string) (*PRAPortal, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praPortalEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{Search: portalName, MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](ctx, service.Client, relativeURL, common.Filter{Search: portalName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,36 +85,36 @@ func GetByName(service *zscaler.Service, portalName string) (*PRAPortal, *http.R
 	return nil, resp, fmt.Errorf("no pra portal '%s' was found", portalName)
 }
 
-func Create(service *zscaler.Service, sraPortal *PRAPortal) (*PRAPortal, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, sraPortal *PRAPortal) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *zscaler.Service, portalID string, sraPortal *PRAPortal) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, portalID string, sraPortal *PRAPortal) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func Delete(service *zscaler.Service, portalID string) (*http.Response, error) {
+func Delete(ctx context.Context, service *zscaler.Service, portalID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func GetAll(service *zscaler.Service) ([]PRAPortal, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]PRAPortal, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praPortalEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

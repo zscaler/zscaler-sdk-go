@@ -1,6 +1,7 @@
 package cbizpaprofile
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -27,9 +28,9 @@ type ZPAProfiles struct {
 }
 
 // The current API does not seem to support search by ID
-func Get(service *zscaler.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
+func Get(ctx context.Context, service *zscaler.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
 	// First get all the profiles
-	profiles, resp, err := GetAll(service)
+	profiles, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -45,8 +46,8 @@ func Get(service *zscaler.Service, profileID string) (*ZPAProfiles, *http.Respon
 }
 
 // The current API does not seem to support search by Name
-func GetByName(service *zscaler.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
-	list, resp, err := GetAll(service)
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
+	list, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,10 +59,10 @@ func GetByName(service *zscaler.Service, profileName string) (*ZPAProfiles, *htt
 	return nil, resp, fmt.Errorf("no zpa profile named '%s' was found", profileName)
 }
 
-func GetAll(service *zscaler.Service) ([]ZPAProfiles, *http.Response, error) {
+func GetAll(ctx context.Context, service *zscaler.Service) ([]ZPAProfiles, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.GetCustomerID() + zpaProfileEndpoint
 	var list []ZPAProfiles
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

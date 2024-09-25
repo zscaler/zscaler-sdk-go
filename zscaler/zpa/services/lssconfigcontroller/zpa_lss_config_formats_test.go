@@ -1,6 +1,7 @@
 package lssconfigcontroller
 
 import (
+	"context"
 	"testing"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
@@ -33,7 +34,7 @@ func TestGetAllFormats(t *testing.T) {
 
 	// Iterate through each logType and test
 	for _, logType := range logTypes {
-		formats, resp, err := GetFormats(service, logType)
+		formats, resp, err := GetFormats(context.Background(), service, logType)
 		if err != nil {
 			t.Errorf("Failed to get formats for logType %s: %v", logType, err)
 			continue

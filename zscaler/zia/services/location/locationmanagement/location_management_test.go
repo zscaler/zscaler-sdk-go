@@ -1,6 +1,7 @@
 package locationmanagement
 
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -61,7 +62,7 @@ func TestLocationManagement(t *testing.T) {
 		}
 	}()
 
-	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
+	staticIP, _, err := staticips.Create(context.Background(), service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
@@ -71,7 +72,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	cleanupTasks = append(cleanupTasks, func() {
-		_, err := staticips.Delete(service, staticIP.ID)
+		_, err := staticips.Delete(context.Background(), service, staticIP.ID)
 		if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 			t.Errorf("Error deleting static ip: %v", err)
 		}
@@ -97,7 +98,7 @@ func TestLocationManagement(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &location)
+		createdResource, err = Create(context.Background(), service, &location)
 		return err
 	})
 	// Check if the request was successful
@@ -113,7 +114,7 @@ func TestLocationManagement(t *testing.T) {
 			return
 		}
 		err = retryOnConflict(func() error {
-			_, delErr := Delete(service, createdResource.ID)
+			_, delErr := Delete(context.Background(), service, createdResource.ID)
 			return delErr
 		})
 		if err != nil {
@@ -153,7 +154,7 @@ func TestLocationManagement(t *testing.T) {
 
 	// Test sub-location creation
 	err = retryOnConflict(func() error {
-		createdSubLocation, err = Create(service, &subLocation)
+		createdSubLocation, err = Create(context.Background(), service, &subLocation)
 		return err
 	})
 	// Check if the request was successful
@@ -184,13 +185,13 @@ func TestLocationManagement(t *testing.T) {
 	retrievedResource.Description = updateDescription
 	retrievedResource.Name = updateName // Added this line
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
-	updatedResource, err := GetLocation(service, createdResource.ID)
+	updatedResource, err := GetLocation(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -202,7 +203,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetLocationByName(service, updateName)
+	retrievedResource, err = GetLocationByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -214,7 +215,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -246,7 +247,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetSubLocation
-	subLocationByParent, err := GetSubLocation(service, createdResource.ID, createdSubLocation.ID)
+	subLocationByParent, err := GetSubLocation(context.Background(), service, createdResource.ID, createdSubLocation.ID)
 	if err != nil {
 		t.Fatalf("Error getting sub-location by parent ID: %v", err)
 	}
@@ -255,7 +256,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetSubLocationBySubID
-	subLocationBySubID, err := GetSubLocationBySubID(service, createdSubLocation.ID)
+	subLocationBySubID, err := GetSubLocationBySubID(context.Background(), service, createdSubLocation.ID)
 	if err != nil {
 		t.Fatalf("Error getting sub-location by sub ID: %v", err)
 	}
@@ -264,7 +265,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetAllSublocations
-	allSubLocations, err := GetAllSublocations(service)
+	allSubLocations, err := GetAllSublocations(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all sub-locations: %v", err)
 	}
@@ -273,7 +274,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetSubLocationByName
-	subLocationByName, err := GetSubLocationByName(service, subLocation.Name)
+	subLocationByName, err := GetSubLocationByName(context.Background(), service, subLocation.Name)
 	if err != nil {
 		t.Fatalf("Error getting sub-location by name: %v", err)
 	}
@@ -282,7 +283,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetSubLocationByNames
-	subLocationByNames, err := GetSubLocationByNames(service, updateName, subLocation.Name)
+	subLocationByNames, err := GetSubLocationByNames(context.Background(), service, updateName, subLocation.Name)
 	if err != nil {
 		t.Fatalf("Error getting sub-location by names: %v", err)
 	}
@@ -291,7 +292,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetLocationOrSublocationByName
-	locationOrSubLocation, err := GetLocationOrSublocationByName(service, subLocation.Name)
+	locationOrSubLocation, err := GetLocationOrSublocationByName(context.Background(), service, subLocation.Name)
 	if err != nil {
 		t.Fatalf("Error getting location or sub-location by name: %v", err)
 	}
@@ -301,7 +302,7 @@ func TestLocationManagement(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
 	if err != nil && !strings.Contains(err.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
@@ -309,7 +310,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 	alreadyDeleted = true // Set the flag to true after successfully deleting the rule
 
-	_, err = GetLocation(service, createdResource.ID)
+	_, err = GetLocation(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -321,7 +322,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*Locations, error) {
 	var lastErr error
 
 	for i := 0; i < maxRetries; i++ {
-		result, lastErr = GetLocationOrSublocationByID(s, id)
+		result, lastErr = GetLocationOrSublocationByID(context.Background(), s, id)
 		if lastErr == nil {
 			return result, nil
 		}
@@ -338,7 +339,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetLocation(service, 0)
+	_, err = GetLocation(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -350,7 +351,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, 0)
+	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -362,7 +363,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(service, 0, &Locations{})
+	_, _, err = Update(context.Background(), service, 0, &Locations{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -374,7 +375,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetLocationByName(service, "non_existent_name")
+	_, err = GetLocationByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

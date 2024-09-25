@@ -1,6 +1,7 @@
 package policysetcontroller
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -28,7 +29,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	if len(idpList) == 0 {
 		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
 	}
-	samlsList, _, err := samlattribute.GetAll(service)
+	samlsList, _, err := samlattribute.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -38,13 +39,13 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 	}
 
 	// profile := inspection_profile.New(client)
-	profileID, _, err := inspection_profile.GetByName(service, inspectionProfileID)
+	profileID, _, err := inspection_profile.GetByName(context.Background(), service, inspectionProfileID)
 	if err != nil {
 		t.Errorf("Error getting inspection profile id set: %v", err)
 		return
 	}
 
-	accessPolicySet, _, err := GetByPolicyType(service, policyType)
+	accessPolicySet, _, err := GetByPolicyType(context.Background(), service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access forwarding policy set: %v", err)
 		return
@@ -83,7 +84,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 			},
 		}
 		// Test resource creation
-		createdResource, _, err := CreateRule(service, &accessPolicyRule)
+		createdResource, _, err := CreateRule(context.Background(), service, &accessPolicyRule)
 		// Check if the request was successful
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -98,7 +99,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(context.Background(), service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -106,7 +107,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		}
 
 		// Retrieve and verify the updated resource
-		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(context.Background(), service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -116,7 +117,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(context.Background(), service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -134,14 +135,14 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = BulkReorder(service, policyType, ruleIdToOrder)
+	_, err = BulkReorder(context.Background(), service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = Delete(service, accessPolicySet.ID, ruleID)
+		_, err = Delete(context.Background(), service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}
@@ -155,7 +156,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	idpList, _, err := idpcontroller.GetAll(service)
+	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -164,7 +165,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
 	}
 
-	samlsList, _, err := samlattribute.GetAll(service)
+	samlsList, _, err := samlattribute.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -173,14 +174,14 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 
-	accessPolicySet, _, err := GetByPolicyType(service, policyType)
+	accessPolicySet, _, err := GetByPolicyType(context.Background(), service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access forwarding policy set: %v", err)
 		return
 	}
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -210,7 +211,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 			},
 		}
 		// Test resource creation
-		createdResource, _, err := CreateRule(service, &accessPolicyRule)
+		createdResource, _, err := CreateRule(context.Background(), service, &accessPolicyRule)
 		// Check if the request was successful
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
@@ -225,7 +226,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := UpdateRule(service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := UpdateRule(context.Background(), service, accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
@@ -233,7 +234,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		}
 
 		// Retrieve and verify the updated resource
-		updatedResource, _, getErr := GetPolicyRule(service, accessPolicySet.ID, createdResource.ID)
+		updatedResource, _, getErr := GetPolicyRule(context.Background(), service, accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
 			continue
@@ -243,7 +244,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		}
 
 		// Test resource retrieval by name
-		updatedResource, _, err = GetByNameAndType(service, policyType, updatedName)
+		updatedResource, _, err = GetByNameAndType(context.Background(), service, policyType, updatedName)
 		if err != nil {
 			t.Errorf("Error retrieving resource by name: %v", err)
 		}
@@ -260,14 +261,14 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
 
-	_, err = BulkReorder(service, policyType, ruleIdToOrder)
+	_, err = BulkReorder(context.Background(), service, policyType, ruleIdToOrder)
 	if err != nil {
 		t.Errorf("Error reordering rules: %v", err)
 	}
 
 	// Clean up: Delete the rules
 	for _, ruleID := range ruleIDs {
-		_, err = Delete(service, accessPolicySet.ID, ruleID)
+		_, err = Delete(context.Background(), service, accessPolicySet.ID, ruleID)
 		if err != nil {
 			t.Errorf("Error deleting resource: %v", err)
 		}

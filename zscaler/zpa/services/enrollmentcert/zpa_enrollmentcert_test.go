@@ -1,6 +1,7 @@
 package enrollmentcert
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -16,7 +17,7 @@ func TestEnrollmentCert(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	certificates, _, err := GetAll(service)
+	certificates, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting enrollment certificates: %v", err)
 		return
@@ -44,7 +45,7 @@ func TestEnrollmentCert(t *testing.T) {
 	// Test GetByName for each specific certificate name
 	for _, reqName := range requiredNames {
 		t.Run("GetByName for "+reqName, func(t *testing.T) {
-			certificate, _, err := GetByName(service, reqName)
+			certificate, _, err := GetByName(context.Background(), service, reqName)
 			if err != nil {
 				t.Fatalf("Error getting enrollment certificate by name %s: %v", reqName, err)
 			}
@@ -57,7 +58,7 @@ func TestEnrollmentCert(t *testing.T) {
 	// Additional step: Use the ID of the first certificate to test the Get function
 	firstCertID := certificates[0].ID
 	t.Run("Get by ID for first certificate", func(t *testing.T) {
-		certificateByID, _, err := Get(service, firstCertID)
+		certificateByID, _, err := Get(context.Background(), service, firstCertID)
 		if err != nil {
 			t.Fatalf("Error getting enrollment certificate by ID %s: %v", firstCertID, err)
 		}
@@ -69,7 +70,7 @@ func TestEnrollmentCert(t *testing.T) {
 	// Negative Test: Try to retrieve a certificate with a non-existent ID
 	nonExistentID := "non_existent_id"
 	t.Run("Get by non-existent ID", func(t *testing.T) {
-		_, _, err := Get(service, nonExistentID)
+		_, _, err := Get(context.Background(), service, nonExistentID)
 		if err == nil {
 			t.Errorf("Expected error when getting by non-existent ID, got nil")
 		}
@@ -82,7 +83,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
@@ -107,7 +108,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		for _, variation := range variations {
 			t.Run(fmt.Sprintf("GetByName case sensitivity test for %s", variation), func(t *testing.T) {
 				t.Logf("Attempting to retrieve certificate with name variation: %s", variation)
-				certificate, _, err := GetByName(service, variation)
+				certificate, _, err := GetByName(context.Background(), service, variation)
 				if err != nil {
 					t.Errorf("Error getting certificate with name variation '%s': %v", variation, err)
 					return

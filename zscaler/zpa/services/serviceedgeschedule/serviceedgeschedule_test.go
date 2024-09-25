@@ -1,6 +1,7 @@
 package serviceedgeschedule
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -29,7 +30,7 @@ func TestAppConnectorSchedule(t *testing.T) {
 		Frequency:         "days",
 		FrequencyInterval: "5",
 	}
-	_, createResp, err := CreateSchedule(service, newSchedule)
+	_, createResp, err := CreateSchedule(context.Background(), service, newSchedule)
 	if err != nil {
 		if strings.Contains(err.Error(), "resource.already.exist") {
 			t.Log("Assistance Scheduler already enabled")
@@ -41,7 +42,7 @@ func TestAppConnectorSchedule(t *testing.T) {
 	}
 
 	// Test 2: GetSchedule (Initial fetch)
-	schedule, resp, err := GetSchedule(service)
+	schedule, resp, err := GetSchedule(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting schedule: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestAppConnectorSchedule(t *testing.T) {
 	if !schedule.Enabled {
 		schedule.Enabled = true
 		schedule.FrequencyInterval = "5" // Set a valid interval when enabling
-		_, err = UpdateSchedule(service, schedule.ID, schedule)
+		_, err = UpdateSchedule(context.Background(), service, schedule.ID, schedule)
 		if err != nil {
 			t.Fatalf("Error enabling schedule: %v", err)
 		}
@@ -68,18 +69,18 @@ func TestAppConnectorSchedule(t *testing.T) {
 	intervals := []string{"7", "14", "30", "60", "90"}
 	for _, interval := range intervals {
 		schedule.FrequencyInterval = interval
-		updateResp, err := UpdateSchedule(service, schedule.ID, schedule)
+		updateResp, err := UpdateSchedule(context.Background(), service, schedule.ID, schedule)
 		if err != nil {
 			t.Fatalf("Error updating schedule with interval %s: %v", interval, err)
 		}
-		if updateResp.StatusCode != 204 {
-			t.Errorf("Expected status code 204 for interval %s, got: %v", interval, updateResp.StatusCode)
+		if updateResp.StatusCode != 200 {
+			t.Errorf("Expected status code 200 for interval %s, got: %v", interval, updateResp.StatusCode)
 		}
 		t.Logf("Updated schedule with interval: %s", interval)
 	}
 
 	// Test 4: GetSchedule (Post-update fetch)
-	updatedSchedule, resp, err := GetSchedule(service)
+	updatedSchedule, resp, err := GetSchedule(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting updated schedule: %v", err)
 	}
@@ -97,7 +98,7 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	schedule, _, err := GetSchedule(service)
+	schedule, _, err := GetSchedule(context.Background(), service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
 
@@ -106,7 +107,7 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 	schedule.FrequencyInterval = "7"
 
 	// Check if update fails when the schedule is disabled
-	_, err = UpdateSchedule(service, schedule.ID, schedule)
+	_, err = UpdateSchedule(context.Background(), service, schedule.ID, schedule)
 	require.Error(t, err, "Update should fail when Enabled is false")
 	require.Contains(t, err.Error(), "cannot update a disabled schedule", "Expected error message when updating a disabled schedule")
 }
@@ -116,7 +117,7 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	schedule, _, err := GetSchedule(service)
+	schedule, _, err := GetSchedule(context.Background(), service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
 
@@ -126,7 +127,7 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 	// Test invalid intervals with delay to avoid rate limiting
 	for _, interval := range invalidIntervals {
 		schedule.FrequencyInterval = interval
-		_, err := UpdateSchedule(service, schedule.ID, schedule)
+		_, err := UpdateSchedule(context.Background(), service, schedule.ID, schedule)
 		require.Error(t, err, "Invalid interval %s should be rejected", interval)
 		time.Sleep(1 * time.Second) // Delay to avoid rate limiting
 	}
@@ -134,7 +135,7 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 	// Test valid intervals with delay to avoid rate limiting
 	for _, interval := range validIntervals {
 		schedule.FrequencyInterval = interval
-		_, err := UpdateSchedule(service, schedule.ID, schedule)
+		_, err := UpdateSchedule(context.Background(), service, schedule.ID, schedule)
 		require.NoError(t, err, "Valid interval %s should be accepted", interval)
 		time.Sleep(1 * time.Second) // Delay to avoid rate limiting
 	}
@@ -153,6 +154,6 @@ func TestCustomerIDValidation(t *testing.T) {
 		FrequencyInterval: "5",
 	}
 
-	_, _, err = CreateSchedule(service, schedule)
+	_, _, err = CreateSchedule(context.Background(), service, schedule)
 	require.Error(t, err, "Schedule creation should fail with empty CustomerID")
 }

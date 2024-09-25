@@ -16,7 +16,7 @@ func TestDLPIDMProfile_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	profiles, err := GetAll(service)
+	profiles, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idm profiles: %v", err)
 		return
@@ -27,7 +27,7 @@ func TestDLPIDMProfile_data(t *testing.T) {
 	}
 	name := profiles[0].ProfileName
 	t.Log("Getting idm profile by name:" + name)
-	profile, err := GetByName(service, name)
+	profile, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting idm profile by name: %v", err)
 		return
@@ -38,7 +38,7 @@ func TestDLPIDMProfile_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an idm profile with a non-existent name
 	nonExistentName := "ThisIDMProfileDoesNotExist"
-	_, err = GetByName(service, nonExistentName)
+	_, err = GetByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -52,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all servers to find a valid ID
-	profiles, err := GetAll(service)
+	profiles, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting all idm profiles: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestGetById(t *testing.T) {
 	testID := profiles[0].ProfileID
 
 	// Retrieve the server by ID
-	profile, err := Get(service, testID)
+	profile, err := Get(context.Background(), service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving idm profile with ID %d: %v", testID, err)
 		return
@@ -87,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	profiles, err := GetAll(service)
+	profiles, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idm profile: %v", err)
 		return
@@ -127,7 +127,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		profile, err := GetByName(service, variation)
+		profile, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting idm profile with name variation '%s': %v", variation, err)
 			continue

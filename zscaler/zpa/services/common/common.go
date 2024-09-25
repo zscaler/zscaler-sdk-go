@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -86,12 +87,12 @@ func InList(list []string, item string) bool {
 	return false
 }
 
-func getAllPagesGenericWithCustomFilters[T any](client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
+func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	var v struct {
 		TotalPages interface{} `json:"totalPages"`
 		List       []T         `json:"list"`
 	}
-	resp, err := client.NewRequestDo("GET", relativeURL, Pagination{
+	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
 		Search2:       filters.Search,
 		MicroTenantID: filters.MicroTenantID,
 		PageSize:      pageSize,
@@ -109,8 +110,9 @@ func getAllPagesGenericWithCustomFilters[T any](client *zscaler.Client, relative
 	return totalPages, v.List, resp, nil
 }
 
-func getAllPagesGeneric[T any](client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
+func getAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	return getAllPagesGenericWithCustomFilters[T](
+		ctx,
 		client,
 		relativeURL,
 		page,
@@ -120,15 +122,15 @@ func getAllPagesGeneric[T any](client *zscaler.Client, relativeURL string, page,
 }
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
-func GetAllPagesGeneric[T any](client *zscaler.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
+func GetAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
 	searchQuery = url.QueryEscape(searchQuery)
-	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
+	totalPages, result, resp, err := getAllPagesGeneric[T](ctx, client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
 	if err != nil {
 		return nil, resp, err
 	}
 	var l []T
 	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, Filter{Search: searchQuery})
+		totalPages, l, resp, err = getAllPagesGeneric[T](ctx, client, relativeURL, page, DefaultPageSize, Filter{Search: searchQuery})
 		if err != nil {
 			return nil, resp, err
 		}
@@ -143,9 +145,9 @@ type microTenantSample struct {
 	Name string `json:"name,omitempty"`
 }
 
-func getMicroTenantByName(client *zscaler.Client, microTenantName string) (*microTenantSample, *http.Response, error) {
+func getMicroTenantByName(ctx context.Context, client *zscaler.Client, microTenantName string) (*microTenantSample, *http.Response, error) {
 	relativeURL := "/zpa/mgmtconfig/v1/admin/customers/" + client.GetCustomerID() + "/microtenants"
-	list, resp, err := GetAllPagesGeneric[microTenantSample](client, relativeURL, microTenantName)
+	list, resp, err := GetAllPagesGeneric[microTenantSample](ctx, client, relativeURL, microTenantName)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -158,10 +160,10 @@ func getMicroTenantByName(client *zscaler.Client, microTenantName string) (*micr
 }
 
 // GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
-func GetAllPagesGenericWithCustomFilters[T any](client *zscaler.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
+func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
 	if (filters.MicroTenantID == nil || *filters.MicroTenantID == "") && filters.MicroTenantName != nil && *filters.MicroTenantName != "" {
 		// get microtenant id by name
-		mt, resp, err := getMicroTenantByName(client, *filters.MicroTenantName)
+		mt, resp, err := getMicroTenantByName(ctx, client, *filters.MicroTenantName)
 		if err == nil {
 			return nil, resp, err
 		}
@@ -173,13 +175,13 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zscaler.Client, relative
 	// Updated filter search: replace spaces with '&' for the API's search query format
 	filters.Search = strings.ReplaceAll(filters.Search, " ", "&")
 
-	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, filters)
+	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
 	if err != nil {
 		return nil, resp, err
 	}
 	var l []T
 	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](client, relativeURL, page, DefaultPageSize, filters)
+		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, page, DefaultPageSize, filters)
 		if err != nil {
 			return nil, resp, err
 		}

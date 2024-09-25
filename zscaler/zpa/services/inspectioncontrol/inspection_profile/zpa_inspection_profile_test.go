@@ -1,6 +1,7 @@
 package inspection_profile
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -53,7 +54,7 @@ func TestInspectionProfile(t *testing.T) {
 		},
 	}
 
-	createdCustomControl, _, err := inspection_custom_controls.Create(service, customControl)
+	createdCustomControl, _, err := inspection_custom_controls.Create(context.Background(), service, customControl)
 	if err != nil || createdCustomControl == nil || createdCustomControl.ID == "" {
 		t.Fatalf("Error creating inspection custom control or ID is empty")
 	}
@@ -62,22 +63,22 @@ func TestInspectionProfile(t *testing.T) {
 	resourcesToDelete = append(resourcesToDelete, createdCustomControl.ID) // Add to our list
 
 	defer func() {
-		existingControl, _, errCheck := inspection_custom_controls.Get(service, createdCustomControl.ID)
+		existingControl, _, errCheck := inspection_custom_controls.Get(context.Background(), service, createdCustomControl.ID)
 		if errCheck == nil && existingControl != nil {
-			_, errDelete := inspection_custom_controls.Delete(service, createdCustomControl.ID)
+			_, errDelete := inspection_custom_controls.Delete(context.Background(), service, createdCustomControl.ID)
 			if errDelete != nil {
 				t.Errorf("Error deleting inspection custom control: %v", errDelete)
 			}
 		}
 	}()
 
-	predefinedControlsByGroup, err := inspection_predefined_controls.GetAllByGroup(service, "OWASP_CRS/3.3.0", "Preprocessors")
+	predefinedControlsByGroup, err := inspection_predefined_controls.GetAllByGroup(context.Background(), service, "OWASP_CRS/3.3.0", "Preprocessors")
 	if err != nil {
 		t.Errorf("Error getting predefined controls by group: %v", err)
 		return
 	}
 
-	controlByName, _, err := inspection_predefined_controls.GetByName(service, "Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
+	controlByName, _, err := inspection_predefined_controls.GetByName(context.Background(), service, "Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined control by name: %v", err)
 		return
@@ -121,30 +122,30 @@ func TestInspectionProfile(t *testing.T) {
 		},
 	}
 
-	createdResource, _, err := Create(service, profile)
+	createdResource, _, err := Create(context.Background(), service, profile)
 	if err != nil || createdResource == nil {
 		t.Fatalf("Error making POST request: %v or createdResource is nil", err)
 	}
 	resourcesToDelete = append(resourcesToDelete, createdResource.ID) // Add to our list
 
-	retrievedResourceAfterCreation, _, err := Get(service, createdResource.ID)
+	retrievedResourceAfterCreation, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil || retrievedResourceAfterCreation == nil {
 		t.Fatalf("Failed to verify the creation of the resource: %v", err)
 	}
 
 	defer func() {
 		for _, resourceID := range resourcesToDelete {
-			existingResource, _, errCheck := Get(service, resourceID)
+			existingResource, _, errCheck := Get(context.Background(), service, resourceID)
 			if errCheck == nil && existingResource != nil {
-				_, errDelete := Delete(service, resourceID)
+				_, errDelete := Delete(context.Background(), service, resourceID)
 				if errDelete != nil {
 					t.Errorf("Error deleting inspection profile with ID %s: %v", resourceID, errDelete)
 				}
 			}
 
-			existingControl, _, errCheckControl := inspection_custom_controls.Get(service, resourceID)
+			existingControl, _, errCheckControl := inspection_custom_controls.Get(context.Background(), service, resourceID)
 			if errCheckControl == nil && existingControl != nil {
-				_, errDeleteControl := inspection_custom_controls.Delete(service, resourceID)
+				_, errDeleteControl := inspection_custom_controls.Delete(context.Background(), service, resourceID)
 				if errDeleteControl != nil {
 					t.Errorf("Error deleting inspection custom control with ID %s: %v", resourceID, errDeleteControl)
 				}
@@ -159,7 +160,7 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := Get(service, createdResource.ID)
+	retrievedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 		return
@@ -177,11 +178,11 @@ func TestInspectionProfile(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = Update(service, createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := Get(service, createdResource.ID)
+	updatedResource, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -193,7 +194,7 @@ func TestInspectionProfile(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -204,7 +205,7 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := GetAll(service)
+	resources, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -223,14 +224,14 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = Delete(service, createdResource.ID)
+	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = Get(service, createdResource.ID)
+	_, _, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -242,7 +243,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(service, "non_existent_id")
+	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -254,7 +255,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(service, "non_existent_id")
+	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -266,7 +267,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(service, "non_existent_id", &InspectionProfile{})
+	_, err = Update(context.Background(), service, "non_existent_id", &InspectionProfile{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -278,7 +279,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(service, "non_existent_name")
+	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

@@ -1,6 +1,7 @@
 package sandbox_settings
 
 import (
+	"context"
 	"regexp"
 	"testing"
 
@@ -31,7 +32,7 @@ func TestUpdateBaAdvancedSettings(t *testing.T) {
 		},
 	}
 
-	updatedSettings, err := Update(service, desiredSettings)
+	updatedSettings, err := Update(context.Background(), service, desiredSettings)
 	if err != nil {
 		t.Errorf("Error updating BA Advanced Settings: %v", err)
 	}
@@ -73,7 +74,7 @@ func TestValidateMD5Hashes(t *testing.T) {
 			FileHashesToBeBlocked: validHashes,
 		}
 
-		updatedSettings, err := Update(service, desiredSettings)
+		updatedSettings, err := Update(context.Background(), service, desiredSettings)
 		if err != nil {
 			t.Errorf("Error updating BA Advanced Settings: %v", err)
 		}
@@ -92,7 +93,7 @@ func TestGetBaAdvancedSettings(t *testing.T) {
 		return
 	}
 
-	settings, err := Get(service)
+	settings, err := Get(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting BA Advanced Settings: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestGetFileHashCount(t *testing.T) {
 		return
 	}
 
-	hashCount, err := GetFileHashCount(service)
+	hashCount, err := GetFileHashCount(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting file hash count: %v", err)
 	}
@@ -129,7 +130,7 @@ func TestEmptyHashList(t *testing.T) {
 		FileHashesToBeBlocked: []string{},
 	}
 
-	updatedSettings, err := Update(service, desiredSettings)
+	updatedSettings, err := Update(context.Background(), service, desiredSettings)
 	if err != nil {
 		t.Errorf("Error updating BA Advanced Settings: %v", err)
 	}
