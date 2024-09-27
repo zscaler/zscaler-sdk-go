@@ -288,9 +288,26 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 		return nil, err
 	}
 
-	responseObject := reflect.New(t).Interface()
-	err = json.Unmarshal(resp, &responseObject)
-	return responseObject, err
+	// Check if the response is empty (for 204 No Content or an empty body)
+	if len(resp) == 0 {
+		c.Logger.Printf("[DEBUG] No content returned from API (204 No Content or empty body)")
+		return nil, nil
+	}
+
+	// Check if the response is valid JSON before attempting to unmarshal
+	var jsonTest interface{}
+	if json.Unmarshal(resp, &jsonTest) == nil {
+		// If the response is valid JSON, proceed with the usual unmarshaling into the expected object type
+		responseObject := reflect.New(t).Interface()
+		err = json.Unmarshal(resp, &responseObject)
+		if err != nil {
+			return nil, err
+		}
+		return responseObject, nil
+	}
+
+	// If the response is not JSON, return an error or handle it based on your needs
+	return nil, fmt.Errorf("unexpected response format, not JSON: %s", string(resp))
 }
 
 // Delete ...

@@ -13,9 +13,23 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.2``
+``Last updated: v2.73.0``
 
 ---
+
+# 2.73.0 (September 28, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA Additions
+
+#### Shadow IT Report Endpoints
+- Added `PUT /cloudApplications/bulkUpdate` To Update application status and tag information for predefined or custom cloud applications based on the IDs specified
+- Added `GET /cloudApplications/lite` Gets the list of predefined and custom cloud applications
+- Added `GET /customTags` Gets the list of custom tags available to assign to cloud applications
+- Added `POST /shadowIT/applications/export` Export the Shadow IT Report (in CSV format) for the cloud applications recognized by Zscaler based on their usage in your organization.
+- Added `POST /shadowIT/applications/{entity}/exportCsv` Export the Shadow IT Report (in CSV format) for the list of users or known locations identified with using the cloud applications specified in the request.
 
 # 2.72.2 (September 11, 2024)
 
