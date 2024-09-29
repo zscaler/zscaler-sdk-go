@@ -36,19 +36,12 @@ const (
 // Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
-	cloud              string
 	HTTPClient         *http.Client
 	ZPAHTTPClient      *http.Client
 	ZIAHTTPClient      *http.Client
 	ZCCHTTPClient      *http.Client
 	Logger             logger.Logger
 	UserAgent          string
-	freshCache         bool
-	cacheEnabled       bool
-	cache              cache.Cache
-	cacheTtl           time.Duration
-	cacheCleanwindow   time.Duration
-	cacheMaxSizeMB     int
 	zpaRateLimiter     *rl.RateLimiter
 	ziaRateLimiter     *rl.RateLimiter
 	zccRateLimiter     *rl.RateLimiter
@@ -82,17 +75,12 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 	zccHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
 
 	cli := &Client{
-		cloud:              config.Zscaler.Client.Cloud,
 		HTTPClient:         httpClient,
 		ZIAHTTPClient:      ziaHttpClient,
 		ZPAHTTPClient:      zpaHttpClient,
 		ZCCHTTPClient:      zccHttpClient,
 		Logger:             logger,
 		UserAgent:          config.UserAgent,
-		cacheEnabled:       config.Zscaler.Client.Cache.Enabled,
-		cacheTtl:           time.Minute * 10,
-		cacheCleanwindow:   time.Minute * 8,
-		cacheMaxSizeMB:     0,
 		zccRateLimiter:     zccRateLimiter,
 		ziaRateLimiter:     ziaRateLimiter,
 		zpaRateLimiter:     zpaRateLimiter,
@@ -101,13 +89,6 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials:  config,
 		stopTicker:         make(chan bool),
 	}
-
-	// Initialize cache
-	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
-	if err != nil {
-		cche = cache.NewNopCache()
-	}
-	cli.cache = cche
 
 	// Start token renewal ticker
 	cli.startTokenRenewalTicker()
@@ -286,6 +267,13 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 
 	// Build the full URL for Sandbox, ZPA, ZCC, or OAuth2-based requests
 	fullURL := ""
+	baseUrl := ""
+
+	if isSandboxRequest {
+		baseUrl = c.GetSandboxURL()
+	} else {
+		baseUrl = GetAPIBaseURL(c.oauth2Credentials.Zscaler.Client.Cloud)
+	}
 	if isSandboxRequest {
 		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
 		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token
@@ -294,11 +282,11 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		if !strings.Contains(endpoint, fmt.Sprintf("/customers/%s", c.oauth2Credentials.Zscaler.Client.CustomerID)) && c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
 			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
 		}
-		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
+		fullURL = fmt.Sprintf("%s%s", baseUrl, endpoint)
 	} else if isZCCRequest {
-		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
+		fullURL = fmt.Sprintf("%s%s", baseUrl, endpoint)
 	} else {
-		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
+		fullURL = fmt.Sprintf("%s%s", baseUrl, endpoint)
 	}
 
 	// Add URL parameters to the endpoint
@@ -345,20 +333,17 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		return nil, nil, err
 	}
 
+	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
+
 	// Create cache key using the actual request
 	key := cache.CreateCacheKey(req)
-	if c.cacheEnabled {
+	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
 		if method != http.MethodGet {
-			c.cache.Delete(key)
-			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+			c.oauth2Credentials.CacheManager.Delete(key)
+			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 		}
-		resp := c.cache.Get(key)
+		resp := c.oauth2Credentials.CacheManager.Get(key)
 		inCache := resp != nil
-		if c.freshCache {
-			c.cache.Delete(key)
-			inCache = false
-			c.freshCache = false
-		}
 		if inCache {
 			respData, err := io.ReadAll(resp.Body)
 			if err == nil {
@@ -374,14 +359,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	for retry := 1; retry <= 5; retry++ {
 		start := time.Now()
 		reqID := uuid.New().String()
-		logger.LogRequest(c.Logger, req, reqID, nil, true)
+		logger.LogRequest(c.Logger, req, reqID, nil, !isSandboxRequest)
 		httpClient := c.getServiceHTTPClient(endpoint)
 		resp, err = httpClient.Do(req)
 		logger.LogResponse(c.Logger, resp, start, reqID)
 		if err != nil {
 			return nil, nil, err
 		}
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		if !isSandboxRequest && (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) {
 			err = c.authenticate()
 			if err != nil {
 				return nil, nil, err
@@ -401,10 +386,10 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	}
 
 	// Cache logic for successful GET requests
-	if c.cacheEnabled && method == http.MethodGet {
+	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
 		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-		c.cache.Set(key, cache.CopyResponse(resp))
+		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
 	}
 
 	return bodyBytes, req, nil
@@ -412,7 +397,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 // GetSandboxURL retrieves the sandbox URL for the ZIA service.
 func (c *Client) GetSandboxURL() string {
-	return "https://csbapi." + c.cloud + ".net"
+	return "https://csbapi." + c.oauth2Credentials.Zscaler.Client.SandboxCloud + ".net"
 }
 
 // GetSandboxToken retrieves the sandbox token from the configuration or environment.
@@ -426,13 +411,17 @@ func (c *Client) GetSandboxToken() string {
 	return c.oauth2Credentials.Zscaler.Client.SandboxToken
 }
 
+func (c *Client) authValid() bool {
+	return c.oauth2Credentials.Zscaler.Client.AuthToken != nil && c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken != "" && !utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken)
+}
+
 // Unified authentication function to refresh OAuth2 tokens
 func (c *Client) authenticate() error {
 	c.Lock()
 	defer c.Unlock()
 
 	// Check if the AuthToken is nil, empty, or expired
-	if c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken) {
+	if !c.authValid() {
 		// Pass the context from the Configuration along with the other arguments
 		authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.Logger)
 		if err != nil {
