@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.2``
+``Last updated: v2.72.3``
 
 ---
+
+# 2.72.3 (September 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #277](https://github.com/zscaler/zscaler-sdk-go/pull/277) - Added new attributes to ZPA `servicedgegroup` and `serviceedgecontroller` packages.
 
 # 2.72.2 (September 11, 2024)
 

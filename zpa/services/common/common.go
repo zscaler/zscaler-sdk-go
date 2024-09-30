@@ -92,6 +92,22 @@ type CommonConfigDetails struct {
 	Reason string `json:"reason,omitempty"`
 }
 
+// Shared Between App Connector and Service Edge Controllers and Groups
+type ZPNSubModuleUpgrade struct {
+	ID              string `json:"id,omitempty"`
+	CreationTime    string `json:"creationTime,omitempty"`
+	CurrentVersion  string `json:"currentVersion,omitempty"`
+	EntityGid       string `json:"entityGid,omitempty"`
+	EntityType      string `json:"entityType,omitempty"`
+	ExpectedVersion string `json:"expectedVersion,omitempty"`
+	ModifiedBy      string `json:"modifiedBy,omitempty"`
+	ModifiedTime    string `json:"modifiedTime,omitempty"`
+	PreviousVersion string `json:"previousVersion,omitempty"`
+	Role            string `json:"role,omitempty"`
+	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
+	UpgradeTime     string `json:"upgradeTime,omitempty"`
+}
+
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
 func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)
