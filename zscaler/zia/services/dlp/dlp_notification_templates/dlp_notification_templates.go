@@ -45,7 +45,7 @@ func Get(ctx context.Context, service *zscaler.Service, dlpTemplateID int) (*Dlp
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp notification template from Get: %d", dlpTemplates.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp notification template from Get: %d", dlpTemplates.ID)
 	return &dlpTemplates, nil
 }
 
@@ -74,7 +74,7 @@ func Create(ctx context.Context, service *zscaler.Service, dlpTemplateID *DlpNot
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new dlp notification template from create: %d", createdDlpTemplate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new dlp notification template from create: %d", createdDlpTemplate.ID)
 	return createdDlpTemplate, nil, nil
 }
 
@@ -85,7 +85,7 @@ func Update(ctx context.Context, service *zscaler.Service, dlpTemplateID int, dl
 	}
 	updatedDlpTemplate, _ := resp.(*DlpNotificationTemplates)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
 	return updatedDlpTemplate, nil, nil
 }
 

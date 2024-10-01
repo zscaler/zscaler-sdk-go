@@ -71,7 +71,7 @@ func Get(ctx context.Context, service *zscaler.Service, userID int) (*Users, err
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning user from Get: %d", user.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from Get: %d", user.ID)
 	return &user, nil
 }
 
@@ -92,13 +92,13 @@ func GetUserByName(ctx context.Context, service *zscaler.Service, userName strin
 func EnrollUser(ctx context.Context, service *zscaler.Service, userID int, request EnrollUserRequest) (*EnrollResult, error) {
 	if len(request.AuthMethods) == 0 {
 		err := errors.New("authMethods is required")
-		service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+		service.Client.GetLogger().Printf("[ERROR] enroll user failed: %v", err)
 	}
 	for _, method := range request.AuthMethods {
 		// method most be one of the following: BASIC, DIGEST
 		if method != "BASIC" && method != "DIGEST" {
 			err := fmt.Errorf("authMethods must be one of the following: BASIC, DIGEST. Found: %s", method)
-			service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+			service.Client.GetLogger().Printf("[ERROR] enroll user failed: %v", err)
 			return nil, err
 		}
 	}
@@ -120,7 +120,7 @@ func Create(ctx context.Context, service *zscaler.Service, user *Users) (*Users,
 		return nil, errors.New("object returned from api was not a user pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning user from create: %v", createdUsers.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from create: %v", createdUsers.ID)
 	return createdUsers, nil
 }
 
@@ -130,7 +130,7 @@ func Update(ctx context.Context, service *zscaler.Service, userID int, users *Us
 		return nil, nil, err
 	}
 	updatedUser, _ := resp.(*Users)
-	service.Client.Logger.Printf("[DEBUG]returning user from update: %d", updatedUser.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from update: %d", updatedUser.ID)
 	return updatedUser, nil, nil
 }
 
@@ -147,7 +147,7 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
-		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+		service.Client.GetLogger().Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
 	}
 
 	// Define the payload

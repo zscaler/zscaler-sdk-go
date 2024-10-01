@@ -111,7 +111,7 @@ func GetDLPEDMSchemaID(ctx context.Context, service *zscaler.Service, edmSchemaI
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning edm schema from Get: %d", edmSchema.SchemaID)
+	service.Client.GetLogger().Printf("[DEBUG]returning edm schema from Get: %d", edmSchema.SchemaID)
 	return &edmSchema, nil
 }
 

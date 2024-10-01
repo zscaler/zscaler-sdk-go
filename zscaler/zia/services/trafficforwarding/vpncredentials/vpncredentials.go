@@ -65,7 +65,7 @@ func Get(ctx context.Context, service *zscaler.Service, vpnCredentialID int) (*V
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning VPN Credentials from Get: %d", vpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning VPN Credentials from Get: %d", vpnCredentials.ID)
 	return &vpnCredentials, nil
 }
 
@@ -132,7 +132,7 @@ func Create(ctx context.Context, service *zscaler.Service, vpnCredentials *VPNCr
 		return nil, nil, errors.New("object returned from api was not a vpn credential pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning vpn credential from create: %d", createdVpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning vpn credential from create: %d", createdVpnCredentials.ID)
 	return createdVpnCredentials, nil, nil
 }
 
@@ -143,7 +143,7 @@ func Update(ctx context.Context, service *zscaler.Service, vpnCredentialID int, 
 	}
 	updatedVpnCredentials, _ := resp.(*VPNCredentials)
 
-	service.Client.Logger.Printf("[DEBUG]returning vpn credential from Update: %d", updatedVpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning vpn credential from Update: %d", updatedVpnCredentials.ID)
 	return updatedVpnCredentials, nil, nil
 }
 
@@ -161,7 +161,7 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
-		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+		service.Client.GetLogger().Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
 	}
 
 	// Define the payload

@@ -134,7 +134,7 @@ func Get(ctx context.Context, service *zscaler.Service, categoryID string) (*URL
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning custom url category from Get: %s", urlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning custom url category from Get: %s", urlCategory.ID)
 	return &urlCategory, nil
 }
 
@@ -173,7 +173,7 @@ func CreateURLCategories(ctx context.Context, service *zscaler.Service, category
 		return nil, errors.New("object returned from API was not a url category Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning url category from Create: %v", createdUrlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url category from Create: %v", createdUrlCategory.ID)
 	return createdUrlCategory, nil
 }
 
@@ -183,7 +183,7 @@ func UpdateURLCategories(ctx context.Context, service *zscaler.Service, category
 		return nil, nil, err
 	}
 	updatedUrlCategory, _ := resp.(*URLCategory)
-	service.Client.Logger.Printf("[DEBUG]Returning url category from Update: %s", updatedUrlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url category from Update: %s", updatedUrlCategory.ID)
 	return updatedUrlCategory, nil, nil
 }
 
@@ -218,7 +218,7 @@ func GetURLLookup(ctx context.Context, service *zscaler.Service, urls []string) 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
 	return lookupResults, nil
 }
 
@@ -232,7 +232,7 @@ func GetAllLite(ctx context.Context, service *zscaler.Service) ([]URLCategory, e
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
 	if err != nil {
-		service.Client.Logger.Printf("[ERROR] Error fetching URL categories: %v", err)
+		service.Client.GetLogger().Printf("[ERROR] Error fetching URL categories: %v", err)
 		return nil, err
 	}
 	return urlCategories, nil
@@ -250,7 +250,7 @@ func CreateURLReview(ctx context.Context, service *zscaler.Service, domains []st
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning URL review results: %+v", reviewResults)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL review results: %+v", reviewResults)
 	return reviewResults, nil
 }
 
@@ -264,6 +264,6 @@ func UpdateURLReview(ctx context.Context, service *zscaler.Service, reviews []UR
 		return errors.New("unexpected response format")
 	}
 
-	service.Client.Logger.Printf("[DEBUG] successfully updated URL review")
+	service.Client.GetLogger().Printf("[DEBUG] successfully updated URL review")
 	return nil
 }

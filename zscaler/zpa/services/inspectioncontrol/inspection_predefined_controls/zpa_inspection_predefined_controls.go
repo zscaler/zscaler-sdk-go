@@ -100,12 +100,12 @@ func GetByName(ctx context.Context, service *zscaler.Service, name, version stri
 	for _, group := range v {
 		for _, control := range group.PredefinedInspectionControls {
 			if strings.EqualFold(control.Name, name) {
-				service.Client.Logger.Printf("[INFO] got predefined controls:%#v", v)
+				service.Client.GetLogger().Printf("[INFO] got predefined controls:%#v", v)
 				return &control, resp, nil
 			}
 		}
 	}
-	service.Client.Logger.Printf("[ERROR] no predefined control named '%s' found", name)
+	service.Client.GetLogger().Printf("[ERROR] no predefined control named '%s' found", name)
 	return nil, resp, fmt.Errorf("no predefined control named '%s' found", name)
 }
 

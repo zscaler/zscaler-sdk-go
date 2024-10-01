@@ -180,7 +180,7 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*Forwarding
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning forwarding rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning forwarding rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -209,7 +209,7 @@ func Create(ctx context.Context, service *zscaler.Service, rule *ForwardingRules
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
@@ -219,7 +219,7 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *Fo
 		return nil, err
 	}
 	updatedRules, _ := resp.(*ForwardingRules)
-	service.Client.Logger.Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 

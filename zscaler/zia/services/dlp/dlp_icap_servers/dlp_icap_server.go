@@ -34,7 +34,7 @@ func Get(ctx context.Context, service *zscaler.Service, icapServerID int) (*DLPI
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp icap server from Get: %d", icapServers.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp icap server from Get: %d", icapServers.ID)
 	return &icapServers, nil
 }
 

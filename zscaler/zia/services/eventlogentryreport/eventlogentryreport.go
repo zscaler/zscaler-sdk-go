@@ -71,6 +71,6 @@ func Create(ctx context.Context, service *zscaler.Service, eventLog *EventLogEnt
 		return nil, errors.New("object returned from api was not an event log entry report pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning event log entry report from create: %d", createdEventLogReport)
+	service.Client.GetLogger().Printf("[DEBUG]returning event log entry report from create: %d", createdEventLogReport)
 	return createdEventLogReport, nil
 }

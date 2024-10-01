@@ -85,7 +85,7 @@ func Get(ctx context.Context, service *zscaler.Service, idmProfileID int) (*DLPI
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp icap server from Get: %d", idmpProfile.ProfileID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp icap server from Get: %d", idmpProfile.ProfileID)
 	return &idmpProfile, nil
 }
 

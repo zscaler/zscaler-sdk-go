@@ -117,7 +117,7 @@ func GetLocationGroup(ctx context.Context, service *zscaler.Service, groupID int
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning location group from Get: %d", locationGroup.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning location group from Get: %d", locationGroup.ID)
 	return &locationGroup, nil
 }
 

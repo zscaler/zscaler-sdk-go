@@ -37,7 +37,7 @@ func Get(ctx context.Context, service *zscaler.Service, receiverID int) (*Incide
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp incident receiver from Get: %d", incidentReceiver.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp incident receiver from Get: %d", incidentReceiver.ID)
 	return &incidentReceiver, nil
 }
 

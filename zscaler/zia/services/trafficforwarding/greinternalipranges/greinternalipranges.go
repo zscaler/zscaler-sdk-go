@@ -28,6 +28,6 @@ func GetGREInternalIPRange(ctx context.Context, service *zscaler.Service, count 
 	if len(greInternalIPRanges) < count {
 		return nil, fmt.Errorf("not enough internal IP range available, got %d internal IP range, required: %d", len(greInternalIPRanges), count)
 	}
-	service.Client.Logger.Printf("[DEBUG]Returning internal IP range: %s", greInternalIPRanges)
+	service.Client.GetLogger().Printf("[DEBUG]Returning internal IP range: %s", greInternalIPRanges)
 	return &greInternalIPRanges, nil
 }

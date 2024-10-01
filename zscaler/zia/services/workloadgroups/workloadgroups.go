@@ -76,7 +76,7 @@ func Get(ctx context.Context, service *zscaler.Service, workloadID int) (*Worklo
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning workload group from Get: %d", workloadGroup.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning workload group from Get: %d", workloadGroup.ID)
 	return &workloadGroup, nil
 }
 

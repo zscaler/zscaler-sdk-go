@@ -93,7 +93,7 @@ func GetRatingQuota(ctx context.Context, service *zscaler.Service) ([]RatingQuot
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning quota for retrieving Sandbox Detail Reports from Get: %v", quotas)
+	service.Client.GetLogger().Printf("[DEBUG] Returning quota for retrieving Sandbox Detail Reports from Get: %v", quotas)
 	return quotas, nil
 }
 
@@ -136,6 +136,6 @@ func GetReportMD5Hash(ctx context.Context, service *zscaler.Service, md5Hash, de
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
+	service.Client.GetLogger().Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
 	return &report, nil
 }

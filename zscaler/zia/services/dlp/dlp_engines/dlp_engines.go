@@ -43,7 +43,7 @@ func Get(ctx context.Context, service *zscaler.Service, engineID int) (*DLPEngin
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp engine from Get: %d", dlpEngines.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp engine from Get: %d", dlpEngines.ID)
 	return &dlpEngines, nil
 }
 
@@ -71,7 +71,7 @@ func Create(ctx context.Context, service *zscaler.Service, engineID *DLPEngines)
 		return nil, nil, errors.New("object returned from api was not a dlp engine pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new dlp engine from create: %d", createdDlpEngine.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new dlp engine from create: %d", createdDlpEngine.ID)
 	return createdDlpEngine, nil, nil
 }
 
@@ -82,7 +82,7 @@ func Update(ctx context.Context, service *zscaler.Service, engineID int, engines
 	}
 	updatedDlpEngine, _ := resp.(*DLPEngines)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates dlp engine from update: %d", updatedDlpEngine.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates dlp engine from update: %d", updatedDlpEngine.ID)
 	return updatedDlpEngine, nil, nil
 }
 

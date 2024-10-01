@@ -35,7 +35,7 @@ func GetGroups(ctx context.Context, service *zscaler.Service, groupID int) (*Gro
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning Groups from Get: %d", groups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning Groups from Get: %d", groups.ID)
 	return &groups, nil
 }
 

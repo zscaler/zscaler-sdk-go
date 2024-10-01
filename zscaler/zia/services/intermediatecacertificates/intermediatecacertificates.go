@@ -117,7 +117,7 @@ func GetCertificate(ctx context.Context, service *zscaler.Service, certID int) (
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning intermediate ca certificate from Get: %d", intermediateCACertificate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning intermediate ca certificate from Get: %d", intermediateCACertificate.ID)
 	return &intermediateCACertificate, nil
 }
 
@@ -142,7 +142,7 @@ func GetDownloadAttestation(ctx context.Context, service *zscaler.Service, certI
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded attestation from Get: %d", downloadAttestation.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded attestation from Get: %d", downloadAttestation.ID)
 	return &downloadAttestation, nil
 }
 
@@ -153,7 +153,7 @@ func GetDownloadCSR(ctx context.Context, service *zscaler.Service, certID int) (
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded csr from Get: %d", downloadCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded csr from Get: %d", downloadCSR.ID)
 	return &downloadCSR, nil
 }
 
@@ -164,7 +164,7 @@ func GetDownloadPublicKey(ctx context.Context, service *zscaler.Service, certID 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %d", downloadPublicKey.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded public key from Get: %d", downloadPublicKey.ID)
 	return &downloadPublicKey, nil
 }
 
@@ -175,7 +175,7 @@ func GetIntCAReadyToUse(ctx context.Context, service *zscaler.Service) ([]Interm
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %v", readyToUse)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded public key from Get: %v", readyToUse)
 	return readyToUse, nil
 }
 
@@ -186,7 +186,7 @@ func GetShowCert(ctx context.Context, service *zscaler.Service, certID int) (*Ce
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning info about signed intrermediate CA certificates from Get: %d", showCert.CertID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning info about signed intrermediate CA certificates from Get: %d", showCert.CertID)
 	return &showCert, nil
 }
 
@@ -197,7 +197,7 @@ func GetShowCSR(ctx context.Context, service *zscaler.Service, certID int) (*Cer
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning info about signed intermediate CA certificates from Get: %d", showCSR.CertID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning info about signed intermediate CA certificates from Get: %d", showCSR.CertID)
 	return &showCSR, nil
 }
 
@@ -221,7 +221,7 @@ func CreateIntCACertificate(ctx context.Context, service *zscaler.Service, cert 
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntermediateCACert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntermediateCACert.ID)
 	return createdIntermediateCACert, nil
 }
 
@@ -236,7 +236,7 @@ func CreateIntCAGenerateCSR(ctx context.Context, service *zscaler.Service, cert 
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAGenerateCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAGenerateCSR.ID)
 	return createdIntCAGenerateCSR, nil
 }
 
@@ -251,7 +251,7 @@ func CreateIntCAFinalizeCert(ctx context.Context, service *zscaler.Service, cert
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAFinalizeCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAFinalizeCSR.ID)
 	return createdIntCAFinalizeCSR, nil
 }
 
@@ -266,7 +266,7 @@ func CreateIntCAKeyPair(ctx context.Context, service *zscaler.Service, keyPair *
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAKeyPair.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAKeyPair.ID)
 	return createdIntCAKeyPair, nil
 }
 
@@ -281,7 +281,7 @@ func CreateUploadCert(ctx context.Context, service *zscaler.Service, certID *Int
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning uploaded customer intermediate ca certificate from create: %d", createdIntCAUploadCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning uploaded customer intermediate ca certificate from create: %d", createdIntCAUploadCert.ID)
 	return createdIntCAUploadCert, nil
 }
 
@@ -296,7 +296,7 @@ func CreateUploadCertChain(ctx context.Context, service *zscaler.Service, certID
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning uploaded certificate chain from create: %d", createdIntCAUploadChain.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning uploaded certificate chain from create: %d", createdIntCAUploadChain.ID)
 	return createdIntCAUploadChain, nil
 }
 
@@ -311,7 +311,7 @@ func CreateVerifyKeyAttestation(ctx context.Context, service *zscaler.Service, c
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning key attestation from create: %d", createdVerifyKeyAttestation.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning key attestation from create: %d", createdVerifyKeyAttestation.ID)
 	return createdVerifyKeyAttestation, nil
 }
 
@@ -321,7 +321,7 @@ func Update(ctx context.Context, service *zscaler.Service, certID int, certifica
 		return nil, err
 	}
 	updatedIntermediateCaCert, _ := resp.(*IntermediateCACertificate)
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from update: %d", updatedIntermediateCaCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from update: %d", updatedIntermediateCaCert.ID)
 	return updatedIntermediateCaCert, nil
 }
 
@@ -331,7 +331,7 @@ func UpdateMakeDefault(ctx context.Context, service *zscaler.Service, certID int
 		return nil, err
 	}
 	updatedIntermediateCaCert, _ := resp.(*IntermediateCACertificate)
-	service.Client.Logger.Printf("[DEBUG]returning default certificate from update: %d", updatedIntermediateCaCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning default certificate from update: %d", updatedIntermediateCaCert.ID)
 	return updatedIntermediateCaCert, nil
 }
 

@@ -48,7 +48,7 @@ func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPDesti
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning ip destination group from Get: %d", ipDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning ip destination group from Get: %d", ipDestinationGroups.ID)
 	return &ipDestinationGroups, nil
 }
 
@@ -77,7 +77,7 @@ func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPDestinat
 		return nil, errors.New("object returned from api was not an ip destination group pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning ip destination group from create: %d", createdIPDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip destination group from create: %d", createdIPDestinationGroups.ID)
 	return createdIPDestinationGroups, nil
 }
 
@@ -88,7 +88,7 @@ func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGrou
 	}
 	updatedIPDestinationGroups, _ := resp.(*IPDestinationGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
 	return updatedIPDestinationGroups, nil, nil
 }
 

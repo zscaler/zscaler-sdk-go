@@ -174,7 +174,7 @@ func CreateCloudApplicationsExport(ctx context.Context, service *zscaler.Service
 		return nil, fmt.Errorf("failed to export cloud applications, unexpected response code: %d", httpResp.StatusCode)
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Successfully exported cloud applications with payload: %+v", exportRequest)
+	service.Client.GetLogger().Printf("[DEBUG] Successfully exported cloud applications with payload: %+v", exportRequest)
 
 	return httpResp, nil
 }
@@ -199,7 +199,7 @@ func CreateCloudApplicationsExportCSV(ctx context.Context, service *zscaler.Serv
 		return nil, nil, errors.New("object returned from API was not a CloudApplicationsExportCSV pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Successfully created new application export")
+	service.Client.GetLogger().Printf("[DEBUG] Successfully created new application export")
 	return createdExport, nil, nil
 }
 
@@ -212,7 +212,7 @@ func Update(ctx context.Context, service *zscaler.Service, rules *ApplicationBul
 
 	// Handle the 204 No Content case by returning nil, since no content was returned
 	if resp == nil {
-		service.Client.Logger.Printf("[DEBUG] No content returned from API (204 No Content)")
+		service.Client.GetLogger().Printf("[DEBUG] No content returned from API (204 No Content)")
 		return nil, nil // No content, but operation was successful
 	}
 
@@ -222,6 +222,6 @@ func Update(ctx context.Context, service *zscaler.Service, rules *ApplicationBul
 		return nil, errors.New("object returned from API was not an ApplicationBulkUpdate pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Successfully updated application bulk update")
+	service.Client.GetLogger().Printf("[DEBUG] Successfully updated application bulk update")
 	return updatedRules, nil
 }

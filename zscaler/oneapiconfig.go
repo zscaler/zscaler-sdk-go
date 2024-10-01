@@ -36,58 +36,15 @@ const (
 // Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
-	HTTPClient         *http.Client
-	ZPAHTTPClient      *http.Client
-	ZIAHTTPClient      *http.Client
-	ZCCHTTPClient      *http.Client
-	Logger             logger.Logger
-	UserAgent          string
-	zpaRateLimiter     *rl.RateLimiter
-	ziaRateLimiter     *rl.RateLimiter
-	zccRateLimiter     *rl.RateLimiter
-	defaultRateLimiter *rl.RateLimiter
-	useOneAPI          bool
-	oauth2Credentials  *Configuration
-	stopTicker         chan bool
+	oauth2Credentials *Configuration
+	stopTicker        chan bool
 }
 
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
 func NewOneAPIClient(config *Configuration) (*Service, error) {
-	logger := logger.GetDefaultLogger(loggerPrefix)
-
-	// ZIA-specific rate limits:
-	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
-	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
-
-	// ZPA-specific rate limits:
-	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
-
-	// ZCC-specific rate limits:
-	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
-
-	// Default case for unknown or unhandled services
-	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
-
-	// Pass the config to getHTTPClient so it can access proxy settings
-	httpClient := getHTTPClient(logger, defaultRateLimiter, config)
-	ziaHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
-	zpaHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
-	zccHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
-
 	cli := &Client{
-		HTTPClient:         httpClient,
-		ZIAHTTPClient:      ziaHttpClient,
-		ZPAHTTPClient:      zpaHttpClient,
-		ZCCHTTPClient:      zccHttpClient,
-		Logger:             logger,
-		UserAgent:          config.UserAgent,
-		zccRateLimiter:     zccRateLimiter,
-		ziaRateLimiter:     ziaRateLimiter,
-		zpaRateLimiter:     zpaRateLimiter,
-		defaultRateLimiter: defaultRateLimiter,
-		useOneAPI:          true,
-		oauth2Credentials:  config,
-		stopTicker:         make(chan bool),
+		oauth2Credentials: config,
+		stopTicker:        make(chan bool),
 	}
 
 	// Start token renewal ticker
@@ -99,46 +56,48 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 
 // startTokenRenewalTicker starts a ticker to renew the token before it expires.
 func (c *Client) startTokenRenewalTicker() {
-	if c.useOneAPI {
-		tokenExpiry := time.Now()
-		if c.oauth2Credentials.Zscaler.Client.AuthToken != nil {
-			tokenExpiry = c.oauth2Credentials.Zscaler.Client.AuthToken.Expiry
-		}
-		renewalInterval := time.Until(tokenExpiry) - (time.Minute * 1) // Renew 1 minute before expiration
-
-		if renewalInterval > 0 {
-			ticker := time.NewTicker(renewalInterval)
-			go func() {
-				for {
-					select {
-					case <-ticker.C:
-						// Refresh the token
-						authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.Logger)
-						if err != nil {
-							c.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
-						} else {
-							c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
-							c.Logger.Printf("[INFO] OAuth2 token successfully renewed")
-							// Reset the ticker for the next renewal
-							renewalInterval = time.Until(authToken.Expiry) - (time.Minute * 1)
-							ticker.Reset(renewalInterval)
-						}
-					case <-c.stopTicker:
-						ticker.Stop()
-						return
-					}
-				}
-			}()
-		}
+	tokenExpiry := time.Now()
+	if c.oauth2Credentials.Zscaler.Client.AuthToken != nil {
+		tokenExpiry = c.oauth2Credentials.Zscaler.Client.AuthToken.Expiry
 	}
+	renewalInterval := time.Until(tokenExpiry) - (time.Minute * 1) // Renew 1 minute before expiration
+
+	if renewalInterval > 0 {
+		ticker := time.NewTicker(renewalInterval)
+		go func() {
+			for {
+				select {
+				case <-ticker.C:
+					// Refresh the token
+					authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
+					if err != nil {
+						c.oauth2Credentials.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
+					} else {
+						c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
+						c.oauth2Credentials.Logger.Printf("[INFO] OAuth2 token successfully renewed")
+						// Reset the ticker for the next renewal
+						renewalInterval = time.Until(authToken.Expiry) - (time.Minute * 1)
+						ticker.Reset(renewalInterval)
+					}
+				case <-c.stopTicker:
+					ticker.Stop()
+					return
+				}
+			}
+		}()
+	}
+}
+
+func (client *Client) GetLogger() logger.Logger {
+	return client.oauth2Credentials.Logger
 }
 
 // getHTTPClient sets up the retryable HTTP client with backoff and retry policies.
 func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configuration) *http.Client {
 	retryableClient := retryablehttp.NewClient()
-	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
-	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
-	retryableClient.RetryMax = MaxNumOfRetries
+	retryableClient.RetryWaitMin = cfg.Zscaler.Client.RateLimit.RetryWaitMin
+	retryableClient.RetryWaitMax = cfg.Zscaler.Client.RateLimit.RetryWaitMax
+	retryableClient.RetryMax = int(cfg.Zscaler.Client.RateLimit.MaxRetries)
 
 	// Configure backoff and retry policies
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
@@ -306,8 +265,8 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
-	if c.UserAgent != "" {
-		req.Header.Add("User-Agent", c.UserAgent)
+	if c.oauth2Credentials.UserAgent != "" {
+		req.Header.Add("User-Agent", c.oauth2Credentials.UserAgent)
 	}
 
 	// For non-sandbox requests, handle OAuth2 authentication
@@ -349,7 +308,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			if err == nil {
 				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
 			}
-			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
+			c.oauth2Credentials.Logger.Printf("[INFO] served from cache, key:%s\n", key)
 			return respData, req, nil
 		}
 	}
@@ -359,10 +318,10 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	for retry := 1; retry <= 5; retry++ {
 		start := time.Now()
 		reqID := uuid.New().String()
-		logger.LogRequest(c.Logger, req, reqID, nil, !isSandboxRequest)
+		logger.LogRequest(c.oauth2Credentials.Logger, req, reqID, nil, !isSandboxRequest)
 		httpClient := c.getServiceHTTPClient(endpoint)
 		resp, err = httpClient.Do(req)
-		logger.LogResponse(c.Logger, resp, start, reqID)
+		logger.LogResponse(c.oauth2Credentials.Logger, resp, start, reqID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -386,9 +345,9 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	}
 
 	// Cache logic for successful GET requests
-	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
+	if !isSandboxRequest && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
 		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+		c.oauth2Credentials.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
 	}
 
@@ -423,7 +382,7 @@ func (c *Client) authenticate() error {
 	// Check if the AuthToken is nil, empty, or expired
 	if !c.authValid() {
 		// Pass the context from the Configuration along with the other arguments
-		authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.Logger)
+		authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
 		if err != nil {
 			return err
 		}

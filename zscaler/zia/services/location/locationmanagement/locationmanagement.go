@@ -231,7 +231,7 @@ func GetLocation(ctx context.Context, service *zscaler.Service, locationID int) 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning Location from Get: %d", location.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning Location from Get: %d", location.ID)
 	return &location, nil
 }
 
@@ -333,7 +333,7 @@ func Create(ctx context.Context, service *zscaler.Service, locations *Locations)
 		return nil, errors.New("object returned from api was not a location pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning locations from create: %d", createdLocations.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning locations from create: %d", createdLocations.ID)
 	return createdLocations, nil
 }
 
@@ -344,7 +344,7 @@ func Update(ctx context.Context, service *zscaler.Service, locationID int, locat
 	}
 	updatedLocations, _ := resp.(*Locations)
 
-	service.Client.Logger.Printf("[DEBUG]returning locations from Update: %d", updatedLocations.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning locations from Update: %d", updatedLocations.ID)
 	return updatedLocations, nil, nil
 }
 
@@ -361,7 +361,7 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
-		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+		service.Client.GetLogger().Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
 	}
 
 	// Define the payload

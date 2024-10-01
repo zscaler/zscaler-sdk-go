@@ -51,7 +51,7 @@ func GetDLPProfileLiteID(ctx context.Context, service *zscaler.Service, ProfileL
 
 	for _, profile := range profiles {
 		if profile.ProfileID == ProfileLiteID {
-			service.Client.Logger.Printf("[DEBUG]returning idm profile template from Get: %d", profile.ProfileID)
+			service.Client.GetLogger().Printf("[DEBUG]returning idm profile template from Get: %d", profile.ProfileID)
 			return &profile, nil
 		}
 	}

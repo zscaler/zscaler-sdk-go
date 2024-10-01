@@ -39,7 +39,7 @@ func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPSourc
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
 	return &ipSourceGroups, nil
 }
 
@@ -68,7 +68,7 @@ func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPSourceGr
 		return nil, errors.New("object returned from api was not an ip source group pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
 	return createdIPSourceGroups, nil
 }
 
@@ -79,7 +79,7 @@ func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGrou
 	}
 	updatedIPSourceGroups, _ := resp.(*IPSourceGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
 	return updatedIPSourceGroups, nil
 }
 

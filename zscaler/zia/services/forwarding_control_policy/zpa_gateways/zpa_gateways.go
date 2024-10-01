@@ -84,7 +84,7 @@ func Get(ctx context.Context, service *zscaler.Service, gatewayID int) (*ZPAGate
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -113,7 +113,7 @@ func Create(ctx context.Context, service *zscaler.Service, rule *ZPAGateways) (*
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning zpa gateway from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning zpa gateway from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
@@ -123,7 +123,7 @@ func Update(ctx context.Context, service *zscaler.Service, gatewayID int, rules 
 		return nil, err
 	}
 	updatedRules, _ := resp.(*ZPAGateways)
-	service.Client.Logger.Printf("[DEBUG]returning zpa gateway from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning zpa gateway from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 

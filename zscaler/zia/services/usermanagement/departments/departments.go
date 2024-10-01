@@ -35,7 +35,7 @@ func GetDepartments(ctx context.Context, service *zscaler.Service, departmentID 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning departments from Get: %d", departments.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning departments from Get: %d", departments.ID)
 	return &departments, nil
 }
 

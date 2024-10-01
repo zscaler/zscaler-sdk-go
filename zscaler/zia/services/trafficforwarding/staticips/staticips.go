@@ -83,7 +83,7 @@ func Get(ctx context.Context, service *zscaler.Service, staticIpID int) (*Static
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning static ip from Get: %d", staticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning static ip from Get: %d", staticIP.ID)
 	return &staticIP, nil
 }
 
@@ -112,7 +112,7 @@ func Create(ctx context.Context, service *zscaler.Service, staticIpID *StaticIP)
 		return nil, nil, errors.New("object returned from api was not a static ip pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning static ip from create: %d", createdStaticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning static ip from create: %d", createdStaticIP.ID)
 	return createdStaticIP, nil, nil
 }
 
@@ -123,7 +123,7 @@ func Update(ctx context.Context, service *zscaler.Service, staticIpID int, stati
 	}
 	updatedStaticIP, _ := resp.(*StaticIP)
 
-	service.Client.Logger.Printf("[DEBUG]returning static ip from update: %d", updatedStaticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning static ip from update: %d", updatedStaticIP.ID)
 	return updatedStaticIP, nil, nil
 }
 

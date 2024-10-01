@@ -37,7 +37,7 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 			return nil, err
 		}
 		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-		c.Logger.Printf("Created Object with ID %v", id)
+		c.oauth2Credentials.Logger.Printf("Created Object with ID %v", id)
 		return responseObject, nil
 	} else {
 		return nil, nil // for 204 No Content
@@ -118,7 +118,7 @@ func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interf
 	}
 
 	if len(resp) == 0 {
-		c.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
+		c.oauth2Credentials.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
 		return &http.Response{StatusCode: 204}, nil
 	}
 

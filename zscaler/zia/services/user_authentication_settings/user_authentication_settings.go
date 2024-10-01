@@ -27,7 +27,7 @@ func Get(ctx context.Context, service *zscaler.Service) (*ExemptedUrls, error) {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning exempted url rules from Get: %v", urls)
+	service.Client.GetLogger().Printf("[DEBUG]Returning exempted url rules from Get: %v", urls)
 	return &urls, nil
 }
 

@@ -29,7 +29,7 @@ func GetNetworkApplicationGroups(ctx context.Context, service *zscaler.Service, 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning network application groups from Get: %d", networkApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning network application groups from Get: %d", networkApplicationGroups.ID)
 	return &networkApplicationGroups, nil
 }
 
@@ -58,7 +58,7 @@ func Create(ctx context.Context, service *zscaler.Service, applicationGroup *Net
 		return nil, errors.New("object returned from api was not a network application groups pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning network application groups from create: %d", createdApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network application groups from create: %d", createdApplicationGroups.ID)
 	return createdApplicationGroups, nil
 }
 
@@ -69,7 +69,7 @@ func Update(ctx context.Context, service *zscaler.Service, groupID int, applicat
 	}
 	updatedApplicationGroups, _ := resp.(*NetworkApplicationGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning network application groups from Update: %d", updatedApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network application groups from Update: %d", updatedApplicationGroups.ID)
 	return updatedApplicationGroups, nil, nil
 }
 

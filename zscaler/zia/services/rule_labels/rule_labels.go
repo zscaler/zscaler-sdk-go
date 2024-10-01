@@ -45,7 +45,7 @@ func Get(ctx context.Context, service *zscaler.Service, ruleLabelID int) (*RuleL
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning rule label from Get: %d", ruleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG] Returning rule label from Get: %d", ruleLabel.ID)
 	return &ruleLabel, nil
 }
 
@@ -74,7 +74,7 @@ func Create(ctx context.Context, service *zscaler.Service, ruleLabelID *RuleLabe
 		return nil, nil, errors.New("object returned from api was not a rule label pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new rule label from create: %d", createdRuleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new rule label from create: %d", createdRuleLabel.ID)
 	return createdRuleLabel, nil, nil
 }
 
@@ -85,7 +85,7 @@ func Update(ctx context.Context, service *zscaler.Service, ruleLabelID int, rule
 	}
 	updatedRuleLabel, _ := resp.(*RuleLabels)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates rule label from update: %d", updatedRuleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates rule label from update: %d", updatedRuleLabel.ID)
 	return updatedRuleLabel, nil, nil
 }
 

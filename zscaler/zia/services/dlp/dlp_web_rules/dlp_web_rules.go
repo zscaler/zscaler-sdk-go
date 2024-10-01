@@ -163,7 +163,7 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*WebDLPRule
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning web dlp rule from Get: %d", webDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning web dlp rule from Get: %d", webDlpRules.ID)
 	return &webDlpRules, nil
 }
 
@@ -192,7 +192,7 @@ func Create(ctx context.Context, service *zscaler.Service, ruleID *WebDLPRules) 
 		return nil, errors.New("object returned from api was not a web dlp rule pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
 	return createdWebDlpRules, nil
 }
 
@@ -203,7 +203,7 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, webDlpRul
 	}
 	updatedWebDlpRules, _ := resp.(*WebDLPRules)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
 	return updatedWebDlpRules, nil
 }
 

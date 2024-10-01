@@ -27,7 +27,7 @@ func Get(ctx context.Context, service *zscaler.Service) (*BaAdvancedSettings, er
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning custom list of MD5 hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning custom list of MD5 hashes from Get: %v", hashes)
 	return &hashes, nil
 }
 
@@ -37,7 +37,7 @@ func Update(ctx context.Context, service *zscaler.Service, hashes BaAdvancedSett
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning updated custom list of MD5 hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning updated custom list of MD5 hashes from Get: %v", hashes)
 	return &hashes, nil
 }
 
@@ -48,6 +48,6 @@ func GetFileHashCount(ctx context.Context, service *zscaler.Service) (*FileHashC
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning used andd unused quota for blocking MD5 file hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning used andd unused quota for blocking MD5 file hashes from Get: %v", hashes)
 	return &hashes, nil
 }

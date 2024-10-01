@@ -154,7 +154,7 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteri
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
 	return &urlFilteringPolicies, nil
 }
 
@@ -183,13 +183,13 @@ func Create(ctx context.Context, service *zscaler.Service, ruleID *URLFilteringR
 		return nil, errors.New("object returned from api was not a url filtering rule pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning url filtering rule from create: %d", createdURLFilteringRule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning url filtering rule from create: %d", createdURLFilteringRule.ID)
 	return createdURLFilteringRule, nil
 }
 
 func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
-	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
+	service.Client.GetLogger().Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
 	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
 		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
 		var urlFilteringPolicies []URLFilteringRule
@@ -210,7 +210,7 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URL
 	}
 	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
 
-	service.Client.Logger.Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
 	return updatedURLFilteringRule, nil, nil
 }
 

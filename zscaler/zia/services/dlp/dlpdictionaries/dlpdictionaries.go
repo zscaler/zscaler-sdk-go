@@ -152,7 +152,7 @@ func Get(ctx context.Context, service *zscaler.Service, dlpDictionariesID int) (
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dictionary from Get: %d", dlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dictionary from Get: %d", dlpDictionary.ID)
 	return &dlpDictionary, nil
 }
 
@@ -215,7 +215,7 @@ func Create(ctx context.Context, service *zscaler.Service, dlpDictionariesID *Dl
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
 	return createdDlpDictionary, nil, nil
 }
 
@@ -226,7 +226,7 @@ func Update(ctx context.Context, service *zscaler.Service, dlpDictionariesID int
 	}
 	updatedDlpDictionary, _ := resp.(*DlpDictionary)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
 	return updatedDlpDictionary, nil, nil
 }
 

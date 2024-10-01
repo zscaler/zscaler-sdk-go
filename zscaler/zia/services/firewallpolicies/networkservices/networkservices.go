@@ -41,7 +41,7 @@ func Get(ctx context.Context, service *zscaler.Service, serviceID int) (*Network
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning network services from Get: %d", networkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning network services from Get: %d", networkServices.ID)
 	return &networkServices, nil
 }
 
@@ -70,7 +70,7 @@ func Create(ctx context.Context, service *zscaler.Service, networkService *Netwo
 		return nil, errors.New("object returned from api was not a network service pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning network service from create: %d", createdNetworkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network service from create: %d", createdNetworkServices.ID)
 	return createdNetworkServices, nil
 }
 
@@ -81,7 +81,7 @@ func Update(ctx context.Context, service *zscaler.Service, serviceID int, networ
 	}
 	updatedNetworkServices, _ := resp.(*NetworkServices)
 
-	service.Client.Logger.Printf("[DEBUG]returning network service from Update: %d", updatedNetworkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network service from Update: %d", updatedNetworkServices.ID)
 	return updatedNetworkServices, nil, nil
 }
 

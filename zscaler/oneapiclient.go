@@ -21,6 +21,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"gopkg.in/yaml.v3"
 )
 
@@ -54,9 +55,13 @@ type AuthToken struct {
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
 type Configuration struct {
+	Logger         logger.Logger
+	HTTPClient     *http.Client
+	ZPAHTTPClient  *http.Client
+	ZIAHTTPClient  *http.Client
+	ZCCHTTPClient  *http.Client
 	UserAgent      string `json:"userAgent,omitempty"`
 	Debug          bool   `json:"debug,omitempty"`
-	HTTPClient     *http.Client
 	UserAgentExtra string
 	Context        context.Context
 	Zscaler        struct {
@@ -87,10 +92,10 @@ type Configuration struct {
 			ConnectionTimeout int64 `yaml:"connectionTimeout" envconfig:"ZSCALER_CLIENT_CONNECTION_TIMEOUT"`
 			RequestTimeout    int64 `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit         struct {
-				MaxRetries int32 `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				MaxBackoff int64 `yaml:"maxBackoff" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_BACKOFF"`
+				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
 			}
-			HttpClient *http.Client
 		}
 		Testing struct {
 			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZSCALER_TESTING_DISABLE_HTTPS_CHECK"`
@@ -102,11 +107,17 @@ type Configuration struct {
 
 // NewConfiguration is the main configuration function, implementing the ConfigSetter pattern.
 func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
 	cfg := &Configuration{
+		Logger:    logger,
 		UserAgent: fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		Debug:     false,
 		Context:   context.Background(), // Set default context
 	}
+
+	cfg.Zscaler.Client.RateLimit.MaxRetries = MaxNumOfRetries
+	cfg.Zscaler.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
+	cfg.Zscaler.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 
 	// Initialize cache
 	if cfg.Zscaler.Client.Cache.DefaultTtl == 0 {
@@ -123,6 +134,8 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 
 	cfg = readConfigFromSystem(*cfg)
 	cfg = readConfigFromEnvironment(*cfg)
+
+	setHttpClients(cfg)
 
 	// Apply each ConfigSetter function.
 	for _, confSetter := range conf {
@@ -142,6 +155,27 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.Context = ctx
 
 	return cfg, nil
+}
+
+func setHttpClients(cfg *Configuration) {
+	// ZIA-specific rate limits:
+	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
+	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
+
+	// ZPA-specific rate limits:
+	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
+
+	// ZCC-specific rate limits:
+	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
+
+	// Default case for unknown or unhandled services
+	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
+
+	// Pass the config to getHTTPClient so it can access proxy settings
+	cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
+	cfg.ZIAHTTPClient = getHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
+	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
+	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)
 }
 
 // Authenticate performs OAuth2 authentication and retrieves an AuthToken.
@@ -182,7 +216,7 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 	// start := time.Now()
 	reqID := uuid.NewString()
 	logger.LogRequest(l, req, reqID, nil, false)
-	resp, err := cfg.Zscaler.Client.HttpClient.Do(req)
+	resp, err := cfg.HTTPClient.Do(req)
 	// logger.LogResponse(l, resp, start, reqID)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s, err: %v", creds.ClientID, err)
@@ -257,7 +291,7 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	}
 
 	// Make the POST request.
-	resp, err := cfg.Zscaler.Client.HttpClient.PostForm(authUrl, formData)
+	resp, err := cfg.HTTPClient.PostForm(authUrl, formData)
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %v", err)
 	}
@@ -283,13 +317,13 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 	service := detectServiceType(endpoint)
 	switch service {
 	case "zpa":
-		return client.ZPAHTTPClient
+		return client.oauth2Credentials.ZPAHTTPClient
 	case "zia":
-		return client.ZIAHTTPClient
+		return client.oauth2Credentials.ZIAHTTPClient
 	case "zcc":
-		return client.ZCCHTTPClient
+		return client.oauth2Credentials.ZCCHTTPClient
 	default:
-		return client.HTTPClient
+		return client.oauth2Credentials.HTTPClient
 	}
 }
 
@@ -452,7 +486,7 @@ func WithCacheTti(i time.Duration) ConfigSetter {
 // WithHttpClient sets the HttpClient in the Config.
 func WithHttpClient(httpClient *http.Client) ConfigSetter {
 	return func(c *Configuration) {
-		c.Zscaler.Client.HttpClient = httpClient
+		c.HTTPClient = httpClient
 	}
 }
 
@@ -501,12 +535,21 @@ func WithConnectionTimeout(i int64) ConfigSetter {
 func WithRateLimitMaxRetries(maxRetries int32) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RateLimit.MaxRetries = maxRetries
+		setHttpClients(c)
 	}
 }
 
-func WithRateLimitMaxBackOff(maxBackoff int64) ConfigSetter {
+func WithRateLimitMaxWait(maxWait time.Duration) ConfigSetter {
 	return func(c *Configuration) {
-		c.Zscaler.Client.RateLimit.MaxBackoff = maxBackoff
+		c.Zscaler.Client.RateLimit.RetryWaitMax = maxWait
+		setHttpClients(c)
+	}
+}
+
+func WithRateLimitMinWait(minWait time.Duration) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.RateLimit.RetryWaitMin = minWait
+		setHttpClients(c)
 	}
 }
 

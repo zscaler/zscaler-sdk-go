@@ -138,7 +138,7 @@ func GetGreTunnels(ctx context.Context, service *zscaler.Service, greTunnelID in
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnel from get: %d", greTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnel from get: %d", greTunnels.ID)
 	return &greTunnels, nil
 }
 
@@ -169,7 +169,7 @@ func CreateGreTunnels(ctx context.Context, service *zscaler.Service, greTunnelID
 		return nil, nil, errors.New("object returned from api was not a gre tunnel pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from create: %d", createdGreTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnels from create: %d", createdGreTunnels.ID)
 	return createdGreTunnels, nil, nil
 }
 
@@ -180,7 +180,7 @@ func UpdateGreTunnels(ctx context.Context, service *zscaler.Service, greTunnelID
 	}
 	updatedGreTunnels, _ := resp.(*GreTunnels)
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from update: %d", updatedGreTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnels from update: %d", updatedGreTunnels.ID)
 	return updatedGreTunnels, nil, nil
 }
 

@@ -85,7 +85,7 @@ func GetLocationLiteID(ctx context.Context, service *zscaler.Service, locationID
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning location group from Get: %d", locationLite.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning location group from Get: %d", locationLite.ID)
 	return &locationLite, nil
 }
 
