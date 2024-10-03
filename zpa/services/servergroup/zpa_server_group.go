@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -15,21 +17,21 @@ const (
 )
 
 type ServerGroup struct {
-	ID                 string               `json:"id,omitempty"`
-	Enabled            bool                 `json:"enabled"`
-	Name               string               `json:"name,omitempty"`
-	Description        string               `json:"description,omitempty"`
-	IpAnchored         bool                 `json:"ipAnchored"`
-	ConfigSpace        string               `json:"configSpace,omitempty"`
-	DynamicDiscovery   bool                 `json:"dynamicDiscovery"`
-	CreationTime       string               `json:"creationTime,omitempty"`
-	ModifiedBy         string               `json:"modifiedBy,omitempty"`
-	ModifiedTime       string               `json:"modifiedTime,omitempty"`
-	MicroTenantID      string               `json:"microtenantId,omitempty"`
-	MicroTenantName    string               `json:"microtenantName,omitempty"`
-	AppConnectorGroups []AppConnectorGroups `json:"appConnectorGroups"`
-	Servers            []ApplicationServer  `json:"servers"`
-	Applications       []Applications       `json:"applications"`
+	ID                 string                                  `json:"id,omitempty"`
+	Enabled            bool                                    `json:"enabled"`
+	Name               string                                  `json:"name,omitempty"`
+	Description        string                                  `json:"description,omitempty"`
+	IpAnchored         bool                                    `json:"ipAnchored"`
+	ConfigSpace        string                                  `json:"configSpace,omitempty"`
+	DynamicDiscovery   bool                                    `json:"dynamicDiscovery"`
+	CreationTime       string                                  `json:"creationTime,omitempty"`
+	ModifiedBy         string                                  `json:"modifiedBy,omitempty"`
+	ModifiedTime       string                                  `json:"modifiedTime,omitempty"`
+	MicroTenantID      string                                  `json:"microtenantId,omitempty"`
+	MicroTenantName    string                                  `json:"microtenantName,omitempty"`
+	AppConnectorGroups []appconnectorgroup.AppConnectorGroup   `json:"appConnectorGroups"`
+	Servers            []appservercontroller.ApplicationServer `json:"servers"`
+	Applications       []Applications                          `json:"applications"`
 }
 
 type Applications struct {
@@ -104,19 +106,6 @@ type AppServerGroups struct {
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
 	Name             string `json:"name"`
-}
-
-type ApplicationServer struct {
-	Address           string   `json:"address,omitempty"`
-	AppServerGroupIds []string `json:"appServerGroupIds,omitempty"`
-	ConfigSpace       string   `json:"configSpace,omitempty"`
-	CreationTime      string   `json:"creationTime,omitempty"`
-	Description       string   `json:"description,omitempty"`
-	Enabled           bool     `json:"enabled"`
-	ID                string   `json:"id,omitempty"`
-	ModifiedBy        string   `json:"modifiedBy,omitempty"`
-	ModifiedTime      string   `json:"modifiedTime,omitempty"`
-	Name              string   `json:"name"`
 }
 
 func Get(service *services.Service, groupID string) (*ServerGroup, *http.Response, error) {

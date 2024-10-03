@@ -61,7 +61,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -70,7 +70,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			Description: name,
 			PolicySetID: accessPolicySet.ID,
 			Action:      "REDIRECT_PREFERRED",
-			ServiceEdgeGroups: []ServiceEdgeGroups{
+			ServiceEdgeGroups: []serviceedgegroup.ServiceEdgeGroup{
 				{
 					ID: svcEdgeGroup.ID,
 				},

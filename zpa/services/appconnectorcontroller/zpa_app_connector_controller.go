@@ -46,6 +46,7 @@ type AppConnector struct {
 	ProvisioningKeyID                string                       `json:"provisioningKeyId"`
 	ProvisioningKeyName              string                       `json:"provisioningKeyName"`
 	Platform                         string                       `json:"platform,omitempty"`
+	PlatformDetail                   string                       `json:"platformDetail,omitempty"`
 	PreviousVersion                  string                       `json:"previousVersion,omitempty"`
 	PrivateIP                        string                       `json:"privateIp,omitempty"`
 	PublicIP                         string                       `json:"publicIp,omitempty"`
@@ -62,7 +63,7 @@ type AppConnector struct {
 type AssistantVersion struct {
 	ID                       string `json:"id,omitempty"`
 	ApplicationStartTime     string `json:"applicationStartTime,omitempty"`
-	AppConnectorGroupId      string `json:"appConnectorGroupId,omitempty"`
+	AppConnectorGroupID      string `json:"appConnectorGroupId,omitempty"`
 	BrokerId                 string `json:"brokerId,omitempty"`
 	CreationTime             string `json:"creationTime,omitempty"`
 	CtrlChannelStatus        string `json:"ctrlChannelStatus,omitempty"`
@@ -75,6 +76,8 @@ type AssistantVersion struct {
 	LoneWarrior              bool   `json:"loneWarrior,omitempty"`
 	ModifiedBy               string `json:"modifiedBy,omitempty"`
 	ModifiedTime             string `json:"modifiedTime,omitempty"`
+	Latitude                 string `json:"latitude,omitempty"`
+	Longitude                string `json:"longitude,omitempty"`
 	MtunnelID                string `json:"mtunnelId,omitempty"`
 	Platform                 string `json:"platform,omitempty"`
 	PlatformDetail           string `json:"platformDetail,omitempty"`

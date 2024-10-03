@@ -124,7 +124,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		Enabled:          true,
 		DynamicDiscovery: true,
 		MicroTenantID:    microtenantAID.ID,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{ID: appConnGroupA.ID},
 		},
 	})
@@ -158,7 +158,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		MatchStyle:            "EXCLUSIVE",
 		MicroTenantID:         microtenantAID.ID,
 		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
+		ServerGroups: []servergroup.ServerGroup{
 			{ID: serverGroupA.ID},
 		},
 		TCPAppPortRange: []common.NetworkPorts{
