@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.72.4 (October 3, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #278](https://github.com/zscaler/zscaler-sdk-go/pull/278) - Consolidated several ZPA common functions for Struct simplication.
+
 # 2.72.3 (September 30, 2024)
 
 ## Notes
