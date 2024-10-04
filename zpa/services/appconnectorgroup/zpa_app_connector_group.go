@@ -49,47 +49,6 @@ type AppConnectorGroup struct {
 	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
 }
 
-/*
-	type Connector struct {
-		ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
-		AppConnectorGroupID              string                 `json:"appConnectorGroupId,omitempty"`
-		AppConnectorGroupName            string                 `json:"appConnectorGroupName,omitempty"`
-		ControlChannelStatus             string                 `json:"controlChannelStatus,omitempty"`
-		CreationTime                     string                 `json:"creationTime,omitempty"`
-		CtrlBrokerName                   string                 `json:"ctrlBrokerName,omitempty"`
-		CurrentVersion                   string                 `json:"currentVersion,omitempty"`
-		Description                      string                 `json:"description,omitempty"`
-		Enabled                          bool                   `json:"enabled,omitempty"`
-		ExpectedUpgradeTime              string                 `json:"expectedUpgradeTime,omitempty"`
-		ExpectedVersion                  string                 `json:"expectedVersion,omitempty"`
-		Fingerprint                      string                 `json:"fingerprint,omitempty"`
-		ID                               string                 `json:"id,omitempty"`
-		IPACL                            string                 `json:"ipAcl,omitempty"`
-		IssuedCertID                     string                 `json:"issuedCertId,omitempty"`
-		LastBrokerConnectTime            string                 `json:"lastBrokerConnectTime,omitempty"`
-		LastBrokerConnectTimeDuration    string                 `json:"lastBrokerConnectTimeDuration,omitempty"`
-		LastBrokerDisconnectTime         string                 `json:"lastBrokerDisconnectTime,omitempty"`
-		LastBrokerDisconnectTimeDuration string                 `json:"lastBrokerDisconnectTimeDuration,omitempty"`
-		LastUpgradeTime                  string                 `json:"lastUpgradeTime,omitempty"`
-		Latitude                         string                 `json:"latitude,omitempty"`
-		Location                         string                 `json:"location,omitempty"`
-		Longitude                        string                 `json:"longitude,omitempty"`
-		ModifiedBy                       string                 `json:"modifiedBy,omitempty"`
-		ModifiedTime                     string                 `json:"modifiedTime,omitempty"`
-		Name                             string                 `json:"name,omitempty"`
-		ProvisioningKeyID                string                 `json:"provisioningKeyId"`
-		ProvisioningKeyName              string                 `json:"provisioningKeyName"`
-		Platform                         string                 `json:"platform,omitempty"`
-		PreviousVersion                  string                 `json:"previousVersion,omitempty"`
-		PrivateIP                        string                 `json:"privateIp,omitempty"`
-		PublicIP                         string                 `json:"publicIp,omitempty"`
-		SargeVersion                     string                 `json:"sargeVersion,omitempty"`
-		EnrollmentCert                   map[string]interface{} `json:"enrollmentCert,omitempty"`
-		UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
-		UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
-	}
-*/
-
 type AppServerGroup struct {
 	ConfigSpace      string `json:"configSpace,omitempty"`
 	CreationTime     string `json:"creationTime,omitempty"`

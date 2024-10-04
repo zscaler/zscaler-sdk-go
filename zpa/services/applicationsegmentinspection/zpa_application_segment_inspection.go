@@ -7,6 +7,7 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
@@ -16,45 +17,45 @@ const (
 )
 
 type AppSegmentInspection struct {
-	ID                        string                   `json:"id,omitempty"`
-	SegmentGroupID            string                   `json:"segmentGroupId,omitempty"`
-	SegmentGroupName          string                   `json:"segmentGroupName,omitempty"`
-	BypassType                string                   `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
-	ConfigSpace               string                   `json:"configSpace,omitempty"`
-	DomainNames               []string                 `json:"domainNames,omitempty"`
-	Name                      string                   `json:"name,omitempty"`
-	Description               string                   `json:"description,omitempty"`
-	Enabled                   bool                     `json:"enabled"`
-	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
-	ICMPAccessType            string                   `json:"icmpAccessType,omitempty"`
-	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled,omitempty"`
-	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
-	MatchStyle                string                   `json:"matchStyle,omitempty"`
-	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
-	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
-	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
-	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
-	IPAnchored                bool                     `json:"ipAnchored"`
-	HealthReporting           string                   `json:"healthReporting,omitempty"`
-	CreationTime              string                   `json:"creationTime,omitempty"`
-	ModifiedBy                string                   `json:"modifiedBy,omitempty"`
-	ModifiedTime              string                   `json:"modifiedTime,omitempty"`
-	TCPKeepAlive              string                   `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                     `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                     `json:"useInDrMode"`
-	MicroTenantID             string                   `json:"microtenantId,omitempty"`
-	MicroTenantName           string                   `json:"microtenantName,omitempty"`
-	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
-	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
-	TCPProtocols              []string                 `json:"tcpProtocols,omitempty"`
-	UDPProtocols              []string                 `json:"udpProtocols,omitempty"`
-	InspectionAppDto          []InspectionAppDto       `json:"inspectionApps,omitempty"`
-	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
-	AppServerGroups           []AppServerGroups        `json:"serverGroups,omitempty"`
-	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
+	ID                        string                    `json:"id,omitempty"`
+	SegmentGroupID            string                    `json:"segmentGroupId,omitempty"`
+	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
+	BypassType                string                    `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	ConfigSpace               string                    `json:"configSpace,omitempty"`
+	DomainNames               []string                  `json:"domainNames,omitempty"`
+	Name                      string                    `json:"name,omitempty"`
+	Description               string                    `json:"description,omitempty"`
+	Enabled                   bool                      `json:"enabled"`
+	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
+	ICMPAccessType            string                    `json:"icmpAccessType,omitempty"`
+	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled,omitempty"`
+	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	MatchStyle                string                    `json:"matchStyle,omitempty"`
+	SelectConnectorCloseToApp bool                      `json:"selectConnectorCloseToApp"`
+	DoubleEncrypt             bool                      `json:"doubleEncrypt"`
+	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                      `json:"isCnameEnabled"`
+	IPAnchored                bool                      `json:"ipAnchored"`
+	HealthReporting           string                    `json:"healthReporting,omitempty"`
+	CreationTime              string                    `json:"creationTime,omitempty"`
+	ModifiedBy                string                    `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                    `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                    `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                      `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                      `json:"useInDrMode"`
+	MicroTenantID             string                    `json:"microtenantId,omitempty"`
+	MicroTenantName           string                    `json:"microtenantName,omitempty"`
+	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
+	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
+	TCPProtocols              []string                  `json:"tcpProtocols,omitempty"`
+	UDPProtocols              []string                  `json:"udpProtocols,omitempty"`
+	InspectionAppDto          []InspectionAppDto        `json:"inspectionApps,omitempty"`
+	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
+	AppServerGroups           []servergroup.ServerGroup `json:"serverGroups,omitempty"`
+	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {

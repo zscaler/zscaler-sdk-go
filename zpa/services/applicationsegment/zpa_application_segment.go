@@ -9,6 +9,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/browseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
@@ -53,7 +54,7 @@ type ApplicationSegmentResource struct {
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts               `json:"udpPortRange,omitempty"`
-	ServerGroups              []AppServerGroups                   `json:"serverGroups"`
+	ServerGroups              []servergroup.ServerGroup           `json:"serverGroups"`
 	DefaultIdleTimeout        string                              `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
 	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`

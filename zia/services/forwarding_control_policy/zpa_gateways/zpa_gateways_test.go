@@ -104,7 +104,7 @@ func TestZPAGateways(t *testing.T) {
 		Description:      name,
 		Enabled:          true,
 		DynamicDiscovery: true,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{
 				ID: appConnGroup.ID,
 			},
@@ -165,7 +165,7 @@ func TestZPAGateways(t *testing.T) {
 		TCPKeepAlive:          "1",
 		InspectTrafficWithZia: false,
 		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
+		ServerGroups: []servergroup.ServerGroup{
 			{
 				ID: serverGroup.ID,
 			},
