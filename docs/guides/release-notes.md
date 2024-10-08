@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.4``
+``Last updated: v2.72.5``
 
 ---
+
+# 2.72.5 (October 8, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #279](https://github.com/zscaler/zscaler-sdk-go/pull/279) - Added missing attribute `sourceCountries` to ZIA `firewallfilteringrule`
 
 # 2.72.4 (October 3, 2024)
 

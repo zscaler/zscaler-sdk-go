@@ -25,7 +25,8 @@ type FirewallFilteringRules struct {
 	Order int `json:"order"`
 
 	// Admin rank of the Firewall Filtering policy rule
-	Rank              int    `json:"rank"`
+	Rank int `json:"rank"`
+
 	AccessControl     string `json:"accessControl,omitempty"`
 	EnableFullLogging bool   `json:"enableFullLogging"`
 
@@ -53,6 +54,9 @@ type FirewallFilteringRules struct {
 
 	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
 	DestCountries []string `json:"destCountries,omitempty"`
+
+	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
+	SourceCountries []string `json:"sourceCountries,omitempty"`
 
 	// Indicates whether the countries specified in the sourceCountries field are included or excluded from the rule.
 	// A true value denotes that the specified source countries are excluded from the rule.
