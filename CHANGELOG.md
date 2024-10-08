@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.72.5 (October 8, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #280](https://github.com/zscaler/zscaler-sdk-go/pull/280) - Added missing attribute `sourceCountries` to ZIA `firewallfilteringrule`
+
 # 2.72.4 (October 3, 2024)
 
 ## Notes
