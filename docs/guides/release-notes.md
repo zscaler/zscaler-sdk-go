@@ -24,7 +24,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Internal Changes
 
-[PR #279](https://github.com/zscaler/zscaler-sdk-go/pull/279) - Added missing attribute `sourceCountries` to ZIA `firewallfilteringrule`
+[PR #280](https://github.com/zscaler/zscaler-sdk-go/pull/280) - Added missing attribute `sourceCountries` to ZIA `firewallfilteringrule`
 
 # 2.72.4 (October 3, 2024)
 
