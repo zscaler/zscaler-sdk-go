@@ -1,5 +1,24 @@
 # Changelog
 
+# 2.72.6 (October 28, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #281](https://github.com/zscaler/zscaler-sdk-go/pull/281) - Added new ZPA Attributes:
+  - Resource: `applicationsegment`
+    * `extranetEnabled`
+    * `apiProtectionEnabled`
+    * `zpnErId`
+
+  - Resource: `policysetcontrollerv1` and `policysetcontrollerv2`
+    * `disabled`
+    * `extranetEnabled`
+    * `extranetDTO`
+    * `privilegedPortalCapabilities`
+
 # 2.72.5 (October 8, 2024)
 
 ## Notes
