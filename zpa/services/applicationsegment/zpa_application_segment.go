@@ -23,6 +23,9 @@ type ApplicationSegmentResource struct {
 	Name                      string                              `json:"name,omitempty"`
 	Description               string                              `json:"description,omitempty"`
 	Enabled                   bool                                `json:"enabled"`
+	ExtranetEnabled           bool                                `json:"extranetEnabled"`
+	APIProtectionEnabled      bool                                `json:"apiProtectionEnabled"`
+	AutoAppProtectEnabled     bool                                `json:"autoAppProtectEnabled"`
 	ADPEnabled                bool                                `json:"adpEnabled"`
 	PassiveHealthEnabled      bool                                `json:"passiveHealthEnabled"`
 	DoubleEncrypt             bool                                `json:"doubleEncrypt"`
@@ -47,6 +50,7 @@ type ApplicationSegmentResource struct {
 	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                                `json:"useInDrMode"`
 	InspectTrafficWithZia     bool                                `json:"inspectTrafficWithZia"`
+	WeightedLoadBalancing     bool                                `json:"weightedLoadBalancing"`
 	MicroTenantID             string                              `json:"microtenantId,omitempty"`
 	MicroTenantName           string                              `json:"microtenantName,omitempty"`
 	MatchStyle                string                              `json:"matchStyle,omitempty"`
@@ -61,6 +65,7 @@ type ApplicationSegmentResource struct {
 	ClientlessApps            []browseraccess.ClientlessApps      `json:"clientlessApps,omitempty"`
 	ShareToMicrotenants       []string                            `json:"shareToMicrotenants"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails            `json:"sharedMicrotenantDetails,omitempty"`
+	ZPNERID                   ZPNERID                             `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -88,6 +93,18 @@ type AppServerGroups struct {
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
 	Name             string `json:"name"`
+}
+
+type ZPNERID struct {
+	ID              string `json:"id,omitempty"`
+	CreationTime    string `json:"creationTime,omitempty"`
+	ModifiedBy      string `json:"modifiedBy,omitempty"`
+	ModifiedTime    string `json:"modifiedTime,omitempty"`
+	ZIACloud        string `json:"ziaCloud,omitempty"`
+	ZIAErID         string `json:"ziaErId,omitempty"`
+	ZIAErName       string `json:"ziaErName,omitempty"`
+	ZIAModifiedTime string `json:"ziaModifiedTime,omitempty"`
+	ZIAOrgID        string `json:"ziaOrgId,omitempty"`
 }
 
 func Get(service *services.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {

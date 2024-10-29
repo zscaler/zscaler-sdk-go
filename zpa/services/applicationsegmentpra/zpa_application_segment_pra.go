@@ -75,7 +75,7 @@ type SharedToMicrotenant struct {
 }
 type CommonAppsDto struct {
 	AppsConfig     []AppsConfig `json:"appsConfig,omitempty"`
-	DeletedSraApps []string     `json:"deletedSraApps,omitempty"`
+	DeletedPraApps []string     `json:"deletedPraApps,omitempty"`
 }
 
 type AppsConfig struct {
@@ -198,7 +198,7 @@ func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) 
 	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
 	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
 	appSegmentPra.CommonAppsDto.AppsConfig = newApps
-	appSegmentPra.CommonAppsDto.DeletedSraApps = appToListStringIDs(removedApps)
+	appSegmentPra.CommonAppsDto.DeletedPraApps = appToListStringIDs(removedApps)
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {

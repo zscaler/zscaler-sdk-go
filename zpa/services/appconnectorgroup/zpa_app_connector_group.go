@@ -22,6 +22,7 @@ type AppConnectorGroup struct {
 	Description                   string                                `json:"description,omitempty"`
 	DNSQueryType                  string                                `json:"dnsQueryType,omitempty"`
 	Enabled                       bool                                  `json:"enabled"`
+	ConnectorGroupType            string                                `json:"connectorGroupType,omitempty"`
 	GeoLocationID                 string                                `json:"geoLocationId,omitempty"`
 	ID                            string                                `json:"id,omitempty"`
 	Latitude                      string                                `json:"latitude,omitempty"`
@@ -45,8 +46,11 @@ type AppConnectorGroup struct {
 	LSSAppConnectorGroup          bool                                  `json:"lssAppConnectorGroup"`
 	MicroTenantID                 string                                `json:"microtenantId,omitempty"`
 	MicroTenantName               string                                `json:"microtenantName,omitempty"`
+	SiteID                        string                                `json:"siteId,omitempty"`
+	SiteName                      string                                `json:"siteName,omitempty"`
 	AppServerGroup                []AppServerGroup                      `json:"serverGroups,omitempty"`
 	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
+	NPAssistantGroup              NPAssistantGroup                      `json:"npAssistantGroup,omitempty"`
 }
 
 type AppServerGroup struct {
@@ -59,6 +63,40 @@ type AppServerGroup struct {
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
 	Name             string `json:"name,omitempty"`
+}
+
+type NPAssistantGroup struct {
+	AppConnectorGroupID string      `json:"appConnectorGroupId,omitempty"`
+	CreationTime        string      `json:"creationTime,omitempty"`
+	ID                  string      `json:"id,omitempty"`
+	LanSubnets          []LanSubnet `json:"lanSubnets,omitempty"`
+	ModifiedBy          string      `json:"modifiedBy,omitempty"`
+	ModifiedTime        string      `json:"modifiedTime,omitempty"`
+}
+
+type LanSubnet struct {
+	AppConnectorGroupID string        `json:"appConnectorGroupId,omitempty"`
+	CreationTime        string        `json:"creationTime,omitempty"`
+	Description         string        `json:"description,omitempty"`
+	FQDNs               []string      `json:"fqdns,omitempty"`
+	ID                  string        `json:"id,omitempty"`
+	ModifiedBy          string        `json:"modifiedBy,omitempty"`
+	ModifiedTime        string        `json:"modifiedTime,omitempty"`
+	Name                string        `json:"name,omitempty"`
+	NPDnsNsRecord       NPDnsNsRecord `json:"npDnsNsRecord,omitempty"`
+	NPServerIPs         []string      `json:"npserverips,omitempty"`
+	OldAuditString      string        `json:"oldAuditString,omitempty"`
+	Subnet              string        `json:"subnet,omitempty"`
+}
+
+type NPDnsNsRecord struct {
+	CreationTime  string   `json:"creationTime,omitempty"`
+	FQDN          []string `json:"fqdn,omitempty"`
+	ID            string   `json:"id,omitempty"`
+	ModifiedBy    string   `json:"modifiedBy,omitempty"`
+	ModifiedTime  string   `json:"modifiedTime,omitempty"`
+	Name          string   `json:"name,omitempty"`
+	NameserverIPs []string `json:"nameserverIps,omitempty"`
 }
 
 func Get(service *services.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
