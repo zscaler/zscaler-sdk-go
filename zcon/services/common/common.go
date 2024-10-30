@@ -27,6 +27,16 @@ type GeneralPurpose struct {
 	AssociationTime int                    `json:"associationTime,omitempty"`
 }
 
+type UIDName struct {
+	ID              int                    `json:"id,omitempty"`
+	Name            string                 `json:"name,omitempty"`
+	IsNameL10nTag   bool                   `json:"isNameL10nTag,omitempty"`
+	Extensions      map[string]interface{} `json:"extensions,omitempty"`
+	Deleted         bool                   `json:"deleted,omitempty"`
+	ExternalId      string                 `json:"externalId,omitempty"`
+	AssociationTime int                    `json:"associationTime,omitempty"`
+}
+
 type UIDNameLite struct {
 	ID   int    `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`

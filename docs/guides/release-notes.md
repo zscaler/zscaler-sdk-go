@@ -13,14 +13,23 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.72.6``
+``Last updated: v2.73.0``
 
 ---
 
-# 2.72.6 (October 28, 2024)
+# 2.73.0 (October 30, 2024)
 
 ## Notes
 - Golang: **v1.22**
+
+### Enhancements
+
+  - Zscaler Cloud Connector (ZCON)
+    - Added `GET /provUrl` endpoint to list provisioning templates.
+    - Added `GET /provUrl/{id}` endpoint to retrieve a specific provisioning template.
+    - Added `POST /provUrl` endpoint to create provisioning template.
+    - Added `PUT /provUrl/{id}` endpoint to update a specific provisioning template.
+    - Added `DELETE /provUrl/{id}` endpoint to delete a specific provisioning template.
 
 ### Internal Changes
 
