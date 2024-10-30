@@ -243,6 +243,30 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	return resp, nil
 }
 
+// CreateWithRawPayload sends an HTTP POST request with a raw string payload.
+func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, error) {
+	if payload == "" {
+		return nil, errors.New("tried to create with an empty string payload")
+	}
+
+	// Convert the string payload to []byte
+	data := []byte(payload)
+
+	// Send the raw string as a POST request
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Handle the response
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
 // Read ...
 func (c *Client) Read(endpoint string, o interface{}) error {
 	contentType := c.GetContentType()
