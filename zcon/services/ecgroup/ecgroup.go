@@ -1,6 +1,7 @@
 package ecgroup
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -86,6 +87,32 @@ func GetByName(service *services.Service, ecGroupName string) (*EcGroup, error) 
 		}
 	}
 	return nil, fmt.Errorf("no Cloud & Branch Connector Group found with name: %s", ecGroupName)
+}
+
+func Create(service *services.Service, locations *EcGroup) (*EcGroup, error) {
+	resp, err := service.Client.Create(ecGroupEndpoint, *locations)
+	if err != nil {
+		return nil, err
+	}
+
+	createdEcGroup, ok := resp.(*EcGroup)
+	if !ok {
+		return nil, errors.New("object returned from api was not a location template pointer")
+	}
+
+	log.Printf("returning location template from create: %d", createdEcGroup.ID)
+	return createdEcGroup, nil
+}
+
+func Update(service *services.Service, ecGroupID int, locations *EcGroup) (*EcGroup, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ecGroupEndpoint, ecGroupID), *locations)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedEcGroup, _ := resp.(*EcGroup)
+
+	log.Printf("returning location template from Update: %d", updatedEcGroup.ID)
+	return updatedEcGroup, nil, nil
 }
 
 func Delete(service *services.Service, ecGroupID int) (*http.Response, error) {

@@ -25,6 +25,9 @@ type Locations struct {
 	// Parent Location ID. If this ID does not exist or is 0, it is implied that it is a parent location. Otherwise, it is a sub-location whose parent has this ID. x-applicableTo: SUB
 	ParentID int `json:"parentId,omitempty"`
 
+	// Indicates whether or not this admin user is editable/deletable
+	NonEditable bool `json:"nonEditable,omitempty"`
+
 	// Upload bandwidth in kbps. The value 0 implies no Bandwidth Control enforcement
 	UpBandwidth int `json:"upBandwidth,omitempty"`
 
@@ -46,6 +49,9 @@ type Locations struct {
 	// Not applicable to Cloud & Branch Connector.
 	UnusedUpBandwidth int `json:"unusedUpBandwidth,omitempty"`
 
+	// Not applicable to Cloud & Branch Connector.
+	UnusedDnBandwidth int `json:"unusedDnBandwidth,omitempty"`
+
 	// Country of the location.
 	Country string `json:"country,omitempty"`
 
@@ -64,7 +70,7 @@ type Locations struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// IP ports that are associated with the location
-	Ports []string `json:"ports,omitempty"`
+	Ports []int `json:"ports,omitempty"`
 
 	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
 	AuthRequired bool `json:"authRequired"`
