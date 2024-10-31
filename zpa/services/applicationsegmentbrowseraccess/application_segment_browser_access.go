@@ -1,4 +1,4 @@
-package browseraccess
+package applicationsegmentbrowseraccess
 
 import (
 	"fmt"
@@ -95,10 +95,6 @@ type ClientlessApps struct {
 	TrustUntrustedCert  bool   `json:"trustUntrustedCert"`
 }
 
-type AppServerGroups struct {
-	ID string `json:"id"`
-}
-
 func Get(service *services.Service, appID string) (*BrowserAccess, *http.Response, error) {
 	v := new(BrowserAccess)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, appID)
@@ -133,12 +129,30 @@ func Create(service *services.Service, browserAccess BrowserAccess) (*BrowserAcc
 }
 
 func Update(service *services.Service, appID string, browserAccess *BrowserAccess) (*http.Response, error) {
+	// Fetch the existing state using the Get function to obtain current clientlessApps.id
+	existingState, _, err := Get(service, appID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve existing state for appID %s: %w", appID, err)
+	}
+
+	// Set appID in clientlessApps and assign existing clientlessApps.id where missing
+	for i := range browserAccess.ClientlessApps {
+		// Set the clientlessApps.appId to the parent appID
+		browserAccess.ClientlessApps[i].AppID = appID
+
+		// If clientlessApps.id is missing in the payload, use the existing state to fill it in
+		if browserAccess.ClientlessApps[i].ID == "" && len(existingState.ClientlessApps) > i {
+			browserAccess.ClientlessApps[i].ID = existingState.ClientlessApps[i].ID
+		}
+	}
+
+	// Proceed with the PUT request using the populated browserAccess payload
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, appID)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, browserAccess, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
 func Delete(service *services.Service, appID string) (*http.Response, error) {

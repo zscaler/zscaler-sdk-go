@@ -47,18 +47,17 @@ func TestApplicationSegmentPRA(t *testing.T) {
 
 	service := services.New(client)
 	appSegment := AppSegmentPRA{
-		Name:             name,
-		Description:      name,
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"rdp_pra.bd-hashicorp.com"},
+		Name:            name,
+		Description:     name,
+		Enabled:         true,
+		SegmentGroupID:  createdAppGroup.ID,
+		IsCnameEnabled:  true,
+		BypassType:      "NEVER",
+		IcmpAccessType:  "PING_TRACEROUTING",
+		HealthReporting: "ON_ACCESS",
+		HealthCheckType: "DEFAULT",
+		TCPKeepAlive:    "1",
+		DomainNames:     []string{"rdp_pra.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
 				From: "3389",

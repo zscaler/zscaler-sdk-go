@@ -56,18 +56,17 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 	}
 
 	appSegment := AppSegmentInspection{
-		Name:             name,
-		Description:      name,
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		ICMPAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"server1.bd-hashicorp.com"},
+		Name:            name,
+		Description:     name,
+		Enabled:         true,
+		SegmentGroupID:  createdAppGroup.ID,
+		IsCnameEnabled:  true,
+		BypassType:      "NEVER",
+		ICMPAccessType:  "PING_TRACEROUTING",
+		HealthReporting: "ON_ACCESS",
+		HealthCheckType: "DEFAULT",
+		TCPKeepAlive:    "1",
+		DomainNames:     []string{"server1.bd-hashicorp.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
 				From: "8443",
