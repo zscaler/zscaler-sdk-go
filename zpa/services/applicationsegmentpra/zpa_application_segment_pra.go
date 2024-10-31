@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
-	appSegmentPraEndpoint   = "/application"
-	applicationTypeEndpoint = "/application/getAppsByType"
+	mgmtConfig            = "/mgmtconfig/v1/admin/customers/"
+	appSegmentPraEndpoint = "/application"
 )
 
 type AppSegmentPRA struct {
@@ -55,7 +54,7 @@ type AppSegmentPRA struct {
 	DefaultIdleTimeout        string                    `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                    `json:"defaultMaxAge,omitempty"`
 	PRAApps                   []PRAApps                 `json:"praApps"`
-	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
+	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
 }
 
@@ -80,7 +79,8 @@ type CommonAppsDto struct {
 
 type AppsConfig struct {
 	ID                  string   `json:"id,omitempty"`
-	AppID               string   `json:"appId,omitempty"`
+	AppID               string   `json:"appId"`
+	PRAAppID            string   `json:"praAppId"`
 	Name                string   `json:"name,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	Enabled             bool     `json:"enabled,omitempty"`
@@ -98,7 +98,7 @@ type AppsConfig struct {
 type PRAApps struct {
 	ID                  string `json:"id,omitempty"`
 	Name                string `json:"name,omitempty"`
-	AppID               string `json:"appId,omitempty"`
+	AppID               string `json:"appId"`
 	ApplicationPort     string `json:"applicationPort,omitempty"`
 	ApplicationProtocol string `json:"applicationProtocol,omitempty"`
 	CertificateID       string `json:"certificateId,omitempty"`
@@ -150,56 +150,39 @@ func Create(service *services.Service, appSegmentPra AppSegmentPRA) (*AppSegment
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1
-func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
-	var diff []AppsConfig
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1.Domain == s2.Domain || s1.Name == s2.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			diff = append(diff, s1)
-		}
-	}
-	return diff
-}
-
-func mapSraApp(PRAApps []PRAApps) []AppsConfig {
-	result := []AppsConfig{}
-	for _, app := range PRAApps {
-		result = append(result, AppsConfig{
-			Name:   app.Name,
-			Domain: app.Domain,
-			ID:     app.ID,
-			AppID:  app.AppID,
-		})
-	}
-	return result
-}
-
-func appToListStringIDs(apps []AppsConfig) []string {
-	result := []string{}
-	for _, app := range apps {
-		result = append(result, app.ID)
-	}
-	return result
-}
-
 func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
+	// Step 1: Retrieve the existing resource to get current `appId` and `praAppId`
 	existingResource, _, err := Get(service, id)
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapSraApp(existingResource.PRAApps)
-	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
-	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
-	appSegmentPra.CommonAppsDto.AppsConfig = newApps
-	appSegmentPra.CommonAppsDto.DeletedPraApps = appToListStringIDs(removedApps)
+
+	// Set the primary app ID
+	appSegmentPra.ID = existingResource.ID
+
+	// Step 2: Map existing `praApps` entries by `Name` to get `praAppId` for each sub-application
+	existingPraApps := make(map[string]PRAApps)
+	for _, praApp := range existingResource.PRAApps {
+		existingPraApps[praApp.Name] = praApp
+	}
+
+	// Step 3: Inject `appId` and `praAppId` into each entry in `appsConfig`
+	for i, appConfig := range appSegmentPra.CommonAppsDto.AppsConfig {
+		if existingApp, ok := existingPraApps[appConfig.Name]; ok {
+			appSegmentPra.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID // main app ID
+			appSegmentPra.CommonAppsDto.AppsConfig[i].PRAAppID = existingApp.ID   // praAppId for sub-app
+		}
+	}
+
+	// Check if `commonAppsDto` actually has entries, set to nil if empty
+	if len(appSegmentPra.CommonAppsDto.AppsConfig) == 0 {
+		appSegmentPra.CommonAppsDto = CommonAppsDto{}
+	}
+
+	// Define the update path
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
+
+	// Step 4: Execute the update request with the populated payload
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {
 		return nil, err

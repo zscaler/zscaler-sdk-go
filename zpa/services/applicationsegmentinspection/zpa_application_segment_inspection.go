@@ -13,7 +13,6 @@ import (
 const (
 	mgmtConfig                   = "/mgmtconfig/v1/admin/customers/"
 	appSegmentInspectionEndpoint = "/application"
-	applicationTypeEndpoint      = "/application/getAppsByType"
 )
 
 type AppSegmentInspection struct {
@@ -27,7 +26,9 @@ type AppSegmentInspection struct {
 	Name                      string                    `json:"name,omitempty"`
 	Description               string                    `json:"description,omitempty"`
 	Enabled                   bool                      `json:"enabled"`
+	AdpEnabled                bool                      `json:"adpEnabled,omitempty"`
 	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
+	AutoAppProtectEnabled     bool                      `json:"autoAppProtectEnabled,omitempty"`
 	ICMPAccessType            string                    `json:"icmpAccessType,omitempty"`
 	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled,omitempty"`
 	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
@@ -50,7 +51,7 @@ type AppSegmentInspection struct {
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
-	TCPProtocols              []string                  `json:"tcpProtocols,omitempty"`
+	TCPProtocols              []string                  `json:"tcpProtocols"`
 	UDPProtocols              []string                  `json:"udpProtocols,omitempty"`
 	InspectionAppDto          []InspectionAppDto        `json:"inspectionApps,omitempty"`
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
@@ -81,14 +82,16 @@ type CommonAppsDto struct {
 type AppsConfig struct {
 	ID                  string   `json:"id,omitempty"`
 	AppID               string   `json:"appId,omitempty"`
+	InspectAppID        string   `json:"inspectAppId"`
 	Name                string   `json:"name,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	Enabled             bool     `json:"enabled"`
+	AdpEnabled          bool     `json:"adpEnabled"`
 	AllowOptions        bool     `json:"allowOptions"`
 	AppTypes            []string `json:"appTypes,omitempty"`
 	ApplicationPort     string   `json:"applicationPort,omitempty"`
 	ApplicationProtocol string   `json:"applicationProtocol,omitempty"`
-	InspectAppID        string   `json:"inspectAppId,omitempty"`
+	Protocols           []string `json:"protocols,omitempty"`
 	CertificateID       string   `json:"certificateId,omitempty"`
 	CertificateName     string   `json:"certificateName,omitempty"`
 	Cname               string   `json:"cname,omitempty"`
@@ -153,63 +156,45 @@ func Create(service *services.Service, appSegmentInspection AppSegmentInspection
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1
-func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
-	var diff []AppsConfig
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1.Domain == s2.Domain || s1.Name == s2.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			diff = append(diff, s1)
-		}
-	}
-	return diff
-}
-
-func mapInspectionApp(InspectionAppDto []InspectionAppDto) []AppsConfig {
-	result := []AppsConfig{}
-	for _, app := range InspectionAppDto {
-		result = append(result, AppsConfig{
-			Name:   app.Name,
-			Domain: app.Domain,
-			ID:     app.ID,
-			AppID:  app.AppID,
-		})
-	}
-	return result
-}
-
-func appToListStringIDs(apps []AppsConfig) []string {
-	result := []string{}
-	for _, app := range apps {
-		result = append(result, app.ID)
-	}
-	return result
-}
-
 func Update(service *services.Service, id string, appSegmentInspection *AppSegmentInspection) (*http.Response, error) {
+	// Step 1: Retrieve the existing resource to get current `appId` and `InspectAppID`
 	existingResource, _, err := Get(service, id)
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapInspectionApp(existingResource.InspectionAppDto)
-	newApps := difference(appSegmentInspection.CommonAppsDto.AppsConfig, existingApps)
-	removedApps := difference(existingApps, appSegmentInspection.CommonAppsDto.AppsConfig)
-	appSegmentInspection.CommonAppsDto.AppsConfig = newApps
-	appSegmentInspection.CommonAppsDto.DeletedInspectApps = appToListStringIDs(removedApps)
+
+	// Set the primary app ID
+	appSegmentInspection.ID = existingResource.ID
+
+	// Step 2: Map existing `inspectionApp` entries by `Name` to get `InspectAppID` for each sub-application
+	existingInspectionApps := make(map[string]InspectionAppDto)
+	for _, inspectionApp := range existingResource.InspectionAppDto {
+		existingInspectionApps[inspectionApp.Name] = inspectionApp
+	}
+
+	// Step 3: Inject `appId` and `InspectAppID` into each entry in `appsConfig`
+	for i, appConfig := range appSegmentInspection.CommonAppsDto.AppsConfig {
+		if existingApp, ok := existingInspectionApps[appConfig.Name]; ok {
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID   // main app ID
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].InspectAppID = existingApp.ID // InspectAppID for sub-app
+		}
+	}
+
+	// Check if `commonAppsDto` actually has entries, set to nil if empty
+	if len(appSegmentInspection.CommonAppsDto.AppsConfig) == 0 {
+		appSegmentInspection.CommonAppsDto = CommonAppsDto{}
+	}
+
+	// Define the update path
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
+
+	// Step 4: Execute the update request with the populated payload
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentInspection, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
-
 func Delete(service *services.Service, id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)

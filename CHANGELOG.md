@@ -1,5 +1,45 @@
 # Changelog
 
+# 2.732.0 (October 31, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #282](https://github.com/zscaler/zscaler-sdk-go/pull/282) - Fixed update function in all specialized ZPA Application Segments
+    * `applicationsegmentpra` - The fix now automatically includes the attributes `appId` and `praAppId` in the payload during updates
+    * `applicationsegmentinspection` - The fix now automatically includes the attributes `appId` and `inspectAppId` in the payload during updates
+  - 
+
+# 2.731.0 (October 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Enhancements
+
+  - Zscaler Cloud Connector (ZCON)
+    - Added `GET /provUrl` endpoint to list provisioning templates.
+    - Added `GET /provUrl/{id}` endpoint to retrieve a specific provisioning template.
+    - Added `POST /provUrl` endpoint to create provisioning template.
+    - Added `PUT /provUrl/{id}` endpoint to update a specific provisioning template.
+    - Added `DELETE /provUrl/{id}` endpoint to delete a specific provisioning template.
+
+### Internal Changes
+
+[PR #281](https://github.com/zscaler/zscaler-sdk-go/pull/281) - Added new ZPA Attributes:
+  - Resource: `applicationsegment`
+    * `extranetEnabled`
+    * `apiProtectionEnabled`
+    * `zpnErId`
+
+  - Resource: `policysetcontrollerv1` and `policysetcontrollerv2`
+    * `disabled`
+    * `extranetEnabled`
+    * `extranetDTO`
+    * `privilegedPortalCapabilities`
+
 # 2.73.0 (October 30, 2024)
 
 ## Notes
