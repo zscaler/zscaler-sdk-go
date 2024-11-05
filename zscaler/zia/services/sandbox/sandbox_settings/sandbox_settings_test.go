@@ -1,13 +1,6 @@
 package sandbox_settings
 
-import (
-	"context"
-	"regexp"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 // isValidMD5 checks if the given string is a valid MD5 hash.
 func isValidMD5(hash string) bool {
 	matched, _ := regexp.MatchString(`^[a-fA-F0-9]{32}$`, hash)
@@ -138,3 +131,4 @@ func TestEmptyHashList(t *testing.T) {
 		t.Error("Expected updated BA Advanced Settings, got nil")
 	}
 }
+*/

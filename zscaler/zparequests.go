@@ -71,7 +71,7 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	}
 
 	// Capture the three return values from ExecuteRequest
-	respBody, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
+	respBody, _, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}

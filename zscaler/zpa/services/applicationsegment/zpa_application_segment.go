@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentbrowseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/browseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -18,49 +18,49 @@ const (
 )
 
 type ApplicationSegmentResource struct {
-	ID                        string                              `json:"id,omitempty"`
-	DomainNames               []string                            `json:"domainNames,omitempty"`
-	Name                      string                              `json:"name,omitempty"`
-	Description               string                              `json:"description,omitempty"`
-	Enabled                   bool                                `json:"enabled"`
-	ADPEnabled                bool                                `json:"adpEnabled"`
-	PassiveHealthEnabled      bool                                `json:"passiveHealthEnabled"`
-	DoubleEncrypt             bool                                `json:"doubleEncrypt"`
-	ConfigSpace               string                              `json:"configSpace,omitempty"`
-	Applications              string                              `json:"applications,omitempty"`
-	BypassType                string                              `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                                `json:"bypassOnReauth,omitempty"`
-	HealthCheckType           string                              `json:"healthCheckType,omitempty"`
-	IsCnameEnabled            bool                                `json:"isCnameEnabled"`
-	IpAnchored                bool                                `json:"ipAnchored"`
-	FQDNDnsCheck              bool                                `json:"fqdnDnsCheck"`
-	HealthReporting           string                              `json:"healthReporting,omitempty"`
-	SelectConnectorCloseToApp bool                                `json:"selectConnectorCloseToApp"`
-	IcmpAccessType            string                              `json:"icmpAccessType,omitempty"`
-	AppRecommendationId       string                              `json:"appRecommendationId,omitempty"`
-	SegmentGroupID            string                              `json:"segmentGroupId"`
-	SegmentGroupName          string                              `json:"segmentGroupName,omitempty"`
-	CreationTime              string                              `json:"creationTime,omitempty"`
-	ModifiedBy                string                              `json:"modifiedBy,omitempty"`
-	ModifiedTime              string                              `json:"modifiedTime,omitempty"`
-	TCPKeepAlive              string                              `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                                `json:"useInDrMode"`
-	InspectTrafficWithZia     bool                                `json:"inspectTrafficWithZia"`
-	MicroTenantID             string                              `json:"microtenantId,omitempty"`
-	MicroTenantName           string                              `json:"microtenantName,omitempty"`
-	MatchStyle                string                              `json:"matchStyle,omitempty"`
-	TCPPortRanges             []string                            `json:"tcpPortRanges"`
-	UDPPortRanges             []string                            `json:"udpPortRanges"`
-	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange           []common.NetworkPorts               `json:"udpPortRange,omitempty"`
-	ServerGroups              []AppServerGroups                   `json:"serverGroups"`
-	DefaultIdleTimeout        string                              `json:"defaultIdleTimeout,omitempty"`
-	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
-	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`
-	ClientlessApps            []browseraccess.ClientlessApps      `json:"clientlessApps,omitempty"`
-	ShareToMicrotenants       []string                            `json:"shareToMicrotenants"`
-	SharedMicrotenantDetails  SharedMicrotenantDetails            `json:"sharedMicrotenantDetails,omitempty"`
+	ID                        string                                           `json:"id,omitempty"`
+	DomainNames               []string                                         `json:"domainNames,omitempty"`
+	Name                      string                                           `json:"name,omitempty"`
+	Description               string                                           `json:"description,omitempty"`
+	Enabled                   bool                                             `json:"enabled"`
+	ADPEnabled                bool                                             `json:"adpEnabled"`
+	PassiveHealthEnabled      bool                                             `json:"passiveHealthEnabled"`
+	DoubleEncrypt             bool                                             `json:"doubleEncrypt"`
+	ConfigSpace               string                                           `json:"configSpace,omitempty"`
+	Applications              string                                           `json:"applications,omitempty"`
+	BypassType                string                                           `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                                             `json:"bypassOnReauth,omitempty"`
+	HealthCheckType           string                                           `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                                             `json:"isCnameEnabled"`
+	IpAnchored                bool                                             `json:"ipAnchored"`
+	FQDNDnsCheck              bool                                             `json:"fqdnDnsCheck"`
+	HealthReporting           string                                           `json:"healthReporting,omitempty"`
+	SelectConnectorCloseToApp bool                                             `json:"selectConnectorCloseToApp"`
+	IcmpAccessType            string                                           `json:"icmpAccessType,omitempty"`
+	AppRecommendationId       string                                           `json:"appRecommendationId,omitempty"`
+	SegmentGroupID            string                                           `json:"segmentGroupId"`
+	SegmentGroupName          string                                           `json:"segmentGroupName,omitempty"`
+	CreationTime              string                                           `json:"creationTime,omitempty"`
+	ModifiedBy                string                                           `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                                           `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                                           `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                                             `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                                             `json:"useInDrMode"`
+	InspectTrafficWithZia     bool                                             `json:"inspectTrafficWithZia"`
+	MicroTenantID             string                                           `json:"microtenantId,omitempty"`
+	MicroTenantName           string                                           `json:"microtenantName,omitempty"`
+	MatchStyle                string                                           `json:"matchStyle,omitempty"`
+	TCPPortRanges             []string                                         `json:"tcpPortRanges"`
+	UDPPortRanges             []string                                         `json:"udpPortRanges"`
+	TCPAppPortRange           []common.NetworkPorts                            `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts                            `json:"udpPortRange,omitempty"`
+	ServerGroups              []AppServerGroups                                `json:"serverGroups"`
+	DefaultIdleTimeout        string                                           `json:"defaultIdleTimeout,omitempty"`
+	DefaultMaxAge             string                                           `json:"defaultMaxAge,omitempty"`
+	CommonAppsDto             applicationsegmentpra.CommonAppsDto              `json:"commonAppsDto,omitempty"`
+	ClientlessApps            []applicationsegmentbrowseraccess.ClientlessApps `json:"clientlessApps,omitempty"`
+	ShareToMicrotenants       []string                                         `json:"shareToMicrotenants"`
+	SharedMicrotenantDetails  SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {

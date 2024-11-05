@@ -66,7 +66,7 @@ func (client *Client) NewZccRequestDo(ctx context.Context, method, endpoint stri
 	}
 
 	// Make the request and get the response
-	respBody, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
+	respBody, _, _, err := client.ExecuteRequest(ctx, method, endpoint, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}

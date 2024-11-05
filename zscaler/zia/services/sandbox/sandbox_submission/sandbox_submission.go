@@ -72,7 +72,7 @@ func scanFile(ctx context.Context, service *zscaler.Service, filename string, fi
 	gz.Close() // Ensure to close the gzip writer to flush the buffer
 
 	// Correct the argument order for ExecuteRequest
-	data, _, err := service.Client.ExecuteRequest(ctx, "POST", endpoint, &gzippedFile, urlParams, contentType) // Ignore the req value
+	data, _, _, err := service.Client.ExecuteRequest(ctx, "POST", endpoint, &gzippedFile, urlParams, contentType) // Ignore the req value
 	if err != nil {
 		return nil, err
 	}

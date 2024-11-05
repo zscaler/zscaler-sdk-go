@@ -1,4 +1,4 @@
-package browseraccess
+package applicationsegmentbrowseraccess
 
 import (
 	"context"

@@ -14,8 +14,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/okta/okta-sdk-golang/v2 v2.20.0
 	github.com/stretchr/testify v1.9.0
-	github.com/zscaler/zscaler-sdk-go/v2 v2.72.2
-	golang.org/x/text v0.18.0
+	github.com/zscaler/zscaler-sdk-go/v2 v2.732.0
+	golang.org/x/text v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

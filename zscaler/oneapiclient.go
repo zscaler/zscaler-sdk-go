@@ -72,7 +72,7 @@ type Configuration struct {
 			Cloud         string     `yaml:"cloud" envconfig:"ZSCALER_CLOUD"`
 			CustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
 			MicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
-			PrivateKey    string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
+			PrivateKey    []byte     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
 			AuthToken     *AuthToken `yaml:"authToken"`
 			AccessToken   *AuthToken `yaml:"accessToken"`
 			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"`
@@ -89,9 +89,8 @@ type Configuration struct {
 				Username string `yaml:"username" envconfig:"ZSCALER_CLIENT_PROXY_USERNAME"`
 				Password string `yaml:"password" envconfig:"ZSCALER_CLIENT_PROXY_PASSWORD"`
 			}
-			ConnectionTimeout int64 `yaml:"connectionTimeout" envconfig:"ZSCALER_CLIENT_CONNECTION_TIMEOUT"`
-			RequestTimeout    int64 `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
-			RateLimit         struct {
+			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
+			RateLimit      struct {
 				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
 				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
 				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
@@ -119,6 +118,8 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.Zscaler.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	cfg.Zscaler.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 
+	cfg.Zscaler.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
+
 	// Initialize cache
 	if cfg.Zscaler.Client.Cache.DefaultTtl == 0 {
 		cfg.Zscaler.Client.Cache.DefaultTtl = time.Minute * 10
@@ -140,6 +141,15 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	// Apply each ConfigSetter function.
 	for _, confSetter := range conf {
 		confSetter(cfg)
+	}
+
+	// Recheck and adjust defaults after setters are applied.
+	if cfg.Zscaler.Client.RateLimit.MaxRetries == 0 {
+		cfg.Zscaler.Client.RateLimit.MaxRetries = 4 // Default to 4 if user set it to zero.
+	}
+
+	if cfg.Zscaler.Client.RequestTimeout == 0 {
+		cfg.Zscaler.Client.RequestTimeout = 60 * time.Second // Default to 60 seconds if user set it to zero.
 	}
 
 	// UserAgentExtra gets added if provided.
@@ -182,12 +192,12 @@ func setHttpClients(cfg *Configuration) {
 func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
-	if creds.ClientID == "" || (creds.ClientSecret == "" && creds.PrivateKey == "") {
+	if creds.ClientID == "" || (creds.ClientSecret == "" && len(creds.PrivateKey) == 0) {
 		return nil, errors.New("no client credentials were provided")
 	}
 
 	// If private key is provided, use JWT-based authentication.
-	if creds.PrivateKey != "" {
+	if len(creds.PrivateKey) > 0 {
 		return authenticateWithCert(cfg)
 	}
 
@@ -248,17 +258,12 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
-	if creds.ClientID == "" || creds.PrivateKey == "" {
+	if creds.ClientID == "" || len(creds.PrivateKey) == 0 {
 		return nil, errors.New("client ID or private key is missing")
 	}
 
 	// Create the JWT payload.
-	privateKeyData, err := os.ReadFile(creds.PrivateKey)
-	if err != nil {
-		return nil, fmt.Errorf("error reading private key: %v", err)
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyData)
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(creds.PrivateKey))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key: %v", err)
 	}
@@ -277,6 +282,7 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 
 	formData := url.Values{
 		"grant_type":            {"client_credentials"},
+		"client_id":             {creds.ClientID},
 		"client_assertion":      {assertion},
 		"client_assertion_type": {"urn:ietf:params:oauth:client-assertion-type:jwt-bearer"},
 		"audience":              {"https://api.zscaler.com"},
@@ -302,6 +308,9 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("auth error: %v", string(body))
+	}
 	// Parse the response.
 	var tokenResponse AuthToken
 	err = json.Unmarshal(body, &tokenResponse)
@@ -484,7 +493,7 @@ func WithCacheTti(i time.Duration) ConfigSetter {
 }
 
 // WithHttpClient sets the HttpClient in the Config.
-func WithHttpClient(httpClient *http.Client) ConfigSetter {
+func WithHttpClientPtr(httpClient *http.Client) ConfigSetter {
 	return func(c *Configuration) {
 		c.HTTPClient = httpClient
 	}
@@ -520,15 +529,10 @@ func WithTestingDisableHttpsCheck(httpsCheck bool) ConfigSetter {
 	}
 }
 
-func WithRequestTimeout(requestTimeout int64) ConfigSetter {
+func WithRequestTimeout(requestTimeout time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RequestTimeout = requestTimeout
-	}
-}
-
-func WithConnectionTimeout(i int64) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.ConnectionTimeout = i
+		setHttpClients(c)
 	}
 }
 
@@ -571,7 +575,7 @@ func WithDebug(debug bool) ConfigSetter {
 	}
 }
 
-// WithPrivateKey sets private key key. Can be either a path to a private key or private key itself.
+// WithPrivateKey sets private key, privateKey can be the raw key value or a path to the pem file.
 func WithPrivateKey(privateKey string) ConfigSetter {
 	return func(c *Configuration) {
 		if fileExists(privateKey) {
@@ -579,9 +583,9 @@ func WithPrivateKey(privateKey string) ConfigSetter {
 			if err != nil {
 				fmt.Printf("failed to read from provided private key file path: %v", err)
 			}
-			c.Zscaler.Client.PrivateKey = string(content)
+			c.Zscaler.Client.PrivateKey = content
 		} else {
-			c.Zscaler.Client.PrivateKey = privateKey
+			c.Zscaler.Client.PrivateKey = []byte(privateKey)
 		}
 	}
 }
