@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
@@ -18,6 +19,8 @@ import (
 const (
 	mgmtConfig = "/mgmtconfig/v1/admin/customers/"
 )
+
+var ruleMutex sync.Mutex
 
 type PolicySet struct {
 	CreationTime    string       `json:"creationTime,omitempty"`
@@ -146,7 +149,7 @@ type Count struct {
 
 func GetByPolicyType(service *services.Service, policyType string) (*PolicySet, *http.Response, error) {
 	v := new(PolicySet)
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + "/policySet/policyType/" + policyType)
+	relativeURL := mgmtConfig + service.Client.Config.CustomerID + "/policySet/policyType/" + policyType
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -178,6 +181,9 @@ func CreateRule(service *services.Service, rule *PolicyRule) (*PolicyRule, *http
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func UpdateRule(service *services.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+	ruleMutex.Lock()
+	defer ruleMutex.Unlock()
+
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
 	} else {
@@ -249,6 +255,9 @@ func Reorder(service *services.Service, policySetID, ruleId string, order int) (
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
 // ruleIdOrders is a map[ruleID]Order
 func BulkReorder(service *services.Service, policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
+	ruleMutex.Lock()
+	defer ruleMutex.Unlock()
+
 	policySet, resp, err := GetByPolicyType(service, policySetType)
 	if err != nil {
 		return resp, err

@@ -56,7 +56,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdGroup, _, err := serviceedgegroup.Create(service, group)
+	createdGroup, _, err := serviceedgegroup.Create(service, &group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)

@@ -54,7 +54,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 	assert.Equal(t, createdResource.UserID, gotResource.UserID, "UserID does not match")
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	//Test Update
 	updatedResource := *createdResource
@@ -98,7 +98,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// Wait 5 seconds before Activating the user again.
-	time.Sleep(5 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	// Test Emergency Access User Activate
 	_, err = Activate(service, createdResource.UserID)
@@ -113,7 +113,7 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	}
 
 	// Simulate delay after deactivation in Cloud Service 1 before proceeding to Okta deletion
-	time.Sleep(10 * time.Second) // Adjust the delay as necessary
+	time.Sleep(20 * time.Second) // Adjust the delay as necessary
 
 	// Begin Okta deletion process
 	deleteUserInOkta(t, []string{createdResource.UserID}) // Passing the UserID to be deleted in Okta

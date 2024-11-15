@@ -30,7 +30,7 @@ type AppConnector struct {
 	ExpectedVersion                  string                       `json:"expectedVersion,omitempty"`
 	Fingerprint                      string                       `json:"fingerprint,omitempty"`
 	ID                               string                       `json:"id,omitempty"`
-	IPACL                            string                       `json:"ipAcl,omitempty"`
+	IPACL                            []string                     `json:"ipAcl,omitempty"`
 	IssuedCertID                     string                       `json:"issuedCertId,omitempty"`
 	LastBrokerConnectTime            string                       `json:"lastBrokerConnectTime,omitempty"`
 	LastBrokerConnectTimeDuration    string                       `json:"lastBrokerConnectTimeDuration,omitempty"`
