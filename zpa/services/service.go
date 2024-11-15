@@ -9,6 +9,15 @@ type Service struct {
 	microTenantID *string
 }
 
+type ScimService struct {
+	ScimClient *zpa.ScimClient
+}
+
+// NewScimService initializes a SCIM-based ZPA Service with *zpa.ScimConfig
+func NewScimService(scimClient *zpa.ScimClient) *ScimService {
+	return &ScimService{ScimClient: scimClient}
+}
+
 func New(c *zpa.Client) *Service {
 	return &Service{Client: c}
 }

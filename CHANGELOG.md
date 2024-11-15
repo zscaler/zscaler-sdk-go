@@ -1,5 +1,63 @@
 # Changelog
 
+# 2.74.0 (November 14, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+#### ZIA PAC Files
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /pacFiles` to Retrieves the list of all PAC files which are in deployed state.
+  - Added `GET /pacFiles/{pacId}/version` to Retrieves all versions of a PAC file based on the specified ID.
+  - Added `GET /pacFiles/{pacId}/version/{pacVersion}` to Retrieves a specific version of a PAC file based on the specified ID.
+  - Added `POST /pacFiles` to Adds a new custom PAC file.
+  - Added `DELETE /pacFiles/{pacId}` to Deletes an existing PAC file including all of its versions based on the specified ID.
+  - Added `PUT /pacFiles/{pacId}/version/{pacVersion}/action/{pacVersionAction}` to Performs the specified action on the PAC file version and updates the file status.
+  - Added `POST /pacFiles/validate` to send the PAC file content for validation and returns the validation result.
+  - Added `POST /pacFiles/{pacId}/version/{clonedPacVersion}` to Adds a new PAC file version by branching an existing version based on the specified ID.
+
+### ZPA Additions
+
+The SDK now supports interaction with the dedicated SCIM API Endpoint as described in the [Zscaler Help documentation](https://help.zscaler.com/zpa/scim-api-examples). The SCIM Service Provider Endpoints and references to `scim1.private.zscaler.com`.
+To authenticate to the SCIM Service Provider Endpoint you can authenticate by providing the following information:
+
+The ZPA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `PRODUCTION`
+* `ZPATWO`
+* `BETA`
+* `GOV`
+* `GOVUS`
+
+### Environment variables
+
+You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CLOUD` environment variables, representing your ZPA `scimToken`, `idpId`, and `scimCloud` of your ZPA account, respectively.
+
+~> **NOTE 1** `ZPA_SCIM_CLOUD` environment variable is required, and is used to identify the correct API gateway where the API requests should be forwarded to.
+
+~> **NOTE 2** All SCIM APIs are rate limited.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `scimToken`       | _(String)_ The ZPA SCIM Bearer token generated from the ZPA console.| `ZPA_SCIM_TOKEN` |    
+| `idpId`       | _(String)_ The ZPA IdP ID from the onboarded Identity Provider.| `ZPA_IDP_ID` |
+| `scimCloud`       | _(String)_ The ZPA SCIM Cloud for your ZPA Tenant.| `ZPA_SCIM_CLOUD` |
+
+#### ZPA SCIM API Endpoints
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
+  - Added `GET /Groups` Fetch All Groups with pagination
+  - Added `GET /Groups/{groupId}` Fetch a Group By ID
+  - Added `POST /Groups` Create a new Group
+  - Added `PUT /Groups/{groupId}` Update a new Group
+  - Added `PATCH /Groups/{groupId}` Partially Update a Group
+
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
+  - Added `GET /Users` Fetch All Users with pagination
+  - Added `GET /Users/{userID}` Fetch a User By ID
+  - Added `POST /Groups` Create a new User
+  - Added `PUT /Groups/{userID}` Update a new User
+  - Added `PATCH /Groups/{userID}` Partially Update a User
+
 # 2.732.0 (October 31, 2024)
 
 ## Notes
@@ -8,9 +66,10 @@
 ### Internal Changes
 
 [PR #282](https://github.com/zscaler/zscaler-sdk-go/pull/282) - Fixed update function in all specialized ZPA Application Segments
-    * `applicationsegmentpra` - The fix now automatically includes the attributes `appId` and `praAppId` in the payload during updates
-    * `applicationsegmentinspection` - The fix now automatically includes the attributes `appId` and `inspectAppId` in the payload during updates
-  - 
+    -`applicationsegmentpra` - The fix now automatically includes the attributes `appId` and `praAppId` in the payload during updates
+    - `applicationsegmentinspection` - The fix now automatically includes the attributes `appId` and `inspectAppId` in the payload during updates
+    - `applicationsegmentbrowseraccess` - The fix now automatically includes the attributes `appId` and `baAppId` in the payload during updates
+
 
 # 2.731.0 (October 30, 2024)
 

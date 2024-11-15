@@ -22,7 +22,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 	service := services.New(client)
 
 	svcEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	svcEdgeGroup, _, err := serviceedgegroup.Create(service, serviceedgegroup.ServiceEdgeGroup{
+	svcEdgeGroup, _, err := serviceedgegroup.Create(service, &serviceedgegroup.ServiceEdgeGroup{
 		Name:                   svcEdgeGroupName,
 		Description:            svcEdgeGroupName,
 		Enabled:                true,

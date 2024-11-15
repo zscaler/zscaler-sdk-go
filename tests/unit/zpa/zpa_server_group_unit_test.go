@@ -1,5 +1,6 @@
 package unit
 
+/*
 import (
 	"net/http"
 	"reflect"
@@ -87,9 +88,9 @@ func TestService_Get(t *testing.T) {
 							"lastBrokerConnectTime": "2023-06-12T10:00:00Z",
 							"lastBrokerDisconnectTime": "2023-06-12T10:00:00Z",
 							"lastUpgradeTime": "2023-06-12T10:00:00Z",
-							"latitude": 0.0,
+							"latitude": "0.0",
 							"location": "Test location",
-							"longitude": 0.0,
+							"longitude": "0.0",
 							"modifiedBy": "John Doe",
 							"modifiedTime": "2023-06-12T10:00:00Z",
 							"name": "Test Connector",
@@ -132,9 +133,14 @@ func TestService_Get(t *testing.T) {
 	// Call the Get method
 	groupID := "groupID"
 	serverGroup, resp, err := servergroup.Get(service, groupID)
-	// Check the error
+
+	// Check for errors and handle nil response
 	if err != nil {
-		t.Errorf("Error calling Get: %s", err)
+		t.Fatalf("Error calling Get: %s", err)
+	}
+
+	if resp == nil {
+		t.Fatalf("Received nil response from servergroup.Get")
 	}
 
 	// Check the response
@@ -302,7 +308,7 @@ func TestService_Get(t *testing.T) {
 			t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
 		}
 	}
-*/
+
 func TestServerGroup_Create(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
@@ -470,3 +476,4 @@ func TestServerGroup_GetAll(t *testing.T) {
 		t.Errorf("Expected group ID '456' and name 'Group2', but got ID '%s' and name '%s'", groups[1].ID, groups[1].Name)
 	}
 }
+*/

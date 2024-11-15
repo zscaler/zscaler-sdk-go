@@ -1,12 +1,14 @@
 package common
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
@@ -106,6 +108,13 @@ type ZPNSubModuleUpgrade struct {
 	Role            string `json:"role,omitempty"`
 	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
 	UpgradeTime     string `json:"upgradeTime,omitempty"`
+}
+
+type Meta struct {
+	Created      time.Time `json:"created"`
+	LastModified time.Time `json:"lastModified"`
+	Location     string    `json:"location"`
+	ResourceType string    `json:"resourceType"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
@@ -225,4 +234,42 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 	}
 
 	return result, resp, nil
+}
+
+func GetAllPagesScimGeneric[T any](ctx context.Context, client *zpa.ScimClient, baseURL string, itemsPerPage int) ([]T, *http.Response, error) {
+	var allResources []T
+	startIndex := 1
+	var lastResp *http.Response
+
+	for {
+		// Construct URL with optional pagination parameters
+		paginatedURL := baseURL
+		if itemsPerPage > 0 {
+			paginatedURL = fmt.Sprintf("%s?startIndex=%d&count=%d", baseURL, startIndex, itemsPerPage)
+		}
+
+		// Define the structure for paginated response
+		var paginatedResponse struct {
+			Resources    []T `json:"Resources"`
+			TotalResults int `json:"totalResults"`
+		}
+
+		// Perform the request and capture the response
+		resp, err := client.DoRequest(ctx, http.MethodGet, paginatedURL, nil, &paginatedResponse)
+		if err != nil {
+			return nil, resp, fmt.Errorf("error fetching paginated data: %w", err)
+		}
+		lastResp = resp // Track last response for return
+
+		// Append resources and break if all results are retrieved
+		allResources = append(allResources, paginatedResponse.Resources...)
+		if len(allResources) >= paginatedResponse.TotalResults || len(paginatedResponse.Resources) == 0 {
+			break
+		}
+
+		// Update startIndex for next page
+		startIndex += itemsPerPage
+	}
+
+	return allResources, lastResp, nil
 }

@@ -43,9 +43,6 @@ type ServiceEdgeGroup struct {
 	VersionProfileID              string                                        `json:"versionProfileId,omitempty"`
 	VersionProfileName            string                                        `json:"versionProfileName,omitempty"`
 	VersionProfileVisibilityScope string                                        `json:"versionProfileVisibilityScope,omitempty"`
-	ObjectType                    string                                        `json:"objectType,omitempty"`
-	ScopeName                     string                                        `json:"scopeName,omitempty"`
-	RestrictedEntity              bool                                          `json:"restrictedEntity,omitempty"`
 	AltCloud                      string                                        `json:"altCloud,omitempty"`
 	MicroTenantID                 string                                        `json:"microtenantId,omitempty"`
 	MicroTenantName               string                                        `json:"microtenantName,omitempty"`
@@ -77,7 +74,7 @@ func GetByName(service *services.Service, serviceEdgeGroupName string) (*Service
 	return nil, resp, fmt.Errorf("no service edge group named '%s' was found", serviceEdgeGroupName)
 }
 
-func Create(service *services.Service, serviceEdge ServiceEdgeGroup) (*ServiceEdgeGroup, *http.Response, error) {
+func Create(service *services.Service, serviceEdge *ServiceEdgeGroup) (*ServiceEdgeGroup, *http.Response, error) {
 	v := new(ServiceEdgeGroup)
 	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, &v)
 	if err != nil {

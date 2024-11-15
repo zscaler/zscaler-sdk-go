@@ -182,6 +182,20 @@ func GetPacVersionID(service *services.Service, pacID, pacVersion int, filter st
 }
 
 func CreatePacFile(service *services.Service, file *PACFileConfig) (*PACFileConfig, error) {
+	// Step 1: Validate the PAC file content
+	if file.PACContent == "" {
+		return nil, errors.New("PAC file content cannot be empty for validation")
+	}
+
+	validationResult, err := ValidatePacFile(service, file.PACContent)
+	if err != nil {
+		return nil, fmt.Errorf("PAC file validation failed: %w", err)
+	}
+
+	// Log the validation result
+	service.Client.Logger.Printf("[DEBUG] PAC file validation result: %+v", validationResult)
+
+	// Step 2: Create the PAC file after validation
 	resp, err := service.Client.Create(pacfileEndpoint, *file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PAC file: %w", err)
@@ -189,10 +203,12 @@ func CreatePacFile(service *services.Service, file *PACFileConfig) (*PACFileConf
 
 	createdPacFiles, ok := resp.(*PACFileConfig)
 	if !ok {
-		return nil, errors.New("object returned from api was not a pac file Pointer")
+		return nil, errors.New("object returned from API was not a PAC file pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning pac file from create: %d", createdPacFiles.ID)
+	// Log the result for debugging
+	service.Client.Logger.Printf("[DEBUG] Returning PAC file from create: %d", createdPacFiles.ID)
+
 	return createdPacFiles, nil
 }
 
@@ -266,21 +282,31 @@ func ValidatePacFile(service *services.Service, pacContent string) (*PacResult, 
 }
 
 func CreateClonedPacFileVersion(service *services.Service, pacID int, clonedPacVersion int, deleteVersion *int, file *PACFileConfig) (*PACFileConfig, error) {
-	// Construct the endpoint URL with the provided pacID and clonedPacVersion
-	endpoint := fmt.Sprintf("%s/%d/version/%d", pacfileEndpoint, pacID, clonedPacVersion)
+	// Step 1: Validate the PAC file content
+	if file.PACContent == "" {
+		return nil, errors.New("PAC file content cannot be empty for validation")
+	}
 
-	// If deleteVersion is provided (not nil), add it as a query parameter
+	validationResult, err := ValidatePacFile(service, file.PACContent)
+	if err != nil {
+		return nil, fmt.Errorf("PAC file validation failed: %w", err)
+	}
+
+	// Log the validation result
+	service.Client.Logger.Printf("[DEBUG] PAC file validation result: %+v", validationResult)
+
+	// Step 2: Construct the endpoint URL
+	endpoint := fmt.Sprintf("%s/%d/version/%d", pacfileEndpoint, pacID, clonedPacVersion)
 	if deleteVersion != nil {
 		endpoint = fmt.Sprintf("%s?deleteVersion=%d", endpoint, *deleteVersion)
 	}
 
-	// Send the request to create a new PAC file version by cloning the specified version
+	// Step 3: Create a new PAC file version by cloning the specified version
 	resp, err := service.Client.Create(endpoint, *file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PAC file version: %w", err)
 	}
 
-	// Parse the response
 	createdPacFile, ok := resp.(*PACFileConfig)
 	if !ok {
 		return nil, errors.New("object returned from API was not a PAC file pointer")
