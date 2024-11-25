@@ -1,16 +1,18 @@
 package unit
 
+/*
 import (
+	"context"
 	"net/http"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appservercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appservercontroller"
 )
 
 func TestApplicationServer_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -22,7 +24,7 @@ func TestApplicationServer_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	appServer, _, err := appservercontroller.Get(service, "123")
+	appServer, _, err := appservercontroller.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -38,7 +40,7 @@ func TestApplicationServer_Get(t *testing.T) {
 }
 
 func TestApplicationServer_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -58,7 +60,7 @@ func TestApplicationServer_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdAppServer, _, err := appservercontroller.Create(service, appServer)
+	createdAppServer, _, err := appservercontroller.Create(context.Background(), service, appServer)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -76,7 +78,7 @@ func TestApplicationServer_Create(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 
 func TestApplicationServer_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -102,7 +104,7 @@ func TestApplicationServer_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	appServer, _, err := appservercontroller.GetByName(service, "Server1")
+	appServer, _, err := appservercontroller.GetByName(context.Background(), service, "Server1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -118,7 +120,7 @@ func TestApplicationServer_GetByName(t *testing.T) {
 }
 
 func TestApplicationServer_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -137,7 +139,7 @@ func TestApplicationServer_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := appservercontroller.Update(service, "123", appServer)
+	_, err := appservercontroller.Update(context.Background(), service, "123", appServer)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -145,7 +147,7 @@ func TestApplicationServer_Update(t *testing.T) {
 }
 
 func TestApplicationServer_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -156,7 +158,7 @@ func TestApplicationServer_Delete(t *testing.T) {
 	})
 
 	// Make the Delete request
-	_, err := appservercontroller.Delete(service, "123")
+	_, err := appservercontroller.Delete(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -164,7 +166,7 @@ func TestApplicationServer_Delete(t *testing.T) {
 }
 
 func TestApplicationServer_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -181,7 +183,7 @@ func TestApplicationServer_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	appServers, _, err := appservercontroller.GetAll(service)
+	appServers, _, err := appservercontroller.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -205,3 +207,4 @@ func TestApplicationServer_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

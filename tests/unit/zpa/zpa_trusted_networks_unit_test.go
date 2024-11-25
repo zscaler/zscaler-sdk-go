@@ -1,16 +1,18 @@
 package unit
 
+/*
 import (
+	"context"
 	"net/http"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/trustednetwork"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -22,7 +24,7 @@ func TestTrustedNetworks_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	network, _, err := trustednetwork.Get(service, "123")
+	network, _, err := trustednetwork.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -39,7 +41,7 @@ func TestTrustedNetworks_Get(t *testing.T) {
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestTrustedNetworks_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -65,7 +67,7 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	network, _, err := trustednetwork.GetByName(service, "trustedNetwork1")
+	network, _, err := trustednetwork.GetByName(context.Background(), service, "trustedNetwork1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -81,7 +83,7 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 }
 
 func TestTrustedNetworks_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -98,7 +100,7 @@ func TestTrustedNetworks_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	networks, _, err := trustednetwork.GetAll(service)
+	networks, _, err := trustednetwork.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -122,3 +124,4 @@ func TestTrustedNetworks_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

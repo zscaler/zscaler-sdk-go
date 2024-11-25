@@ -1,10 +1,12 @@
 module application_score
 
-go 1.22.4
+go 1.22.5
+
+toolchain go1.23.1
 
 require (
+	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/zscaler/zscaler-sdk-go/v2 v2.61.0
 )
 
 require (
