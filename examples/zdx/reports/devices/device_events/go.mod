@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v2.61.0
+	github.com/zscaler/zscaler-sdk-go/v3 v2.61.0
 )
 
 require (

@@ -22,5 +22,5 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.6
+	github.com/zscaler/zscaler-sdk-go/v3 v3.0.6
 )

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 )
 
 const (

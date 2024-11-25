@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestNetworkApplications(t *testing.T) {

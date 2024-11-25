@@ -10,11 +10,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
 
 const (

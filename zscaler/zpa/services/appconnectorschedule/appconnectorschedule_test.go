@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestAppConnectorSchedule(t *testing.T) {

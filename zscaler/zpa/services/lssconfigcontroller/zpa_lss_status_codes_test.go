@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestGetAllStatusCodes(t *testing.T) {

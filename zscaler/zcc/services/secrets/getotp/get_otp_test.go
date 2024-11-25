@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
 )
 
 func TestGetOtp(t *testing.T) {

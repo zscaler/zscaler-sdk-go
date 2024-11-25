@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
 func TestGetAllApps(t *testing.T) {

@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/okta/okta-sdk-golang/v2/okta"
 	"github.com/stretchr/testify/assert"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestEmergencyAccessIntegration(t *testing.T) {

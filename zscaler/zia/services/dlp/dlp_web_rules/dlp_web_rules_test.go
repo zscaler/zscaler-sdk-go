@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 )
 
 const (

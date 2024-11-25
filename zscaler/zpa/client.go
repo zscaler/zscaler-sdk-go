@@ -16,11 +16,11 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	"github.com/zscaler/zscaler-sdk-go/v3/utils"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 type Client struct {

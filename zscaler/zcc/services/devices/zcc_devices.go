@@ -3,7 +3,7 @@ package devices
 import (
 	"context"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (

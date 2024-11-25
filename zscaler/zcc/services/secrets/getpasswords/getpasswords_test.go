@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services"
 )
 
 func TestGetPasswords(t *testing.T) {

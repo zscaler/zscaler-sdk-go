@@ -1,6 +1,6 @@
 package common
 
-import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon"
+import "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
 
 type Service struct {
 	Client *zcon.Client

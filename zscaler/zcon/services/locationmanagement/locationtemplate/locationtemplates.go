@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services/common"
 )
 
 const (

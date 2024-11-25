@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/common"
 	"github.com/google/go-querystring/query"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/common"
 )
 
 func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {

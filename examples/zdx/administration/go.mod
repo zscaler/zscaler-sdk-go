@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8
+	github.com/zscaler/zscaler-sdk-go/v3 v3.0.8
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

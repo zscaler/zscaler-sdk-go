@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbibannercontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbiregions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbibannercontroller"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbiregions"
 )
 
 func TestCBIProfileController(t *testing.T) {

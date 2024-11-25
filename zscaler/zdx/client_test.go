@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 )
 
 type dummyStruct struct {

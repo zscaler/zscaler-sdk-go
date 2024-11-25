@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 )
 
 func TestApplicationSegmentShare(t *testing.T) {

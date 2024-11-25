@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

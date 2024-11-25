@@ -15,16 +15,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 	"gopkg.in/yaml.v3"
 )
 

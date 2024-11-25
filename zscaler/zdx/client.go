@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	"github.com/zscaler/zscaler-sdk-go/v3/utils"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 const contentTypeJSON = "application/json"

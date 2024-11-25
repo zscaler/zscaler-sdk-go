@@ -1,5 +1,5 @@
-github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8 h1:WS40mnl+Pqg+G3Nd3qD2WuWxOqCstB8nu3kqerwc3Hc=
-github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8/go.mod h1:p+lrzn730tSwX/kl+QRr3+ls4ersco5vpSpqTXpkOtw=
+github.com/zscaler/zscaler-sdk-go/v3 v3.0.8 h1:WS40mnl+Pqg+G3Nd3qD2WuWxOqCstB8nu3kqerwc3Hc=
+github.com/zscaler/zscaler-sdk-go/v3 v3.0.8/go.mod h1:p+lrzn730tSwX/kl+QRr3+ls4ersco5vpSpqTXpkOtw=
 github.com/allegro/bigcache/v3 v3.1.0 h1:H2Vp8VOvxcrB91o86fUSVJFqeuz8kpyyB02eH3bSzwk=
 github.com/allegro/bigcache/v3 v3.1.0/go.mod h1:aPyh7jEvrog9zAwx5N7+JUQX5dZTSGpxF1LAR4dr35I=
 github.com/apparentlymart/go-cidr v1.1.0 h1:2mAhrMoF+nhXqxTzSZMUzDHkLjmIHC+Zzn4tdgBZjnU=

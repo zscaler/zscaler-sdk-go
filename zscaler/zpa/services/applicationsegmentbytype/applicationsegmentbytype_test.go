@@ -6,14 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentinspection"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/browseraccess"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentinspection"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/browseraccess"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

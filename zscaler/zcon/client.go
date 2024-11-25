@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/uuid"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {

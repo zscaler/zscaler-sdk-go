@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestDownloadDevices(t *testing.T) {

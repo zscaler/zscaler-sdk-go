@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestIdPController(t *testing.T) {

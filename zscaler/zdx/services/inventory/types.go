@@ -1,6 +1,6 @@
 package inventory
 
-import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+import "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 
 type GetSoftwareFilters struct {
 	common.GetFromToFilters

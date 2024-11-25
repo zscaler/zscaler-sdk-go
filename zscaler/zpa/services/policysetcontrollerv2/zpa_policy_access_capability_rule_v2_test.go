@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
