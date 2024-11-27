@@ -122,7 +122,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		Context:       context.Background(),
 	}
 
-	logger.Printf("[DEBUG] Initializing configuration with default values.")
+	// logger.Printf("[DEBUG] Initializing configuration with default values.")
 
 	// Set default rate limit and request timeout values
 	cfg.ZPA.Client.RateLimit.MaxRetries = MaxNumOfRetries
@@ -138,7 +138,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		cfg.ZPA.Client.Cache.DefaultTti = time.Minute * 8
 	}
 	cfg.CacheManager = newCache(cfg)
-	logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZPA.Client.Cache.DefaultTtl, cfg.ZPA.Client.Cache.DefaultTti)
+	// logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZPA.Client.Cache.DefaultTtl, cfg.ZPA.Client.Cache.DefaultTti)
 
 	// Read configuration from YAML (lowest precedence)
 	readConfigFromSystem(cfg)
@@ -150,7 +150,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	for _, confSetter := range conf {
 		confSetter(cfg)
 	}
-	logger.Printf("[DEBUG] Configuration setters applied.")
+	// logger.Printf("[DEBUG] Configuration setters applied.")
 
 	// Validate credentials after both setters and environment variables
 	if cfg.ZPA.Client.ZPAClientID == "" || cfg.ZPA.Client.ZPAClientSecret == "" || cfg.ZPA.Client.ZPACustomerID == "" {
@@ -180,7 +180,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	case "QA2":
 		rawURL = qa2BaseUrl
 	}
-	logger.Printf("[DEBUG] Selected base URL: %s", rawURL)
+	// logger.Printf("[DEBUG] Selected base URL: %s", rawURL)
 
 	// Parse and validate the base URL
 	parsedURL, err := url.Parse(rawURL)
@@ -189,7 +189,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		return nil, fmt.Errorf("invalid base URL: %w", err)
 	}
 	cfg.BaseURL = parsedURL
-	logger.Printf("[DEBUG] Base URL parsed successfully: %s", parsedURL)
+	// logger.Printf("[DEBUG] Base URL parsed successfully: %s", parsedURL)
 
 	// Set up HTTP clients
 	setHttpClients(cfg)
@@ -197,7 +197,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		logger.Printf("[ERROR] HTTP clients not initialized")
 		return nil, errors.New("HTTP clients not initialized")
 	}
-	logger.Printf("[DEBUG] HTTP clients configured.")
+	// logger.Printf("[DEBUG] HTTP clients configured.")
 
 	// Authenticate the client and populate the AuthToken
 	authToken, err := Authenticate(cfg.Context, cfg, logger)
@@ -210,13 +210,13 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	// Add the AuthToken to the context
 	if cfg.ZPA.Client.AuthToken != nil && cfg.ZPA.Client.AuthToken.AccessToken != "" {
 		cfg.Context = context.WithValue(context.Background(), ContextAccessToken, cfg.ZPA.Client.AuthToken.AccessToken)
-		logger.Printf("[DEBUG] AuthToken added to context.")
+		// logger.Printf("[DEBUG] AuthToken added to context.")
 	} else {
 		logger.Printf("[ERROR] Failed to set AuthToken in context.")
 		return nil, errors.New("AuthToken is missing or invalid after authentication")
 	}
 
-	logger.Printf("[DEBUG] Configuration successfully initialized.")
+	// logger.Printf("[DEBUG] Configuration successfully initialized.")
 	return cfg, nil
 }
 
@@ -398,7 +398,7 @@ func setHttpClients(cfg *Configuration) {
 	if cfg.HTTPClient == nil {
 		log.Printf("[ERROR] Failed to initialize ZPA HTTP client.")
 	} else {
-		log.Printf("[DEBUG] ZPA HTTP client initialized successfully.")
+		// log.Printf("[DEBUG] ZPA HTTP client initialized successfully.")
 	}
 
 	// Configure the generic HTTP client
@@ -406,7 +406,7 @@ func setHttpClients(cfg *Configuration) {
 	if cfg.HTTPClient == nil {
 		log.Printf("[ERROR] Failed to initialize generic HTTP client.")
 	} else {
-		log.Printf("[DEBUG] Generic HTTP client initialized successfully.")
+		// log.Printf("[DEBUG] Generic HTTP client initialized successfully.")
 	}
 }
 
@@ -443,7 +443,7 @@ func readConfigFromEnvironment(c *Configuration) *Configuration {
 		c.Logger.Printf("[ERROR] Error parsing environment variables: %v", err)
 		return c
 	}
-	c.Logger.Printf("[DEBUG] Successfully parsed environment variables.")
+	// c.Logger.Printf("[DEBUG] Successfully parsed environment variables.")
 	return c
 }
 

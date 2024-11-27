@@ -25,6 +25,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/utils"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
@@ -121,6 +122,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
+
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -263,32 +265,45 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 	cfg.Lock()
 	defer cfg.Unlock()
 
+	// Reuse the token if it's still valid
+	if cfg.ZPA.Client.AuthToken != nil && cfg.ZPA.Client.AuthToken.AccessToken != "" {
+		if !utils.IsTokenExpired(cfg.ZPA.Client.AuthToken.AccessToken) {
+			// logger.Printf("[DEBUG] Reusing existing valid authentication token")
+			return cfg.ZPA.Client.AuthToken, nil
+		}
+		// logger.Printf("[DEBUG] Authentication token expired or nearing expiry, refreshing...")
+	} else {
+		// logger.Printf("[DEBUG] Authentication token not present, initiating new request...")
+	}
+
 	clientID := cfg.ZPA.Client.ZPAClientID
 	clientSecret := cfg.ZPA.Client.ZPAClientSecret
 	baseURL := cfg.BaseURL.String()
 
-	logger.Printf("[DEBUG] Starting authentication with clientID=%s", clientID)
-
 	if clientID == "" || clientSecret == "" {
-		logger.Printf("[ERROR] Missing client credentials")
+		logger.Printf("[ERROR] Missing client credentials. Ensure ZPA_CLIENT_ID and ZPA_CLIENT_SECRET are set.")
 		return nil, errors.New("missing client credentials")
 	}
 
 	authURL := fmt.Sprintf("%s/signin", baseURL)
-	logger.Printf("[DEBUG] Authentication URL: %s", authURL)
-
 	data := url.Values{}
 	data.Set("client_id", clientID)
 	data.Set("client_secret", clientSecret)
+
+	// Use getHTTPClient to handle retries, rate-limiting, etc.
+	httpClient := getHTTPClient(logger, nil, cfg)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", authURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		logger.Printf("[ERROR] Failed to create authentication request: %v", err)
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	if cfg.UserAgent != "" {
+		req.Header.Add("User-Agent", cfg.UserAgent)
+	}
 
-	resp, err := cfg.HTTPClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		logger.Printf("[ERROR] Failed to authenticate: %v", err)
 		return nil, err
@@ -296,8 +311,9 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		logger.Printf("[ERROR] Authentication failed with status: %d", resp.StatusCode)
-		return nil, fmt.Errorf("authentication failed with status: %d", resp.StatusCode)
+		respBody, _ := io.ReadAll(resp.Body)
+		logger.Printf("[ERROR] Authentication failed with status: %d, response: %s", resp.StatusCode, string(respBody))
+		return nil, fmt.Errorf("authentication failed with status: %d, response: %s", resp.StatusCode, string(respBody))
 	}
 
 	var token AuthToken
@@ -306,8 +322,9 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 		return nil, err
 	}
 
-	token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
-	logger.Printf("[DEBUG] Authentication token received: AccessToken=%s", token.AccessToken)
+	// Store the new authentication token
+	cfg.ZPA.Client.AuthToken = &token
+	// logger.Printf("[DEBUG] Authentication successful. New token acquired.")
 
 	return &token, nil
 }
