@@ -93,8 +93,8 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 }
 
 func (c *Client) GetCustomerID() string {
-	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient.Config.CustomerID != "" {
-		return c.oauth2Credentials.LegacyClient.ZpaClient.Config.CustomerID
+	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient.Config.ZPA.Client.ZPACustomerID != "" {
+		return c.oauth2Credentials.LegacyClient.ZpaClient.Config.ZPA.Client.ZPACustomerID
 	}
 	return c.oauth2Credentials.Zscaler.Client.CustomerID
 }

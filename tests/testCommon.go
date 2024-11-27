@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -93,17 +92,35 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 }
 
 func NewZConClient() (*zcon.Client, error) {
+	// Fetch credentials from environment variables
 	username := os.Getenv("ZCON_USERNAME")
 	password := os.Getenv("ZCON_PASSWORD")
 	apiKey := os.Getenv("ZCON_API_KEY")
-	zconCloud := os.Getenv("ZCON_CLOUD")
+	cloud := os.Getenv("ZCON_CLOUD")
 
-	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating client failed: %v\n", err)
-		return nil, err
+	if username == "" || password == "" || apiKey == "" || cloud == "" {
+		return nil, fmt.Errorf("missing ZCON credentials: ensure ZCON_USERNAME, ZCON_PASSWORD, ZCON_API_KEY and ZCON_CLOUD environment variables are set")
 	}
-	return cli, nil
+
+	// Create a new ZCON configuration
+	zconCfg, err := zcon.NewConfiguration(
+		zcon.WithZconUsername(username),
+		zcon.WithZconPassword(password),
+		zcon.WithZconAPIKey(apiKey),
+		zcon.WithZconCloud(cloud),
+		zcon.WithDebug(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZCON configuration: %w", err)
+	}
+
+	// Initialize the ZCON client
+	zconClient, err := zcon.NewClient(zconCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZCON client: %w", err)
+	}
+
+	return zconClient, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.
@@ -131,14 +148,29 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 }
 
 func NewZdxClient() (*zdx.Client, error) {
+	// Fetch credentials from environment variables
 	clientID := os.Getenv("ZDX_API_KEY_ID")
 	clientSecret := os.Getenv("ZDX_API_SECRET")
-	// cloud := os.Getenv("ZCC_CLOUD")
-	config, err := zdx.NewConfig(clientID, clientSecret, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating config failed: %v\n", err)
-		return nil, err
+
+	if clientID == "" || clientSecret == "" {
+		return nil, fmt.Errorf("missing ZDX credentials: ensure ZDX_API_KEY_ID and ZDX_API_SECRET environment variables are set")
 	}
-	zdxClient := zdx.NewClient(config)
+
+	// Create a new ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(clientID),
+		zdx.WithZDXAPISecret(clientSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZDX configuration: %w", err)
+	}
+
+	// Initialize the ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZDX client: %w", err)
+	}
+
 	return zdxClient, nil
 }

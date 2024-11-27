@@ -70,11 +70,11 @@ coverage: test
 
 sweep\:zpa:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZPA_SDK_TEST_SWEEP=true go test ./zpa/sweep -v -sweep=true
+	ZPA_SDK_TEST_SWEEP=true go test ./zscaler/zpa/sweep -v -sweep=true
 
 sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZIA_SDK_TEST_SWEEP=true go test ./zia/sweep -v -sweep=true
+	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
@@ -86,30 +86,30 @@ test\:all:
 
 test\:integration\:zcc:
 	@echo "$(COLOR_ZSCALER)Running zcc integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zcc/... -parallel 1 -timeout 60m
+	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zscaler/zcc/... -parallel 1 -timeout 60m
 	go tool cover -html=zcccoverage.out -o zcccoverage.html
 
 
 test\:integration\:zcon:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zcon/... -parallel 20 -timeout 60m
+	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zscaler/zcon/... -parallel 20 -timeout 60m
 	go tool cover -html=zconcoverage.out -o zconcoverage.html
 
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
-	@go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zscaler/zdx/... -parallel 4 -timeout 60m
+	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
 	@go tool cover -func zdxcoverage.out | grep total:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zpa/... -parallel 10 -timeout 60m
-	@go tool cover -html=zpacoverage.out -o zpacoverage.html
+	go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zscaler/zpa/... -parallel 10 -timeout 60m
+	go tool cover -html=zpacoverage.out -o zpacoverage.html
 	@go tool cover -func zpacoverage.out | grep total:
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... ./zia/activation_cli/... -parallel 10 -timeout 60m
+	go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zscaler/zia/... ./zscaler/zia/activation_cli/... -parallel 10 -timeout 60m
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 
@@ -158,7 +158,7 @@ ziaActivator:
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
+	@go build -o $(DESTINATION)/ziaActivator ./zscaler/zia/activation_cli/ziaActivator.go
 
 zconActivator: GOOS=$(shell go env GOOS)
 zconActivator: GOARCH=$(shell go env GOARCH)
@@ -169,12 +169,12 @@ zconActivator: DESTINATION=/usr/local/bin
 endif
 zconActivator:
 	@echo "==> Installing zconActivator cli $(DESTINATION)"
-	cd ./zcon/services/activation_cli
+	cd ./zscaler/zcon/services/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
-	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/zconActivator ./zcon/services/activation_cli/zconActivator.go
-	zconActivator
+	@rm -f $(DESTINATION)/zconActivator
+	@go build -o $(DESTINATION)/zconActivator ./zscaler/zcon/services/activation_cli/zconActivator.go
+
 
 check-fmt:
 	@which $(GOFMT) > /dev/null || GO111MODULE=on go install mvdan.cc/gofumpt@latest
