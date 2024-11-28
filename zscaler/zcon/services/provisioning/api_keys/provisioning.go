@@ -1,6 +1,7 @@
 package api_keys
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -37,9 +38,9 @@ type ProvisioningAPIKeys struct {
 	PartnerUrl string `json:"partnerUrl,omitempty"`
 }
 
-func Get(service *services.Service, apiKeyID int) (*ProvisioningAPIKeys, error) {
+func Get(ctx context.Context, service *services.Service, apiKeyID int) (*ProvisioningAPIKeys, error) {
 	var apiKey ProvisioningAPIKeys
-	err := service.Client.Read(fmt.Sprintf("%s/%d", apiKeysEndpoint, apiKeyID), &apiKey)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", apiKeysEndpoint, apiKeyID), &apiKey)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +49,12 @@ func Get(service *services.Service, apiKeyID int) (*ProvisioningAPIKeys, error) 
 	return &apiKey, nil
 }
 
-func GetPartnerAPIKey(service *services.Service, apiKeyValue string, includePartnerKey bool) (*ProvisioningAPIKeys, error) {
+func GetPartnerAPIKey(ctx context.Context, service *services.Service, apiKeyValue string, includePartnerKey bool) (*ProvisioningAPIKeys, error) {
 	// Constructing the API endpoint URL
 	url := fmt.Sprintf("%s?includePartnerKey=%t", apiKeysEndpoint, includePartnerKey)
 
 	var apiKeys []ProvisioningAPIKeys
-	err := service.Client.Read(url, &apiKeys)
+	err := service.Client.Read(ctx, url, &apiKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +69,13 @@ func GetPartnerAPIKey(service *services.Service, apiKeyValue string, includePart
 	return nil, fmt.Errorf("no partner api key found with key value: %s", apiKeyValue)
 }
 
-func GetAll(service *services.Service) ([]ProvisioningAPIKeys, error) {
+func GetAll(ctx context.Context, service *services.Service) ([]ProvisioningAPIKeys, error) {
 	var apiKeys []ProvisioningAPIKeys
-	err := common.ReadAllPages(service.Client, apiKeysEndpoint, &apiKeys)
+	err := common.ReadAllPages(ctx, service.Client, apiKeysEndpoint, &apiKeys)
 	return apiKeys, err
 }
 
-func Create(service *services.Service, apiKeyValue *ProvisioningAPIKeys, includePartnerKey bool, keyId *int) (*ProvisioningAPIKeys, error) {
+func Create(ctx context.Context, service *services.Service, apiKeyValue *ProvisioningAPIKeys, includePartnerKey bool, keyId *int) (*ProvisioningAPIKeys, error) {
 	// Handle nil apiKeyValue appropriately
 	if apiKeyValue == nil {
 		apiKeyValue = &ProvisioningAPIKeys{}
@@ -90,7 +91,7 @@ func Create(service *services.Service, apiKeyValue *ProvisioningAPIKeys, include
 		url = fmt.Sprintf("%s?includePartnerKey=%t", apiKeysEndpoint, includePartnerKey)
 	}
 
-	resp, err := service.Client.Create(url, *apiKeyValue)
+	resp, err := service.Client.Create(ctx, url, *apiKeyValue)
 	if err != nil {
 		return nil, err
 	}

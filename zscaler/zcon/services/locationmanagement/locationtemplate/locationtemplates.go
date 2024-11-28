@@ -1,6 +1,7 @@
 package locationtemplate
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -93,9 +94,9 @@ type LocationTemplateDetails struct {
 	SurrogateIP bool `json:"surrogateIP,omitempty"`
 }
 
-func Get(service *services.Service, locTemplateID int) (*LocationTemplate, error) {
+func Get(ctx context.Context, service *services.Service, locTemplateID int) (*LocationTemplate, error) {
 	var location LocationTemplate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID), &location)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID), &location)
 	if err != nil {
 		return nil, err
 	}
@@ -104,10 +105,10 @@ func Get(service *services.Service, locTemplateID int) (*LocationTemplate, error
 	return &location, nil
 }
 
-func GetByName(service *services.Service, templateName string) (*LocationTemplate, error) {
+func GetByName(ctx context.Context, service *services.Service, templateName string) (*LocationTemplate, error) {
 	var locations []LocationTemplate
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationTemplateEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationTemplateEndpoint, &locations)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +120,8 @@ func GetByName(service *services.Service, templateName string) (*LocationTemplat
 	return nil, fmt.Errorf("no location template found with name: %s", templateName)
 }
 
-func Create(service *services.Service, locations *LocationTemplate) (*LocationTemplate, error) {
-	resp, err := service.Client.Create(locationTemplateEndpoint, *locations)
+func Create(ctx context.Context, service *services.Service, locations *LocationTemplate) (*LocationTemplate, error) {
+	resp, err := service.Client.Create(ctx, locationTemplateEndpoint, *locations)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +135,8 @@ func Create(service *services.Service, locations *LocationTemplate) (*LocationTe
 	return createdLocations, nil
 }
 
-func Update(service *services.Service, locTemplateID int, locations *LocationTemplate) (*LocationTemplate, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID), *locations)
+func Update(ctx context.Context, service *services.Service, locTemplateID int, locations *LocationTemplate) (*LocationTemplate, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID), *locations)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -145,8 +146,8 @@ func Update(service *services.Service, locTemplateID int, locations *LocationTem
 	return updatedLocations, nil, nil
 }
 
-func Delete(service *services.Service, locTemplateID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID))
+func Delete(ctx context.Context, service *services.Service, locTemplateID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", locationTemplateEndpoint, locTemplateID))
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +155,8 @@ func Delete(service *services.Service, locTemplateID int) (*http.Response, error
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]LocationTemplate, error) {
+func GetAll(ctx context.Context, service *services.Service) ([]LocationTemplate, error) {
 	var templates []LocationTemplate
-	err := common.ReadAllPages(service.Client, locationTemplateEndpoint, &templates)
+	err := common.ReadAllPages(ctx, service.Client, locationTemplateEndpoint, &templates)
 	return templates, err
 }

@@ -1,6 +1,7 @@
 package location
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -19,7 +20,7 @@ func TestZConLocation(t *testing.T) {
 
 	service := services.New(client)
 
-	locations, err := GetAll(service)
+	locations, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting locations: %v", err)
 		return
@@ -30,7 +31,7 @@ func TestZConLocation(t *testing.T) {
 	}
 	name := locations[0].Name
 	t.Log("Getting locations by name:" + name)
-	location, err := GetLocationByName(service, name)
+	location, err := GetLocationByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting location by name: %v", err)
 		return
@@ -40,7 +41,7 @@ func TestZConLocation(t *testing.T) {
 		return
 	}
 
-	locationName, err := GetLocationByName(service, name)
+	locationName, err := GetLocationByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting admin roles by name: %v", err)
 		return
@@ -51,7 +52,7 @@ func TestZConLocation(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve a Location with a non-existent name
 	nonExistentName := "ThisLocationNotExist"
-	_, err = GetLocationByName(service, nonExistentName)
+	_, err = GetLocationByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -67,7 +68,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	service := services.New(client)
 
-	locations, err := GetAll(service)
+	locations, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting location: %v", err)
 		return
@@ -116,7 +117,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, err := GetLocationByName(service, variation)
+		group, err := GetLocationByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name variation '%s': %v", variation, err)
 			continue

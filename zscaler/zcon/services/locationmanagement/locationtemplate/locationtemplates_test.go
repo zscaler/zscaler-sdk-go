@@ -1,6 +1,7 @@
 package locationtemplate
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,9 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (
@@ -74,7 +75,7 @@ func cleanResources() {
 	}
 	service := services.New(client)
 
-	resources, err := GetAll(service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -82,7 +83,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := Delete(service, r.ID)
+			_, err := Delete(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -122,7 +123,7 @@ func TestZConLocationTemplate(t *testing.T) {
 	var createdResource *LocationTemplate
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(service, &template)
+		createdResource, err = Create(context.Background(), service, &template)
 		return err
 	})
 	if err != nil {
@@ -139,7 +140,7 @@ func TestZConLocationTemplate(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -153,14 +154,14 @@ func TestZConLocationTemplate(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := Get(service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -172,7 +173,7 @@ func TestZConLocationTemplate(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(service, updateName)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -184,7 +185,7 @@ func TestZConLocationTemplate(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := GetAll(service)
+	allResources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -209,26 +210,26 @@ func TestZConLocationTemplate(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(service, createdResource.ID)
+		_, getErr := Get(context.Background(), service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := Delete(service, createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = Get(service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*LocationTemplate, error) {
+func tryRetrieveResource(ctx context.Context, s *services.Service, id int) (*LocationTemplate, error) {
 	var resource *LocationTemplate
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(ctx, s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}

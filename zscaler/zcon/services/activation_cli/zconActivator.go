@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -53,7 +54,7 @@ func runZCONActivator() error {
 	// Wrap the ZCON client in a Service instance
 	service := services.New(zconClient)
 
-	resp, err := activation.ForceActivationStatus(service, activation.ECAdminActivation{
+	resp, err := activation.ForceActivationStatus(context.Background(), service, activation.ECAdminActivation{
 		OrgEditStatus:         "org_edit_status",
 		OrgLastActivateStatus: "org_last_activate_status",
 		AdminActivateStatus:   "admin_activate_status",
@@ -66,7 +67,7 @@ func runZCONActivator() error {
 	log.Printf("[INFO] Destroying session: %#v\n", resp)
 
 	// Log out the client
-	zconClient.Logout()
+	zconClient.Logout(context.Background())
 
 	return nil
 }

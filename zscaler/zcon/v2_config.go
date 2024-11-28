@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 

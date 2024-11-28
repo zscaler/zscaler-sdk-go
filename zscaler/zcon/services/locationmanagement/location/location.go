@@ -1,6 +1,7 @@
 package location
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -238,9 +239,9 @@ type ManagedBy struct {
 }
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
-func GetLocation(service *services.Service, locationID int) (*Locations, error) {
+func GetLocation(ctx context.Context, service *services.Service, locationID int) (*Locations, error) {
 	var location Locations
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
 		return nil, err
 	}
@@ -250,10 +251,10 @@ func GetLocation(service *services.Service, locationID int) (*Locations, error) 
 }
 
 // GetLocationByName gets a location by its name.
-func GetLocationByName(service *services.Service, locationName string) (*Locations, error) {
+func GetLocationByName(ctx context.Context, service *services.Service, locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
 	if err != nil {
 		return nil, err
 	}
@@ -265,8 +266,8 @@ func GetLocationByName(service *services.Service, locationName string) (*Locatio
 	return nil, fmt.Errorf("no location found with name: %s", locationName)
 }
 
-func Create(service *services.Service, locations *Locations) (*Locations, error) {
-	resp, err := service.Client.Create(locationsEndpoint, *locations)
+func Create(ctx context.Context, service *services.Service, locations *Locations) (*Locations, error) {
+	resp, err := service.Client.Create(ctx, locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
 	}
@@ -280,8 +281,8 @@ func Create(service *services.Service, locations *Locations) (*Locations, error)
 	return createdLocations, nil
 }
 
-func Update(service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
+func Update(ctx context.Context, service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -291,8 +292,8 @@ func Update(service *services.Service, locationID int, locations *Locations) (*L
 	return updatedLocations, nil, nil
 }
 
-func Delete(service *services.Service, locationID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
+func Delete(ctx context.Context, service *services.Service, locationID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
 	}
@@ -300,9 +301,9 @@ func Delete(service *services.Service, locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]Locations, error) {
+func GetAll(ctx context.Context, service *services.Service) ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
+	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
 	return locations, err
 }

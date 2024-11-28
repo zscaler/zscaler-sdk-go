@@ -1,6 +1,7 @@
 package public_cloud_account
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -37,9 +38,9 @@ type PublicCloudAccountIDStatus struct {
 }
 
 // GetAccountID remains the same
-func GetAccountID(service *services.Service, accountID int) (*PublicCloudAccountDetails, error) {
+func GetAccountID(ctx context.Context, service *services.Service, accountID int) (*PublicCloudAccountDetails, error) {
 	var cloudAccount PublicCloudAccountDetails
-	err := service.Client.Read(fmt.Sprintf("%s/%d", publicCloudEndpoint, accountID), &cloudAccount)
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", publicCloudEndpoint, accountID), &cloudAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +50,9 @@ func GetAccountID(service *services.Service, accountID int) (*PublicCloudAccount
 }
 
 // GetLite returns all available accounts without filtering by ID
-func GetLite(service *services.Service) ([]PublicCloudAccountDetails, error) {
+func GetLite(ctx context.Context, service *services.Service) ([]PublicCloudAccountDetails, error) {
 	var cloudAccounts []PublicCloudAccountDetails
-	err := service.Client.Read(publicCloudEndpointLite, &cloudAccounts)
+	err := service.Client.Read(ctx, publicCloudEndpointLite, &cloudAccounts)
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +62,9 @@ func GetLite(service *services.Service) ([]PublicCloudAccountDetails, error) {
 }
 
 // GetAccountStatus returns a status payload directly
-func GetAccountStatus(service *services.Service) (*PublicCloudAccountIDStatus, error) {
+func GetAccountStatus(ctx context.Context, service *services.Service) (*PublicCloudAccountIDStatus, error) {
 	var accountStatus PublicCloudAccountIDStatus
-	err := service.Client.Read(publicCloudAccountStatus, &accountStatus)
+	err := service.Client.Read(ctx, publicCloudAccountStatus, &accountStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +73,8 @@ func GetAccountStatus(service *services.Service) (*PublicCloudAccountIDStatus, e
 	return &accountStatus, nil
 }
 
-func GetAll(service *services.Service) ([]PublicCloudAccountDetails, error) {
+func GetAll(ctx context.Context, service *services.Service) ([]PublicCloudAccountDetails, error) {
 	var accounts []PublicCloudAccountDetails
-	err := common.ReadAllPages(service.Client, publicCloudEndpoint, &accounts)
+	err := common.ReadAllPages(ctx, service.Client, publicCloudEndpoint, &accounts)
 	return accounts, err
 }

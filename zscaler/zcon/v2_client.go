@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 // NewClient Returns a Client from credentials passed as parameters.
@@ -501,8 +501,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
-func (c *Client) Logout() error {
-	_, err := c.Request(zconAPIAuthURL, "DELETE", nil, "application/json")
+func (c *Client) Logout(ctx context.Context) error {
+	_, err := c.Request(ctx, zconAPIAuthURL, "DELETE", nil, "application/json") // Pass context as the first argument
 	if err != nil {
 		return err
 	}
@@ -599,7 +599,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 }
 
 // Request ... // Needs to review this function.
-func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -617,7 +617,7 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
-	req, err = http.NewRequest(method, fullURL, body)
+	req, err = http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -654,8 +654,8 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 }
 
 // Request ... // Needs to review this function.
-func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
-	return c.GenericRequest(c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
+func (c *Client) Request(ctx context.Context, endpoint, method string, data []byte, contentType string) ([]byte, error) {
+	return c.GenericRequest(ctx, c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
 }
 
 func (client *Client) WithFreshCache() {
@@ -663,7 +663,7 @@ func (client *Client) WithFreshCache() {
 }
 
 // Create sends an HTTP POST request.
-func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
+func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
 	}
@@ -676,7 +676,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -703,7 +703,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 }
 
-func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to create with a nil payload not a Slice")
 	}
@@ -718,7 +718,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -730,7 +730,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 }
 
-func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to update with a nil payload not a Slice")
 	}
@@ -745,7 +745,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "PUT", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "PUT", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -754,7 +754,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 }
 
 // CreateWithRawPayload sends an HTTP POST request with a raw string payload.
-func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, error) {
+func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payload string) ([]byte, error) {
 	if payload == "" {
 		return nil, errors.New("tried to create with an empty string payload")
 	}
@@ -763,7 +763,7 @@ func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, 
 	data := []byte(payload)
 
 	// Send the raw string as a POST request
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -778,9 +778,9 @@ func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, 
 }
 
 // Read ...
-func (c *Client) Read(endpoint string, o interface{}) error {
+func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error {
 	contentType := c.GetContentType()
-	resp, err := c.Request(endpoint, "GET", nil, contentType)
+	resp, err := c.Request(ctx, endpoint, "GET", nil, contentType)
 	if err != nil {
 		return err
 	}
@@ -794,17 +794,17 @@ func (c *Client) Read(endpoint string, o interface{}) error {
 }
 
 // Update ...
-func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", "application/json")
+func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PUT", "application/json")
 }
 
 // Update ...
-func (c *Client) Update(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PATCH", "application/merge-patch+json")
+func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
 
 // Update ...
-func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentType string) (interface{}, error) {
+func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface{}, method, contentType string) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to update with a nil payload not a Struct")
 	}
@@ -817,7 +817,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, method, data, contentType)
+	resp, err := c.Request(ctx, endpoint, method, data, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -828,8 +828,8 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 }
 
 // Delete ...
-func (c *Client) Delete(endpoint string) error {
-	_, err := c.Request(endpoint, "DELETE", nil, "application/json")
+func (c *Client) Delete(ctx context.Context, endpoint string) error {
+	_, err := c.Request(ctx, endpoint, "DELETE", nil, "application/json")
 	if err != nil {
 		return err
 	}
@@ -837,7 +837,7 @@ func (c *Client) Delete(endpoint string) error {
 }
 
 // BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
-func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	if payload == nil {
 		return nil, errors.New("tried to delete with a nil payload, expected a struct")
 	}
@@ -849,7 +849,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 	}
 
 	// Send the POST request
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}

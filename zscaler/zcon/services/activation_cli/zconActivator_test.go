@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestActivationCLI(t *testing.T) {
 
 	service := services.New(client)
 
-	_, err = activation.ForceActivationStatus(service, activation.ECAdminActivation{
+	_, err = activation.ForceActivationStatus(context.Background(), service, activation.ECAdminActivation{
 		AdminActivateStatus: "ADM_ACTV_DONE",
 	})
 	if err != nil {
@@ -32,7 +33,7 @@ func TestActivationCLI(t *testing.T) {
 	}
 
 	// Destroy the session
-	if err := client.Logout(); err != nil {
+	if err := client.Logout(context.Background()); err != nil {
 		t.Fatalf("[ERROR] Failed destroying session: %v", err)
 	}
 }

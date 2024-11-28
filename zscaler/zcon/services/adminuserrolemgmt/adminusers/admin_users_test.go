@@ -1,6 +1,7 @@
 package adminusers
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"os"
@@ -8,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services/adminuserrolemgmt/adminroles"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 // Constants for conflict retries
@@ -103,7 +104,7 @@ func cleanResources() {
 	}
 	service := services.New(client)
 
-	resources, err := GetAllAdminUsers(service)
+	resources, err := GetAllAdminUsers(context.Background(), service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
 		return
@@ -111,7 +112,7 @@ func cleanResources() {
 
 	for _, r := range resources {
 		if strings.HasPrefix(r.UserName, "tests-") {
-			_, err := DeleteAdminUser(service, r.ID)
+			_, err := DeleteAdminUser(context.Background(), service, r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -131,7 +132,7 @@ func TestZCONUserManagement(t *testing.T) {
 
 	service := services.New(client)
 
-	roles, err := adminroles.GetAllAdminRoles(service)
+	roles, err := adminroles.GetAllAdminRoles(context.Background(), service)
 	if err != nil || len(roles) == 0 {
 		t.Fatalf("Error retrieving roles or no roles found: %v", err)
 	}
@@ -158,7 +159,7 @@ func TestZCONUserManagement(t *testing.T) {
 	var createdResource *AdminUsers
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = CreateAdminUser(service, admin)
+		createdResource, err = CreateAdminUser(context.Background(), service, admin)
 		return err
 	})
 	if err != nil {
@@ -174,7 +175,7 @@ func TestZCONUserManagement(t *testing.T) {
 	}
 
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -188,14 +189,14 @@ func TestZCONUserManagement(t *testing.T) {
 	// Test resource update
 	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
-		_, err = UpdateAdminUser(service, createdResource.ID, *retrievedResource)
+		_, err = UpdateAdminUser(context.Background(), service, createdResource.ID, *retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := GetAdminUsers(service, createdResource.ID)
+	updatedResource, err := GetAdminUsers(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -207,7 +208,7 @@ func TestZCONUserManagement(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetAdminUsersByLoginName(service, expectedLoginName) // Name should be prefixed with "tests-"
+	retrievedResource, err = GetAdminUsersByLoginName(context.Background(), service, expectedLoginName) // Name should be prefixed with "tests-"
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -218,7 +219,7 @@ func TestZCONUserManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := GetAllAdminUsers(service)
+	resources, err := GetAllAdminUsers(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -238,22 +239,22 @@ func TestZCONUserManagement(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := DeleteAdminUser(service, createdResource.ID)
+		_, delErr := DeleteAdminUser(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = GetAdminUsers(service, createdResource.ID)
+	_, err = GetAdminUsers(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*AdminUsers, error) {
+func tryRetrieveResource(ctx context.Context, s *services.Service, id int) (*AdminUsers, error) {
 	var resource *AdminUsers
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = GetAdminUsers(s, id)
+		resource, err = GetAdminUsers(ctx, s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
