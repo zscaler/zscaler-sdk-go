@@ -1,6 +1,7 @@
 package administration
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -27,7 +28,7 @@ func TestGetDepartments(t *testing.T) {
 		Search: "A000",
 	}
 
-	departments, resp, err := GetDepartments(service, filters)
+	departments, resp, err := GetDepartments(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting departments: %v", err)
 	}
@@ -64,7 +65,7 @@ func TestGetLocations(t *testing.T) {
 		Search: "Road Warrior",
 	}
 
-	locations, resp, err := GetLocations(service, filters)
+	locations, resp, err := GetLocations(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting locations: %v", err)
 	}

@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestGetSoftware(t *testing.T) {
 	}
 
 	// Call GetSoftware with the filters
-	softwareList, nextOffset, resp, err := GetSoftware(service, filters)
+	softwareList, nextOffset, resp, err := GetSoftware(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting software: %v", err)
 	}
@@ -71,7 +72,7 @@ func TestGetSoftwareKey(t *testing.T) {
 	}
 
 	// Call GetSoftware with the filters to get the software key
-	softwareList, _, _, err := GetSoftware(service, filters)
+	softwareList, _, _, err := GetSoftware(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting software: %v", err)
 	}
@@ -84,7 +85,7 @@ func TestGetSoftwareKey(t *testing.T) {
 	softwareKey := softwareList[0].SoftwareKey
 
 	// Call GetSoftwareKey with the software key
-	softwareKeyList, nextOffset, resp, err := GetSoftwareKey(service, softwareKey, filters)
+	softwareKeyList, nextOffset, resp, err := GetSoftwareKey(context.Background(), service, softwareKey, filters)
 	if err != nil {
 		t.Fatalf("Error getting software key: %v", err)
 	}

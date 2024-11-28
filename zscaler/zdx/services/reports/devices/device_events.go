@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -27,10 +28,10 @@ type Events struct {
 
 // Gets the Events metrics trend for a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
 // The event metrics include Zscaler, Hardware, Software, and Network event changes.
-func GetEvents(service *services.Service, deviceID int, filters common.GetFromToFilters) ([]DeviceEvents, *http.Response, error) {
+func GetEvents(ctx context.Context, service *services.Service, deviceID int, filters common.GetFromToFilters) ([]DeviceEvents, *http.Response, error) {
 	var v []DeviceEvents
 	path := fmt.Sprintf("%v/%v/%v", devicesEndpoint, deviceID, deviceEventsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

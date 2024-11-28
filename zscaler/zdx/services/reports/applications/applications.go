@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
@@ -39,20 +40,20 @@ type Stats struct {
 // Lists all active applications configured for a tenant.
 // The endpoint gets each application's ZDX score (default for the last 2 hours), most impacted location, and the total number of users impacted.
 // To learn more, see About the ZDX Dashboard at https://help.zscaler.com/zdx/about-zdx-dashboard.
-func GetAllApps(service *services.Service, filters common.GetFromToFilters) ([]Apps, *http.Response, error) {
+func GetAllApps(ctx context.Context, service *services.Service, filters common.GetFromToFilters) ([]Apps, *http.Response, error) {
 	var apps []Apps
 	path := appsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &apps)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &apps)
 	if err != nil {
 		return nil, nil, err
 	}
 	return apps, resp, nil
 }
 
-func GetApp(service *services.Service, appID string, filters common.GetFromToFilters) (*Apps, *http.Response, error) {
+func GetApp(ctx context.Context, service *services.Service, appID string, filters common.GetFromToFilters) (*Apps, *http.Response, error) {
 	var app Apps
 	path := appsEndpoint + "/" + appID
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &app)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &app)
 	if err != nil {
 		return nil, nil, err
 	}

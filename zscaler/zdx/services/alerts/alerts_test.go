@@ -1,6 +1,7 @@
 package alerts
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ func TestGetOngoingAlerts(t *testing.T) {
 	}
 
 	// Call GetOngoingAlerts with the filters
-	alerts, resp, err := GetOngoingAlerts(service, filters)
+	alerts, resp, err := GetOngoingAlerts(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting ongoing alerts: %v", err)
 	}
@@ -64,7 +65,7 @@ func TestGetHistoricalAlerts(t *testing.T) {
 		To:   int(to),
 	}
 
-	alerts, resp, err := GetHistoricalAlerts(service, filters)
+	alerts, resp, err := GetHistoricalAlerts(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting historical alerts: %v", err)
 	}

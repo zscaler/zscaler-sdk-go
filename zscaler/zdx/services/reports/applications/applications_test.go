@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"testing"
@@ -28,7 +29,7 @@ func TestGetAllApps(t *testing.T) {
 		To:   int(to),
 	}
 
-	apps, resp, err := GetAllApps(service, filters)
+	apps, resp, err := GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -65,7 +66,7 @@ func TestGetApp(t *testing.T) {
 		To:   int(to),
 	}
 
-	apps, _, err := GetAllApps(service, filters)
+	apps, _, err := GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -78,7 +79,7 @@ func TestGetApp(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Get the specific app by ID
-	app, resp, err := GetApp(service, strconv.Itoa(firstAppID), filters)
+	app, resp, err := GetApp(context.Background(), service, strconv.Itoa(firstAppID), filters)
 	if err != nil {
 		t.Fatalf("Error getting app: %v", err)
 	}

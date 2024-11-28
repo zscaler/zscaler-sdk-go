@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestGetGeoLocations(t *testing.T) {
 	}
 
 	// Call GetGeoLocations with the filters
-	geoLocations, resp, err := GetGeoLocations(service, filters)
+	geoLocations, resp, err := GetGeoLocations(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting geo locations: %v", err)
 	}

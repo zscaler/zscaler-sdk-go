@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestGetHealthMetrics(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -43,7 +44,7 @@ func TestGetHealthMetrics(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Call GetHealthMetrics with the first device's ID and first app's ID
-	healthMetrics, resp, err := GetHealthMetrics(service, firstDeviceID, common.GetFromToFilters{From: int(from), To: int(to)})
+	healthMetrics, resp, err := GetHealthMetrics(context.Background(), service, firstDeviceID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting health metrics: %v", err)
 	}

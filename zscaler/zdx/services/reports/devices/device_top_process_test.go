@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ func TestGetDeviceTopProcesses(t *testing.T) {
 		To:   int(to),
 	}
 
-	devices, _, err := GetAllDevices(service, GetDevicesFilters{
+	devices, _, err := GetAllDevices(context.Background(), service, GetDevicesFilters{
 		GetFromToFilters: filters,
 	})
 	if err != nil {
@@ -43,7 +44,7 @@ func TestGetDeviceTopProcesses(t *testing.T) {
 	deviceID := devices[0].ID
 
 	// Step 2: Get all deep traces for the device
-	deepTraces, _, err := deeptrace.GetDeepTraces(service, deviceID)
+	deepTraces, _, err := deeptrace.GetDeepTraces(context.Background(), service, deviceID)
 	if err != nil {
 		t.Fatalf("Error getting deep traces: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestGetDeviceTopProcesses(t *testing.T) {
 	traceID := deepTraces[0].TraceID
 
 	// Step 4: Call GetDeviceTopProcesses with the device ID and trace ID
-	topProcesses, resp, err := GetDeviceTopProcesses(service, deviceID, traceID, filters)
+	topProcesses, resp, err := GetDeviceTopProcesses(context.Background(), service, deviceID, traceID, filters)
 	if err != nil {
 		t.Fatalf("Error getting device top processes: %v", err)
 	}

@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -32,17 +33,17 @@ func generateWebProbePath(deviceID, appID, probeID int) string {
 // For Web Probes, you can access Page Fetch Time, Server Response Time, DNS Time, or Availability.
 // If not specified, it defaults to Page Fetch Time (PFT).
 // If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetWebProbes(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetWebProbes(ctx context.Context, service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := generateWebProbePath(deviceID, appID, probeID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil
@@ -52,10 +53,10 @@ func GetWebProbes(service *services.Service, deviceID, appID, probeID int, filte
 }
 
 // Gets the list of all active web probes on a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAllWebProbes(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
+func GetAllWebProbes(ctx context.Context, service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
 	var v []DeviceWebProbe
 	path := generateWebProbesPath(deviceID, appID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}

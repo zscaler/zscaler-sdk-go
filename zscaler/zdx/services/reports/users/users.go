@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -41,10 +42,10 @@ type ZSLocation struct {
 }
 
 // Gets user details including the device information, active geolocations, and Zscaler locations. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetUser(service *services.Service, userID string) (*User, *http.Response, error) {
+func GetUser(ctx context.Context, service *services.Service, userID string) (*User, *http.Response, error) {
 	v := new(User)
 	path := fmt.Sprintf("%v/%v", usersEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,14 +53,14 @@ func GetUser(service *services.Service, userID string) (*User, *http.Response, e
 }
 
 // Gets the list of all active users, their devices, active geolocations, and Zscaler locations. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAllUsers(service *services.Service, filters GetUsersFilters) ([]User, *http.Response, error) {
+func GetAllUsers(ctx context.Context, service *services.Service, filters GetUsersFilters) ([]User, *http.Response, error) {
 	var v struct {
 		NextOffSet interface{} `json:"next_offset"`
 		List       []User      `json:"users"`
 	}
 
 	relativeURL := usersEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

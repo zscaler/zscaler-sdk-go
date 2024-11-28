@@ -57,16 +57,6 @@ type AdminRoles struct {
 	RoleType string `json:"roleType,omitempty"`
 }
 
-// func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {
-// 	v := new(AdminRoles)
-// 	relativeURL := fmt.Sprintf("%s/%d", adminRolesEndpoint, adminRoleId)
-// 	err := service.Client.Read(ctx, relativeURL, v)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return v, nil
-// }
-
 func GetByName(ctx context.Context, service *zscaler.Service, adminRoleName string) (*AdminRoles, error) {
 	var adminRoles []AdminRoles
 	err := service.Client.Read(ctx, adminRolesEndpoint, &adminRoles)

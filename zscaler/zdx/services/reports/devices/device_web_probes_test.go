@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -29,7 +30,7 @@ func TestGetAllWebProbes(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, GetDevicesFilters{
+	devices, _, err := GetAllDevices(context.Background(), service, GetDevicesFilters{
 		GetFromToFilters: filters,
 	})
 	if err != nil {
@@ -44,7 +45,7 @@ func TestGetAllWebProbes(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, filters)
+	apps, _, err := applications.GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestGetAllWebProbes(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetAllWebProbes with the first device's ID and first app's ID
-	webProbes, resp, err := GetAllWebProbes(service, firstDeviceID, firstAppID, filters)
+	webProbes, resp, err := GetAllWebProbes(context.Background(), service, firstDeviceID, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting web probes: %v", err)
 	}
@@ -94,7 +95,7 @@ func TestGetWebProbes(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, GetDevicesFilters{
+	devices, _, err := GetAllDevices(context.Background(), service, GetDevicesFilters{
 		GetFromToFilters: filters,
 	})
 	if err != nil {
@@ -109,7 +110,7 @@ func TestGetWebProbes(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, filters)
+	apps, _, err := applications.GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -122,7 +123,7 @@ func TestGetWebProbes(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Invoke GetAllWebProbes to retrieve the ID of the first web probe
-	webProbes, _, err := GetAllWebProbes(service, firstDeviceID, firstAppID, filters)
+	webProbes, _, err := GetAllWebProbes(context.Background(), service, firstDeviceID, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting web probes: %v", err)
 	}
@@ -135,7 +136,7 @@ func TestGetWebProbes(t *testing.T) {
 	firstProbeID := webProbes[0].ID
 
 	// Call GetWebProbes with the first device's ID, first app's ID, and first web probe's ID
-	webProbeMetrics, resp, err := GetWebProbes(service, firstDeviceID, firstAppID, firstProbeID, filters)
+	webProbeMetrics, resp, err := GetWebProbes(context.Background(), service, firstDeviceID, firstAppID, firstProbeID, filters)
 	if err != nil {
 		t.Fatalf("Error getting web probe metrics: %v", err)
 	}

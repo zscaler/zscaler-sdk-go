@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"testing"
@@ -31,7 +32,7 @@ func TestGetAllDevices(t *testing.T) {
 	}
 
 	// Call GetAllDevices
-	devices, resp, err := GetAllDevices(service, filters)
+	devices, resp, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -74,7 +75,7 @@ func TestGetDevice(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -87,7 +88,7 @@ func TestGetDevice(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Call GetDevice with the first device's ID
-	device, resp, err := GetDevice(service, strconv.Itoa(firstDeviceID))
+	device, resp, err := GetDevice(context.Background(), service, strconv.Itoa(firstDeviceID))
 	if err != nil {
 		t.Fatalf("Error getting device: %v", err)
 	}

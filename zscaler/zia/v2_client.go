@@ -89,10 +89,6 @@ func NewClient(config *Configuration) (*Client, error) {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
 	}
 
-	// Check cache settings
-	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
-	cacheEnabled := !cacheDisabled && config.ZIA.Client.Cache.Enabled
-
 	// Perform authentication request
 	session, err := MakeAuthRequestZIA(credentials, baseURL, httpClient, config.UserAgent)
 	if err != nil {
@@ -106,11 +102,11 @@ func NewClient(config *Configuration) (*Client, error) {
 		password:         config.ZIA.Client.ZIAPassword,
 		apiKey:           config.ZIA.Client.ZIAApiKey,
 		cloud:            config.ZIA.Client.ZIACloud,
-		HTTPClient:       httpClient,
+		HTTPClient:       config.HTTPClient,
 		URL:              baseURL,
 		Logger:           logger,
 		UserAgent:        config.UserAgent,
-		cacheEnabled:     cacheEnabled,
+		cacheEnabled:     config.ZIA.Client.Cache.Enabled,
 		cacheTtl:         config.ZIA.Client.Cache.DefaultTtl,
 		cacheCleanwindow: config.ZIA.Client.Cache.DefaultTti,
 		cacheMaxSizeMB:   int(config.ZIA.Client.Cache.DefaultCacheMaxSizeMB),

@@ -3,9 +3,9 @@ package activation
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestZCONActivation(t *testing.T) {

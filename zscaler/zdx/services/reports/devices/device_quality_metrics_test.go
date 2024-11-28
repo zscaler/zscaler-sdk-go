@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -29,7 +30,7 @@ func TestGetQualityMetrics(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, GetDevicesFilters{
+	devices, _, err := GetAllDevices(context.Background(), service, GetDevicesFilters{
 		GetFromToFilters: filters,
 	})
 	if err != nil {
@@ -44,7 +45,7 @@ func TestGetQualityMetrics(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, filters)
+	apps, _, err := applications.GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestGetQualityMetrics(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetQualityMetrics with the first device's ID and first app's ID
-	qualityMetrics, resp, err := GetQualityMetrics(service, firstDeviceID, firstAppID, filters)
+	qualityMetrics, resp, err := GetQualityMetrics(context.Background(), service, firstDeviceID, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting quality metrics: %v", err)
 	}

@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kelseyhightower/envconfig"
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -221,12 +221,6 @@ func WithZconCloud(cloud string) ConfigSetter {
 	}
 }
 
-func WithCache(cache bool) ConfigSetter {
-	return func(c *Configuration) {
-		c.ZCON.Client.Cache.Enabled = cache
-	}
-}
-
 func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 	return func(c *Configuration) {
 		c.CacheManager = cacheManager
@@ -262,8 +256,10 @@ func WithCacheTti(i time.Duration) ConfigSetter {
 	}
 }
 
-func (c *Client) WithCache(cache bool) {
-	c.cacheEnabled = cache
+func WithCache(cache bool) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZCON.Client.Cache.Enabled = cache
+	}
 }
 
 func (c *Client) WithCacheTtl(i time.Duration) {

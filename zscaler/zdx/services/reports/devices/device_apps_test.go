@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"testing"
@@ -32,7 +33,7 @@ func TestGetDeviceApp(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -45,7 +46,7 @@ func TestGetDeviceApp(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, common.GetFromToFilters{From: int(from), To: int(to)})
+	apps, _, err := applications.GetAllApps(context.Background(), service, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -58,7 +59,7 @@ func TestGetDeviceApp(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetDeviceApp with the first device's ID and first app's ID
-	deviceApp, resp, err := GetDeviceApp(service, strconv.Itoa(firstDeviceID), strconv.Itoa(firstAppID), common.GetFromToFilters{From: int(from), To: int(to)})
+	deviceApp, resp, err := GetDeviceApp(context.Background(), service, strconv.Itoa(firstDeviceID), strconv.Itoa(firstAppID), common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting device app: %v", err)
 	}
@@ -94,7 +95,7 @@ func TestGetDeviceAllApps(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -107,7 +108,7 @@ func TestGetDeviceAllApps(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Call GetDeviceAllApps with the first device's ID
-	deviceApps, resp, err := GetDeviceAllApps(service, strconv.Itoa(firstDeviceID), common.GetFromToFilters{From: int(from), To: int(to)})
+	deviceApps, resp, err := GetDeviceAllApps(context.Background(), service, strconv.Itoa(firstDeviceID), common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all apps for device: %v", err)
 	}

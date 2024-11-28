@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -46,20 +47,20 @@ type SoftwareUserList struct {
 	InstallDate     string `json:"install_date,omitempty"`
 }
 
-func GetSoftware(service *services.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
+func GetSoftware(ctx context.Context, service *services.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
 	var response SoftwareOverviewResponse
 	path := softwareEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, "", nil, err
 	}
 	return response.Software, response.NextOffset, resp, nil
 }
 
-func GetSoftwareKey(service *services.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
+func GetSoftwareKey(ctx context.Context, service *services.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
 	var response SoftwareKeyResponse
 	path := fmt.Sprintf("%v/%v", softwareKeyEndpoint, softwareKey)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, "", nil, err
 	}

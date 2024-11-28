@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"testing"
@@ -28,7 +29,7 @@ func TestGetAllUsers(t *testing.T) {
 	}
 
 	// Call GetAllUsers with the filters
-	users, resp, err := GetAllUsers(service, filters)
+	users, resp, err := GetAllUsers(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all users: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestGetUser(t *testing.T) {
 	}
 
 	// Invoke GetAllUsers to retrieve the ID of the first user
-	users, _, err := GetAllUsers(service, filters)
+	users, _, err := GetAllUsers(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all users: %v", err)
 	}
@@ -81,7 +82,7 @@ func TestGetUser(t *testing.T) {
 	firstUserID := users[0].ID
 
 	// Call GetUser with the first user's ID
-	user, resp, err := GetUser(service, strconv.Itoa(firstUserID))
+	user, resp, err := GetUser(context.Background(), service, strconv.Itoa(firstUserID))
 	if err != nil {
 		t.Fatalf("Error getting user: %v", err)
 	}

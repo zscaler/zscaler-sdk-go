@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ func TestGetAppScores(t *testing.T) {
 	}
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := GetAllApps(service, filters)
+	apps, _, err := GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -41,7 +42,7 @@ func TestGetAppScores(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetAppScores with the first app's ID
-	scores, resp, err := GetAppScores(service, firstAppID, filters)
+	scores, resp, err := GetAppScores(context.Background(), service, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting app scores: %v", err)
 	}
@@ -81,7 +82,7 @@ func TestGetAppMetrics(t *testing.T) {
 	}
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := GetAllApps(service, filters)
+	apps, _, err := GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -94,7 +95,7 @@ func TestGetAppMetrics(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetAppMetrics with the first app's ID
-	metrics, resp, err := GetAppMetrics(service, firstAppID, filters)
+	metrics, resp, err := GetAppMetrics(context.Background(), service, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting app metrics: %v", err)
 	}

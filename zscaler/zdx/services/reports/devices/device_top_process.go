@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -28,10 +29,10 @@ type Processes struct {
 }
 
 // GetDeviceTopProcesses gets the top processes for a device's deep trace session
-func GetDeviceTopProcesses(service *services.Service, deviceID int, traceID string, filters common.GetFromToFilters) ([]DeviceTopProcesses, *http.Response, error) {
+func GetDeviceTopProcesses(ctx context.Context, service *services.Service, deviceID int, traceID string, filters common.GetFromToFilters) ([]DeviceTopProcesses, *http.Response, error) {
 	var v []DeviceTopProcesses
 	path := fmt.Sprintf("%v/%v/deeptraces/%v/%v", devicesEndpoint, deviceID, traceID, deviceTopProcessEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

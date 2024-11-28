@@ -20,13 +20,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/utils"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Client struct {
@@ -322,16 +322,16 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 	return cfg.ZDX.Client.AuthToken, nil
 }
 
-func (client *Client) NewRequestDo(method, urlStr string, options, body, v interface{}) (*http.Response, error) {
+func (client *Client) NewRequestDo(ctx context.Context, method, urlStr string, options, body, v interface{}) (*http.Response, error) {
 	if client == nil {
 		return nil, fmt.Errorf("client is nil: ensure the client is properly initialized")
 	}
-	return client.newRequestDoCustom(method, urlStr, options, body, v, client.Config)
+	return client.newRequestDoCustom(ctx, method, urlStr, options, body, v, client.Config)
 }
 
-func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v interface{}, config *Configuration) (*http.Response, error) {
+func (client *Client) newRequestDoCustom(ctx context.Context, method, urlStr string, options, body, v interface{}, config *Configuration) (*http.Response, error) {
 	// Authenticate and log errors
-	if _, err := Authenticate(context.Background(), config, config.Logger); err != nil {
+	if _, err := Authenticate(ctx, config, config.Logger); err != nil {
 		client.Config.Logger.Printf("[ERROR] Authentication failed: %v", err)
 		return nil, err
 	}
@@ -342,6 +342,8 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		client.Config.Logger.Printf("[ERROR] Failed to create request: %v", err)
 		return nil, err
 	}
+
+	req = req.WithContext(ctx)
 
 	reqID := uuid.NewString()
 	start := time.Now()
@@ -371,7 +373,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 		client.Config.Logger.Printf("[WARN] Unauthorized or forbidden response. Retrying authentication.")
 
 		// Re-authenticate and log errors
-		if _, err := Authenticate(context.Background(), config, config.Logger); err != nil {
+		if _, err := Authenticate(ctx, config, config.Logger); err != nil {
 			client.Config.Logger.Printf("[ERROR] Re-authentication failed: %v", err)
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -29,7 +30,7 @@ func TestGetAllCloudPathProbes(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, GetDevicesFilters{
+	devices, _, err := GetAllDevices(context.Background(), service, GetDevicesFilters{
 		GetFromToFilters: filters,
 	})
 	if err != nil {
@@ -44,7 +45,7 @@ func TestGetAllCloudPathProbes(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, filters)
+	apps, _, err := applications.GetAllApps(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestGetAllCloudPathProbes(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Call GetAllCloudPathProbes with the first device's ID and first app's ID
-	cloudPathProbes, resp, err := GetAllCloudPathProbes(service, firstDeviceID, firstAppID, filters)
+	cloudPathProbes, resp, err := GetAllCloudPathProbes(context.Background(), service, firstDeviceID, firstAppID, filters)
 	if err != nil {
 		t.Fatalf("Error getting cloud path probes: %v", err)
 	}
@@ -99,7 +100,7 @@ func TestGetDeviceAppCloudPathProbe(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -112,7 +113,7 @@ func TestGetDeviceAppCloudPathProbe(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, common.GetFromToFilters{From: int(from), To: int(to)})
+	apps, _, err := applications.GetAllApps(context.Background(), service, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -125,7 +126,7 @@ func TestGetDeviceAppCloudPathProbe(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Invoke GetAllCloudPathProbes to retrieve the ID of the first probe
-	probes, _, err := GetAllCloudPathProbes(service, firstDeviceID, firstAppID, common.GetFromToFilters{From: int(from), To: int(to)})
+	probes, _, err := GetAllCloudPathProbes(context.Background(), service, firstDeviceID, firstAppID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all cloud path probes: %v", err)
 	}
@@ -138,7 +139,7 @@ func TestGetDeviceAppCloudPathProbe(t *testing.T) {
 	firstProbeID := probes[0].ID
 
 	// Call GetDeviceAppCloudPathProbe with the first device's ID, first app's ID, and first probe's ID
-	networkStats, resp, err := GetDeviceAppCloudPathProbe(service, firstDeviceID, firstAppID, firstProbeID, common.GetFromToFilters{From: int(from), To: int(to)})
+	networkStats, resp, err := GetDeviceAppCloudPathProbe(context.Background(), service, firstDeviceID, firstAppID, firstProbeID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting device app cloud path probe: %v", err)
 	}
@@ -176,7 +177,7 @@ func TestGetCloudPathAppDevice(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -189,7 +190,7 @@ func TestGetCloudPathAppDevice(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Invoke GetAllApps to retrieve the ID of the first app
-	apps, _, err := applications.GetAllApps(service, common.GetFromToFilters{From: int(from), To: int(to)})
+	apps, _, err := applications.GetAllApps(context.Background(), service, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -202,7 +203,7 @@ func TestGetCloudPathAppDevice(t *testing.T) {
 	firstAppID := apps[0].ID
 
 	// Invoke GetAllCloudPathProbes to retrieve the ID of the first probe
-	probes, _, err := GetAllCloudPathProbes(service, firstDeviceID, firstAppID, common.GetFromToFilters{From: int(from), To: int(to)})
+	probes, _, err := GetAllCloudPathProbes(context.Background(), service, firstDeviceID, firstAppID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting all cloud path probes: %v", err)
 	}
@@ -215,7 +216,7 @@ func TestGetCloudPathAppDevice(t *testing.T) {
 	firstProbeID := probes[0].ID
 
 	// Call GetCloudPathAppDevice with the first device's ID, first app's ID, and first probe's ID
-	cloudPathProbes, resp, err := GetCloudPathAppDevice(service, firstDeviceID, firstAppID, firstProbeID, common.GetFromToFilters{From: int(from), To: int(to)})
+	cloudPathProbes, resp, err := GetCloudPathAppDevice(context.Background(), service, firstDeviceID, firstAppID, firstProbeID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting cloud path app device: %v", err)
 	}

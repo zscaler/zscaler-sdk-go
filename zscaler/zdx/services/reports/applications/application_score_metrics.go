@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -14,17 +15,17 @@ const (
 )
 
 // Gets the application's ZDX score trend. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAppScores(service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetAppScores(ctx context.Context, service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, scoreEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil
@@ -41,17 +42,17 @@ If not specified, it defaults to End to End latency.
 If the time range is not specified, the endpoint defaults to the last 2 hours.
 */
 // Gets the application's metric trend.
-func GetAppMetrics(service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetAppMetrics(ctx context.Context, service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, metricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil

@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -30,28 +31,28 @@ type Result struct {
 	Times      []int  `json:"times"`
 }
 
-func GetAnalysis(service *services.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
+func GetAnalysis(ctx context.Context, service *services.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
 	var response AnalysisResult
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", path, nil, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
 	return &response, resp, nil
 }
 
-func CreateAnalysis(service *services.Service, request AnalysisRequest) (*http.Response, error) {
+func CreateAnalysis(ctx context.Context, service *services.Service, request AnalysisRequest) (*http.Response, error) {
 	path := analysisEndpoint
-	resp, err := service.Client.NewRequestDo("POST", path, nil, request, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", path, nil, request, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func DeleteAnalysis(service *services.Service, analysisID string) (*http.Response, error) {
+func DeleteAnalysis(ctx context.Context, service *services.Service, analysisID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}

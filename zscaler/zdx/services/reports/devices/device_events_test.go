@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestGetEvents(t *testing.T) {
 	}
 
 	// Invoke GetAllDevices to retrieve the ID of the first device
-	devices, _, err := GetAllDevices(service, filters)
+	devices, _, err := GetAllDevices(context.Background(), service, filters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -43,7 +44,7 @@ func TestGetEvents(t *testing.T) {
 	firstDeviceID := devices[0].ID
 
 	// Call GetEvents with the first device's ID
-	deviceEvents, resp, err := GetEvents(service, firstDeviceID, common.GetFromToFilters{From: int(from), To: int(to)})
+	deviceEvents, resp, err := GetEvents(context.Background(), service, firstDeviceID, common.GetFromToFilters{From: int(from), To: int(to)})
 	if err != nil {
 		t.Fatalf("Error getting events: %v", err)
 	}

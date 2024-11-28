@@ -1,16 +1,17 @@
 package deeptrace
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestDeepTraceSession(t *testing.T) {
@@ -33,7 +34,7 @@ func TestDeepTraceSession(t *testing.T) {
 		},
 	}
 
-	device, _, err := devices.GetAllDevices(service, deviceFilters)
+	device, _, err := devices.GetAllDevices(context.Background(), service, deviceFilters)
 	if err != nil {
 		t.Fatalf("Error getting all devices: %v", err)
 	}
@@ -51,7 +52,7 @@ func TestDeepTraceSession(t *testing.T) {
 		To:   int(to),
 	}
 
-	apps, _, err := applications.GetAllApps(service, appFilters)
+	apps, _, err := applications.GetAllApps(context.Background(), service, appFilters)
 	if err != nil {
 		t.Fatalf("Error getting all apps: %v", err)
 	}
@@ -64,7 +65,7 @@ func TestDeepTraceSession(t *testing.T) {
 	appID := apps[0].ID
 
 	// Step 3: Get all web probes and retrieve the first web probe ID
-	webProbes, _, err := devices.GetAllWebProbes(service, deviceID, appID, appFilters)
+	webProbes, _, err := devices.GetAllWebProbes(context.Background(), service, deviceID, appID, appFilters)
 	if err != nil {
 		t.Fatalf("Error getting all web probes: %v", err)
 	}
@@ -77,7 +78,7 @@ func TestDeepTraceSession(t *testing.T) {
 	webProbeID := webProbes[0].ID
 
 	// Step 4: Get all cloud path probes and retrieve the first cloud path probe ID
-	cloudPathProbes, _, err := devices.GetAllCloudPathProbes(service, deviceID, appID, appFilters)
+	cloudPathProbes, _, err := devices.GetAllCloudPathProbes(context.Background(), service, deviceID, appID, appFilters)
 	if err != nil {
 		t.Fatalf("Error getting all cloud path probes: %v", err)
 	}
@@ -99,7 +100,7 @@ func TestDeepTraceSession(t *testing.T) {
 		ProbeDevice:          true,
 	}
 
-	createdSession, resp, err := CreateDeepTraceSession(service, deviceID, payload)
+	createdSession, resp, err := CreateDeepTraceSession(context.Background(), service, deviceID, payload)
 	if err != nil {
 		t.Fatalf("Error creating deep trace session: %v", err)
 	}
@@ -112,7 +113,7 @@ func TestDeepTraceSession(t *testing.T) {
 	t.Logf("Created Deep Trace Session: %s", traceID)
 
 	// Step 6: Get all deep traces
-	deepTraces, resp, err := GetDeepTraces(service, deviceID)
+	deepTraces, resp, err := GetDeepTraces(context.Background(), service, deviceID)
 	if err != nil {
 		t.Fatalf("Error getting deep traces: %v", err)
 	}
@@ -131,7 +132,7 @@ func TestDeepTraceSession(t *testing.T) {
 	}
 
 	// Step 7: Get deep trace session
-	traceSessionResp, err := GetDeepTraceSession(service, deviceID, traceID)
+	traceSessionResp, err := GetDeepTraceSession(context.Background(), service, deviceID, traceID)
 	if err != nil {
 		t.Fatalf("Error getting deep trace session: %v", err)
 	}
@@ -147,7 +148,7 @@ func TestDeepTraceSession(t *testing.T) {
 	time.Sleep(60 * time.Second)
 
 	// Step 9: Delete the deep trace session
-	deleteResp, err := DeleteDeepTraceSession(service, deviceID, traceID)
+	deleteResp, err := DeleteDeepTraceSession(context.Background(), service, deviceID, traceID)
 	if err != nil {
 		t.Fatalf("Error deleting deep trace session: %v", err)
 	}

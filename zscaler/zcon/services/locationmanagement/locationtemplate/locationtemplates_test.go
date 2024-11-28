@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (

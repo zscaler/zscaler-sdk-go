@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // NewClient Returns a Client from credentials passed as parameters.
@@ -89,10 +89,6 @@ func NewClient(config *Configuration) (*Client, error) {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
 	}
 
-	// Check cache settings
-	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
-	cacheEnabled := !cacheDisabled && config.ZCON.Client.Cache.Enabled
-
 	// Perform authentication request
 	session, err := MakeAuthRequestZCON(credentials, baseURL, httpClient, config.UserAgent)
 	if err != nil {
@@ -110,7 +106,7 @@ func NewClient(config *Configuration) (*Client, error) {
 		URL:              baseURL,
 		Logger:           logger,
 		UserAgent:        config.UserAgent,
-		cacheEnabled:     cacheEnabled,
+		cacheEnabled:     config.ZCON.Client.Cache.Enabled,
 		cacheTtl:         config.ZCON.Client.Cache.DefaultTtl,
 		cacheCleanwindow: config.ZCON.Client.Cache.DefaultTti,
 		cacheMaxSizeMB:   int(config.ZCON.Client.Cache.DefaultCacheMaxSizeMB),
