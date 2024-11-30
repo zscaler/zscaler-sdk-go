@@ -28,9 +28,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
-// NewClient Returns a Client from credentials passed as parameters.
 func NewClient(config *Configuration) (*Client, error) {
-
 	if config == nil {
 		return nil, errors.New("configuration cannot be nil")
 	}
@@ -43,36 +41,20 @@ func NewClient(config *Configuration) (*Client, error) {
 	}
 
 	logger := logger.GetDefaultLogger(loggerPrefix)
-	// logger.Printf("[DEBUG] Initializing client with provided configuration.")
 
 	// Validate ZIA Cloud
 	if config.ZCON.Client.ZCONCloud == "" {
-		logger.Printf("[ERROR] Missing ZIA cloud configuration. Ensure WithZiaCloud is set.")
+		logger.Printf("[ERROR] Missing ZIA cloud configuration.")
 		return nil, errors.New("ZIACloud configuration is missing")
 	}
 
-	// Construct the base URL based on the ZIA cloud
+	// Construct the base URL
 	baseURL := config.BaseURL.String()
 
 	// Validate authentication credentials
 	if config.ZCON.Client.ZCONUsername == "" || config.ZCON.Client.ZCONPassword == "" || config.ZCON.Client.ZCONApiKey == "" {
 		logger.Printf("[ERROR] Missing required ZIA credentials (username, password, or API key).")
 		return nil, errors.New("missing required ZIA credentials")
-	}
-
-	// Perform authentication using the provided credentials
-	timeStamp := getCurrentTimestampMilisecond()
-	obfuscatedKey, err := obfuscateAPIKey(config.ZCON.Client.ZCONApiKey, timeStamp)
-	if err != nil {
-		logger.Printf("[ERROR] Failed to obfuscate API key: %v", err)
-		return nil, fmt.Errorf("failed to obfuscate API key: %w", err)
-	}
-
-	credentials := &Credentials{
-		Username:  config.ZCON.Client.ZCONUsername,
-		Password:  config.ZCON.Client.ZCONPassword,
-		APIKey:    obfuscatedKey,
-		TimeStamp: timeStamp,
 	}
 
 	// Initialize rate limiter
@@ -87,13 +69,6 @@ func NewClient(config *Configuration) (*Client, error) {
 	httpClient := config.HTTPClient
 	if httpClient == nil {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
-	}
-
-	// Perform authentication request
-	session, err := MakeAuthRequestZCON(credentials, baseURL, httpClient, config.UserAgent)
-	if err != nil {
-		logger.Printf("[ERROR] Authentication failed: %v", err)
-		return nil, fmt.Errorf("authentication failed: %w", err)
 	}
 
 	// Initialize the Client instance
@@ -112,9 +87,8 @@ func NewClient(config *Configuration) (*Client, error) {
 		cacheMaxSizeMB:   int(config.ZCON.Client.Cache.DefaultCacheMaxSizeMB),
 		rateLimiter:      rateLimiter,
 		stopTicker:       make(chan bool),
-		sessionTimeout:   JSessionIDTimeout * time.Minute, // Default session timeout
-		session:          session,
-		sessionRefreshed: time.Now(),
+		sessionTimeout:   JSessionIDTimeout * time.Minute,
+		sessionRefreshed: time.Time{},
 	}
 
 	// Initialize the cache
@@ -128,7 +102,7 @@ func NewClient(config *Configuration) (*Client, error) {
 	// Start the session refresh ticker
 	cli.startSessionTicker()
 
-	// logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
+	//logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
 	return cli, nil
 }
 
@@ -267,58 +241,67 @@ func (c *Client) checkSession() error {
 	defer c.Unlock()
 
 	now := time.Now()
-	if c.session == nil {
-		c.Logger.Printf("[INFO] No session found, refreshing session")
-		err := c.refreshSession()
-		if err != nil {
-			c.Logger.Printf("[ERROR] Failed to get session id: %v\n", err)
-			return err
-		}
-	} else {
-		c.Logger.Printf("[INFO] Current time: %v\nSession Refreshed: %v\nSession Timeout: %v\n",
-			now.Format("2006-01-02 15:04:05 MST"),
-			c.sessionRefreshed.Format("2006-01-02 15:04:05 MST"),
-			c.sessionTimeout)
 
-		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
-			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
-			if !c.refreshing {
-				c.refreshing = true
-				c.Unlock()
-				err := c.refreshSession()
-				c.Lock()
-				c.refreshing = false
-				if err != nil {
-					c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
-					return err
-				}
+	// Initialize or refresh session if necessary
+	if c.session == nil || now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
+		c.Logger.Printf("[INFO] Session is invalid or expired. Refreshing session...")
+		if !c.refreshing {
+			c.refreshing = true
+			defer func() { c.refreshing = false }()
+
+			// Refresh session
+			timeStamp := getCurrentTimestampMilisecond()
+			obfuscatedKey, err := obfuscateAPIKey(c.apiKey, timeStamp)
+			if err != nil {
+				return err
+			}
+
+			credentials := &Credentials{
+				Username:  c.userName,
+				Password:  c.password,
+				APIKey:    obfuscatedKey,
+				TimeStamp: timeStamp,
+			}
+			session, err := MakeAuthRequestZCON(credentials, c.URL, c.HTTPClient, c.UserAgent)
+			if err != nil {
+				c.Logger.Printf("[ERROR] Failed to refresh session: %v", err)
+				return err
+			}
+
+			// Update session and timeout
+			c.session = session
+			c.sessionRefreshed = time.Now()
+			if c.session.PasswordExpiryTime > 0 {
+				c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
 			} else {
-				c.Logger.Printf("[INFO] Another refresh is in progress, waiting for it to complete")
+				c.sessionTimeout = JSessionIDTimeout * time.Minute
 			}
 		} else {
-			c.Logger.Printf("[INFO] Session is still valid, no need to refresh")
+			c.Logger.Printf("[INFO] Another goroutine is refreshing the session. Waiting...")
+			// Wait for ongoing refresh to complete
+			for c.refreshing {
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
+	} else {
+		c.Logger.Printf("[INFO] Session is valid, no refresh needed.")
 	}
 
+	// Ensure the JSESSIONID is set in the HTTP client cookies
 	url, err := url.Parse(c.URL)
 	if err != nil {
-		c.Logger.Printf("[ERROR] Failed to parse url %s: %v\n", c.URL, err)
+		c.Logger.Printf("[ERROR] Failed to parse URL: %v", err)
 		return err
 	}
-
 	if c.HTTPClient.Jar == nil {
 		c.HTTPClient.Jar, err = cookiejar.New(nil)
 		if err != nil {
-			c.Logger.Printf("[ERROR] Failed to create new http cookie jar %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to create HTTP cookie jar: %v", err)
 			return err
 		}
 	}
-
 	c.HTTPClient.Jar.SetCookies(url, []*http.Cookie{
-		{
-			Name:  cookieName,
-			Value: c.session.JSessionID,
-		},
+		{Name: cookieName, Value: c.session.JSessionID},
 	})
 
 	return nil
@@ -626,8 +609,19 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
 
+	err = c.checkSession()
+	if err != nil {
+		return nil, err
+	}
+	jSessionID := c.session.JSessionID
+	req.Header.Set("JSessionID", jSessionID)
+
+	otherHeaders := map[string]string{}
+
 	reqID := uuid.New().String()
 	start := time.Now()
+	logger.LogRequest(c.Logger, req, reqID, otherHeaders, true)
+
 	for retry := 1; retry <= 5; retry++ {
 		resp, err = c.do(req, start, reqID)
 		if err != nil {

@@ -1,4 +1,4 @@
-package filteringrules
+package firewallipscontrolpolicies
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	firewallRulesEndpoint = "/zia/api/v1/firewallFilteringRules"
+	firewallIpsRulesEndpoint = "/zia/api/v1/firewallIpsRules"
 )
 
-type FirewallFilteringRules struct {
+type FirewallIPSRules struct {
 	// Unique identifier for the Firewall Filtering policy rule
 	ID int `json:"id,omitempty"`
 
@@ -59,21 +59,19 @@ type FirewallFilteringRules struct {
 	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
 	DestCountries []string `json:"destCountries,omitempty"`
 
-	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
+	// The countries of origin of traffic for which the rule is applicable. If not set, the rule is not restricted to specific source countries.
 	SourceCountries []string `json:"sourceCountries,omitempty"`
 
-	// Indicates whether the countries specified in the sourceCountries field are included or excluded from the rule.
-	// A true value denotes that the specified source countries are excluded from the rule.
-	// A false value denotes that the rule is applied to the source countries if there is a match.
-	ExcludeSrcCountries bool `json:"excludeSrcCountries,omitempty"`
-
-	// User-defined network service applications on which the rule is applied. If not set, the rule is not restricted to a specific network service application.
-	NwApplications []string `json:"nwApplications,omitempty"`
+	// List of destination IP categories to which the rule applies. If not set, the rule is not restricted to specific destination IP categories.
+	ResCategories []string `json:"resCategories,omitempty"`
 
 	// If set to true, the default rule is applied
 	DefaultRule bool `json:"defaultRule"`
 
-	// If set to true, a predefined rule is applied
+	// A Boolean value that indicates whether packet capture (PCAP) is enabled or not
+	CapturePCAP bool `json:"capturePCAP"`
+
+	// A Boolean field that indicates that the rule is predefined by using a true value
 	Predefined bool `json:"predefined"`
 
 	// The locations to which the Firewall Filtering policy rule applies
@@ -110,6 +108,9 @@ type FirewallFilteringRules struct {
 	// Note: For organizations that have enabled IPv6, the destIpv6Groups field lists the IPv6 source address groups for which the rule is applicable.
 	DestIpGroups []common.IDNameExtensions `json:"destIpGroups,omitempty"`
 
+	// Destination IPv6 address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IPv6 address group.
+	DestIpv6Groups []common.IDNameExtensions `json:"destIpv6Groups,omitempty"`
+
 	// User-defined network services on which the rule is applied. If not set, the rule is not restricted to a specific network service.
 	NwServices []common.IDNameExtensions `json:"nwServices,omitempty"`
 
@@ -119,36 +120,33 @@ type FirewallFilteringRules struct {
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	SrcIpGroups []common.IDNameExtensions `json:"srcIpGroups,omitempty"`
 
-	// List of device trust levels for which the rule must be applied. This field is applicable for devices that are managed using Zscaler Client Connector. The trust levels are assigned to the devices based on your posture configurations in the Zscaler Client Connector Portal. If no value is set, this field is ignored during the policy evaluation.
-	DeviceTrustLevels []string `json:"deviceTrustLevels,omitempty"`
-
 	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
 
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
 
-	// The list of preconfigured workload groups to which the policy must be applied.
-	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
+	// Advanced threat categories to which the rule applies
+	ThreatCategories []common.IDNameExtensions `json:"threatCategories,omitempty"`
 
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
-func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallFilteringRules, error) {
-	var rule FirewallFilteringRules
-	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
+func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallIPSRules, error) {
+	var rule FirewallIPSRules
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", firewallIpsRulesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning firewall rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning firewall ips rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
-func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*FirewallFilteringRules, error) {
-	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules)
+func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*FirewallIPSRules, error) {
+	var rules []FirewallIPSRules
+	err := common.ReadAllPages(ctx, service.Client, firewallIpsRulesEndpoint, &rules)
 	if err != nil {
 		return nil, err
 	}
@@ -157,16 +155,16 @@ func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (
 			return &rule, nil
 		}
 	}
-	return nil, fmt.Errorf("no firewall rule found with name: %s", ruleName)
+	return nil, fmt.Errorf("no firewall ips rule found with name: %s", ruleName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, rule *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.Create(ctx, firewallRulesEndpoint, *rule)
+func Create(ctx context.Context, service *zscaler.Service, rule *FirewallIPSRules) (*FirewallIPSRules, error) {
+	resp, err := service.Client.Create(ctx, firewallIpsRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
 
-	createdRules, ok := resp.(*FirewallFilteringRules)
+	createdRules, ok := resp.(*FirewallIPSRules)
 	if !ok {
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
@@ -175,18 +173,18 @@ func Create(ctx context.Context, service *zscaler.Service, rule *FirewallFilteri
 	return createdRules, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), *rules)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallIPSRules) (*FirewallIPSRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", firewallIpsRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
-	updatedRules, _ := resp.(*FirewallFilteringRules)
-	service.Client.GetLogger().Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
+	updatedRules, _ := resp.(*FirewallIPSRules)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall ips rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID))
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", firewallIpsRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +192,8 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]FirewallFilteringRules, error) {
-	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules)
+func GetAll(ctx context.Context, service *zscaler.Service) ([]FirewallIPSRules, error) {
+	var rules []FirewallIPSRules
+	err := common.ReadAllPages(ctx, service.Client, firewallIpsRulesEndpoint, &rules)
 	return rules, err
 }

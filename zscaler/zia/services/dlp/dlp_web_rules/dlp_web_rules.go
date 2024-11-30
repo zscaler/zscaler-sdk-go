@@ -21,6 +21,7 @@ type WebDLPRules struct {
 
 	// The rule order of execution for the DLP policy rule with respect to other rules.
 	Order int `json:"order,omitempty"`
+
 	// The access privilege for this DLP policy rule based on the admin's state.
 	AccessControl string `json:"accessControl,omitempty"`
 

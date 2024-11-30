@@ -31,6 +31,29 @@ func Get(ctx context.Context, service *zscaler.Service) (*ExemptedUrls, error) {
 	return &urls, nil
 }
 
+func Update(ctx context.Context, service *zscaler.Service, urls ExemptedUrls) (*ExemptedUrls, error) {
+	currentUrls, err := Get(ctx, service)
+	if err != nil {
+		return nil, err
+	}
+	newUrls := zscaler.Difference(urls.URLs, currentUrls.URLs)
+	removedUrls := zscaler.Difference(currentUrls.URLs, urls.URLs)
+	if len(newUrls) > 0 {
+		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=ADD_TO_LIST", exemptedUrlsEndpoint), ExemptedUrls{newUrls})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(removedUrls) > 0 {
+		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{removedUrls})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &urls, nil
+}
+
+/*
 // return the new items that were added to slice1.
 func difference(slice1 []string, slice2 []string) []string {
 	var diff []string
@@ -48,25 +71,4 @@ func difference(slice1 []string, slice2 []string) []string {
 	}
 	return diff
 }
-
-func Update(ctx context.Context, service *zscaler.Service, urls ExemptedUrls) (*ExemptedUrls, error) {
-	currentUrsl, err := Get(ctx, service)
-	if err != nil {
-		return nil, err
-	}
-	newUrls := difference(urls.URLs, currentUrsl.URLs)
-	removedUrls := difference(currentUrsl.URLs, urls.URLs)
-	if len(newUrls) > 0 {
-		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=ADD_TO_LIST", exemptedUrlsEndpoint), ExemptedUrls{newUrls})
-		if err != nil {
-			return nil, err
-		}
-	}
-	if len(removedUrls) > 0 {
-		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{removedUrls})
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &urls, nil
-}
+*/

@@ -27,6 +27,13 @@ type IDName struct {
 	Name string `json:"name,omitempty"`
 }
 
+type IDNameExternalID struct {
+	ID         int                    `json:"id,omitempty"`
+	Name       string                 `json:"name,omitempty"`
+	ExternalID string                 `json:"externalId,omitempty"`
+	Extensions map[string]interface{} `json:"extensions,omitempty"`
+}
+
 type IDCustom struct {
 	ID int `json:"id,omitempty"`
 }
@@ -97,6 +104,19 @@ type Order struct {
 type DataConsumed struct {
 	Min int `json:"min,omitempty"`
 	Max int `json:"max,omitempty"`
+}
+
+type CommonApplication struct {
+	Val                 int    `json:"val"`
+	WebApplicationClass string `json:"webApplicationClass"`
+	BackendName         string `json:"backendName"`
+	OriginalName        string `json:"originalName"`
+	Name                string `json:"name"`
+	Deprecated          bool   `json:"deprecated"`
+	Misc                bool   `json:"misc"`
+	AppNotReady         bool   `json:"appNotReady"`
+	UnderMigration      bool   `json:"underMigration"`
+	AppCatModified      bool   `json:"appCatModified"`
 }
 
 // GetPageSize returns the page size.

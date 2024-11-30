@@ -1,4 +1,4 @@
-package dlp_web_rules
+package sandbox_rules
 
 import (
 	"context"
@@ -43,48 +43,31 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestDLPWebRule(t *testing.T) {
+func TestSandboxRules(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	// updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	// workloadGroup := workloadgroups.New(client)
-	// groupList, err := workloadGroup.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting workload group: %v", err)
-	// 	return
-	// }
-	// if len(groupList) == 0 {
-	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
-	// }
-
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		// DLPDownloadScanEnabled:   true,
-		Severity:            "RULE_SEVERITY_HIGH",
-		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
-		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
-		// WorkloadGroups: []common.IDName{
-		// 	{
-		// 		ID:   groupList[0].ID,
-		// 		Name: groupList[0].Name,
-		// 	},
-		// },
+	rule := SandboxRules{
+		Name:               name,
+		Description:        name,
+		Order:              1,
+		Rank:               7,
+		State:              "ENABLED",
+		FirstTimeEnable:    true,
+		BaRuleAction:       "BLOCK",
+		MLActionEnabled:    true,
+		FirstTimeOperation: "ALLOW_SCAN",
+		Protocols:          []string{"FOHTTP_RULE", "FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		BaPolicyCategories: []string{"ADWARE_BLOCK", "BOTMAL_BLOCK", "ANONYP2P_BLOCK", "RANSOMWARE_BLOCK", "OFFSEC_TOOLS_BLOCK", "SUSPICIOUS_BLOCK"},
+		FileTypes:          []string{"FTCATEGORY_P7Z", "FTCATEGORY_BZIP2", "FTCATEGORY_DMG"},
 	}
 
-	var createdResource *WebDLPRules
+	var createdResource *SandboxRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
@@ -116,36 +99,36 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource update
-	// retrievedResource.Name = updateName
-	// err = retryOnConflict(func() error {
-	// 	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
-	// 	return err
-	// })
-	// if err != nil {
-	// 	t.Fatalf("Error updating resource: %v", err)
-	// }
+	retrievedResource.Name = updateName
+	err = retryOnConflict(func() error {
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		return err
+	})
+	if err != nil {
+		t.Fatalf("Error updating resource: %v", err)
+	}
 
-	// updatedResource, err := Get(context.Background(), service, createdResource.ID)
-	// if err != nil {
-	// 	t.Fatalf("Error retrieving resource: %v", err)
-	// }
-	// if updatedResource.ID != createdResource.ID {
-	// 	t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
-	// }
-	// if updatedResource.Name != updateName {
-	// 	t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	// }
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
+	if err != nil {
+		t.Fatalf("Error retrieving resource: %v", err)
+	}
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+	}
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(context.Background(), service, name)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedByNameResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedByNameResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedByNameResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
 
 	// Test resources retrieval
@@ -188,8 +171,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *zscaler.Service, id int) (*SandboxRules, error) {
+	var resource *SandboxRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -207,7 +190,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
 func TestRetrieveNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = Get(context.Background(), service, 0)
@@ -219,7 +202,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 func TestDeleteNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = Delete(context.Background(), service, 0)
@@ -231,10 +214,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 func TestUpdateNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, 0, &WebDLPRules{})
+	_, _, err = Update(context.Background(), service, 0, &SandboxRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -243,7 +226,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 func TestGetByNameNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = GetByName(context.Background(), service, "non_existent_name")

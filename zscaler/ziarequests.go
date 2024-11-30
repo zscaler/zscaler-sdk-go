@@ -20,7 +20,7 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.Create(removeOneApiEndpointPrefix(endpoint), o)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.Create(ctx, removeOneApiEndpointPrefix(endpoint), o)
 	}
 
 	if o == nil {
@@ -64,7 +64,7 @@ func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.Read(removeOneApiEndpointPrefix(endpoint), o)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.Read(ctx, removeOneApiEndpointPrefix(endpoint), o)
 	}
 
 	resp, _, _, err := c.ExecuteRequest(ctx, "GET", endpoint, nil, nil, contentTypeJSON)
@@ -85,7 +85,7 @@ func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.UpdateWithPut(removeOneApiEndpointPrefix(endpoint), o)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.UpdateWithPut(ctx, removeOneApiEndpointPrefix(endpoint), o)
 	}
 	return c.updateGeneric(ctx, endpoint, o, "PUT", contentTypeJSON)
 }
@@ -96,7 +96,7 @@ func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (in
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.Update(removeOneApiEndpointPrefix(endpoint), o)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.Update(ctx, removeOneApiEndpointPrefix(endpoint), o)
 	}
 	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
@@ -131,7 +131,7 @@ func (c *Client) Delete(ctx context.Context, endpoint string) error {
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.Delete(removeOneApiEndpointPrefix(endpoint))
+		return c.oauth2Credentials.LegacyClient.ZiaClient.Delete(ctx, removeOneApiEndpointPrefix(endpoint))
 	}
 	_, _, _, err := c.ExecuteRequest(ctx, "DELETE", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
@@ -146,7 +146,7 @@ func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interf
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.BulkDelete(removeOneApiEndpointPrefix(endpoint), payload)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.BulkDelete(ctx, removeOneApiEndpointPrefix(endpoint), payload)
 	}
 
 	if payload == nil {
@@ -176,7 +176,7 @@ func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, sl
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.CreateWithSlicePayload(removeOneApiEndpointPrefix(endpoint), slice)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.CreateWithSlicePayload(ctx, removeOneApiEndpointPrefix(endpoint), slice)
 	}
 
 	if slice == nil {
@@ -212,7 +212,7 @@ func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, sl
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.UpdateWithSlicePayload(removeOneApiEndpointPrefix(endpoint), slice)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.UpdateWithSlicePayload(ctx, removeOneApiEndpointPrefix(endpoint), slice)
 	}
 
 	if slice == nil {
@@ -244,7 +244,7 @@ func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payl
 		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
 			return nil, errLegacyClientNotSet
 		}
-		return c.oauth2Credentials.LegacyClient.ZiaClient.CreateWithRawPayload(removeOneApiEndpointPrefix(endpoint), payload)
+		return c.oauth2Credentials.LegacyClient.ZiaClient.CreateWithRawPayload(ctx, removeOneApiEndpointPrefix(endpoint), payload)
 	}
 
 	if payload == "" {

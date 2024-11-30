@@ -248,3 +248,66 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+
+func TestUrlAndAppSettings(t *testing.T) {
+	// Initialize the API client
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	// Context for API calls
+	ctx := context.Background()
+
+	// Step 1: Retrieve existing URL and App Settings
+	initialSettings, err := GetUrlAndAppSettings(ctx, service)
+	if err != nil {
+		t.Fatalf("Error retrieving URL and App settings: %v", err)
+	}
+
+	t.Logf("Initial settings retrieved: %+v", initialSettings)
+
+	// Step 2: Update the URL and App Settings
+	newSettings := URLAdvancedPolicySettings{
+		EnableDynamicContentCat:           true,
+		ConsiderEmbeddedSites:             true,
+		EnforceSafeSearch:                 true,
+		EnableOffice365:                   false,
+		EnableMsftO365:                    false,
+		EnableUcaasZoom:                   false,
+		EnableUcaasLogMeIn:                false,
+		EnableUcaasRingCentral:            false,
+		EnableUcaasWebex:                  false,
+		EnableUcaasTalkdesk:               false,
+		EnableChatGptPrompt:               false,
+		EnableMicrosoftCoPilotPrompt:      false,
+		EnableGeminiPrompt:                false,
+		EnablePOEPrompt:                   false,
+		EnableMetaPrompt:                  false,
+		EnablePerPlexityPrompt:            false,
+		BlockSkype:                        false,
+		EnableNewlyRegisteredDomains:      true,
+		EnableBlockOverrideForNonAuthUser: true,
+		//EnableCIPACompliance:              true,
+	}
+
+	updatedSettings, _, err := UpdateUrlAndAppSettings(ctx, service, newSettings)
+	if err != nil {
+		t.Fatalf("Error updating URL and App settings: %v", err)
+	}
+
+	t.Logf("Updated settings: %+v", updatedSettings)
+
+	// Step 3: Retrieve the updated settings and validate the changes
+	retrievedSettings, err := GetUrlAndAppSettings(ctx, service)
+	if err != nil {
+		t.Fatalf("Error retrieving updated settings: %v", err)
+	}
+
+	t.Logf("Retrieved updated settings: %+v", retrievedSettings)
+
+	// Assert that the updated settings match the new settings
+	if *retrievedSettings != newSettings {
+		t.Errorf("Updated settings do not match the expected values. Got: %+v, Expected: %+v", retrievedSettings, newSettings)
+	}
+}

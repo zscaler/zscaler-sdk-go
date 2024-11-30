@@ -1,4 +1,4 @@
-package dlp_web_rules
+package firewallipscontrolpolicies
 
 import (
 	"context"
@@ -43,48 +43,25 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestDLPWebRule(t *testing.T) {
+func TestFirewallIPSRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	// updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	// workloadGroup := workloadgroups.New(client)
-	// groupList, err := workloadGroup.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting workload group: %v", err)
-	// 	return
-	// }
-	// if len(groupList) == 0 {
-	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
-	// }
-
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		// DLPDownloadScanEnabled:   true,
-		Severity:            "RULE_SEVERITY_HIGH",
-		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
-		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
-		// WorkloadGroups: []common.IDName{
-		// 	{
-		// 		ID:   groupList[0].ID,
-		// 		Name: groupList[0].Name,
-		// 	},
-		// },
+	rule := FirewallIPSRules{
+		Name:          name,
+		Description:   name,
+		Order:         1,
+		Rank:          7,
+		Action:        "ALLOW",
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
 	}
 
-	var createdResource *WebDLPRules
+	var createdResource *FirewallIPSRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
@@ -116,36 +93,36 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource update
-	// retrievedResource.Name = updateName
-	// err = retryOnConflict(func() error {
-	// 	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
-	// 	return err
-	// })
-	// if err != nil {
-	// 	t.Fatalf("Error updating resource: %v", err)
-	// }
+	retrievedResource.Name = updateName
+	err = retryOnConflict(func() error {
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		return err
+	})
+	if err != nil {
+		t.Fatalf("Error updating resource: %v", err)
+	}
 
-	// updatedResource, err := Get(context.Background(), service, createdResource.ID)
-	// if err != nil {
-	// 	t.Fatalf("Error retrieving resource: %v", err)
-	// }
-	// if updatedResource.ID != createdResource.ID {
-	// 	t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
-	// }
-	// if updatedResource.Name != updateName {
-	// 	t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	// }
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
+	if err != nil {
+		t.Fatalf("Error retrieving resource: %v", err)
+	}
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+	}
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(context.Background(), service, name)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedByNameResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedByNameResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedByNameResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
 
 	// Test resources retrieval
@@ -188,8 +165,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *zscaler.Service, id int) (*FirewallIPSRules, error) {
+	var resource *FirewallIPSRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -207,7 +184,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
 func TestRetrieveNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = Get(context.Background(), service, 0)
@@ -219,7 +196,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 func TestDeleteNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = Delete(context.Background(), service, 0)
@@ -231,10 +208,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 func TestUpdateNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, 0, &WebDLPRules{})
+	_, err = Update(context.Background(), service, 0, &FirewallIPSRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -243,7 +220,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 func TestGetByNameNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
 	_, err = GetByName(context.Background(), service, "non_existent_name")

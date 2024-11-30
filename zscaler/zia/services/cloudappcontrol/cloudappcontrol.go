@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	webApplicationRulesEndpoint = "/webApplicationRules"
+	webApplicationRulesEndpoint = "/zia/api/v1/webApplicationRules"
 )
 
 type WebApplicationRules struct {

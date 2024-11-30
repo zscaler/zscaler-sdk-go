@@ -88,18 +88,18 @@ func Get(ctx context.Context, service *zscaler.Service, gatewayID int) (*ZPAGate
 	return &rule, nil
 }
 
-func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*ZPAGateways, error) {
-	var rules []ZPAGateways
-	err := common.ReadAllPages(ctx, service.Client, zpaGatewaysEndpoint, &rules)
+func GetByName(ctx context.Context, service *zscaler.Service, gwName string) (*ZPAGateways, error) {
+	var zpaGateways []ZPAGateways
+	err := common.ReadAllPages(ctx, service.Client, zpaGatewaysEndpoint, &zpaGateways)
 	if err != nil {
 		return nil, err
 	}
-	for _, rule := range rules {
-		if strings.EqualFold(rule.Name, ruleName) {
-			return &rule, nil
+	for _, zpaGateway := range zpaGateways {
+		if strings.EqualFold(zpaGateway.Name, gwName) {
+			return &zpaGateway, nil
 		}
 	}
-	return nil, fmt.Errorf("no zpa gateway found with name: %s", ruleName)
+	return nil, fmt.Errorf("no zpa gateway found with name: %s", gwName)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, rule *ZPAGateways) (*ZPAGateways, error) {

@@ -13,6 +13,7 @@ import (
 
 const (
 	urlFilteringPoliciesEndpoint = "/zia/api/v1/urlFilteringRules"
+	urladvSettingsEndpoint       = "/zia/api/v1/advancedUrlFilterAndCloudAppSettings"
 )
 
 type URLFilteringRule struct {
@@ -147,6 +148,68 @@ type CBIProfile struct {
 	DefaultProfile bool `json:"defaultProfile"`
 }
 
+type URLAdvancedPolicySettings struct {
+	// A Boolean value that indicates if dynamic categorization of URLs by analyzing content of uncategorized websites using AI/ML tools is enabled or not.
+	EnableDynamicContentCat bool `json:"enableDynamicContentCat,omitempty"`
+
+	// A Boolean value that indicates if URL filtering rules must be applied to sites that are translated using translation services or not.
+	ConsiderEmbeddedSites bool `json:"considerEmbeddedSites,omitempty"`
+
+	// A Boolean value that indicates whether only safe content must be returned for web, image, and video search.
+	EnforceSafeSearch bool `json:"enforceSafeSearch,omitempty"`
+
+	// Enable/Disable Microsoft Office 365 configuration
+	EnableOffice365 bool `json:"enableOffice365,omitempty"`
+
+	// Enable/Disable Microsoft-recommended Office 365 one click configuration
+	EnableMsftO365 bool `json:"enableMsftO365,omitempty"`
+
+	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Zoom traffic, without any manual configuration needed.
+	EnableUcaasZoom bool `json:"enableUcaasZoom,omitempty"`
+
+	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for GoTo traffic, without any manual configuration needed.
+	EnableUcaasLogMeIn bool `json:"enableUcaasLogMeIn,omitempty"`
+
+	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for RingCentral traffic, without any manual configuration needed.
+	EnableUcaasRingCentral bool `json:"enableUcaasRingCentral,omitempty"`
+
+	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Webex traffic, without any manual configuration needed.
+	EnableUcaasWebex bool `json:"enableUcaasWebex,omitempty"`
+
+	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Talkdesk traffic, with minimal or no manual configuration needed.
+	EnableUcaasTalkdesk bool `json:"enableUcaasTalkdesk,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with ChatGPT by users should be categorized and logged
+	EnableChatGptPrompt bool `json:"enableChatGptPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Microsoft Copilot by users should be categorized and logged
+	EnableMicrosoftCoPilotPrompt bool `json:"enableMicrosoftCoPilotPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Google Gemini by users should be categorized and logged
+	EnableGeminiPrompt bool `json:"enableGeminiPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Poe by users should be categorized and logged
+	EnablePOEPrompt bool `json:"enablePOEPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Meta AI by users should be categorized and logged
+	EnableMetaPrompt bool `json:"enableMetaPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Perplexity by users should be categorized and logged
+	EnablePerPlexityPrompt bool `json:"enablePerPlexityPrompt,omitempty"`
+
+	// A Boolean value indicating whether access to Skype is blocked or not.
+	BlockSkype bool `json:"blockSkype,omitempty"`
+
+	// A Boolean value indicating whether newly registered and observed domains that are identified within hours of going live are allowed or blocked
+	EnableNewlyRegisteredDomains bool `json:"enableNewlyRegisteredDomains,omitempty"`
+
+	// A Boolean value indicating if authorized users can temporarily override block action on websites by providing their authentication information
+	EnableBlockOverrideForNonAuthUser bool `json:"enableBlockOverrideForNonAuthUser,omitempty"`
+
+	// A Boolean value indicating if the predefined CIPA Compliance Rule is enabled or not.
+	EnableCIPACompliance bool `json:"enableCIPACompliance,omitempty"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
 	var urlFilteringPolicies URLFilteringRule
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
@@ -231,4 +294,42 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, 
 		return nil, err
 	}
 	return urlFilteringPolicies, nil
+}
+
+func GetUrlAndAppSettings(ctx context.Context, service *zscaler.Service) (*URLAdvancedPolicySettings, error) {
+	var appSettings URLAdvancedPolicySettings
+	err := service.Client.Read(ctx, urladvSettingsEndpoint, &appSettings)
+	if err != nil {
+		return nil, err
+	}
+	service.Client.GetLogger().Printf("[DEBUG] Retrieved URL Filter and Cloud App Settings: %+v", appSettings)
+	return &appSettings, nil
+}
+
+func UpdateUrlAndAppSettings(ctx context.Context, service *zscaler.Service, urlAndAppSettings URLAdvancedPolicySettings) (*URLAdvancedPolicySettings, *http.Response, error) {
+	// Validation for EnableCIPACompliance
+	if urlAndAppSettings.EnableCIPACompliance {
+		if urlAndAppSettings.EnableNewlyRegisteredDomains ||
+			urlAndAppSettings.ConsiderEmbeddedSites ||
+			urlAndAppSettings.EnforceSafeSearch ||
+			urlAndAppSettings.EnableDynamicContentCat {
+			return nil, nil, fmt.Errorf("EnableCIPACompliance cannot be enabled with the following options: EnableNewlyRegisteredDomains, ConsiderEmbeddedSites, EnforceSafeSearch, EnableDynamicContentCat")
+		}
+	}
+
+	// Pass the struct directly to the UpdateWithPut method
+	resp, err := service.Client.UpdateWithPut(ctx, urladvSettingsEndpoint, urlAndAppSettings)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Cast the response to the appropriate struct
+	updatedUrlAndAppSettings, ok := resp.(*URLAdvancedPolicySettings)
+	if !ok {
+		return nil, nil, fmt.Errorf("unexpected response type")
+	}
+
+	// Log the updated settings
+	service.Client.GetLogger().Printf("[DEBUG] Updated URL Filter and Cloud App Settings: %+v", updatedUrlAndAppSettings)
+	return updatedUrlAndAppSettings, nil, nil
 }

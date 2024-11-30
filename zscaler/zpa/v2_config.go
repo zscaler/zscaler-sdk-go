@@ -209,7 +209,11 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 
 	// Add the AuthToken to the context
 	if cfg.ZPA.Client.AuthToken != nil && cfg.ZPA.Client.AuthToken.AccessToken != "" {
-		cfg.Context = context.WithValue(context.Background(), ContextAccessToken, cfg.ZPA.Client.AuthToken.AccessToken)
+		cfg.Context = context.WithValue(
+			context.Background(),
+			ContextAccessToken,
+			cfg.ZPA.Client.AuthToken.AccessToken,
+		)
 		// logger.Printf("[DEBUG] AuthToken added to context.")
 	} else {
 		logger.Printf("[ERROR] Failed to set AuthToken in context.")

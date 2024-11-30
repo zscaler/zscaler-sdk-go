@@ -2,7 +2,6 @@ package zia
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -41,6 +40,9 @@ const (
 	ZIA_API_KEY  = "ZIA_API_KEY"
 	ZIA_CLOUD    = "ZIA_CLOUD"
 )
+
+var globalConfig *Configuration
+var configOnce sync.Once
 
 type contextKey string
 
@@ -139,77 +141,92 @@ type Configuration struct {
 }
 
 func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
-	logger := logger.GetDefaultLogger(loggerPrefix)
-	cfg := &Configuration{
-		DefaultHeader: make(map[string]string),
-		Logger:        logger,
-		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", VERSION, runtime.Version(), runtime.GOOS, runtime.GOARCH),
-		Debug:         false,
-		Context:       context.Background(),
+	configOnce.Do(func() {
+		logger := logger.GetDefaultLogger(loggerPrefix)
+		globalConfig = &Configuration{
+			DefaultHeader: make(map[string]string),
+			Logger:        logger,
+			UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", VERSION, runtime.Version(), runtime.GOOS, runtime.GOARCH),
+			Debug:         false,
+			Context:       context.Background(),
+		}
+
+		// Apply ConfigSetters first to ensure all values are set before use
+		for _, confSetter := range conf {
+			confSetter(globalConfig)
+		}
+
+		// Parse and validate the base URL
+		if globalConfig.ZIA.Client.ZIACloud == "" {
+			logger.Printf("[ERROR] Missing ZIA cloud configuration.")
+			return
+		}
+
+		// Debug log to ensure ZIACloud is set correctly
+		logger.Printf("[DEBUG] ZIACloud: %s", globalConfig.ZIA.Client.ZIACloud)
+
+		rawURL := fmt.Sprintf("https://zsapi.%s.net", globalConfig.ZIA.Client.ZIACloud)
+		if globalConfig.ZIA.Client.ZIACloud == "zspreview" {
+			rawURL = fmt.Sprintf("https://admin.%s.net", globalConfig.ZIA.Client.ZIACloud)
+		}
+
+		parsedURL, err := url.Parse(rawURL)
+		if err != nil {
+			logger.Printf("[ERROR] Error occurred while parsing the base URL: %v", err)
+			return
+		}
+		globalConfig.BaseURL = parsedURL
+
+		// Initialize cache with defaults
+		if globalConfig.ZIA.Client.Cache.DefaultTtl == 0 {
+			globalConfig.ZIA.Client.Cache.DefaultTtl = time.Minute * 10
+		}
+		if globalConfig.ZIA.Client.Cache.DefaultTti == 0 {
+			globalConfig.ZIA.Client.Cache.DefaultTti = time.Minute * 8
+		}
+		globalConfig.CacheManager = newCache(globalConfig)
+
+		// Set default rate limit and request timeout values
+		globalConfig.ZIA.Client.RateLimit.MaxRetries = MaxNumOfRetries
+		globalConfig.ZIA.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
+		globalConfig.ZIA.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
+		globalConfig.ZIA.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
+
+		// Initialize testing configurations
+		globalConfig.ZIA.Testing.DisableHttpsCheck = false
+
+		// Read configuration from system and environment
+		readConfigFromSystem(globalConfig)
+		readConfigFromEnvironment(globalConfig)
+
+		// Set up HTTP clients
+		setHttpClients(globalConfig)
+		if globalConfig.HTTPClient == nil {
+			logger.Printf("[ERROR] HTTP clients not initialized")
+			return
+		}
+
+		// Validate critical configuration fields
+		if globalConfig.ZIA.Client.ZIAUsername == "" ||
+			globalConfig.ZIA.Client.ZIAPassword == "" ||
+			globalConfig.ZIA.Client.ZIAApiKey == "" {
+			logger.Printf("[ERROR] Missing client credentials (ZIA_USERNAME, ZIA_PASSWORD, ZIA_API_KEY).")
+			return
+		}
+
+		// Log success initialization
+		logger.Printf("[INFO] Configuration successfully initialized.")
+	})
+
+	if globalConfig.UserAgentExtra != "" {
+		globalConfig.UserAgent = fmt.Sprintf("%s %s", globalConfig.UserAgent, globalConfig.UserAgentExtra)
 	}
 
-	logger.Printf("[DEBUG] Initializing configuration with default values.")
-
-	// Set default rate limit and request timeout values
-	cfg.ZIA.Client.RateLimit.MaxRetries = MaxNumOfRetries
-	cfg.ZIA.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
-	cfg.ZIA.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
-	cfg.ZIA.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
-
-	// Initialize cache with defaults
-	if cfg.ZIA.Client.Cache.DefaultTtl == 0 {
-		cfg.ZIA.Client.Cache.DefaultTtl = time.Minute * 10
+	// Return the global configuration
+	if globalConfig == nil {
+		return nil, fmt.Errorf("failed to initialize configuration")
 	}
-	if cfg.ZIA.Client.Cache.DefaultTti == 0 {
-		cfg.ZIA.Client.Cache.DefaultTti = time.Minute * 8
-	}
-	cfg.CacheManager = newCache(cfg)
-	logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZIA.Client.Cache.DefaultTtl, cfg.ZIA.Client.Cache.DefaultTti)
-
-	// Initialize testing configurations
-	cfg.ZIA.Testing.DisableHttpsCheck = false
-
-	// Apply additional configurations from ConfigSetters
-	for _, confSetter := range conf {
-		confSetter(cfg)
-	}
-
-	// Read configuration from YAML (lowest precedence)
-	readConfigFromSystem(cfg)
-
-	// Read environment variables (medium precedence)
-	readConfigFromEnvironment(cfg)
-
-	// logger.Printf("[DEBUG] System and environment configurations loaded.")
-
-	// Validate critical configuration fields
-	if cfg.ZIA.Client.ZIAUsername == "" || cfg.ZIA.Client.ZIAPassword == "" || cfg.ZIA.Client.ZIAApiKey == "" || cfg.ZIA.Client.ZIACloud == "" {
-		logger.Printf("[ERROR] Missing client credentials (ZIA_USERNAME, ZIA_PASSWORD, ZIA_API_KEY, ZIA_CLOUD).")
-		return nil, fmt.Errorf("client credentials (ZIA_USERNAME, ZIA_PASSWORD, ZIA_API_KEY, ZIA_CLOUD) are missing")
-	}
-
-	// Parse and validate the base URL
-	rawURL := fmt.Sprintf("https://zsapi.%s.net", cfg.ZIA.Client.ZIACloud)
-	if cfg.ZIA.Client.ZIACloud == "zspreview" {
-		rawURL = fmt.Sprintf("https://admin.%s.net", cfg.ZIA.Client.ZIACloud)
-	}
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		logger.Printf("[ERROR] Error occurred while parsing the base URL: %v", err)
-		return nil, fmt.Errorf("invalid base URL: %w", err)
-	}
-	cfg.BaseURL = parsedURL
-	// logger.Printf("[DEBUG] Base URL parsed successfully: %s", parsedURL)
-
-	// Set up HTTP clients
-	setHttpClients(cfg)
-	if cfg.HTTPClient == nil {
-		logger.Printf("[ERROR] HTTP clients not initialized")
-		return nil, errors.New("HTTP clients not initialized")
-	}
-
-	// logger.Printf("[DEBUG] Configuration successfully initialized.")
-	return cfg, nil
+	return globalConfig, nil
 }
 
 type ConfigSetter func(*Configuration)
@@ -256,7 +273,11 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
-	cche, err := cache.NewCache(time.Duration(c.ZIA.Client.Cache.DefaultTtl), time.Duration(c.ZIA.Client.Cache.DefaultTti), int(c.ZIA.Client.Cache.DefaultCacheMaxSizeMB))
+	cche, err := cache.NewCache(
+		time.Duration(c.ZIA.Client.Cache.DefaultTtl),
+		time.Duration(c.ZIA.Client.Cache.DefaultTti),
+		int(c.ZIA.Client.Cache.DefaultCacheMaxSizeMB),
+	)
 	if err != nil {
 		cche = cache.NewNopCache()
 	}
@@ -381,6 +402,12 @@ func WithRateLimitMinWait(minWait time.Duration) ConfigSetter {
 func WithUserAgentExtra(userAgent string) ConfigSetter {
 	return func(c *Configuration) {
 		c.UserAgentExtra = userAgent
+	}
+}
+
+func WithUserAgent(userAgent string) ConfigSetter {
+	return func(cfg *Configuration) {
+		cfg.UserAgent = userAgent
 	}
 }
 

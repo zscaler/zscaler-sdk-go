@@ -28,9 +28,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
-// NewClient Returns a Client from credentials passed as parameters.
 func NewClient(config *Configuration) (*Client, error) {
-
 	if config == nil {
 		return nil, errors.New("configuration cannot be nil")
 	}
@@ -43,36 +41,20 @@ func NewClient(config *Configuration) (*Client, error) {
 	}
 
 	logger := logger.GetDefaultLogger(loggerPrefix)
-	// logger.Printf("[DEBUG] Initializing client with provided configuration.")
 
 	// Validate ZIA Cloud
 	if config.ZIA.Client.ZIACloud == "" {
-		logger.Printf("[ERROR] Missing ZIA cloud configuration. Ensure WithZiaCloud is set.")
+		logger.Printf("[ERROR] Missing ZIA cloud configuration.")
 		return nil, errors.New("ZIACloud configuration is missing")
 	}
 
-	// Construct the base URL based on the ZIA cloud
+	// Construct the base URL
 	baseURL := config.BaseURL.String()
 
 	// Validate authentication credentials
 	if config.ZIA.Client.ZIAUsername == "" || config.ZIA.Client.ZIAPassword == "" || config.ZIA.Client.ZIAApiKey == "" {
 		logger.Printf("[ERROR] Missing required ZIA credentials (username, password, or API key).")
 		return nil, errors.New("missing required ZIA credentials")
-	}
-
-	// Perform authentication using the provided credentials
-	timeStamp := getCurrentTimestampMilisecond()
-	obfuscatedKey, err := obfuscateAPIKey(config.ZIA.Client.ZIAApiKey, timeStamp)
-	if err != nil {
-		logger.Printf("[ERROR] Failed to obfuscate API key: %v", err)
-		return nil, fmt.Errorf("failed to obfuscate API key: %w", err)
-	}
-
-	credentials := &Credentials{
-		Username:  config.ZIA.Client.ZIAUsername,
-		Password:  config.ZIA.Client.ZIAPassword,
-		APIKey:    obfuscatedKey,
-		TimeStamp: timeStamp,
 	}
 
 	// Initialize rate limiter
@@ -89,20 +71,13 @@ func NewClient(config *Configuration) (*Client, error) {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
 	}
 
-	// Perform authentication request
-	session, err := MakeAuthRequestZIA(credentials, baseURL, httpClient, config.UserAgent)
-	if err != nil {
-		logger.Printf("[ERROR] Authentication failed: %v", err)
-		return nil, fmt.Errorf("authentication failed: %w", err)
-	}
-
 	// Initialize the Client instance
 	cli := &Client{
 		userName:         config.ZIA.Client.ZIAUsername,
 		password:         config.ZIA.Client.ZIAPassword,
 		apiKey:           config.ZIA.Client.ZIAApiKey,
 		cloud:            config.ZIA.Client.ZIACloud,
-		HTTPClient:       config.HTTPClient,
+		HTTPClient:       httpClient,
 		URL:              baseURL,
 		Logger:           logger,
 		UserAgent:        config.UserAgent,
@@ -112,9 +87,8 @@ func NewClient(config *Configuration) (*Client, error) {
 		cacheMaxSizeMB:   int(config.ZIA.Client.Cache.DefaultCacheMaxSizeMB),
 		rateLimiter:      rateLimiter,
 		stopTicker:       make(chan bool),
-		sessionTimeout:   JSessionIDTimeout * time.Minute, // Default session timeout
-		session:          session,
-		sessionRefreshed: time.Now(),
+		sessionTimeout:   JSessionIDTimeout * time.Minute,
+		sessionRefreshed: time.Time{},
 	}
 
 	// Initialize the cache
@@ -128,7 +102,7 @@ func NewClient(config *Configuration) (*Client, error) {
 	// Start the session refresh ticker
 	cli.startSessionTicker()
 
-	// logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
+	//logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
 	return cli, nil
 }
 
@@ -262,64 +236,72 @@ func (c *Client) refreshSession() error {
 	return nil
 }
 
-// checkSession checks if the session is valid and refreshes it if necessary.
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
 
 	now := time.Now()
-	if c.session == nil {
-		c.Logger.Printf("[INFO] No session found, refreshing session")
-		err := c.refreshSession()
-		if err != nil {
-			c.Logger.Printf("[ERROR] Failed to get session id: %v\n", err)
-			return err
-		}
-	} else {
-		c.Logger.Printf("[INFO] Current time: %v\nSession Refreshed: %v\nSession Timeout: %v\n",
-			now.Format("2006-01-02 15:04:05 MST"),
-			c.sessionRefreshed.Format("2006-01-02 15:04:05 MST"),
-			c.sessionTimeout)
 
-		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
-			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
-			if !c.refreshing {
-				c.refreshing = true
-				c.Unlock()
-				err := c.refreshSession()
-				c.Lock()
-				c.refreshing = false
-				if err != nil {
-					c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
-					return err
-				}
+	// Initialize or refresh session if necessary
+	if c.session == nil || now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
+		c.Logger.Printf("[INFO] Session is invalid or expired. Refreshing session...")
+		if !c.refreshing {
+			c.refreshing = true
+			defer func() { c.refreshing = false }()
+
+			// Refresh session
+			timeStamp := getCurrentTimestampMilisecond()
+			obfuscatedKey, err := obfuscateAPIKey(c.apiKey, timeStamp)
+			if err != nil {
+				return err
+			}
+
+			credentials := &Credentials{
+				Username:  c.userName,
+				Password:  c.password,
+				APIKey:    obfuscatedKey,
+				TimeStamp: timeStamp,
+			}
+			session, err := MakeAuthRequestZIA(credentials, c.URL, c.HTTPClient, c.UserAgent)
+			if err != nil {
+				c.Logger.Printf("[ERROR] Failed to refresh session: %v", err)
+				return err
+			}
+
+			// Update session and timeout
+			c.session = session
+			c.sessionRefreshed = time.Now()
+			if c.session.PasswordExpiryTime > 0 {
+				c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
 			} else {
-				c.Logger.Printf("[INFO] Another refresh is in progress, waiting for it to complete")
+				c.sessionTimeout = JSessionIDTimeout * time.Minute
 			}
 		} else {
-			c.Logger.Printf("[INFO] Session is still valid, no need to refresh")
+			c.Logger.Printf("[INFO] Another goroutine is refreshing the session. Waiting...")
+			// Wait for ongoing refresh to complete
+			for c.refreshing {
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
+	} else {
+		c.Logger.Printf("[INFO] Session is valid, no refresh needed.")
 	}
 
+	// Ensure the JSESSIONID is set in the HTTP client cookies
 	url, err := url.Parse(c.URL)
 	if err != nil {
-		c.Logger.Printf("[ERROR] Failed to parse url %s: %v\n", c.URL, err)
+		c.Logger.Printf("[ERROR] Failed to parse URL: %v", err)
 		return err
 	}
-
 	if c.HTTPClient.Jar == nil {
 		c.HTTPClient.Jar, err = cookiejar.New(nil)
 		if err != nil {
-			c.Logger.Printf("[ERROR] Failed to create new http cookie jar %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to create HTTP cookie jar: %v", err)
 			return err
 		}
 	}
-
 	c.HTTPClient.Jar.SetCookies(url, []*http.Cookie{
-		{
-			Name:  cookieName,
-			Value: c.session.JSessionID,
-		},
+		{Name: cookieName, Value: c.session.JSessionID},
 	})
 
 	return nil
@@ -502,8 +484,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
-func (c *Client) Logout() error {
-	_, err := c.Request(ziaAPIAuthURL, "DELETE", nil, "application/json")
+func (c *Client) Logout(ctx context.Context) error {
+	_, err := c.Request(ctx, ziaAPIAuthURL, "DELETE", nil, "application/json")
 	if err != nil {
 		return err
 	}
@@ -600,7 +582,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 }
 
 // Request ... // Needs to review this function.
-func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -618,17 +600,30 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
-	req, err = http.NewRequest(method, fullURL, body)
+	req, err = http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
-		req.Header.Add("User-Agent", c.UserAgent)
+		req.Header.Set("User-Agent", c.UserAgent) // Use Set to avoid duplicates
 	}
+
+	// Include JSessionID directly in req.Header
+	err = c.checkSession()
+	if err != nil {
+		return nil, err
+	}
+	jSessionID := c.session.JSessionID
+	req.Header.Set("JSessionID", jSessionID)
+
+	otherHeaders := map[string]string{}
 
 	reqID := uuid.New().String()
 	start := time.Now()
+	logger.LogRequest(c.Logger, req, reqID, otherHeaders, true)
+
+	// Retry logic for the request
 	for retry := 1; retry <= 5; retry++ {
 		resp, err = c.do(req, start, reqID)
 		if err != nil {
@@ -646,6 +641,7 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		}
 	}
 
+	// Read response body
 	bodyResp, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -655,8 +651,8 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 }
 
 // Request ... // Needs to review this function.
-func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
-	return c.GenericRequest(c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
+func (c *Client) Request(ctx context.Context, endpoint, method string, data []byte, contentType string) ([]byte, error) {
+	return c.GenericRequest(ctx, c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
 }
 
 func (client *Client) WithFreshCache() {
@@ -664,7 +660,7 @@ func (client *Client) WithFreshCache() {
 }
 
 // Create sends an HTTP POST request.
-func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
+func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
 	}
@@ -677,7 +673,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -704,7 +700,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 }
 
-func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to create with a nil payload not a Slice")
 	}
@@ -719,7 +715,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -731,7 +727,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 }
 
-func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
 		return nil, errors.New("tried to update with a nil payload not a Slice")
 	}
@@ -746,7 +742,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "PUT", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "PUT", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -755,7 +751,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 }
 
 // CreateWithRawPayload sends an HTTP POST request with a raw string payload.
-func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, error) {
+func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payload string) ([]byte, error) {
 	if payload == "" {
 		return nil, errors.New("tried to create with an empty string payload")
 	}
@@ -764,7 +760,7 @@ func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, 
 	data := []byte(payload)
 
 	// Send the raw string as a POST request
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -779,9 +775,9 @@ func (c *Client) CreateWithRawPayload(endpoint string, payload string) ([]byte, 
 }
 
 // Read ...
-func (c *Client) Read(endpoint string, o interface{}) error {
+func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error {
 	contentType := c.GetContentType()
-	resp, err := c.Request(endpoint, "GET", nil, contentType)
+	resp, err := c.Request(ctx, endpoint, "GET", nil, contentType)
 	if err != nil {
 		return err
 	}
@@ -795,17 +791,16 @@ func (c *Client) Read(endpoint string, o interface{}) error {
 }
 
 // Update ...
-func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", "application/json")
+func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PUT", "application/json")
 }
 
 // Update ...
-func (c *Client) Update(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PATCH", "application/merge-patch+json")
+func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
 
-// Update ...
-func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentType string) (interface{}, error) {
+func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface{}, method, contentType string) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to update with a nil payload not a Struct")
 	}
@@ -813,24 +808,36 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 	if t.Kind() != reflect.Struct {
 		return nil, errors.New("tried to update with a " + t.Kind().String() + " not a Struct")
 	}
+
 	data, err := json.Marshal(o)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, method, data, contentType)
+	// Send the HTTP request
+	resp, err := c.Request(ctx, endpoint, method, data, contentType)
 	if err != nil {
 		return nil, err
 	}
 
+	// Check for an empty response body (e.g., 204 No Content)
+	if len(resp) == 0 {
+		return nil, nil // Return nil for responseObject and no error
+	}
+
+	// Unmarshal response body into the provided struct type
 	responseObject := reflect.New(t).Interface()
 	err = json.Unmarshal(resp, &responseObject)
-	return responseObject, err
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response body: %w", err)
+	}
+
+	return responseObject, nil
 }
 
 // Delete ...
-func (c *Client) Delete(endpoint string) error {
-	_, err := c.Request(endpoint, "DELETE", nil, "application/json")
+func (c *Client) Delete(ctx context.Context, endpoint string) error {
+	_, err := c.Request(ctx, endpoint, "DELETE", nil, "application/json")
 	if err != nil {
 		return err
 	}
@@ -838,7 +845,7 @@ func (c *Client) Delete(endpoint string) error {
 }
 
 // BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
-func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	if payload == nil {
 		return nil, errors.New("tried to delete with a nil payload, expected a struct")
 	}
@@ -850,7 +857,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 	}
 
 	// Send the POST request
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
 		return nil, err
 	}
