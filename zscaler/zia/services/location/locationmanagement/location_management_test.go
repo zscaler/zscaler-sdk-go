@@ -133,41 +133,41 @@ func TestLocationManagement(t *testing.T) {
 	time.Sleep(15 * time.Second)
 
 	// // Create sub-location
-	// subLocation := Locations{
-	// 	Name:              name + "-sub",
-	// 	Description:       name + "-sub",
-	// 	Country:           "UNITED_STATES",
-	// 	TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
-	// 	AuthRequired:      true,
-	// 	IdleTimeInMinutes: 720,
-	// 	DisplayTimeUnit:   "HOUR",
-	// 	SurrogateIP:       true,
-	// 	XFFForwardEnabled: true,
-	// 	OFWEnabled:        true,
-	// 	IPSControl:        true,
-	// 	IPAddresses:       []string{"10.1.0.0-10.1.255.255"},
-	// 	ParentID:          createdResource.ID,
-	// 	Profile:           "CORPORATE",
-	// }
+	subLocation := Locations{
+		Name:              name + "-sub",
+		Description:       name + "-sub",
+		Country:           "UNITED_STATES",
+		TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
+		AuthRequired:      true,
+		IdleTimeInMinutes: 720,
+		DisplayTimeUnit:   "HOUR",
+		SurrogateIP:       true,
+		XFFForwardEnabled: true,
+		OFWEnabled:        true,
+		IPSControl:        true,
+		IPAddresses:       []string{"10.1.0.0-10.1.255.255"},
+		ParentID:          createdResource.ID,
+		Profile:           "CORPORATE",
+	}
 
-	// var createdSubLocation *Locations
+	var createdSubLocation *Locations
 
-	// // Test sub-location creation
-	// err = retryOnConflict(func() error {
-	// 	createdSubLocation, err = Create(context.Background(), service, &subLocation)
-	// 	return err
-	// })
-	// // Check if the request was successful
-	// if err != nil {
-	// 	t.Fatalf("Error making POST request for sub-location: %v", err)
-	// }
+	// Test sub-location creation
+	err = retryOnConflict(func() error {
+		createdSubLocation, err = Create(context.Background(), service, &subLocation)
+		return err
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Fatalf("Error making POST request for sub-location: %v", err)
+	}
 
-	// if createdSubLocation.ID == 0 {
-	// 	t.Error("Expected created sub-location ID to be non-empty, but got ''")
-	// }
-	// if createdSubLocation.Name != subLocation.Name {
-	// 	t.Errorf("Expected created sub-location name '%s', but got '%s'", subLocation.Name, createdSubLocation.Name)
-	// }
+	if createdSubLocation.ID == 0 {
+		t.Error("Expected created sub-location ID to be non-empty, but got ''")
+	}
+	if createdSubLocation.Name != subLocation.Name {
+		t.Errorf("Expected created sub-location name '%s', but got '%s'", subLocation.Name, createdSubLocation.Name)
+	}
 
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
@@ -235,34 +235,34 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test sub-location retrieval by ID
-	// retrievedSubLocation, err := tryRetrieveResource(service, createdSubLocation.ID)
-	// if err != nil {
-	// 	t.Fatalf("Error retrieving sub-location: %v", err)
-	// }
-	// if retrievedSubLocation.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected retrieved sub-location ID '%d', but got '%d'", createdSubLocation.ID, retrievedSubLocation.ID)
-	// }
-	// if retrievedSubLocation.Name != subLocation.Name {
-	// 	t.Errorf("Expected retrieved sub-location name '%s', but got '%s'", subLocation.Name, retrievedSubLocation.Name)
-	// }
+	retrievedSubLocation, err := tryRetrieveResource(service, createdSubLocation.ID)
+	if err != nil {
+		t.Fatalf("Error retrieving sub-location: %v", err)
+	}
+	if retrievedSubLocation.ID != createdSubLocation.ID {
+		t.Errorf("Expected retrieved sub-location ID '%d', but got '%d'", createdSubLocation.ID, retrievedSubLocation.ID)
+	}
+	if retrievedSubLocation.Name != subLocation.Name {
+		t.Errorf("Expected retrieved sub-location name '%s', but got '%s'", subLocation.Name, retrievedSubLocation.Name)
+	}
 
-	// Test GetSubLocation
-	// subLocationByParent, err := GetSubLocation(context.Background(), service, createdResource.ID, createdSubLocation.ID)
-	// if err != nil {
-	// 	t.Fatalf("Error getting sub-location by parent ID: %v", err)
-	// }
-	// if subLocationByParent.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByParent.ID)
-	// }
+	//Test GetSubLocation
+	subLocationByParent, err := GetSubLocation(context.Background(), service, createdResource.ID, createdSubLocation.ID)
+	if err != nil {
+		t.Fatalf("Error getting sub-location by parent ID: %v", err)
+	}
+	if subLocationByParent.ID != createdSubLocation.ID {
+		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByParent.ID)
+	}
 
 	// Test GetSubLocationBySubID
-	// subLocationBySubID, err := GetSubLocationBySubID(context.Background(), service, createdSubLocation.ID)
-	// if err != nil {
-	// 	t.Fatalf("Error getting sub-location by sub ID: %v", err)
-	// }
-	// if subLocationBySubID.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationBySubID.ID)
-	// }
+	subLocationBySubID, err := GetSubLocationBySubID(context.Background(), service, createdSubLocation.ID)
+	if err != nil {
+		t.Fatalf("Error getting sub-location by sub ID: %v", err)
+	}
+	if subLocationBySubID.ID != createdSubLocation.ID {
+		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationBySubID.ID)
+	}
 
 	// Test GetAllSublocations
 	allSubLocations, err := GetAllSublocations(context.Background(), service)
@@ -274,31 +274,31 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Test GetSubLocationByName
-	// subLocationByName, err := GetSubLocationByName(context.Background(), service, subLocation.Name)
-	// if err != nil {
-	// 	t.Fatalf("Error getting sub-location by name: %v", err)
-	// }
-	// if subLocationByName.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByName.ID)
-	// }
+	subLocationByName, err := GetSubLocationByName(context.Background(), service, subLocation.Name)
+	if err != nil {
+		t.Fatalf("Error getting sub-location by name: %v", err)
+	}
+	if subLocationByName.ID != createdSubLocation.ID {
+		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByName.ID)
+	}
 
 	// Test GetSubLocationByNames
-	// subLocationByNames, err := GetSubLocationByNames(context.Background(), service, updateName, subLocation.Name)
-	// if err != nil {
-	// 	t.Fatalf("Error getting sub-location by names: %v", err)
-	// }
-	// if subLocationByNames.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByNames.ID)
-	// }
+	subLocationByNames, err := GetSubLocationByNames(context.Background(), service, updateName, subLocation.Name)
+	if err != nil {
+		t.Fatalf("Error getting sub-location by names: %v", err)
+	}
+	if subLocationByNames.ID != createdSubLocation.ID {
+		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, subLocationByNames.ID)
+	}
 
 	// Test GetLocationOrSublocationByName
-	// locationOrSubLocation, err := GetLocationOrSublocationByName(context.Background(), service, subLocation.Name)
-	// if err != nil {
-	// 	t.Fatalf("Error getting location or sub-location by name: %v", err)
-	// }
-	// if locationOrSubLocation.ID != createdSubLocation.ID {
-	// 	t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, locationOrSubLocation.ID)
-	// }
+	locationOrSubLocation, err := GetLocationOrSublocationByName(context.Background(), service, subLocation.Name)
+	if err != nil {
+		t.Fatalf("Error getting location or sub-location by name: %v", err)
+	}
+	if locationOrSubLocation.ID != createdSubLocation.ID {
+		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, locationOrSubLocation.ID)
+	}
 
 	// Test resource removal
 	err = retryOnConflict(func() error {

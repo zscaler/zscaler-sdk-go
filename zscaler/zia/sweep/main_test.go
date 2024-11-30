@@ -15,6 +15,10 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipsourcegroups"
@@ -80,10 +84,10 @@ func sweep() error {
 		sweepURLFilteringPolicies,
 		sweepLocationManagement,
 		sweepAdminUsers,
-		// sweepDLPEngines,
-		// sweepDLPNotificationTemplates,
-		// sweepADLPWebRules,
-		// sweepDLPDictionaries,
+		sweepDLPEngines,
+		sweepDLPNotificationTemplates,
+		sweepADLPWebRules,
+		sweepDLPDictionaries,
 		sweepIPDestinationGroup,
 		sweepIPSourceGroup,
 		sweepNetworkAplicationGroups,
@@ -141,91 +145,90 @@ func sweepAdminUsers(client *zscaler.Client) error {
 	return nil
 }
 
-/*
-	func sweepDLPEngines(client *zscaler.Client) error {
-		service := zscaler.NewService(client, nil)
-		resources, err := dlp_engines.GetAll(context.Background(), service)
-		if err != nil {
-			log.Printf("[ERROR] Failed to get dlp engines: %v", err)
-			return err
-		}
-
-		for _, r := range resources {
-			if !strings.HasPrefix(r.Name, "tests-") {
-				continue
-			}
-			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_engines.Delete(context.Background(), service, r.ID)
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete dlp engines with ID: %d, Name: %s: %v", r.ID, r.Name, err)
-			}
-		}
-		return nil
+func sweepDLPEngines(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := dlp_engines.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get dlp engines: %v", err)
+		return err
 	}
 
-	func sweepDLPNotificationTemplates(client *zscaler.Client) error {
-		service := zscaler.NewService(client, nil)
-		resources, err := dlp_notification_templates.GetAll(context.Background(), service)
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := dlp_engines.Delete(context.Background(), service, r.ID)
 		if err != nil {
-			log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
-			return err
+			log.Printf("[ERROR] Failed to delete dlp engines with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
+	}
+	return nil
+}
 
-		for _, r := range resources {
-			if !strings.HasPrefix(r.Name, "tests-") {
-				continue
-			}
-			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_notification_templates.Delete(context.Background(), service, r.ID)
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete application segment with ID: %d, Name: %s: %v", r.ID, r.Name, err)
-			}
-		}
-		return nil
+func sweepDLPNotificationTemplates(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := dlp_notification_templates.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
+		return err
 	}
 
-	func sweepADLPWebRules(client *zscaler.Client) error {
-		service := zscaler.NewService(client, nil)
-		resources, err := dlp_web_rules.GetAll(context.Background(), service)
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := dlp_notification_templates.Delete(context.Background(), service, r.ID)
 		if err != nil {
-			log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
-			return err
+			log.Printf("[ERROR] Failed to delete application segment with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
+	}
+	return nil
+}
 
-		for _, r := range resources {
-			if !strings.HasPrefix(r.Name, "tests-") {
-				continue
-			}
-			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlp_web_rules.Delete(context.Background(), service, r.ID)
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete dlp web rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
-			}
-		}
-		return nil
+func sweepADLPWebRules(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := dlp_web_rules.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
+		return err
 	}
 
-	func sweepDLPDictionaries(client *zscaler.Client) error {
-		service := zscaler.NewService(client, nil)
-		resources, err := dlpdictionaries.GetAll(context.Background(), service)
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := dlp_web_rules.Delete(context.Background(), service, r.ID)
 		if err != nil {
-			log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
-			return err
+			log.Printf("[ERROR] Failed to delete dlp web rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
-
-		for _, r := range resources {
-			if !strings.HasPrefix(r.Name, "tests-") {
-				continue
-			}
-			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-			_, err := dlpdictionaries.DeleteDlpDictionary(service, r.ID)
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete dlp dictionaries with ID: %d, Name: %s: %v", r.ID, r.Name, err)
-			}
-		}
-		return nil
 	}
-*/
+	return nil
+}
+
+func sweepDLPDictionaries(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := dlpdictionaries.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := dlpdictionaries.DeleteDlpDictionary(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete dlp dictionaries with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
 func sweepFirewallFilteringRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
 	resources, err := filteringrules.GetAll(context.Background(), service)

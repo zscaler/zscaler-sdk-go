@@ -2,6 +2,7 @@ package cloudappcontrol
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -143,8 +144,6 @@ type AvailableActionsRequest struct {
 	Type      string   `json:"type,omitempty"`
 }
 
-type AvailableActionsResponse []string
-
 func GetByRuleID(ctx context.Context, service *zscaler.Service, ruleType string, ruleID int) (*WebApplicationRules, error) {
 	var rule WebApplicationRules
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%s/%d", webApplicationRulesEndpoint, ruleType, ruleID), &rule)
@@ -220,18 +219,27 @@ func CreateDuplicate(ctx context.Context, service *zscaler.Service, ruleType str
 func AllAvailableActions(ctx context.Context, service *zscaler.Service, ruleType string, payload AvailableActionsRequest) ([]string, error) {
 	service.Client.GetLogger().Printf("[DEBUG] AllAvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
 
+	// Marshal the payload into a JSON string
+	payloadData, err := json.Marshal(payload)
+	if err != nil {
+		service.Client.GetLogger().Printf("[DEBUG] error marshalling payload: %v", err)
+		return nil, err
+	}
+
 	url := fmt.Sprintf("%s/%s/availableActions", webApplicationRulesEndpoint, ruleType)
-	resp, err := service.Client.Create(ctx, url, payload)
+
+	// Use CreateWithRawPayload to send the request
+	resp, err := service.Client.CreateWithRawPayload(ctx, url, string(payloadData))
 	if err != nil {
 		service.Client.GetLogger().Printf("[DEBUG] error creating request: %v", err)
 		return nil, err
 	}
 
-	// Ensure resp is a slice of strings
-	availableActions, ok := resp.([]string)
-	if !ok {
-		service.Client.GetLogger().Printf("[DEBUG] expected response type []string but got %T", resp)
-		return nil, fmt.Errorf("expected response type []string but got %T", resp)
+	// Unmarshal the response into a slice of strings
+	var availableActions []string
+	if err := json.Unmarshal(resp, &availableActions); err != nil {
+		service.Client.GetLogger().Printf("[DEBUG] error unmarshalling response: %v", err)
+		return nil, err
 	}
 
 	service.Client.GetLogger().Printf("[DEBUG] returning available actions: %+v", availableActions)

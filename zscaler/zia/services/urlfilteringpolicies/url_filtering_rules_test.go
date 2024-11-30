@@ -267,47 +267,55 @@ func TestUrlAndAppSettings(t *testing.T) {
 
 	t.Logf("Initial settings retrieved: %+v", initialSettings)
 
-	// Step 2: Update the URL and App Settings
-	newSettings := URLAdvancedPolicySettings{
-		EnableDynamicContentCat:           true,
-		ConsiderEmbeddedSites:             true,
-		EnforceSafeSearch:                 true,
-		EnableOffice365:                   false,
-		EnableMsftO365:                    false,
-		EnableUcaasZoom:                   false,
-		EnableUcaasLogMeIn:                false,
-		EnableUcaasRingCentral:            false,
-		EnableUcaasWebex:                  false,
-		EnableUcaasTalkdesk:               false,
-		EnableChatGptPrompt:               false,
-		EnableMicrosoftCoPilotPrompt:      false,
-		EnableGeminiPrompt:                false,
-		EnablePOEPrompt:                   false,
-		EnableMetaPrompt:                  false,
-		EnablePerPlexityPrompt:            false,
-		BlockSkype:                        false,
-		EnableNewlyRegisteredDomains:      true,
-		EnableBlockOverrideForNonAuthUser: true,
-		//EnableCIPACompliance:              true,
-	}
+	// Step 2: Update the URL and App Settings with test changes
+	updatedSettings := *initialSettings // Start with initial settings to ensure a complete payload
+	updatedSettings.EnableDynamicContentCat = true
+	updatedSettings.ConsiderEmbeddedSites = false
+	updatedSettings.EnforceSafeSearch = false
+	// updatedSettings.EnableOffice365 = false
+	updatedSettings.EnableNewlyRegisteredDomains = false
+	updatedSettings.EnableBlockOverrideForNonAuthUser = false
 
-	updatedSettings, _, err := UpdateUrlAndAppSettings(ctx, service, newSettings)
+	t.Logf("Payload to be sent: %+v", updatedSettings)
+
+	// Send the update request
+	_, _, err = UpdateUrlAndAppSettings(ctx, service, updatedSettings)
 	if err != nil {
 		t.Fatalf("Error updating URL and App settings: %v", err)
 	}
+	t.Logf("Updated settings sent successfully")
 
-	t.Logf("Updated settings: %+v", updatedSettings)
-
-	// Step 3: Retrieve the updated settings and validate the changes
+	// Step 3: Retrieve the updated settings
 	retrievedSettings, err := GetUrlAndAppSettings(ctx, service)
 	if err != nil {
 		t.Fatalf("Error retrieving updated settings: %v", err)
 	}
-
 	t.Logf("Retrieved updated settings: %+v", retrievedSettings)
 
-	// Assert that the updated settings match the new settings
-	if *retrievedSettings != newSettings {
-		t.Errorf("Updated settings do not match the expected values. Got: %+v, Expected: %+v", retrievedSettings, newSettings)
+	// Step 4: Validate changes
+	if retrievedSettings.EnableDynamicContentCat != updatedSettings.EnableDynamicContentCat {
+		t.Errorf("EnableDynamicContentCat mismatch: Expected: %v, Got: %v", updatedSettings.EnableDynamicContentCat, retrievedSettings.EnableDynamicContentCat)
 	}
+	if retrievedSettings.ConsiderEmbeddedSites != updatedSettings.ConsiderEmbeddedSites {
+		t.Errorf("ConsiderEmbeddedSites mismatch: Expected: %v, Got: %v", updatedSettings.ConsiderEmbeddedSites, retrievedSettings.ConsiderEmbeddedSites)
+	}
+	if retrievedSettings.EnforceSafeSearch != updatedSettings.EnforceSafeSearch {
+		t.Errorf("EnforceSafeSearch mismatch: Expected: %v, Got: %v", updatedSettings.EnforceSafeSearch, retrievedSettings.EnforceSafeSearch)
+	}
+	if retrievedSettings.EnableOffice365 != updatedSettings.EnableOffice365 {
+		t.Errorf("EnableOffice365 mismatch: Expected: %v, Got: %v", updatedSettings.EnableOffice365, retrievedSettings.EnableOffice365)
+	}
+	if retrievedSettings.EnableNewlyRegisteredDomains != updatedSettings.EnableNewlyRegisteredDomains {
+		t.Errorf("EnableNewlyRegisteredDomains mismatch: Expected: %v, Got: %v", updatedSettings.EnableNewlyRegisteredDomains, retrievedSettings.EnableNewlyRegisteredDomains)
+	}
+	if retrievedSettings.EnableBlockOverrideForNonAuthUser != updatedSettings.EnableBlockOverrideForNonAuthUser {
+		t.Errorf("EnableBlockOverrideForNonAuthUser mismatch: Expected: %v, Got: %v", updatedSettings.EnableBlockOverrideForNonAuthUser, retrievedSettings.EnableBlockOverrideForNonAuthUser)
+	}
+
+	// Step 5: Revert to the original settings
+	_, _, err = UpdateUrlAndAppSettings(ctx, service, *initialSettings)
+	if err != nil {
+		t.Fatalf("Error reverting URL and App settings to original values: %v", err)
+	}
+	t.Logf("Reverted settings to original values: %+v", initialSettings)
 }
