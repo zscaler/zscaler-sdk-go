@@ -19,6 +19,8 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipsourcegroups"
@@ -27,6 +29,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_settings"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/security_policy_settings"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/gretunnels"
@@ -81,7 +84,10 @@ func sweep() error {
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zscaler.Client) error{
 		sweepFirewallFilteringRules,
+		sweepFirewallIPSRules,
+		sweepFirewallDNSRules,
 		sweepURLFilteringPolicies,
+		sweepSandboxRules,
 		sweepLocationManagement,
 		sweepAdminUsers,
 		sweepDLPEngines,
@@ -97,8 +103,8 @@ func sweep() error {
 		// sweepZPAGateways,
 		sweepRuleLabels,
 		sweepGRETunnels,
-		sweepStaticIP,
 		sweepVPNCredentials,
+		sweepStaticIP,
 		sweepURLCategories,
 		// sweepUserManagement,
 		sweepSandboxSettings,
@@ -245,6 +251,48 @@ func sweepFirewallFilteringRules(client *zscaler.Client) error {
 		_, err := filteringrules.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete Firewall filtering rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepFirewallDNSRules(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := firewalldnscontrolpolicies.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get Firewall dns rule: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := firewalldnscontrolpolicies.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete Firewall dns rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepFirewallIPSRules(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := firewallipscontrolpolicies.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get Firewall ips rule: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := firewallipscontrolpolicies.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete Firewall ips rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 	return nil
@@ -637,6 +685,27 @@ func sweepURLFilteringPolicies(client *zscaler.Client) error {
 		err, _ := urlfilteringpolicies.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url filtering policies with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepSandboxRules(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := sandbox_rules.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get sandbox rule: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		err, _ := sandbox_rules.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete sandbox rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 	return nil
