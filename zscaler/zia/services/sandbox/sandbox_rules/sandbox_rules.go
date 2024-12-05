@@ -9,7 +9,6 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
 )
 
 const (
@@ -101,10 +100,10 @@ type SandboxRules struct {
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 
-	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
-	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   urlfilteringpolicies.CBIProfile `json:"cbiProfile"`
-	CBIProfileID int                             `json:"cbiProfileId"`
+	// // The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
+	// // Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
+	// CBIProfile   urlfilteringpolicies.CBIProfile `json:"cbiProfile"`
+	// CBIProfileID int                             `json:"cbiProfileId"`
 
 	// If set to true, the default rule is applied
 	DefaultRule bool `json:"defaultRule"`
@@ -150,6 +149,7 @@ func Create(ctx context.Context, service *zscaler.Service, rule *SandboxRules) (
 	return createdRules, nil
 }
 
+/*
 func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *SandboxRules) (*SandboxRules, *http.Response, error) {
 	// Add debug log to print the rule object
 	service.Client.GetLogger().Printf("[DEBUG] Updating Sandbox rule with ID %d: %+v", ruleID, rule)
@@ -175,6 +175,17 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *San
 
 	service.Client.GetLogger().Printf("[DEBUG] returning Sandbox rule from update: %d", updatedSandboxRule.ID)
 	return updatedSandboxRule, nil, nil
+}
+*/
+
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *SandboxRules) (*SandboxRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", sandboxEndpoint, ruleID), *rules)
+	if err != nil {
+		return nil, err
+	}
+	updatedRules, _ := resp.(*SandboxRules)
+	service.Client.GetLogger().Printf("[DEBUG]returning sandbox rule from update: %d", updatedRules.ID)
+	return updatedRules, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {

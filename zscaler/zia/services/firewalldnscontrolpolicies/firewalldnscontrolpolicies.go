@@ -31,9 +31,6 @@ type FirewallDNSRules struct {
 	// The admin’s access privilege to this rule based on the assigned role
 	AccessControl string `json:"accessControl,omitempty"`
 
-	// A Boolean value that indicates whether full logging is enabled. A true value indicates that full logging is enabled, whereas a false value indicates that aggregate logging is enabled.
-	EnableFullLogging bool `json:"enableFullLogging,omitempty"`
-
 	// The action the Firewall Filtering policy rule takes when packets match the rule
 	// Supported Values: "ALLOW", "BLOCK", "REDIR_REQ", "REDIR_RES", "REDIR_ZPA", "REDIR_REQ_DOH", "REDIR_REQ_KEEP_SENDER", "REDIR_REQ_TCP", "REDIR_REQ_UDP","BLOCK_WITH_RESPONSE"
 	Action string `json:"action,omitempty"`
@@ -98,13 +95,13 @@ type FirewallDNSRules struct {
 	ApplicationGroups []common.IDNameExtensions `json:"applicationGroups,omitempty"`
 
 	// The DNS gateway used to redirect traffic, specified when the rule action is to redirect DNS request to an external DNS service.
-	DNSGateway []common.IDNameExtensions `json:"dnsGateway,omitempty"`
+	DNSGateway *common.IDName `json:"dnsGateway,omitempty"`
 
 	// The ZPA IP pool specified when the rule action is to resolve domain names of ZPA applications to an ephemeral IP address from a preconfigured IP pool.
 	ZPAIPGroup *common.IDName `json:"zpaIpGroup"`
 
 	// EDNS ECS object which resolves DNS request
-	EDNSEcsObject []common.IDNameExtensions `json:"ednsEcsObject,omitempty"`
+	EDNSEcsObject *common.IDName `json:"ednsEcsObject,omitempty"`
 
 	// The locations to which the Firewall Filtering policy rule applies
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
@@ -124,15 +121,6 @@ type FirewallDNSRules struct {
 	// The time interval in which the Firewall Filtering policy rule applies
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
-	// User-defined network service application group on which the rule is applied. If not set, the rule is not restricted to a specific network service application group.
-	NwApplicationGroups []common.IDNameExtensions `json:"nwApplicationGroups,omitempty"`
-
-	// Application services on which this rule is applied
-	AppServices []common.IDNameExtensions `json:"appServices,omitempty"`
-
-	// Application service groups on which this rule is applied
-	AppServiceGroups []common.IDNameExtensions `json:"appServiceGroups,omitempty"`
-
 	// Labels that are applicable to the rule.
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
 
@@ -143,26 +131,17 @@ type FirewallDNSRules struct {
 	// Destination IPv6 address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IPv6 address group.
 	DestIpv6Groups []common.IDNameExtensions `json:"destIpv6Groups,omitempty"`
 
-	// User-defined network services on which the rule is applied. If not set, the rule is not restricted to a specific network service.
-	NwServices []common.IDNameExtensions `json:"nwServices,omitempty"`
-
-	// User-defined network service applications on which the rule is applied. If not set, the rule is not restricted to a specific network service application.
-	NwServiceGroups []common.IDNameExtensions `json:"nwServiceGroups,omitempty"`
-
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	SrcIpGroups []common.IDNameExtensions `json:"srcIpGroups,omitempty"`
+
+	// Source IPv6 address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IPv6 address group.
+	SrcIpv6Groups []common.IDNameExtensions `json:"srcIpv6Groups,omitempty"`
 
 	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
 
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
-
-	// Advanced threat categories to which the rule applies
-	ThreatCategories []common.IDNameExtensions `json:"threatCategories,omitempty"`
-
-	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
-	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallDNSRules, error) {
@@ -191,10 +170,10 @@ func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (
 }
 
 func Create(ctx context.Context, service *zscaler.Service, rule *FirewallDNSRules) (*FirewallDNSRules, error) {
-	// Validate the rule before creating
-	if err := validateFirewallDNSRules(rule); err != nil {
-		return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
-	}
+	//Validate the rule before creating
+	// if err := validateFirewallDNSRules(rule); err != nil {
+	// 	return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
+	// }
 
 	// Proceed with creating the rule
 	resp, err := service.Client.Create(ctx, firewallDnsRulesEndpoint, *rule)
@@ -213,9 +192,9 @@ func Create(ctx context.Context, service *zscaler.Service, rule *FirewallDNSRule
 
 func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallDNSRules) (*FirewallDNSRules, error) {
 	// Validate the rule before updating
-	if err := validateFirewallDNSRules(rules); err != nil {
-		return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
-	}
+	// if err := validateFirewallDNSRules(rules); err != nil {
+	// 	return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
+	// }
 
 	// Proceed with updating the rule
 	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", firewallDnsRulesEndpoint, ruleID), *rules)
@@ -247,28 +226,34 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]FirewallDNSRules, 
 	return rules, err
 }
 
+/*
 func validateFirewallDNSRules(rule *FirewallDNSRules) error {
 	switch rule.Action {
 	case "REDIR_REQ_KEEP_SENDER":
-		if len(rule.DNSGateway) == 0 {
-			return errors.New("dnsGateway must be provided when action is REDIR_REQ_KEEP_SENDER")
+		// Validate DNSGateway is not nil and contains a valid ID or Name
+		if rule.DNSGateway == nil || rule.DNSGateway.ID == 0 || rule.DNSGateway.Name == "" {
+			return errors.New("dnsGateway must be provided with a valid ID and Name when action is REDIR_REQ_KEEP_SENDER")
 		}
+		// Validate Protocols is not empty
 		if len(rule.Protocols) == 0 {
 			return errors.New("protocols must be provided when action is REDIR_REQ_KEEP_SENDER")
 		}
 	case "REDIR_REQ_DOH", "REDIR_REQ_TCP", "REDIR_REQ_UDP":
-		if len(rule.DNSGateway) == 0 {
-			return fmt.Errorf("dnsGateway must be provided when action is %s", rule.Action)
+		// Validate DNSGateway is not nil and contains a valid ID or Name
+		if rule.DNSGateway == nil || rule.DNSGateway.ID == 0 || rule.DNSGateway.Name == "" {
+			return fmt.Errorf("dnsGateway must be provided with a valid ID and Name when action is %s", rule.Action)
 		}
 	case "REDIR_ZPA":
-		// Check if ZPAIPGroup is nil or if its ID is not set
+		// Validate ZPAIPGroup is not nil and contains a valid ID
 		if rule.ZPAIPGroup == nil || rule.ZPAIPGroup.ID == 0 {
 			return errors.New("zpaIpGroup must be provided with a valid ID when action is REDIR_ZPA")
 		}
 	case "REDIR_RES":
+		// Validate RedirectIP is not empty
 		if rule.RedirectIP == "" {
 			return errors.New("redirectIp must be provided when action is REDIR_RES")
 		}
 	}
 	return nil
 }
+*/

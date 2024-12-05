@@ -33,7 +33,7 @@ type FileTypeRules struct {
 
 	// Action taken when traffic matches policy. This field is not applicable to the Lite API.
 	// Supported Values: "BLOCK", "CAUTION", "ALLOW"
-	FilteringAction string `json:"action,omitempty"`
+	FilteringAction string `json:"filteringAction,omitempty"`
 
 	// Time quota in minutes, after which the policy must be applied. If not set, no time quota is enforced. Ignored if action is BLOCK.
 	TimeQuota int `json:"timeQuota,omitempty"`
@@ -44,14 +44,39 @@ type FileTypeRules struct {
 	// The access privilege for this DLP policy rule based on the admin's state.
 	AccessControl string `json:"accessControl,omitempty"`
 
-	// Protocol for the given rule. This field is not applicable to the Lite API.
-	Protocols []string `json:"protocols,omitempty"`
-
 	// Admin rank of the admin who creates this rule
 	Rank int `json:"rank,omitempty"`
 
+	// A Boolean value that indicates whether packet capture (PCAP) is enabled or not
+	CapturePCAP bool `json:"capturePCAP"`
+
+	// File operation performed. This field is not applicable to the Lite API.
+	Operation string `json:"operation"`
+
+	// Flag to check whether a file has active content or not
+	ActiveContent bool `json:"activeContent"`
+
+	// Flag to check whether a file has active content or not
+	Unscannable bool `json:"unscannable"`
+
+	// The list of cloud applications to which the File Type Control policy rule must be applied
+	// New to Review that.
+	CloudApplications []string `json:"cloudApplications,omitempty"`
+
 	// The list of file types to which the Sandbox Rule must be applied.
 	FileTypes []string `json:"fileTypes,omitempty"`
+
+	// Minimum file size (in KB) used for evaluation of the FTP rule
+	MinSize int `json:"minSize,omitempty"`
+
+	// Maximum file size (in KB) used for evaluation of the FTP rule
+	MaxSize int `json:"maxSize,omitempty"`
+
+	// Protocol for the given rule. This field is not applicable to the Lite API.
+	Protocols []string `json:"protocols,omitempty"`
+
+	// The list of URL categories to which the DLP policy rule must be applied.
+	URLCategories []string `json:"urlCategories,omitempty"`
 
 	// When the rule was last modified
 	LastModifiedTime int `json:"lastModifiedTime,omitempty"`
@@ -80,10 +105,6 @@ type FileTypeRules struct {
 	// The URL Filtering rule's label. Rule labels allow you to logically group your organization's policy rules. Policy rules that are not associated with a rule label are grouped under the Untagged label.
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
 
-	// The list of cloud applications to which the File Type Control policy rule must be applied
-	// New to Review that.
-	CloudApplications []common.IDNameExtensions `json:"cloudApplications,omitempty"`
-
 	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
 
@@ -93,29 +114,8 @@ type FileTypeRules struct {
 	// List of device trust levels for which the rule must be applied. This field is applicable for devices that are managed using Zscaler Client Connector. The trust levels are assigned to the devices based on your posture configurations in the Zscaler Client Connector Portal. If no value is set, this field is ignored during the policy evaluation.
 	DeviceTrustLevels []string `json:"deviceTrustLevels,omitempty"`
 
-	// Minimum file size (in KB) used for evaluation of the FTP rule
-	MinSize int `json:"minSize,omitempty"`
-
-	// Maximum file size (in KB) used for evaluation of the FTP rule
-	MaxSize int `json:"maxSize,omitempty"`
-
-	// The list of URL categories to which the DLP policy rule must be applied.
-	URLCategories []common.IDNameExtensions `json:"urlCategories,omitempty"`
-
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
-
-	// A Boolean value that indicates whether packet capture (PCAP) is enabled or not
-	CapturePCAP bool `json:"capturePCAP"`
-
-	// File operation performed. This field is not applicable to the Lite API.
-	Operation string `json:"operation"`
-
-	// Flag to check whether a file has active content or not
-	ActiveContent bool `json:"activeContent"`
-
-	// Flag to check whether a file has active content or not
-	Unscannable bool `json:"unscannable"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FileTypeRules, error) {

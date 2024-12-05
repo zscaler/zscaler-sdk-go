@@ -101,7 +101,7 @@ func TestSandboxRules(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -217,7 +217,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(context.Background(), service, 0, &SandboxRules{})
+	_, err = Update(context.Background(), service, 0, &SandboxRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

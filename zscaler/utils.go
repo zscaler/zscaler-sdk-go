@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"html"
+	"log"
 	"strings"
 )
 
@@ -56,19 +57,20 @@ func removeOneApiEndpointPrefix(endpoint string) string {
 	return endpoint
 }
 
-func Difference(slice1 []string, slice2 []string) []string {
+func Difference(slice1, slice2 []string) []string {
+	log.Printf("[DEBUG] Difference input - slice1: %v, slice2: %v", slice1, slice2)
+	// Convert slice2 to a map for faster lookups
+	slice2Map := make(map[string]struct{})
+	for _, s := range slice2 {
+		slice2Map[s] = struct{}{}
+	}
+
 	var diff []string
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1 == s2 {
-				found = true
-				break
-			}
-		}
-		if !found {
-			diff = append(diff, s1)
+	for _, s := range slice1 {
+		if _, found := slice2Map[s]; !found {
+			diff = append(diff, s)
 		}
 	}
+	log.Printf("[DEBUG] Difference output - diff: %v", diff)
 	return diff
 }

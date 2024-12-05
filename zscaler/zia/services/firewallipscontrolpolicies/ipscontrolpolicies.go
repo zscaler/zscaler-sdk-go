@@ -120,6 +120,9 @@ type FirewallIPSRules struct {
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	SrcIpGroups []common.IDNameExtensions `json:"srcIpGroups,omitempty"`
 
+	// Source IPv6 address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IPv6 address group.
+	SrcIpv6Groups []common.IDNameExtensions `json:"srcIpv6Groups,omitempty"`
+
 	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
 
