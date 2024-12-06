@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,9 +25,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	service := services.New(zdxClient)
 
 	// Prompt the user to choose a report type
 	fmt.Println("Choose Device Web Probe Report:")
@@ -35,14 +50,6 @@ func main() {
 	fmt.Print("Enter choice (a/b): ")
 	choice, _ := reader.ReadString('\n')
 	choice = strings.TrimSpace(choice)
-
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
 
 	// Define filters
 	now := time.Now()
@@ -83,7 +90,7 @@ func main() {
 		}
 
 		// Get Web Probes metrics
-		webProbeMetrics, resp, err := devices.GetWebProbes(service, deviceID, appID, probeID, filters)
+		webProbeMetrics, resp, err := devices.GetWebProbes(context.Background(), service, deviceID, appID, probeID, filters)
 		if err != nil {
 			log.Fatalf("Error getting web probe metrics: %v", err)
 		}
@@ -117,7 +124,7 @@ func main() {
 		}
 
 		// Get all active Web Probes
-		webProbes, resp, err := devices.GetAllWebProbes(service, deviceID, appID, filters)
+		webProbes, resp, err := devices.GetAllWebProbes(context.Background(), service, deviceID, appID, filters)
 		if err != nil {
 			log.Fatalf("Error getting web probes: %v", err)
 		}

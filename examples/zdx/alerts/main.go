@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -23,17 +24,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	service := services.New(zdxClient)
 
 	// Prompt the user to choose an alert type
 	fmt.Println("Choose the Alert Type:")
@@ -124,7 +131,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 }
 
 func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters) {
-	alertsResponse, _, err := alerts.GetOngoingAlerts(service, filters)
+	alertsResponse, _, err := alerts.GetOngoingAlerts(context.Background(), service, filters)
 	if err != nil {
 		log.Fatalf("Error getting ongoing alerts: %v", err)
 	}
@@ -132,7 +139,7 @@ func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters
 }
 
 func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) {
-	alertsResponse, _, err := alerts.GetHistoricalAlerts(service, filters)
+	alertsResponse, _, err := alerts.GetHistoricalAlerts(context.Background(), service, filters)
 	if err != nil {
 		log.Fatalf("Error getting historical alerts: %v", err)
 	}
@@ -148,7 +155,7 @@ func getAlertDetails(service *services.Service, alertID string) {
 }
 
 func getAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) {
-	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(service, alertID, filters)
+	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(context.Background(), service, alertID, filters)
 	if err != nil {
 		log.Fatalf("Error getting affected devices: %v", err)
 	}

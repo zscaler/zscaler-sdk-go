@@ -19,6 +19,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/filetypecontrol"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
@@ -87,6 +88,7 @@ func sweep() error {
 		sweepFirewallIPSRules,
 		sweepFirewallDNSRules,
 		sweepURLFilteringPolicies,
+		sweepFileTypeControlRules,
 		sweepSandboxRules,
 		sweepLocationManagement,
 		sweepAdminUsers,
@@ -685,6 +687,27 @@ func sweepURLFilteringPolicies(client *zscaler.Client) error {
 		err, _ := urlfilteringpolicies.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url filtering policies with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepFileTypeControlRules(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := filetypecontrol.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get file type control rules: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		err, _ := filetypecontrol.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete file type control rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 	return nil

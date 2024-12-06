@@ -38,33 +38,6 @@ func TestProxyGateway(t *testing.T) {
 			t.Log("No lite proxy gateways found")
 			return
 		}
-
-		// Use the first proxy gateway ID from GetLite
-		firstLiteGW := proxyGatewaysLite[0]
-
-		// Test Get with the first ID from GetLite
-		t.Run("GetByLiteID", func(t *testing.T) {
-			proxyGwByLiteID, err := Get(context.Background(), service, firstLiteGW.ID)
-			if err != nil {
-				t.Errorf("Error getting proxy gateway by Lite ID: %v", err)
-				return
-			}
-			if proxyGwByLiteID == nil || proxyGwByLiteID.ID != firstLiteGW.ID {
-				t.Errorf("Proxy gateway Lite ID does not match: expected %d, got %d", firstLiteGW.ID, proxyGwByLiteID.ID)
-			}
-		})
-	})
-
-	// Test ProxyGatewayID
-	t.Run("ProxyGatewayID", func(t *testing.T) {
-		proxyGwID, err := Get(context.Background(), service, firstGW.ID)
-		if err != nil {
-			t.Errorf("Error getting proxy gateway by ID: %v", err)
-			return
-		}
-		if proxyGwID == nil || proxyGwID.ID != firstGW.ID {
-			t.Errorf("Proxy gateway ID does not match: expected %d, got %d", proxyGwID.ID, proxyGwID.ID)
-		}
 	})
 
 	// Test GetProxyGWByName

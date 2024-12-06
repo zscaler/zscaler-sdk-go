@@ -96,6 +96,17 @@ As of the publication of SDK version => 3.x, OneAPI is available for programmati
 
 **NOTE** All other products succh as Zscaler Cloud Connector (ZCON) and Zscaler Digital Experience (ZDX) are supported only via the legacy authentication method described in this README.
 
+### OneAPI (API Client Scope)
+
+OneAPI Resources are automatically created within the ZIdentity Admin UI based on the RBAC Roles
+applicable to APIs within the various products. For example, in ZIA, navigate to `Administration -> Role Management` and select `Add API Role`.
+
+Once this role has been saved, return to the ZIdentity Admin UI and from the Integration menu
+select API Resources. Click the `View` icon to the right of Zscaler APIs and under the ZIA
+dropdown you will see the newly created Role. In the event a newly created role is not seen in the
+ZIdentity Admin UI a `Sync Now` button is provided in the API Resources menu which will initiate an
+on-demand sync of newly created roles.
+
 ### Default Environment variables
 
 You can provide credentials via the `ZSCALER_CLIENT_ID`, `ZSCALER_CLIENT_SECRET`, `ZSCALER_VANITY_DOMAIN`, `ZSCALER_CLOUD` environment variables, representing your Zidentity OneAPI credentials `clientId`, `clientSecret`, `vanityDomain` and `cloud` respectively.

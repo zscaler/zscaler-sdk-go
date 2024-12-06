@@ -3,7 +3,6 @@ package cloudapplications
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 
@@ -32,7 +31,7 @@ type CloudApplications struct {
 
 func GetCloudApplicationPolicy(ctx context.Context, service *zscaler.Service, params map[string]interface{}) ([]CloudApplications, error) {
 	queryParams := url.Values{}
-	log.Printf("[DEBUG] Received params: %v", params)
+	// log.Printf("[DEBUG] Received params: %v", params)
 
 	if appClasses, ok := params["appClass"].([]interface{}); ok {
 		for _, appClass := range appClasses {
@@ -44,7 +43,7 @@ func GetCloudApplicationPolicy(ctx context.Context, service *zscaler.Service, pa
 	}
 
 	endpoint := fmt.Sprintf("%s?%s", cloudAppPolicyEndpoint, queryParams.Encode())
-	log.Printf("[DEBUG] Constructed endpoint: %s", endpoint)
+	// log.Printf("[DEBUG] Constructed endpoint: %s", endpoint)
 
 	var results []CloudApplications
 	err := common.ReadAllPages(ctx, service.Client, endpoint, &results)
@@ -56,7 +55,7 @@ func GetCloudApplicationPolicy(ctx context.Context, service *zscaler.Service, pa
 
 func GetCloudApplicationSSLPolicy(ctx context.Context, service *zscaler.Service, params map[string]interface{}) ([]CloudApplications, error) {
 	queryParams := url.Values{}
-	log.Printf("[DEBUG] Received params: %v", params)
+	// log.Printf("[DEBUG] Received params: %v", params)
 
 	if appClasses, ok := params["appClass"].([]interface{}); ok {
 		for _, appClass := range appClasses {
@@ -68,7 +67,7 @@ func GetCloudApplicationSSLPolicy(ctx context.Context, service *zscaler.Service,
 	}
 
 	endpoint := fmt.Sprintf("%s?%s", cloudAppSSLPolicyEndpoint, queryParams.Encode())
-	log.Printf("[DEBUG] Constructed endpoint: %s", endpoint)
+	//log.Printf("[DEBUG] Constructed endpoint: %s", endpoint)
 
 	var results []CloudApplications
 	err := common.ReadAllPages(ctx, service.Client, endpoint, &results)

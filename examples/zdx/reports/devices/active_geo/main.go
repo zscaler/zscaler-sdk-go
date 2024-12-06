@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,9 +25,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	service := services.New(zdxClient)
 
 	// Prompt for from time
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
@@ -58,14 +73,6 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
-
 	// Define filters
 	fromInt, err := safeIntConversion(fromTime)
 	if err != nil {
@@ -85,7 +92,7 @@ func main() {
 	}
 
 	// Get geolocations
-	geoLocations, resp, err := devices.GetGeoLocations(service, filters)
+	geoLocations, resp, err := devices.GetGeoLocations(context.Background(), service, filters)
 	if err != nil {
 		log.Fatalf("Error getting geo locations: %v", err)
 	}

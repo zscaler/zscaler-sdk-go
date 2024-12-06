@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,9 +24,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	service := services.New(zdxClient)
 
 	// Prompt the user for device ID
 	fmt.Print("Enter device ID: ")
@@ -41,16 +56,8 @@ func main() {
 	traceIDInput, _ := reader.ReadString('\n')
 	traceID := strings.TrimSpace(traceIDInput)
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
-
 	// Call GetDeviceTopProcesses with the provided device ID and trace ID
-	topProcesses, resp, err := devices.GetDeviceTopProcesses(service, deviceID, traceID, common.GetFromToFilters{})
+	topProcesses, resp, err := devices.GetDeviceTopProcesses(context.Background(), service, deviceID, traceID, common.GetFromToFilters{})
 	if err != nil {
 		log.Fatalf("Error getting device top processes: %v", err)
 	}

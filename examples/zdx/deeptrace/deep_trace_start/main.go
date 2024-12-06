@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -24,17 +25,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	service := services.New(zdxClient)
 
 	// Prompt the user for required IDs
 	fmt.Print("Enter device ID: ")
@@ -93,7 +100,7 @@ func main() {
 		ProbeDevice:          true,
 	}
 
-	createdSession, resp, err := deeptrace.CreateDeepTraceSession(service, deviceID, payload)
+	createdSession, resp, err := deeptrace.CreateDeepTraceSession(context.Background(), service, deviceID, payload)
 	if err != nil {
 		log.Fatalf("Error creating deep trace session: %v", err)
 	}
@@ -110,7 +117,7 @@ func main() {
 	time.Sleep(30 * time.Second)
 
 	// Get deep trace session again to update the status
-	traceSessionResp, err := deeptrace.GetDeepTraceSession(service, deviceID, traceID)
+	traceSessionResp, err := deeptrace.GetDeepTraceSession(context.Background(), service, deviceID, traceID)
 	if err != nil {
 		log.Fatalf("Error getting deep trace session: %v", err)
 	}
@@ -135,7 +142,7 @@ func main() {
 
 	if strings.ToLower(deleteSession) == "yes" {
 		// Delete the deep trace session
-		deleteResp, err := deeptrace.DeleteDeepTraceSession(service, deviceID, traceID)
+		deleteResp, err := deeptrace.DeleteDeepTraceSession(context.Background(), service, deviceID, traceID)
 		if err != nil {
 			log.Fatalf("Error deleting deep trace session: %v", err)
 		}

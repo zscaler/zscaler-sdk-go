@@ -43,16 +43,16 @@ type ProxyGateways struct {
 	Type string `json:"type"`
 }
 
-func Get(ctx context.Context, service *zscaler.Service, gatewayID int) (*ProxyGateways, error) {
-	var rule ProxyGateways
-	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", proxyGatewaysEndpoint, gatewayID), &rule)
-	if err != nil {
-		return nil, err
-	}
+// func Get(ctx context.Context, service *zscaler.Service, gatewayID int) (*ProxyGateways, error) {
+// 	var rule ProxyGateways
+// 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", proxyGatewaysEndpoint, gatewayID), &rule)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
-	return &rule, nil
-}
+// 	service.Client.GetLogger().Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
+// 	return &rule, nil
+// }
 
 func GetByName(ctx context.Context, service *zscaler.Service, gwName string) (*ProxyGateways, error) {
 	var proxyGWs []ProxyGateways

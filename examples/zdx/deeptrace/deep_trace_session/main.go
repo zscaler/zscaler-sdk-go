@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -24,9 +25,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	deeptraceService := services.New(zdxClient)
 
 	// Prompt for device ID
 	fmt.Print("Enter device ID: ")
@@ -42,17 +57,9 @@ func main() {
 	traceID, _ := reader.ReadString('\n')
 	traceID = strings.TrimSpace(traceID)
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	deeptraceService := services.New(cli)
-
 	if traceID == "" {
 		// Get all deep trace sessions for the device
-		deepTraces, _, err := deeptrace.GetDeepTraces(deeptraceService, deviceID)
+		deepTraces, _, err := deeptrace.GetDeepTraces(context.Background(), deeptraceService, deviceID)
 		if err != nil {
 			log.Fatalf("[ERROR] getting deep traces failed: %v\n", err)
 		}
@@ -135,7 +142,7 @@ func main() {
 		}
 	} else {
 		// Get specific deep trace session details
-		resp, err := deeptrace.GetDeepTraceSession(deeptraceService, deviceID, traceID)
+		resp, err := deeptrace.GetDeepTraceSession(context.Background(), deeptraceService, deviceID, traceID)
 		if err != nil {
 			log.Fatalf("[ERROR] getting deep trace session failed: %v\n", err)
 		}

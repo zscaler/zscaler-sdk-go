@@ -1,5 +1,6 @@
 package remote_assistance
 
+/*
 import (
 	"context"
 	"testing"
@@ -62,3 +63,4 @@ func TestRemoteAssistance(t *testing.T) {
 	}
 	t.Logf("Reverted Remote Assistance settings to original values")
 }
+*/

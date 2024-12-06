@@ -27,9 +27,9 @@ func TestCloudApplications(t *testing.T) {
 	assert.NotEmpty(t, cloudAppPolicies, "Expected non-empty response for Cloud Application Policy")
 
 	// Log result for debugging
-	for _, app := range cloudAppPolicies {
-		t.Logf("Policy: %s, %s", app.AppName, app.ParentName)
-	}
+	// for _, app := range cloudAppPolicies {
+	// 	t.Logf("Policy: %s, %s", app.AppName, app.ParentName)
+	// }
 
 	// Define test parameters for Cloud Application SSL Policy
 	sslPolicyParams := map[string]interface{}{
@@ -44,7 +44,7 @@ func TestCloudApplications(t *testing.T) {
 	assert.NotEmpty(t, cloudAppSSLPolicies, "Expected non-empty response for Cloud Application SSL Policy")
 
 	// Log result for debugging
-	for _, app := range cloudAppSSLPolicies {
-		t.Logf("SSL Policy: %s, %s", app.AppName, app.ParentName)
-	}
+	// for _, app := range cloudAppSSLPolicies {
+	// 	t.Logf("SSL Policy: %s, %s", app.AppName, app.ParentName)
+	// }
 }
