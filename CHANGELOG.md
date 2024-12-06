@@ -1,5 +1,139 @@
 # Changelog
 
+# 3.0.0 (December 9, 2024) - BREAKING CHANGES
+
+## Notes
+- Golang: **v1.23**
+
+#### Zscaler OneAPI Support
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): Added support for [OneAPI](https://help.zscaler.com/oneapi/understanding-oneapi) Oauth2 authentication support through [Zidentity](https://help.zscaler.com/zidentity/what-zidentity).
+
+**NOTES** 
+  - Starting at v3.0.0 version this SDK provides dual API client functionality and is backwards compatible with the legacy Zscaler API framework.
+  - The new OneAPI framework is compatible only with the following products `ZCC/ZIA/ZPA`.
+  - The following products `ZCON` - Cloud Connector and `ZDX` and Zscaler Digital Experience, authentication methods remain unnaffected.
+
+Refer to the [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md) page for details on client instantiation, and authentication requirements on each individual product.
+
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): All API clients now support Config Setter object `ZCC/ZCON/ZDX/ZIA/ZPA`
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): Added Ability to pass `context` to each method that is sent into the request.
+
+#### ZIA Sandbox Submission - BREAKING CHANGES
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Authentication to Zscaler Sandbox now use the following attributes during client instantiation.
+ - `sandboxToken` - Can also be sourced from the `ZSCALER_SANDBOX_TOKEN` environment variable.
+ - `sandboxCloud` - Can also be sourced from the `ZSCALER_SANDBOX_CLOUD` environment variable.
+
+**NOTE** The previous `ZIA_SANDBOX_TOKEN` has been deprecated.
+
+#### ZIA Sandbox Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /sandboxRules` to retrieve the list of all Sandbox policy rules.
+  - Added `GET /sandboxRules/{ruleId}` to retrieve the Sandbox policy rule information based on the specified ID.
+  - Added `POST /sandboxRules` to add a Sandbox policy rule. 
+  - Added `PUT /sandboxRules/{ruleId}` to update the Sandbox policy rule configuration for the specified ID.
+  - Added `DELETE /sandboxRules/{ruleId}` to delete the Sandbox policy rule based on the specified ID.
+
+#### ZIA DNS Control Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /firewallDnsRules` to retrieve the list of all DNS Control policy rules.
+  - Added `GET /firewallDnsRules/{ruleId}` to retrieve the DNS Control policy rule information based on the specified ID.
+  - Added `POST /firewallDnsRules` to add a DNS Control policy rules. 
+  - Added `PUT /firewallDnsRules/{ruleId}` to update the DNS Control policy rule configuration for the specified ID.
+  - Added `DELETE /firewallDnsRules/{ruleId}` to delete the DNS Control policy rule based on the specified ID.
+
+#### ZIA IPS Control Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /firewallIpsRules` to retrieve the list of all IPS Control policy rules.
+  - Added `GET /firewallIpsRules/{ruleId}` to retrieve the IPS Control policy rule information based on the specified ID.
+  - Added `POST /firewallIpsRules` to add a IPS Control policy rule. 
+  - Added `PUT /firewallIpsRules/{ruleId}` to update the IPS Control policy rule configuration for the specified ID.
+  - Added `DELETE /firewallIpsRules/{ruleId}` to delete the IPS Control policy rule based on the specified ID.
+
+#### ZIA File Type Control Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /fileTypeRules` to retrieve the list of all File Type Control policy rules.
+  - Added `GET /fileTypeRules/lite` to retrieve the list of all File Type Control policy rules.
+  - Added `GET /fileTypeRules/{ruleId}` to retrieve the File Type Control policy rule information based on the specified ID.
+  - Added `POST /fileTypeRules` to add a File Type Control policy rule. 
+  - Added `PUT /fileTypeRules/{ruleId}` to update the File Type Control policy rule configuration for the specified ID.
+  - Added `DELETE /fileTypeRules/{ruleId}` to delete the File Type Control policy rule based on the specified ID.
+
+#### ZIA Forwarding Control Policy - Proxy Gateways
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /proxyGateways` to retrieve the proxy gateway information.
+  - Added `GET /proxyGateways/lite` to retrieve the name and ID of the proxy.
+
+#### ZIA Cloud Nanolog Streaming Service (NSS)
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /nssFeeds` to retrieve the cloud NSS feeds.
+  - Added `GET /nssFeeds/{feedId}` to retrieve information about cloud NSS feed based on the specified ID.
+  - Added `POST /nssFeeds` to add a new cloud NSS feed.
+  - Added `PUT /nssFeeds/{feedId}` to update cloud NSS feed configuration based on the specified ID.
+  - Added `DELETE /nssFeeds/{feedId}` to delete cloud NSS feed configuration based on the specified ID.
+  - Added `GET /nssFeeds/feedOutputDefaults` to retrieve the default cloud NSS feed output format for different log types.
+  - Added `GET /nssFeeds/testConnectivity/{feedId}` to test the connectivity of cloud NSS feed based on the specified ID
+  - Added `POST /nssFeeds/validateFeedFormat` to validates the cloud NSS feed format and returns the validation result
+
+#### ZIA Advanced Threat Protection Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cyberThreatProtection/advancedThreatSettings` to retrieve the advanced threat configuration settings.
+  - Added `PUT /cyberThreatProtection/advancedThreatSettings` to update the advanced threat configuration settings.
+  - Added `GET /cyberThreatProtection/maliciousUrls` to retrieve the malicious URLs added to the denylist in the Advanced Threat Protection (ATP) policy
+  - Added `PUT /cyberThreatProtection/maliciousUrls` to updates the malicious URLs added to the denylist in ATP policy
+  - Added `GET /cyberThreatProtection/securityExceptions` to retrieves information about the security exceptions configured for the ATP policy
+  - Added `PUT /cyberThreatProtection/securityExceptions` to update security exceptions for the ATP policy
+  
+#### ZIA Advanced Threat Protection Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cyberThreatProtection/atpMalwareInspection` to retrieve the traffic inspection configurations of Malware Protection policy
+  - Added `PUT /cyberThreatProtection/atpMalwareInspection` to update the traffic inspection configurations of Malware Protection policy.
+  - Added `GET /cyberThreatProtection/atpMalwareProtocols` to retrieve the protocol inspection configurations of Malware Protection policy
+  - Added `PUT /cyberThreatProtection/atpMalwareProtocols` to update the protocol inspection configurations of Malware Protection policy.
+  - Added `GET /cyberThreatProtection/malwareSettings` to retrieve the malware protection policy configuration details
+  - Added `PUT /cyberThreatProtection/malwareSettings` to update the malware protection policy configuration details.
+  - Added `GET /cyberThreatProtection/malwarePolicy` to retrieve information about the security exceptions configured for the Malware Protection policy
+  - Added `PUT /cyberThreatProtection/malwarePolicy` to update security exceptions for the Malware Protection policy. 
+
+#### ZIA URL & Cloud App Control Policy Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /advancedUrlFilterAndCloudAppSettings` to retrieve information about URL and Cloud App Control advanced policy settings
+  - Added `PUT /advancedUrlFilterAndCloudAppSettings` to update the URL and Cloud App Control advanced policy settings
+
+#### ZIA Authentication Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /authSettings` to retrieve the organization's default authentication settings information, including authentication profile and Kerberos authentication information.
+  - Added `GET /authSettings/lite` to retrieve organization's default authentication settings information.
+  - Added `PUT /authSettings` to update the organization's default authentication settings information.
+
+#### ZIA Advanced Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /advancedSettings` to retrieve information about the advanced settings.
+  - Added `PUT /advancedSettings` to update the advanced settings configuration.
+
+#### ZIA Cloud Applications
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cloudApplications/policy` Retrieves a list of Predefined and User Defined Cloud Applications associated with the DLP rules, Cloud App Control rules, Advanced Settings, Bandwidth Classes, and File Type Control rules.
+  - Added `GET /cloudApplications/sslPolicy` Retrieves a list of Predefined and User Defined Cloud Applications associated with the SSL Inspection rules.
+
+#### ZIA Shadow IT Report
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+- Added `PUT /cloudApplications/bulkUpdate` To Update application status and tag information for predefined or custom cloud applications based on the IDs specified
+- Added `GET /cloudApplications/lite` Gets the list of predefined and custom cloud applications
+- Added `GET /customTags` Gets the list of custom tags available to assign to cloud applications
+- Added `POST /shadowIT/applications/export` Export the Shadow IT Report (in CSV format) for the cloud applications recognized by Zscaler based on their usage in your organization.
+- Added `POST /shadowIT/applications/{entity}/exportCsv` Export the Shadow IT Report (in CSV format) for the list of users or known locations identified with using the cloud applications specified in the request.
+
+#### ZIA Remote Assistance Support
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /remoteAssistance` to retrieve information about the Remote Assistance option.
+  - Added `PUT /remoteAssistance` to update information about the Remote Assistance option. Using this option, you can allow Zscaler Support to access your organization’s ZIA Admin Portal for a specified time period to troubleshoot issues.
+
+#### ZIA Organization Details
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /orgInformation` to retrieve detailed organization information, including headquarter location, geolocation, address, and contact details.
+  - Added `GET /orgInformation/lite` to retrieve minimal organization information.
+  - Added `GET /subscriptions` to retrieve information about the list of subscriptions enabled for your tenant. Subscriptions define the various features and levels of functionality that are available to your organization.
+
 # 2.74.0 (November 14, 2024)
 
 ## Notes

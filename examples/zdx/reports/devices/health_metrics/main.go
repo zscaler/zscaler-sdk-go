@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,10 +12,10 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 func main() {
@@ -24,17 +25,23 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	service := services.New(zdxClient)
 
 	// Prompt the user for device ID
 	fmt.Print("Enter device ID: ")
@@ -97,7 +104,7 @@ func main() {
 	}
 
 	// Call GetHealthMetrics with the provided device ID and filters
-	healthMetrics, resp, err := devices.GetHealthMetrics(service, deviceID, filters)
+	healthMetrics, resp, err := devices.GetHealthMetrics(context.Background(), service, deviceID, filters)
 	if err != nil {
 		log.Fatalf("Error getting health metrics: %v", err)
 	}
