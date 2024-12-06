@@ -3,91 +3,12 @@ package advancedthreatsettings
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
-	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
-
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true"))
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	// Define the context here
-	ctx := context.Background()
-
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-
-	// Clean malicious URLs
-	maliciousResources, err := GetMaliciousURLs(ctx, service)
-	if err != nil {
-		log.Printf("Error retrieving malicious URLs during cleanup: %v", err)
-		return
-	}
-
-	var maliciousUrlsToRemove []string
-	for _, url := range maliciousResources.MaliciousUrls {
-		if strings.HasPrefix(url, "site") { // Adjust prefix condition as needed
-			maliciousUrlsToRemove = append(maliciousUrlsToRemove, url)
-		}
-	}
-	if len(maliciousUrlsToRemove) > 0 {
-		log.Printf("Cleaning malicious URLs: %v", maliciousUrlsToRemove)
-		_, err := UpdateMaliciousURLs(ctx, service, []string{}) // Clear the list
-		if err != nil {
-			log.Printf("Error removing malicious URLs during cleanup: %v", err)
-		}
-	}
-
-	// Clean security exceptions
-	securityResources, err := GetSecurityExceptions(ctx, service)
-	if err != nil {
-		log.Printf("Error retrieving security exceptions during cleanup: %v", err)
-		return
-	}
-
-	var securityUrlsToRemove []string
-	for _, url := range securityResources.BypassUrls {
-		if strings.HasPrefix(url, "site") { // Adjust prefix condition as needed
-			securityUrlsToRemove = append(securityUrlsToRemove, url)
-		}
-	}
-	if len(securityUrlsToRemove) > 0 {
-		log.Printf("Cleaning security exception URLs: %v", securityUrlsToRemove)
-		_, err := UpdateSecurityExceptions(ctx, service, []string{}) // Clear the list
-		if err != nil {
-			log.Printf("Error removing security exceptions during cleanup: %v", err)
-		}
-	}
-}
 
 func TestAdvancedThreatSettings(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
@@ -108,7 +29,9 @@ func TestAdvancedThreatSettings(t *testing.T) {
 		// Generate new random URLs and update
 		newUrls := generateRandomUrls(3)
 		allUrls := append(initialUrls.MaliciousUrls, newUrls...)
-		_, err = UpdateMaliciousURLs(ctx, service, allUrls) // Passing the []string directly
+		maliciousUrls := MaliciousURLs{MaliciousUrls: allUrls} // Wrap []string into MaliciousURLs struct
+
+		_, err = UpdateMaliciousURLs(ctx, service, maliciousUrls)
 		if err != nil {
 			t.Fatalf("Error updating malicious URLs: %v", err)
 		}
@@ -131,7 +54,9 @@ func TestAdvancedThreatSettings(t *testing.T) {
 		// Generate new random URLs and update
 		newExceptions := generateRandomUrls(3)
 		allExceptions := append(initialExceptions.BypassUrls, newExceptions...)
-		_, err = UpdateSecurityExceptions(ctx, service, allExceptions) // Passing the []string directly
+		securityExceptions := SecurityExceptions{BypassUrls: allExceptions} // Wrap []string into SecurityExceptions struct
+
+		_, err = UpdateSecurityExceptions(ctx, service, securityExceptions)
 		if err != nil {
 			t.Fatalf("Error updating security exceptions: %v", err)
 		}

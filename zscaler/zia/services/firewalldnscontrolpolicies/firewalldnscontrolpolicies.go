@@ -151,7 +151,7 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallDN
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning firewall ips rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning firewall dns rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -166,16 +166,10 @@ func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (
 			return &rule, nil
 		}
 	}
-	return nil, fmt.Errorf("no firewall ips rule found with name: %s", ruleName)
+	return nil, fmt.Errorf("no firewall dns rule found with name: %s", ruleName)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, rule *FirewallDNSRules) (*FirewallDNSRules, error) {
-	//Validate the rule before creating
-	// if err := validateFirewallDNSRules(rule); err != nil {
-	// 	return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
-	// }
-
-	// Proceed with creating the rule
 	resp, err := service.Client.Create(ctx, firewallDnsRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
@@ -186,10 +180,44 @@ func Create(ctx context.Context, service *zscaler.Service, rule *FirewallDNSRule
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall dns rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallDNSRules) (*FirewallDNSRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", firewallDnsRulesEndpoint, ruleID), *rules)
+	if err != nil {
+		return nil, err
+	}
+	updatedRules, _ := resp.(*FirewallDNSRules)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall dns rule from update: %d", updatedRules.ID)
+	return updatedRules, nil
+}
+
+/*
+	func Create(ctx context.Context, service *zscaler.Service, rule *FirewallDNSRules) (*FirewallDNSRules, error) {
+		//Validate the rule before creating
+		// if err := validateFirewallDNSRules(rule); err != nil {
+		// 	return nil, fmt.Errorf("validation failed for FirewallDNSRules: %w", err)
+		// }
+
+		// Proceed with creating the rule
+		resp, err := service.Client.Create(ctx, firewallDnsRulesEndpoint, *rule)
+		if err != nil {
+			return nil, err
+		}
+
+		createdRules, ok := resp.(*FirewallDNSRules)
+		if !ok {
+			return nil, errors.New("object returned from api was not a rule Pointer")
+		}
+
+		service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+		return createdRules, nil
+	}
+*/
+
+/*
 func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallDNSRules) (*FirewallDNSRules, error) {
 	// Validate the rule before updating
 	// if err := validateFirewallDNSRules(rules); err != nil {
@@ -210,6 +238,7 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *Fi
 	service.Client.GetLogger().Printf("[DEBUG]returning firewall ips rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
+*/
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
 	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", firewallDnsRulesEndpoint, ruleID))

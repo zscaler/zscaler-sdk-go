@@ -39,7 +39,7 @@ func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPSourc
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning ip source group from Get: %d", ipSourceGroups.ID)
 	return &ipSourceGroups, nil
 }
 

@@ -209,26 +209,26 @@ func GetMaliciousURLs(ctx context.Context, service *zscaler.Service) (*Malicious
 	return &urls, nil
 }
 
-func UpdateMaliciousURLs(ctx context.Context, service *zscaler.Service, desiredUrls []string) (*MaliciousURLs, error) {
-	// Step 1: Validate the input
-	if len(desiredUrls) == 0 {
-		return nil, fmt.Errorf("cannot update malicious URLs with an empty list; the API does not support clearing the list")
-	}
-
-	// Step 2: Add the desired URLs directly
-	setPayload := MaliciousURLs{MaliciousUrls: desiredUrls}
-	_, err := service.Client.UpdateWithPut(ctx, maliciousUrlsEndpoint, setPayload)
+func UpdateMaliciousURLs(ctx context.Context, service *zscaler.Service, urls MaliciousURLs) (*MaliciousURLs, error) {
+	currentUrls, err := GetMaliciousURLs(ctx, service)
 	if err != nil {
-		return nil, fmt.Errorf("error setting desired malicious URLs: %v", err)
+		return nil, err
 	}
-
-	// Step 3: Retrieve and return the updated list
-	updatedState, err := GetMaliciousURLs(ctx, service)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving updated malicious URLs: %v", err)
+	newUrls := zscaler.Difference(urls.MaliciousUrls, currentUrls.MaliciousUrls)
+	removedUrls := zscaler.Difference(currentUrls.MaliciousUrls, urls.MaliciousUrls)
+	if len(newUrls) > 0 {
+		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=ADD_TO_LIST", maliciousUrlsEndpoint), MaliciousURLs{newUrls})
+		if err != nil {
+			return nil, err
+		}
 	}
-
-	return updatedState, nil
+	if len(removedUrls) > 0 {
+		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", maliciousUrlsEndpoint), MaliciousURLs{removedUrls})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &urls, nil
 }
 
 func GetSecurityExceptions(ctx context.Context, service *zscaler.Service) (*SecurityExceptions, error) {
@@ -242,29 +242,12 @@ func GetSecurityExceptions(ctx context.Context, service *zscaler.Service) (*Secu
 	return &bypassUrls, nil
 }
 
-func UpdateSecurityExceptions(ctx context.Context, service *zscaler.Service, desiredUrls []string) (*SecurityExceptions, error) {
-	// Step 1: Clear the current list
-	// log.Printf("[DEBUG] Clearing existing bypass list")
-	clearPayload := SecurityExceptions{BypassUrls: []string{}}
-	_, err := service.Client.UpdateWithPut(ctx, securityExceptionsEndpoint, clearPayload)
+func UpdateSecurityExceptions(ctx context.Context, service *zscaler.Service, urls SecurityExceptions) (*SecurityExceptions, error) {
+	// Overwrite the bypass URLs with the provided list
+	_, err := service.Client.UpdateWithPut(ctx, securityExceptionsEndpoint, urls)
 	if err != nil {
-		return nil, fmt.Errorf("error clearing security exceptions: %v", err)
+		return nil, err
 	}
 
-	// Step 2: Add the desired URLs to the list
-	// log.Printf("[DEBUG] Setting desired bypass list: %v", desiredUrls)
-	setPayload := SecurityExceptions{BypassUrls: desiredUrls}
-	_, err = service.Client.UpdateWithPut(ctx, securityExceptionsEndpoint, setPayload)
-	if err != nil {
-		return nil, fmt.Errorf("error setting desired security exceptions: %v", err)
-	}
-
-	// Step 3: Retrieve and return the updated list for confirmation
-	updatedState, err := GetSecurityExceptions(ctx, service)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving updated security exceptions: %v", err)
-	}
-	// log.Printf("[DEBUG] Updated bypass list: %v", updatedState.BypassUrls)
-
-	return updatedState, nil
+	return &urls, nil
 }

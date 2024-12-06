@@ -16,10 +16,10 @@ const (
 )
 
 type FirewallIPSRules struct {
-	// Unique identifier for the Firewall Filtering policy rule
+	// Unique identifier for the Firewall IPS policy rule
 	ID int `json:"id,omitempty"`
 
-	// Name of the Firewall Filtering policy rule
+	// Name of the Firewall IPS policy rule
 	Name string `json:"name,omitempty"`
 
 	// Rule order number of the Firewall Filtering policy rule
@@ -91,15 +91,6 @@ type FirewallIPSRules struct {
 
 	// The time interval in which the Firewall Filtering policy rule applies
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
-
-	// User-defined network service application group on which the rule is applied. If not set, the rule is not restricted to a specific network service application group.
-	NwApplicationGroups []common.IDNameExtensions `json:"nwApplicationGroups,omitempty"`
-
-	// Application services on which this rule is applied
-	AppServices []common.IDNameExtensions `json:"appServices,omitempty"`
-
-	// Application service groups on which this rule is applied
-	AppServiceGroups []common.IDNameExtensions `json:"appServiceGroups,omitempty"`
 
 	// Labels that are applicable to the rule.
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
