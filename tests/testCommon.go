@@ -2,22 +2,17 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/logger"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 )
 
 const (
@@ -56,73 +51,76 @@ func TestPassword(length int) string {
 	return string(result)
 }
 
-func NewZpaClient() (*zpa.Client, error) {
-	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
-	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
-	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
-	zpa_cloud := os.Getenv("ZPA_CLOUD")
-	config, err := zpa.NewConfig(zpa_client_id, zpa_client_secret, zpa_customer_id, zpa_cloud, "zscaler-sdk-go")
+// NewOneAPIClient instantiates a new OneAPI client for testing
+func NewOneAPIClient() (*zscaler.Service, error) {
+	// Fetch credentials directly from environment variables
+	clientID := os.Getenv("ZSCALER_CLIENT_ID")
+	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
+	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
+	zscalerCloud := os.Getenv("ZSCALER_CLOUD")         // Optional, set this if needed
+	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN") // Optional, set this if needed
+	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD") // Optional, set this if needed
+
+	// Ensure required environment variables are set
+	if clientID == "" || clientSecret == "" || vanityDomain == "" {
+		return nil, fmt.Errorf("required environment variables (ZSCALER_CLIENT_ID, ZSCALER_CLIENT_SECRET, ZSCALER_VANITY_DOMAIN) are not set")
+	}
+
+	// Build the configuration using the environment variables
+	config, err := zscaler.NewConfiguration(
+		zscaler.WithClientID(clientID),
+		zscaler.WithClientSecret(clientSecret),
+		zscaler.WithVanityDomain(vanityDomain),
+		zscaler.WithZscalerCloud(zscalerCloud),
+		zscaler.WithSandboxToken(sandboxToken),
+		zscaler.WithSandboxCloud(sandboxCloud),
+		zscaler.WithDebug(true),
+		zscaler.WithTestingDisableHttpsCheck(false),
+		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
+	)
 	if err != nil {
-		log.Printf("[ERROR] creating config failed: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("error creating configuration: %v", err)
 	}
-	zpaClient := zpa.NewClient(config)
-	return zpaClient, nil
-}
 
-func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
-	mux := http.NewServeMux()
-
-	// Create a request handler for the exact endpoint
-	mux.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
-		// Write a JSON response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"token_type": "bearer", "access_token": "Group 1"}`))
-	})
-
-	// Create a test server using the ServeMux
-	server := httptest.NewServer(mux)
-
-	serverURL, _ := url.Parse(server.URL)
-	// Create a client and set the base URL to the mock server URL
-	client := &zpa.Client{
-		Config: &zpa.Config{
-			ClientID:     "clientid",
-			ClientSecret: "clientsecret",
-			CustomerID:   "customerid",
-			Logger:       logger.NewNopLogger(),
-			BaseURL:      serverURL,
-		},
-	}
-	return client, mux, server
-}
-
-func NewZiaClient() (*zia.Client, error) {
-	username := os.Getenv("ZIA_USERNAME")
-	password := os.Getenv("ZIA_PASSWORD")
-	apiKey := os.Getenv("ZIA_API_KEY")
-	ziaCloud := os.Getenv("ZIA_CLOUD")
-
-	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	// Instantiate the OneAPI client and pass the service name (e.g., "zia")
+	client, err := zscaler.NewOneAPIClient(config)
 	if err != nil {
-		log.Printf("[ERROR] creating client failed: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("error creating OneAPI client: %v", err)
 	}
-	return cli, nil
+
+	return client, nil
 }
 
 func NewZConClient() (*zcon.Client, error) {
+	// Fetch credentials from environment variables
 	username := os.Getenv("ZCON_USERNAME")
 	password := os.Getenv("ZCON_PASSWORD")
 	apiKey := os.Getenv("ZCON_API_KEY")
-	zconCloud := os.Getenv("ZCON_CLOUD")
+	cloud := os.Getenv("ZCON_CLOUD")
 
-	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating client failed: %v\n", err)
-		return nil, err
+	if username == "" || password == "" || apiKey == "" || cloud == "" {
+		return nil, fmt.Errorf("missing ZCON credentials: ensure ZCON_USERNAME, ZCON_PASSWORD, ZCON_API_KEY and ZCON_CLOUD environment variables are set")
 	}
-	return cli, nil
+
+	// Create a new ZCON configuration
+	zconCfg, err := zcon.NewConfiguration(
+		zcon.WithZconUsername(username),
+		zcon.WithZconPassword(password),
+		zcon.WithZconAPIKey(apiKey),
+		zcon.WithZconCloud(cloud),
+		zcon.WithDebug(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZCON configuration: %w", err)
+	}
+
+	// Initialize the ZCON client
+	zconClient, err := zcon.NewClient(zconCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZCON client: %w", err)
+	}
+
+	return zconClient, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.
@@ -149,28 +147,30 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 	return nil
 }
 
-func NewZccClient() (*zcc.Client, error) {
-	clientID := os.Getenv("ZCC_CLIENT_ID")
-	clientSecret := os.Getenv("ZCC_CLIENT_SECRET")
-	cloud := os.Getenv("ZCC_CLOUD")
-	config, err := zcc.NewConfig(clientID, clientSecret, cloud, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating config failed: %v\n", err)
-		return nil, err
-	}
-	zccClient := zcc.NewClient(config)
-	return zccClient, nil
-}
-
 func NewZdxClient() (*zdx.Client, error) {
+	// Fetch credentials from environment variables
 	clientID := os.Getenv("ZDX_API_KEY_ID")
 	clientSecret := os.Getenv("ZDX_API_SECRET")
-	// cloud := os.Getenv("ZCC_CLOUD")
-	config, err := zdx.NewConfig(clientID, clientSecret, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating config failed: %v\n", err)
-		return nil, err
+
+	if clientID == "" || clientSecret == "" {
+		return nil, fmt.Errorf("missing ZDX credentials: ensure ZDX_API_KEY_ID and ZDX_API_SECRET environment variables are set")
 	}
-	zdxClient := zdx.NewClient(config)
+
+	// Create a new ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(clientID),
+		zdx.WithZDXAPISecret(clientSecret),
+		zdx.WithDebug(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZDX configuration: %w", err)
+	}
+
+	// Initialize the ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZDX client: %w", err)
+	}
+
 	return zdxClient, nil
 }
