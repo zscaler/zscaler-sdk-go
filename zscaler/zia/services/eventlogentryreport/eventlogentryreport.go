@@ -3,6 +3,7 @@ package eventlogentryreport
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -73,4 +74,13 @@ func Create(ctx context.Context, service *zscaler.Service, eventLog *EventLogEnt
 
 	service.Client.GetLogger().Printf("[DEBUG]returning event log entry report from create: %d", createdEventLogReport)
 	return createdEventLogReport, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service) (*http.Response, error) {
+	err := service.Client.Delete(ctx, eventlogEntryReportEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

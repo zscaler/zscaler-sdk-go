@@ -140,7 +140,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	}
 
 	// Construct and validate the base URL
-	rawBaseURL := fmt.Sprintf("https://mobileadmin.%s.net/papi", cfg.ZCC.Client.ZCCCloud)
+	rawBaseURL := fmt.Sprintf("https://api-mobile.%s.net/papi", cfg.ZCC.Client.ZCCCloud)
 	baseURL, err := url.Parse(rawBaseURL)
 	if err != nil {
 		logger.Printf("[ERROR] Error occurred while configuring the base URL: %v", err)

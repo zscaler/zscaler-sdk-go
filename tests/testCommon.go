@@ -74,7 +74,7 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 		zscaler.WithZscalerCloud(zscalerCloud),
 		zscaler.WithSandboxToken(sandboxToken),
 		zscaler.WithSandboxCloud(sandboxCloud),
-		zscaler.WithDebug(false),
+		zscaler.WithDebug(true),
 		zscaler.WithTestingDisableHttpsCheck(false),
 		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)

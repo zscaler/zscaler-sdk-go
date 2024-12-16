@@ -268,3 +268,62 @@ func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payl
 		return nil, nil
 	}
 }
+
+// CreateWithNoContent handles POST requests that return a 204 No Content response.
+func (c *Client) CreateWithNoContent(ctx context.Context, endpoint string, o interface{}) (*http.Response, error) {
+	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZiaClient == nil {
+			return nil, errLegacyClientNotSet
+		}
+
+		// Type assertion for legacy client's response
+		resp, err := c.oauth2Credentials.LegacyClient.ZiaClient.CreateWithNoContent(ctx, removeOneApiEndpointPrefix(endpoint), o)
+		if err != nil {
+			return nil, err
+		}
+
+		// Ensure the returned value is of type *http.Response
+		httpResp, ok := resp.(*http.Response)
+		if !ok {
+			return nil, fmt.Errorf("unexpected response type: %T, expected *http.Response", resp)
+		}
+
+		return httpResp, nil
+	}
+
+	// Validate the payload
+	if o == nil {
+		return nil, errors.New("tried to create with a nil payload, expected a Struct")
+	}
+
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("tried to create with a %s, expected a Struct", t.Kind().String())
+	}
+
+	// Marshal the payload
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+
+	// Use the existing ExecuteRequest method
+	_, response, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	// Handle the 204 No Content scenario
+	if response.StatusCode == http.StatusNoContent {
+		c.oauth2Credentials.Logger.Printf("Successfully created object at endpoint: %s (204 No Content)", endpoint)
+		return response, nil
+	}
+
+	// Check for unexpected response codes
+	// if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+	// 	return response, fmt.Errorf("unexpected response code: %d", response.StatusCode)
+	// }
+
+	c.oauth2Credentials.Logger.Printf("Successfully created object at endpoint: %s", endpoint)
+	return response, nil
+}

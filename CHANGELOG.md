@@ -134,6 +134,18 @@ Refer to the [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/READ
   - Added `GET /orgInformation/lite` to retrieve minimal organization information.
   - Added `GET /subscriptions` to retrieve information about the list of subscriptions enabled for your tenant. Subscriptions define the various features and levels of functionality that are available to your organization.
 
+#### ZIA End User Notification
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /eun` to retrieve information browser-based end user notification (EUN) configuration details.
+  - Added `PUT /eun` to update the browser-based end user notification (EUN) configuration details.
+
+#### ZIA Admin Audit Logs
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /auditlogEntryReport` to retrieve the status of a request for an audit log report.
+  - Added `POST /auditlogEntryReport` to create an audit log report for the specified time period and saves it as a CSV file.
+  - Added `DELETE /auditlogEntryReport` to cancel the request to create an audit log report.
+  - Added `GET /auditlogEntryReport/download` to download the most recently created audit log report.
+
 # 2.74.0 (November 14, 2024)
 
 ## Notes

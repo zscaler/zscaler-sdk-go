@@ -871,3 +871,56 @@ func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interf
 	// If the response is not empty, this might indicate an error or unexpected behavior
 	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }
+
+// Create sends an HTTP POST request and supports 204 No Content responses.
+func (c *Client) CreateWithNoContent(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+	// Validate the payload
+	if o == nil {
+		return nil, errors.New("tried to create with a nil payload, expected a Struct")
+	}
+
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("tried to create with a %s, expected a Struct", t.Kind().String())
+	}
+
+	// Marshal the payload
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+
+	// Perform the request using the existing Request method
+	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Handle responses with content
+	if len(resp) > 0 {
+		// Check if the response is an array of strings
+		var stringArrayResponse []string
+		if json.Unmarshal(resp, &stringArrayResponse) == nil {
+			return stringArrayResponse, nil
+		}
+
+		// Handle response as a standard object
+		responseObject := reflect.New(t).Interface()
+		err = json.Unmarshal(resp, &responseObject)
+		if err != nil {
+			return nil, err
+		}
+
+		// Extract and log the created object ID if present
+		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+		if id.IsValid() {
+			c.Logger.Printf("Created Object with ID %v", id)
+		}
+
+		return responseObject, nil
+	}
+
+	// Handle 204 No Content case (empty response)
+	c.Logger.Printf("Successfully created object at endpoint: %s (204 No Content)", endpoint)
+	return nil, nil
+}
