@@ -24,6 +24,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Bug Fixes
 [PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Fixed ZPA Double Encoding of HTTP GET Request Params - Issue #291
+[PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Updated go mod packages
 
 # 2.74.0 (November 14, 2024)
 
