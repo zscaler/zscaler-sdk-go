@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -167,21 +166,53 @@ func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pag
 }
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
+// func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
+// 	searchQuery = url.QueryEscape(searchQuery)
+// 	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
+// 	if err != nil {
+// 		return nil, resp, err
+// 	}
+// 	var l []T
+// 	for page := 2; page <= totalPages; page++ {
+// 		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, Filter{Search: searchQuery})
+// 		if err != nil {
+// 			return nil, resp, err
+// 		}
+// 		result = append(result, l...)
+// 	}
+
+// 	return result, resp, nil
+// }
+
 func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
-	searchQuery = url.QueryEscape(searchQuery)
-	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
+	// Remove manual url.QueryEscape(searchQuery)
+	// Optionally, you can still do searchQuery = strings.TrimSpace(searchQuery) if needed
+
+	totalPages, result, resp, err := getAllPagesGeneric[T](
+		client,
+		relativeURL,
+		1,
+		DefaultPageSize,
+		Filter{Search: searchQuery},
+	)
 	if err != nil {
 		return nil, resp, err
 	}
+
 	var l []T
 	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, Filter{Search: searchQuery})
+		totalPages, l, resp, err = getAllPagesGeneric[T](
+			client,
+			relativeURL,
+			page,
+			DefaultPageSize,
+			Filter{Search: searchQuery},
+		)
 		if err != nil {
 			return nil, resp, err
 		}
 		result = append(result, l...)
 	}
-
 	return result, resp, nil
 }
 

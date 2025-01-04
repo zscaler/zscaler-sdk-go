@@ -1,5 +1,14 @@
 # Changelog
 
+# 2.74.1 (January 4, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Fixed ZPA Double Encoding of HTTP GET Request Params - Issue #291
+[PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Updated go mod packages
+
 # 2.74.0 (November 14, 2024)
 
 ## Notes
