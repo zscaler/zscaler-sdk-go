@@ -39,7 +39,7 @@ type ServiceEdgeController struct {
 	Latitude                         string                 `json:"latitude,omitempty"`
 	Location                         string                 `json:"location,omitempty"`
 	Longitude                        string                 `json:"longitude,omitempty"`
-	ListenIPs                        string                 `json:"listenIps,omitempty"`
+	ListenIPs                        []string               `json:"listenIps,omitempty"`
 	ModifiedBy                       string                 `json:"modifiedBy,omitempty"`
 	ModifiedTime                     string                 `json:"modifiedTime,omitempty"`
 	Name                             string                 `json:"name,omitempty"`
