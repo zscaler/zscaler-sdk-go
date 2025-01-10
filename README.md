@@ -121,7 +121,7 @@ You can provide credentials via the `ZSCALER_CLIENT_ID`, `ZSCALER_CLIENT_SECRET`
 
 ### Alternative OneAPI Cloud Environments
 
-OneAPI supports authentication and can interact with alternative Zscaler enviornments i.e `beta`. To authenticate to these environments you must provide the following values:
+OneAPI supports authentication and can interact with alternative Zscaler enviornments i.e `beta`, `alpha` etc. To authenticate to these environments you must provide the following values:
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
@@ -150,7 +150,6 @@ The authentication to Zscaler Private Access (ZPA) via the OneAPI framework, req
 | `microtenantId`       | _(String)_ The ZPA microtenant ID found in the respective microtenant instance under Configuration & Control > Public API > API Keys menu in the ZPA console.| `ZPA_MICROTENANT_ID` |
 | `vanityDomain`       | _(String)_ Refers to the domain name used by your organization `https://<vanity_domain>.zslogin.net/oauth2/v1/token` | `ZSCALER_VANITY_DOMAIN` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$api.<cloud_name>.zsapi.net`.| `ZSCALER_CLOUD` |
-| `useLegacyClient`       | _(String)_ Enable use of the Legacy v2 API Client | `ZSCALER_USE_LEGACY_CLIENT` |
 
 ### Initialize OneAPI Client
 
@@ -189,7 +188,7 @@ func main() {
   config, err := zscaler.NewConfiguration(
     zscaler.WithClientID(""),
     zscaler.WithPrivateKey("private_key.pem"),
-  zscaler.WithVanityDomain("acme")
+    zscaler.WithVanityDomain("acme")
   )
   if err != nil {
     fmt.Printf("Error: %v\n", err)
@@ -262,7 +261,7 @@ func main() {
   config, err := zscaler.NewConfiguration(
     zscaler.WithClientID(""),
     zscaler.WithClientSecret(""),
-  zscaler.WithVanityDomain("acme")
+    zscaler.WithVanityDomain("acme")
     zscaler.WithRequestTimeout(45),
     zscaler.WithRateLimitMaxRetries(3),
   )
@@ -726,7 +725,6 @@ You can provide credentials via the `ZIA_USERNAME`, `ZIA_PASSWORD`, `ZIA_API_KEY
 | `password`       | _(String)_ A string that contains the password for the API admin.| `ZIA_PASSWORD` |
 | `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$zsapi.<Zscaler Cloud Name>/api/v1`.| `ZIA_CLOUD` |
-| `useLegacyClient`       | _(Bool)_ Enable use of the legacy ZIA API Client.| `ZSCALER_USE_LEGACY_CLIENT` |
 
 ### ZIA Client Initialization
 
@@ -742,33 +740,27 @@ import (
 )
 
 func main() {
- ziaCfg, err := zia.NewConfiguration(
-  zia.WithZiaUsername(""),
-  zia.WithZiaPassword(""),
-  zia.WithZiaAPIKey(""),
-  zia.WithZiaCloud("zscalerthree"),
- )
- if err != nil {
-  log.Fatalf("Error creating ZIA configuration: %v", err)
- }
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey   := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
 
- ziaClient, err := zia.NewClient(ziaCfg)
- if err != nil {
-  log.Fatalf("Error creating ZIA client: %v", err)
- }
+	ziaCfg, err := zia.NewConfiguration(
+		zia.WithZiaUsername(username),
+		zia.WithZiaPassword(password),
+		zia.WithZiaAPIKey(apiKey),
+		zia.WithZiaCloud(ziaCloud),
+		zia.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZPA configuration: %v", err)
+	}
 
- cfg, err := zscaler.NewConfiguration(
-  zscaler.WithLegacyClient(true),
-  zscaler.WithZiaLegacyClient(ziaClient),
- )
- if err != nil {
-  log.Fatalf("Error creating Zscaler configuration: %v", err)
- }
-
- service, err := zscaler.NewOneAPIClient(cfg)
- if err != nil {
-  log.Fatalf("Error creating OneAPI client: %v", err)
- }
+	// Initialize ZPA client
+	service, err := zscaler.NewLegacyZiaClient(ziaCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZIA client: %v", err)
+	}
 
  // Create a new context
  ctx := context.Background()
@@ -808,7 +800,6 @@ You can provide credentials via the `ZPA_CLIENT_ID`, `ZPA_CLIENT_SECRET`, `ZPA_C
 | `client_secret`       | _(String)_ The ZPA API client secret generated from the ZPA console.| `ZPA_CLIENT_SECRET` |
 | `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |
 | `cloud`       | _(String)_ The Zscaler cloud for your tenancy.| `ZPA_CLOUD` |
-| `useLegacyClient`       | _(Bool)_ Enable use of the legacy ZIA API Client.| `ZSCALER_USE_LEGACY_CLIENT` |
 
 ### ZPA Client Initialization
 
@@ -824,35 +815,26 @@ import (
 )
 
 func main() {
- // Initialize ZPA configuration
- zpaCfg, err := zpa.NewConfiguration(
-  zpa.WithZPAClientID(""),
-  zpa.WithZPAClientSecret(""),
-  zpa.WithZPACustomerID(""),
-  zpa.WithZPACloud(""),
- )
- if err != nil {
-  log.Fatalf("Error creating ZPA configuration: %v", err)
- }
+	clientID := os.Getenv("ZPA_CLIENT_ID")
+	clientSecret := os.Getenv("ZPA_CLIENT_SECRET")
+	customerID   := os.Getenv("ZPA_CUSTOMER_ID")
+	cloud := os.Getenv("ZPA_CLOUD")
 
- // Initialize ZPA client
- zpaClient, err := zpa.NewClient(zpaCfg)
- if err != nil {
-  log.Fatalf("Error creating ZPA client: %v", err)
- }
+	zpaCfg, err := zpa.NewConfiguration(
+		zpa.WithZPAClientID(clientID),
+		zpa.WithZPAClientSecret(clientSecret),
+		zpa.WithZPACustomerID(customerID),
+		zpa.WithZPACloud(cloud),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZPA configuration: %v", err)
+	}
 
- cfg, err := zscaler.NewConfiguration(
-  zscaler.WithLegacyClient(true),
-  zscaler.WithZpaLegacyClient(zpaClient),
- )
- if err != nil {
-  log.Fatalf("Error creating Zscaler configuration: %v", err)
- }
-
- service, err := zscaler.NewOneAPIClient(cfg)
- if err != nil {
-  log.Fatalf("Error creating OneAPI client: %v", err)
- }
+	// Initialize ZPA client
+	service, err := zscaler.NewLegacyZpaClient(zpaCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZPA client: %v", err)
+	}
 
  ctx := context.Background()
 
@@ -894,7 +876,6 @@ You can provide credentials via the `ZCC_CLIENT_ID`, `ZCC_CLIENT_SECRET`, `ZCC_C
 | `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |
 | `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` |
 | `cloudEnv`       | _(String)_ The host and basePath for the ZCC cloud services API is `$mobileadmin.<Zscaler Cloud Name>/papi`.| `ZCC_CLOUD` |
-| `useLegacyClient`       | _(Bool)_ Enable use of the legacy ZIA API Client.| `ZSCALER_USE_LEGACY_CLIENT` |
 
 ### ZCC Client Initialization
 
@@ -909,32 +890,24 @@ import (
 )
 
 func main() {
+	clientID := os.Getenv("ZCC_CLIENT_ID")
+	clientSecret := os.Getenv("ZCC_CLIENT_SECRET")
+	cloud := os.Getenv("ZCC_CLOUD")
+
  zccCfg, err := zcc.NewConfiguration(
-  zcc.WithZCCClientID(""),
-  zcc.WithZCCClientSecret(""),
-  zcc.WithZCCCloud("zscalertwo"),
+  zcc.WithZCCClientID(clientID),
+  zcc.WithZCCClientSecret(clientSecret),
+  zcc.WithZCCCloud(cloud),
  )
- if err != nil {
-  log.Fatalf("Error creating ZCC configuration: %v", err)
- }
+	if err != nil {
+		log.Fatalf("Error creating ZCC configuration: %v", err)
+	}
 
- zccClient, err := zcc.NewClient(zccCfg)
- if err != nil {
-  log.Fatalf("Error creating ZCC client: %v", err)
- }
-
- cfg, err := zscaler.NewConfiguration(
-  zscaler.WithLegacyClient(true),
-  zscaler.WithZccLegacyClient(zccClient),
- )
- if err != nil {
-  log.Fatalf("Error creating Zscaler configuration: %v", err)
- }
-
- service, err := zscaler.NewOneAPIClient(cfg)
- if err != nil {
-  log.Fatalf("Error creating OneAPI client: %v", err)
- }
+	// Initialize ZPA client
+	service, err := zscaler.NewLegacyZccClient(zpaCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZCC client: %v", err)
+	}
 
  ctx := context.TODO()
  username := "adam.ashcroft@acme.com"
@@ -983,43 +956,49 @@ You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_
 
 ```go
 import (
- "fmt"
- "log"
+	"context"
+	"fmt"
+	"log"
 
- "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
- "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
- "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services/locationmanagement/location"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services/locationmanagement/location"
 )
 
 func main() {
- zconCfg, err := zcon.NewConfiguration(
-  zcon.WithZconUsername(""),
-  zcon.WithZconPassword(""),
-  zcon.WithZconAPIKey(""),
-  zcon.WithZconCloud("zscalerthree"),
- )
- if err != nil {
-  log.Fatalf("Error creating ZCON configuration: %v", err)
- }
+	username := os.Getenv("ZCON_USERNAME")
+	password := os.Getenv("ZCON_PASSWORD")
+	apiKey   := os.Getenv("ZCON_API_KEY")
+	zconCloud := os.Getenv("ZCON_CLOUD")
 
- zconClient, err := zcon.NewClient(zconCfg)
- if err != nil {
-  log.Fatalf("Failed to create ZCON client: %v", err)
- }
+	zconCfg, err := zcon.NewConfiguration(
+		zcon.WithZconUsername(username),
+		zcon.WithZconPassword(password),
+		zcon.WithZconAPIKey(apiKey),
+		zcon.WithZconCloud(zconCloud),
+		zcon.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZCON configuration: %v", err)
+	}
 
- service := services.New(zconClient)
+	zconClient, err := zcon.NewClient(zconCfg)
+	if err != nil {
+		log.Fatalf("Failed to create ZCON client: %v", err)
+	}
 
- // Get all locations
- locations, err := location.GetAll(service)
- if err != nil {
-  log.Fatalf("Error listing locations: %v", err)
- }
+	service := services.New(zconClient)
 
- // Print the locations
- fmt.Printf("Locations: %+v\n", locations)
- for index, location := range locations {
-  fmt.Printf("Location %d: %+v\n", index, location)
- }
+	ctx := context.Background()
+	locations, err := location.GetAll(ctx, service)
+	if err != nil {
+		log.Fatalf("Error listing locations: %v", err)
+	}
+
+	fmt.Printf("Locations: %+v\n", locations)
+	for index, location := range locations {
+		fmt.Printf("Location %d: %+v\n", index, location)
+	}
 }
 ```
 
@@ -1052,10 +1031,14 @@ import (
 )
 
 func main() {
+	apiKey := os.Getenv("ZDX_API_KEY_ID")
+	secretKey := os.Getenv("ZDX_API_SECRET")
+	cloud := os.Getenv("ZDX_CLOUD") // Optional
+
  zdxCfg, err := zdx.NewConfiguration(
-  zdx.WithZDXAPIKeyID(""),
-  zdx.WithZDXAPISecret(""),
-  // zdx.WithZDXCloud("zdxbeta"),
+  zdx.WithZDXAPIKeyID(apiKey),
+  zdx.WithZDXAPISecret(secretKey),
+  zdx.WithZDXCloud(cloud),
   zdx.WithDebug(true),
  )
  if err != nil {
