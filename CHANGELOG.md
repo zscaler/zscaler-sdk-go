@@ -146,6 +146,15 @@ Refer to the [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/READ
   - Added `DELETE /auditlogEntryReport` to cancel the request to create an audit log report.
   - Added `GET /auditlogEntryReport/download` to download the most recently created audit log report.
 
+#### ZIA Extranets
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /extranet` to retrieve the list of extranets configured for the organization
+  - Added `GET /extranet/lite` Retrieves the name-ID pairs of all extranets configured for an organization
+  - Added `GET /extranet/{Id}` Retrieves information about an extranet based on the specified ID.
+  - Added `POST /extranet` Adds a new extranet for the organization.
+  - Added `PUT /extranet/{Id}` Updates an extranet based on the specified ID
+  - Added `DELETE /extranet/{Id}` Deletes an extranet based on the specified ID
+
 # 2.74.0 (November 14, 2024)
 
 ## Notes

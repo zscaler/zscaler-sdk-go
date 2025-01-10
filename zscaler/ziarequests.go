@@ -120,9 +120,19 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 		return nil, err
 	}
 
+	// Check for an empty response body (e.g., 204 No Content)
+	if len(resp) == 0 {
+		return nil, nil // Return nil for responseObject and no error
+	}
+
+	// Unmarshal response body into the provided struct type
 	responseObject := reflect.New(t).Interface()
 	err = json.Unmarshal(resp, &responseObject)
-	return responseObject, err
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response body: %w", err)
+	}
+
+	return responseObject, nil
 }
 
 // Delete sends a DELETE request to the specified endpoint.

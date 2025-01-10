@@ -460,8 +460,13 @@ func (client *Client) getRequest(method, urlPath string, options, body interface
 		}
 	}
 
-	// Set the final query string
-	u.RawQuery = q.Encode()
+	// Encode the final query, which by default uses '+' for spaces
+	encodedQuery := q.Encode()
+
+	// **Here** is the single place we convert '+' to '%20':
+	encodedQuery = strings.ReplaceAll(encodedQuery, "+", "%20")
+
+	u.RawQuery = encodedQuery
 
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {

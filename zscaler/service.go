@@ -1,5 +1,13 @@
 package zscaler
 
+import (
+	"log"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+)
+
 type (
 	SortOrder string
 	SortField string
@@ -64,4 +72,68 @@ func (service *Service) WithSort(sortBy SortField, sortOrder SortOrder) *Service
 		c.SortOrder = sortOrder
 	}
 	return &c
+}
+
+func newLegacyHelper(conf ...ConfigSetter) (*Service, error) {
+	cfg, err := NewConfiguration(
+		conf...,
+	)
+	if err != nil {
+		log.Fatalf("Error creating Zscaler configuration: %v", err)
+		return nil, err
+	}
+
+	// Initialize the OneAPI client
+	service, err := NewOneAPIClient(cfg)
+	if err != nil {
+		log.Fatalf("Error creating OneAPI client: %v", err)
+		return nil, err
+	}
+
+	return service, nil
+}
+
+func NewLegacyZiaClient(config *zia.Configuration) (*Service, error) {
+	ziaClient, err := zia.NewClient(config)
+	if err != nil {
+		log.Fatalf("Error creating ZIA client: %v", err)
+		return nil, err
+	}
+
+	return newLegacyHelper(
+		WithLegacyClient(true),
+		WithZiaLegacyClient(ziaClient),
+		WithDebug(config.Debug),
+		// add other config mapping, if necessary
+	)
+}
+
+func NewLegacyZccClient(config *zcc.Configuration) (*Service, error) {
+	zccClient, err := zcc.NewClient(config)
+	if err != nil {
+		log.Fatalf("Error creating ZCC client: %v", err)
+		return nil, err
+	}
+
+	return newLegacyHelper(
+		WithLegacyClient(true),
+		WithZccLegacyClient(zccClient),
+		WithDebug(config.Debug),
+		// add other config mapping, if necessary
+	)
+}
+
+func NewLegacyZpaClient(config *zpa.Configuration) (*Service, error) {
+	zpaClient, err := zpa.NewClient(config)
+	if err != nil {
+		log.Fatalf("Error creating ZPA client: %v", err)
+		return nil, err
+	}
+
+	return newLegacyHelper(
+		WithLegacyClient(true),
+		WithZpaLegacyClient(zpaClient),
+		WithDebug(config.Debug),
+		// add other config mapping, if necessary
+	)
 }

@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
@@ -110,9 +111,10 @@ type Configuration struct {
 			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZSCALER_TESTING_DISABLE_HTTPS_CHECK"`
 		} `yaml:"testing"`
 	} `yaml:"zscaler"`
-	CacheManager    cache.Cache
-	UseLegacyClient bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
-	LegacyClient    *LegacyClient
+	PrivateKeySigner jose.Signer
+	CacheManager     cache.Cache
+	UseLegacyClient  bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
+	LegacyClient     *LegacyClient
 }
 
 // NewConfiguration is the main configuration function, implementing the ConfigSetter pattern.
@@ -481,11 +483,7 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
-	cche, err := cache.NewCache(
-		time.Duration(c.Zscaler.Client.Cache.DefaultTtl),
-		time.Duration(c.Zscaler.Client.Cache.DefaultTti),
-		int(c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB),
-	)
+	cche, err := cache.NewCache(time.Duration(c.Zscaler.Client.Cache.DefaultTtl), time.Duration(c.Zscaler.Client.Cache.DefaultTti), int(c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
 	if err != nil {
 		cche = cache.NewNopCache()
 	}
@@ -608,6 +606,12 @@ func WithPrivateKey(privateKey string) ConfigSetter {
 		} else {
 			c.Zscaler.Client.PrivateKey = []byte(privateKey)
 		}
+	}
+}
+
+func WithPrivateKeySigner(signer jose.Signer) ConfigSetter {
+	return func(c *Configuration) {
+		c.PrivateKeySigner = signer
 	}
 }
 
