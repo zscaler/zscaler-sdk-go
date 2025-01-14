@@ -8,8 +8,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 )
 
 const (
@@ -106,6 +108,13 @@ type ZPNSubModuleUpgrade struct {
 	Role            string `json:"role,omitempty"`
 	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
 	UpgradeTime     string `json:"upgradeTime,omitempty"`
+}
+
+type Meta struct {
+	Created      time.Time `json:"created"`
+	LastModified time.Time `json:"lastModified"`
+	Location     string    `json:"location"`
+	ResourceType string    `json:"resourceType"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
@@ -226,4 +235,65 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 	}
 
 	return result, resp, nil
+}
+
+func GetAllPagesScimGenericWithSearch[T any](
+	ctx context.Context,
+	client *zpa.ScimClient,
+	baseURL string,
+	itemsPerPage int,
+	searchFunc func(T) bool,
+) ([]T, *http.Response, error) {
+	// Enforce default and maximum limits for itemsPerPage
+	if itemsPerPage <= 0 {
+		itemsPerPage = 10 // Default to 10 if not specified
+	} else if itemsPerPage > 100 {
+		itemsPerPage = 100 // Enforce maximum limit of 100
+	}
+
+	var allResources []T
+	startIndex := 1
+	var lastResp *http.Response
+
+	for {
+		// Construct the paginated URL
+		paginatedURL := fmt.Sprintf("%s?startIndex=%d&count=%d", baseURL, startIndex, itemsPerPage)
+
+		// Define the structure for the paginated response
+		var paginatedResponse struct {
+			Resources    []T `json:"Resources"`
+			TotalResults int `json:"totalResults"`
+		}
+
+		// Perform the HTTP request and parse the response
+		resp, err := client.DoRequest(ctx, http.MethodGet, paginatedURL, nil, &paginatedResponse)
+		if err != nil {
+			return nil, resp, fmt.Errorf("error fetching paginated data: %w", err)
+		}
+		lastResp = resp // Track the last HTTP response
+
+		// Iterate through the resources to search for the specific item
+		for _, resource := range paginatedResponse.Resources {
+			if searchFunc != nil && searchFunc(resource) {
+				// Return immediately if the desired item is found
+				return []T{resource}, resp, nil
+			}
+		}
+
+		// Append resources to the result set if not searching
+		if searchFunc == nil {
+			allResources = append(allResources, paginatedResponse.Resources...)
+		}
+
+		// Check if all records have been fetched
+		if startIndex+itemsPerPage > paginatedResponse.TotalResults || len(paginatedResponse.Resources) == 0 {
+			break
+		}
+
+		// Move to the next page
+		startIndex += itemsPerPage
+	}
+
+	// Return all resources if no specific item was found
+	return allResources, lastResp, nil
 }

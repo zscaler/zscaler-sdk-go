@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/common"
 )
 
 const (
@@ -44,14 +45,9 @@ type GetDevicesQueryParams struct {
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service, username, osType string) ([]GetDevices, error) {
-	var devices []GetDevices
 	queryParams := GetDevicesQueryParams{
 		Username: username,
 		OsType:   osType,
 	}
-	_, err := service.Client.NewZccRequestDo(ctx, "GET", getDevicesEndpoint, queryParams, nil, &devices)
-	if err != nil {
-		return nil, err
-	}
-	return devices, err
+	return common.ReadAllPages[GetDevices](ctx, service.Client, getDevicesEndpoint, queryParams, 1000)
 }

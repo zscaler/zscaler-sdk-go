@@ -22,6 +22,7 @@
 * [Legacy API Framework](#legacy-api-framework)
 * [Usage guide](#usage-guide)
 * [Configuration reference](#configuration-reference)
+* [Pagination](#pagination)
 * [Contributing](#contributing)
 
 This repository contains the ZIA/ZPA/ZDX/ZCC/ZCON SDK for Golang. This SDK can be
@@ -1122,6 +1123,130 @@ The retry mechanism for the ZIA API client works as follows:
   * `RetryWaitMaxSeconds`: Maximum time to wait before retrying a request.
   * `MaxNumOfRetries`: Maximum number of retries for a request.
 * The SDK also includes custom handling for specific error codes and messages to decide if a retry should be attempted.
+
+## Pagination
+
+Each Zscaler service provides pagination support. The SDK independently provides pagination logic for each individual service based on its unique parameters and requirements.
+
+### ZPA Pagination
+The ZPA package robust support for pagination, allowing users to fetch all results for a specific API endpoint even if the data spans multiple pages. The SDK abstracts pagination, so you can fetch all records seamlessly without worrying about page-by-page API requests.
+
+The SDK includes a generic function, `GetAllPagesGenericWithCustomFilters`, which automates fetching all resources across multiple pages. Here's an example of how you can use this functionality to list SCIM groups by an IDP ID.
+
+- *Custom Filters*: Use the Filter struct to refine results with parameters such as `Search`, `SortBy`, and `SortOrder`.
+
+#### Example Usage in a Program
+
+```go
+func main() {
+
+ctx := context.Background()
+idpId := "your-idp-id"
+
+allGroups, resp, err := scimgroup.GetAllByIdpId(ctx, service, idpId)
+if err != nil {
+    log.Fatalf("Error fetching SCIM groups: %v", err)
+}
+
+fmt.Printf("Fetched %d SCIM Groups\n", len(allGroups))
+for _, group := range allGroups {
+    fmt.Printf("Group: %+v\n", group)
+  }
+}
+```
+
+#### Example - Direct Use of Pagination Functions
+
+The primary pagination functions, such as `GetAllPagesGenericWithCustomFilters` and `GetAllPagesGeneric`, can be directly invoked to handle paginated API requests. Here’s an example of how a user could utilize these functions:
+- *Custom Filters*: Use the Filter struct to refine results with parameters such as `Search`, `SortBy`, and `SortOrder`.
+
+```go
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
+)
+
+func main() {
+    // Initialize ZPA configuration
+    config, err := zscaler.NewConfiguration(
+        zscaler.WithClientID("your-client-id"),
+        zscaler.WithClientSecret("your-client-secret"),
+        zscaler.WithVanityDomain("your-vanity-domain"),
+        zscaler.WithZPACustomerID("your-customer-id"),
+        zscaler.WithDebug(true),
+    )
+    if err != nil {
+        log.Fatalf("Error creating configuration: %v", err)
+    }
+
+    service, err := zscaler.NewOneAPIClient(config)
+    if err != nil {
+        log.Fatalf("Error creating ZPA client: %v", err)
+    }
+    ctx := context.Background()
+    relativeURL := "/zpa/mgmtconfig/v1/admin/customers/21619xxxxxxxxxx/scimgroups/idpId/{idpId}"
+
+    // Define filters for pagination
+    filters := common.Filter{
+        SortBy:    "name",
+        SortOrder: "ASC",
+        Search:    "example-query",
+    }
+
+    // Use the generic pagination function
+    allGroups, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](ctx, service.Client, relativeURL, filters)
+    if err != nil {
+        log.Fatalf("Error fetching paginated data: %v", err)
+    }
+
+    fmt.Printf("Fetched %d SCIM Groups\n", len(allGroups))
+    for index, group := range allGroups {
+        fmt.Printf("Group %d: %+v\n", index, group)
+    }
+    fmt.Printf("Response: %+v\n", resp)
+}
+```
+
+### ZIA Pagination
+The ZIA SDK provides pagination support tailored to its API's unique parameters. The SDK allows you to fetch large datasets across multiple pages seamlessly, using built-in utilities or customizable pagination logic.
+Pagination in the ZIA service is powered by the `ReadAllPages` and `ReadPage` functions. These utilities enable efficient data retrieval while handling all necessary API parameters for pagination, including page size and sort options.
+
+- **Using Built-In Pagination Functions**: The `ReadAllPages` function automates fetching all pages of data for a given endpoint and aggregates the results into a single slice. For example, the GetAllUsers function leverages `ReadAllPages` to retrieve all users.
+
+```go
+func GetAllUsers(ctx context.Context, service *zscaler.Service) ([]Users, error) {
+	var users []Users
+	err := common.ReadAllPages(ctx, service.Client, usersEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+```
+
+#### Example Usage in a Program
+
+```go
+func main() {
+ctx := context.Background()
+
+// Fetch all users
+allUsers, err := GetAllUsers(ctx, service)
+if err != nil {
+    log.Fatalf("Error fetching users: %v", err)
+}
+
+fmt.Printf("Fetched %d users\n", len(allUsers))
+for _, user := range allUsers {
+    fmt.Printf("User: %+v\n", user)
+  }
+}
+```
 
 ## Contributing
 

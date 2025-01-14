@@ -1,5 +1,14 @@
 package common
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/url"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+)
+
 const (
 	DefaultPageSize = 30
 	MaxPageSize     = 5000
@@ -21,4 +30,64 @@ func NewPagination(pageSize int) Pagination {
 		pageSize = MaxPageSize
 	}
 	return Pagination{PageSize: pageSize}
+}
+
+func queryParamsToURLValues(params interface{}) (url.Values, error) {
+	values := url.Values{}
+	data, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	var mapParams map[string]interface{}
+	if err := json.Unmarshal(data, &mapParams); err != nil {
+		return nil, err
+	}
+	for key, value := range mapParams {
+		if value != nil {
+			values.Set(key, fmt.Sprintf("%v", value))
+		}
+	}
+	return values, nil
+}
+
+func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, queryParams interface{}, pageSize int) ([]T, error) {
+	pagination := NewPagination(pageSize)
+	var allResults []T
+	page := 1
+
+	for {
+		var pageResults []T
+
+		// Update the query parameters with pagination details
+		q := url.Values{}
+		if queryParams != nil {
+			// Convert queryParams to URL values if needed
+			queryString, err := queryParamsToURLValues(queryParams)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse query params: %w", err)
+			}
+			q = queryString
+		}
+		q.Set("pageSize", fmt.Sprintf("%d", pagination.PageSize))
+		q.Set("page", fmt.Sprintf("%d", page))
+
+		// Build the final endpoint URL
+		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
+
+		// Fetch the current page
+		_, err := client.NewRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
+		if err != nil {
+			return nil, err
+		}
+
+		allResults = append(allResults, pageResults...)
+
+		// Break if the number of results is less than the page size (last page)
+		if len(pageResults) < pagination.PageSize {
+			break
+		}
+		page++
+	}
+
+	return allResults, nil
 }

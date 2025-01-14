@@ -1,6 +1,6 @@
 # Changelog
 
-# 3.0.0 (December 9, 2024) - BREAKING CHANGES
+# 3.0.0 (January 15, 2025) - BREAKING CHANGES
 
 ## Notes
 - Golang: **v1.23**

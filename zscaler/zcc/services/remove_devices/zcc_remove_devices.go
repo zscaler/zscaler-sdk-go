@@ -3,14 +3,16 @@ package remove_devices
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/common"
 )
 
 const (
-	softRemoveDevicesEndpoint  = "/zcc/papi/public/v1/removeDevices"
-	forceRemoveDevicesEndpoint = "/zcc/papi/public/v1/forceRemoveDevices"
+	softRemoveDevicesEndpoint   = "/zcc/papi/public/v1/removeDevices"
+	forceRemoveDevicesEndpoint  = "/zcc/papi/public/v1/forceRemoveDevices"
+	removeMachineTunnelEndpoint = "/zcc/papi/public/v1/removeMachineTunnel"
 )
 
 type RemoveDevicesResponse struct {
@@ -48,5 +50,31 @@ func ForceRemoveDevices(ctx context.Context, service *zscaler.Service, request R
 	if err != nil {
 		return nil, err
 	}
-	return &response, err
+	return &response, nil
+}
+
+// RemoveMachineTunnel sends a request to remove machine tunnels for the specified hostnames or machine tokens.
+func RemoveMachineTunnel(ctx context.Context, service *zscaler.Service, hostNames []string, machineToken string) (*RemoveDevicesResponse, error) {
+	// Validate input
+	if len(hostNames) == 0 && machineToken == "" {
+		return nil, fmt.Errorf("either hostNames or machineToken must be provided")
+	}
+
+	// Construct request payload
+	payload := map[string]interface{}{}
+	if len(hostNames) > 0 {
+		payload["hostName"] = strings.Join(hostNames, ",") // Ensure hostnames are joined as a comma-separated string
+	}
+	if machineToken != "" {
+		payload["machineToken"] = machineToken
+	}
+
+	// Make the request
+	var response RemoveDevicesResponse
+	_, err := service.Client.NewRequestDo(ctx, "POST", removeMachineTunnelEndpoint, nil, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %w", err)
+	}
+
+	return &response, nil
 }

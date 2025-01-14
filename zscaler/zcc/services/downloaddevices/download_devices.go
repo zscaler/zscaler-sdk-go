@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	downloadDevicesEndpoint = "/zcc/papi/public/v1/downloadDevices"
+	downloadDevicesEndpoint       = "/zcc/papi/public/v1/downloadDevices"
+	downloadServiceStatusEndpoint = "/zcc/papi/public/v1/downloadServiceStatus"
 )
 
 type DownloadDevicesQueryParams struct {
@@ -25,6 +26,30 @@ func DownloadDevices(ctx context.Context, service *zscaler.Service, osTypes, reg
 	}
 
 	resp, err := service.Client.NewZccRequestDo(ctx, "GET", downloadDevicesEndpoint, queryParams, nil, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download devices: %s", resp.Status)
+	}
+
+	_, err = io.Copy(writer, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write response to writer: %v", err)
+	}
+
+	return nil
+}
+
+func DownloadServiceStatus(ctx context.Context, service *zscaler.Service, osTypes, registrationTypes string, writer io.Writer) error {
+	queryParams := DownloadDevicesQueryParams{
+		OSTypes:           osTypes,
+		RegistrationTypes: registrationTypes,
+	}
+
+	resp, err := service.Client.NewZccRequestDo(ctx, "GET", downloadServiceStatusEndpoint, queryParams, nil, nil)
 	if err != nil {
 		return err
 	}
