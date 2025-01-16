@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -17,22 +18,29 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
 
 	// Prompt the user to choose a resource type
 	fmt.Println("Choose the Resource Type:")
@@ -103,7 +111,8 @@ func promptForFilters(reader *bufio.Reader) administration.GetDepartmentsFilters
 }
 
 func getDepartments(service *services.Service, filters administration.GetDepartmentsFilters) {
-	departments, _, err := administration.GetDepartments(service, filters)
+	ctx := context.Background()
+	departments, _, err := administration.GetDepartments(ctx, service, filters)
 	if err != nil {
 		log.Fatalf("Error getting departments: %v", err)
 	}
@@ -111,7 +120,18 @@ func getDepartments(service *services.Service, filters administration.GetDepartm
 }
 
 func getLocations(service *services.Service, filters administration.GetDepartmentsFilters) {
-	locations, _, err := administration.GetLocations(service, administration.GetLocationsFilters(filters))
+	// Create a context
+	ctx := context.Background()
+
+	// Create a GetLocationsFilters object explicitly
+	locationFilters := administration.GetLocationsFilters{
+		From:   filters.From,
+		To:     filters.To,
+		Search: filters.Search,
+	}
+
+	// Call GetLocations with the correct arguments
+	locations, _, err := administration.GetLocations(ctx, service, locationFilters)
 	if err != nil {
 		log.Fatalf("Error getting locations: %v", err)
 	}
