@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -24,23 +23,17 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		zdx.WithDebug(false),
-	)
-	if err != nil {
-		log.Fatalf("Error creating ZDX configuration: %v", err)
+	if apiKey == "" || apiSecret == "" {
+		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
 
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
 	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
-
-	service := services.New(zdxClient)
+	cli := zdx.NewClient(cfg)
+	service := services.New(cli)
 
 	// Prompt the user to choose a CloudPath Probe report
 	fmt.Println("Choose the CloudPath Probe Report:")
@@ -80,7 +73,7 @@ func main() {
 	switch choice {
 	case "a":
 		// Get all Cloud Path probes
-		probes, _, err := devices.GetAllCloudPathProbes(context.Background(), service, deviceID, appID, filters)
+		probes, _, err := devices.GetAllCloudPathProbes(service, deviceID, appID, filters)
 		if err != nil {
 			log.Fatalf("Error getting cloud path probes: %v", err)
 		}
@@ -96,7 +89,7 @@ func main() {
 		}
 
 		// Get device app Cloud Path probe
-		networkStats, _, err := devices.GetDeviceAppCloudPathProbe(context.Background(), service, deviceID, appID, probeID, filters)
+		networkStats, _, err := devices.GetDeviceAppCloudPathProbe(service, deviceID, appID, probeID, filters)
 		if err != nil {
 			log.Fatalf("Error getting device app cloud path probe: %v", err)
 		}
@@ -112,7 +105,7 @@ func main() {
 		}
 
 		// Get Cloud Path app device
-		cloudPathProbes, _, err := devices.GetCloudPathAppDevice(context.Background(), service, deviceID, appID, probeID, filters)
+		cloudPathProbes, _, err := devices.GetCloudPathAppDevice(service, deviceID, appID, probeID, filters)
 		if err != nil {
 			log.Fatalf("Error getting cloud path app device: %v", err)
 		}

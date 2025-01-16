@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,23 +23,9 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		zdx.WithDebug(false),
-	)
-	if err != nil {
-		log.Fatalf("Error creating ZDX configuration: %v", err)
+	if apiKey == "" || apiSecret == "" {
+		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
-
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
-	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
-	}
-
-	softwareService := services.New(zdxClient)
 
 	// Prompt for Zscaler location IDs (comma-separated list)
 	fmt.Print("Enter Zscaler location IDs (comma-separated, optional): ")
@@ -77,6 +62,14 @@ func main() {
 	softwareKeyInput, _ := reader.ReadString('\n')
 	softwareKeyInput = strings.TrimSpace(softwareKeyInput)
 
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	if err != nil {
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+	}
+	cli := zdx.NewClient(cfg)
+	softwareService := services.New(cli)
+
 	// Define filters
 	filters := inventory.GetSoftwareFilters{
 		Loc:         locIDs,
@@ -89,7 +82,7 @@ func main() {
 
 	if softwareKeyInput != "" {
 		// Get software key details
-		softwareList, nextOffset, resp, err := inventory.GetSoftwareKey(context.Background(), softwareService, softwareKeyInput, filters)
+		softwareList, nextOffset, resp, err := inventory.GetSoftwareKey(softwareService, softwareKeyInput, filters)
 		if err != nil {
 			log.Fatalf("[ERROR] getting software key details failed: %v\n", err)
 		}
@@ -123,7 +116,7 @@ func main() {
 
 	} else {
 		// Get software inventory
-		softwareList, nextOffset, resp, err := inventory.GetSoftware(context.Background(), softwareService, filters)
+		softwareList, nextOffset, resp, err := inventory.GetSoftware(softwareService, filters)
 		if err != nil {
 			log.Fatalf("[ERROR] getting software inventory failed: %v\n", err)
 		}

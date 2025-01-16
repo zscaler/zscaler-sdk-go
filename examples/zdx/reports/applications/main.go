@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -30,23 +29,9 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		zdx.WithDebug(false),
-	)
-	if err != nil {
-		log.Fatalf("Error creating ZDX configuration: %v", err)
+	if apiKey == "" || apiSecret == "" {
+		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
-
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
-	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
-	}
-
-	appService := services.New(zdxClient)
 
 	// Prompt for from time
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
@@ -84,6 +69,14 @@ func main() {
 		toTime = parsedTo
 	}
 
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	if err != nil {
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+	}
+	cli := zdx.NewClient(cfg)
+	appService := services.New(cli)
+
 	// Define filters
 	filters := common.GetFromToFilters{
 		From: int(fromTime),
@@ -91,7 +84,7 @@ func main() {
 	}
 
 	// Get all apps
-	appsList, _, err := applications.GetAllApps(context.Background(), appService, filters)
+	appsList, _, err := applications.GetAllApps(appService, filters)
 	if err != nil {
 		log.Fatalf("[ERROR] getting all apps failed: %v\n", err)
 	}

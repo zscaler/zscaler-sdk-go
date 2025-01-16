@@ -20,13 +20,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/utils"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Client struct {
@@ -144,7 +144,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 
 	if cfg.ZDX.Testing.DisableHttpsCheck {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 

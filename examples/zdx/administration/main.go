@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -23,23 +22,17 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		zdx.WithDebug(false),
-	)
-	if err != nil {
-		log.Fatalf("Error creating ZDX configuration: %v", err)
+	if apiKey == "" || apiSecret == "" {
+		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
 
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
 	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
-
-	service := services.New(zdxClient)
+	cli := zdx.NewClient(cfg)
+	service := services.New(cli)
 
 	// Prompt the user to choose a resource type
 	fmt.Println("Choose the Resource Type:")
@@ -110,7 +103,7 @@ func promptForFilters(reader *bufio.Reader) administration.GetDepartmentsFilters
 }
 
 func getDepartments(service *services.Service, filters administration.GetDepartmentsFilters) {
-	departments, _, err := administration.GetDepartments(context.Background(), service, filters)
+	departments, _, err := administration.GetDepartments(service, filters)
 	if err != nil {
 		log.Fatalf("Error getting departments: %v", err)
 	}
@@ -118,7 +111,7 @@ func getDepartments(service *services.Service, filters administration.GetDepartm
 }
 
 func getLocations(service *services.Service, filters administration.GetDepartmentsFilters) {
-	locations, _, err := administration.GetLocations(context.Background(), service, administration.GetLocationsFilters(filters))
+	locations, _, err := administration.GetLocations(service, administration.GetLocationsFilters(filters))
 	if err != nil {
 		log.Fatalf("Error getting locations: %v", err)
 	}

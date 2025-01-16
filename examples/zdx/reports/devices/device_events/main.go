@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,23 +24,17 @@ func main() {
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		zdx.WithDebug(false),
-	)
-	if err != nil {
-		log.Fatalf("Error creating ZDX configuration: %v", err)
+	if apiKey == "" || apiSecret == "" {
+		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
 	}
 
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
+	// Create configuration and client
+	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
 	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
+		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
-
-	service := services.New(zdxClient)
+	cli := zdx.NewClient(cfg)
+	service := services.New(cli)
 
 	// Prompt the user for device ID
 	fmt.Print("Enter device ID: ")
@@ -99,7 +92,7 @@ func main() {
 	}
 
 	// Call GetEvents with the provided device ID and filters
-	deviceEvents, resp, err := devices.GetEvents(context.Background(), service, deviceID, filters)
+	deviceEvents, resp, err := devices.GetEvents(service, deviceID, filters)
 	if err != nil {
 		log.Fatalf("Error getting events: %v", err)
 	}
