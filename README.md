@@ -167,7 +167,7 @@ func main() {
   config, err := zscaler.NewConfiguration(
     zscaler.WithClientID(""),
     zscaler.WithClientSecret(""),
-  zscaler.WithVanityDomain("acme")
+    zscaler.WithVanityDomain("acme")
   )
   if err != nil {
     fmt.Printf("Error: %v\n", err)
@@ -847,6 +847,69 @@ func main() {
  for index, group := range groups {
   fmt.Printf("Group %d: %+v\n", index, group)
  }
+}
+```
+
+### ZPA SCIM API
+
+This SDK supports direct interaction with the ZPA SCIM API endpoints. The SCIM APIs allow you to use custom SCIM clients to make REST API calls to Zscaler. The same way as the regular ZPA API All SCIM APIs are rate limited.
+For more details [About SCIM APIs](https://help.zscaler.com/zpa/about-scim-apis)
+
+The ZPA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `PRODUCTION`
+* `ZPATWO`
+* `BETA`
+* `GOV`
+* `GOVUS`
+
+### ZPA SCIM API Environment variables
+
+You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CLOUD` environment variables, representing your ZPA `scimToken`, `idpId`, and `baseURL` of your ZPA account, respectively.
+
+~> **NOTE** `ZPA_SCIM_CLOUD` environment variable is only required when required when authenticating to a ZPA environment other than production. This environment variable is used to identify the correct API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `scimToken`       | _(String)_ A string that contains the ZPA SCIM API Token | `ZPA_SCIM_TOKEN` |
+| `idpId`       | _(String)_ A string that contains the ZPA Identity Provider ID | `ZPA_IDP_ID` |
+| `baseURL`       | _(String)_ A string that contains the ZPA cloud environment name | `ZPA_SCIM_CLOUD` |
+
+### ZPA API SCIM Client Initialization
+
+```go
+import (
+ "context"
+ "fmt"
+ "log"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scim_api"
+)
+
+func main() {
+	scimToken := os.Getenv("ZPA_SCIM_TOKEN")
+	idpId := os.Getenv("ZPA_IDP_ID")
+	scimCloud := os.Getenv("ZPA_SCIM_CLOUD")
+
+	scimClient, err := zpa.NewScimConfig(
+		zpa.WithScimToken(scimToken),
+		zpa.WithIDPId(idpId),
+		zpa.WithScimCloud(scimCloud),
+	)
+	if err != nil {
+		log.Fatalf("failed to create SCIM client: %v", err)
+	}
+
+	service := zscaler.NewScimService(scimClient)
+
+  ctx := context.Background()
+	groups, _, err := scim_api.GetAllGroups(ctx, service)
+	if err != nil {
+		log.Fatalf("Error retrieving SCIM groups: %v", err)
+	}
+	log.Printf("Retrieved SCIM Groups: %+v\n", groups)
 }
 ```
 

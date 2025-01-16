@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -60,63 +61,109 @@ type ScimConfig struct {
 	UserAgent   string
 }
 
+type ScimConfigSetter func(*ScimConfig)
+
+// WithScimToken sets the SCIM token in the configuration.
+func WithScimToken(scimToken string) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		c.AuthToken = scimToken
+	}
+}
+
+// WithIDPId sets the IDP ID in the configuration.
+func WithIDPId(idpId string) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		c.IDPId = idpId
+	}
+}
+
+// WithScimBaseURL sets the SCIM BaseURL in the configuration.
+func WithScimCloud(baseURL string) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		parsedURL, err := url.Parse(baseURL)
+		if err == nil {
+			c.BaseURL = parsedURL
+		} else {
+			c.Logger.Printf("[ERROR] Invalid base URL: %v", err)
+		}
+	}
+}
+
+// WithScimUserAgent sets the User-Agent in the configuration.
+func WithScimUserAgent(userAgent string) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		c.UserAgent = userAgent
+	}
+}
+
+// WithScimTimeout sets the HTTP client timeout in the configuration.
+func WithScimTimeout(timeout time.Duration) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		if c.httpClient != nil {
+			c.httpClient.Timeout = timeout
+		} else {
+			c.httpClient = &http.Client{Timeout: timeout}
+		}
+	}
+}
+
+// WithScimRateLimiter sets the rate limiter in the configuration.
+func WithScimRateLimiter(rateLimiter *rl.RateLimiter) ScimConfigSetter {
+	return func(c *ScimConfig) {
+		c.rateLimiter = rateLimiter
+	}
+}
+
 // NewScimConfig initializes a configuration specifically for SCIM-based API endpoints
-func NewScimConfig(scimToken, idpId, scimCloud, userAgent string) (*ScimClient, error) {
+func NewScimConfig(setters ...ScimConfigSetter) (*ScimClient, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 
-	// Load from environment variables if not provided
-	if scimToken == "" {
-		scimToken = os.Getenv(ZPA_SCIM_TOKEN)
-	}
-	if idpId == "" {
-		idpId = os.Getenv(ZPA_IDP_ID)
-	}
-	if scimCloud == "" {
-		scimCloud = os.Getenv(ZPA_SCIM_CLOUD)
-	}
-
-	// Ensure that both scimToken and idpId are provided
-	if scimToken == "" || idpId == "" {
-		return nil, fmt.Errorf("scim token and idp id are required for SCIM-based configuration")
-	}
-
-	// Select the base URL based on the provided SCIM cloud environment
-	rawUrl := scimdefaultBaseURL
-	switch strings.ToUpper(scimCloud) {
-	case "BETA":
-		rawUrl = scimbetaBaseURL
-	case "ZPATWO":
-		rawUrl = scimzpaTwoBaseUrl
-	case "GOV":
-		rawUrl = scimgovBaseURL
-	case "GOVUS":
-		rawUrl = scimgovUsBaseURL
-	case "PRODUCTION":
-		rawUrl = scimdefaultBaseURL
-	case "PREVIEW":
-		rawUrl = scimpreviewBaseUrl
-	}
-
-	// Parse the SCIM base URL
-	baseURL, err := url.Parse(rawUrl)
-	if err != nil {
-		logger.Printf("[ERROR] error occurred while configuring the SCIM client: %v", err)
-		return nil, err
-	}
-
-	// Create the ScimConfig
+	// Default configuration values
 	scimConfig := &ScimConfig{
-		BaseURL:     baseURL,
-		AuthToken:   scimToken,
-		IDPId:       idpId,
+		BaseURL:     nil,
+		AuthToken:   os.Getenv(ZPA_SCIM_TOKEN),
+		IDPId:       os.Getenv(ZPA_IDP_ID),
 		Logger:      logger,
 		httpClient:  &http.Client{Timeout: defaultTimeout},
 		BackoffConf: defaultBackoffConf,
-		UserAgent:   userAgent,
+		UserAgent:   fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", VERSION, runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		rateLimiter: rl.NewRateLimiter(20, 10, 10, 10),
 	}
 
-	// Wrap ScimConfig inside ScimClient and return it
+	// Apply setters to customize configuration
+	for _, setter := range setters {
+		setter(scimConfig)
+	}
+
+	// Validate required configuration fields
+	if scimConfig.AuthToken == "" || scimConfig.IDPId == "" {
+		return nil, fmt.Errorf("scim token and idp id are required for SCIM-based configuration")
+	}
+
+	// Set the base URL based on the SCIM cloud environment
+	baseURL := os.Getenv(ZPA_SCIM_CLOUD)
+	if baseURL == "" {
+		baseURL = "PRODUCTION" // Default to production
+	}
+
+	switch strings.ToUpper(baseURL) {
+	case "BETA":
+		scimConfig.BaseURL, _ = url.Parse(scimbetaBaseURL)
+	case "ZPATWO":
+		scimConfig.BaseURL, _ = url.Parse(scimzpaTwoBaseUrl)
+	case "GOV":
+		scimConfig.BaseURL, _ = url.Parse(scimgovBaseURL)
+	case "GOVUS":
+		scimConfig.BaseURL, _ = url.Parse(scimgovUsBaseURL)
+	case "PREVIEW":
+		scimConfig.BaseURL, _ = url.Parse(scimpreviewBaseUrl)
+	case "PRODUCTION", "":
+		scimConfig.BaseURL, _ = url.Parse(scimdefaultBaseURL)
+	default:
+		return nil, fmt.Errorf("invalid SCIM cloud: %s", baseURL)
+	}
+
+	// Return the SCIM client
 	return &ScimClient{ScimConfig: scimConfig}, nil
 }
 

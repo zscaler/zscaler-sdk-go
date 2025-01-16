@@ -21,7 +21,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/utils"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 const (
@@ -323,6 +322,7 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 	return req, nil
 }
 
+/*
 func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Response, *http.Request, error) {
 	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
 	if err != nil {
@@ -373,6 +373,94 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		} else if resp.StatusCode < 300 {
 			break
+		}
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp, nil, err
+	}
+
+	// Cache logic for successful GET requests
+	if !isSandboxRequest && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
+		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		c.oauth2Credentials.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
+	}
+	_ = tryDrainBody(resp.Body)
+	return bodyBytes, resp, req, nil
+}
+*/
+
+func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Response, *http.Request, error) {
+	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
+	startTime := time.Now()
+
+	// Create cache key using the actual request
+	key := cache.CreateCacheKey(req)
+	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
+		if method != http.MethodGet {
+			c.oauth2Credentials.CacheManager.Delete(key)
+			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+		}
+		resp := c.oauth2Credentials.CacheManager.Get(key)
+		inCache := resp != nil
+		if inCache {
+			respData, err := io.ReadAll(resp.Body)
+			if err == nil {
+				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+			}
+			c.oauth2Credentials.Logger.Printf("[INFO] served from cache, key:%s\n", key)
+			return respData, resp, req, nil
+		}
+	}
+
+	var resp *http.Response
+	for retry := 1; ; retry++ { // Infinite loop for retries if MaxRetries=0
+		// Check MaxRetries if non-zero
+		if c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries > 0 && retry > int(c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries) {
+			return nil, resp, nil, fmt.Errorf("max retries exceeded")
+		}
+
+		// Check RequestTimeout
+		elapsedTime := time.Since(startTime)
+		if c.oauth2Credentials.Zscaler.Client.RequestTimeout > 0 && elapsedTime >= c.oauth2Credentials.Zscaler.Client.RequestTimeout {
+			return nil, resp, nil, fmt.Errorf("request timeout exceeded")
+		}
+
+		start := time.Now()
+		reqID := uuid.New().String()
+		logger.LogRequest(c.oauth2Credentials.Logger, req, reqID, nil, !isSandboxRequest)
+		httpClient := c.getServiceHTTPClient(endpoint)
+		resp, err = httpClient.Do(req)
+		logger.LogResponse(c.oauth2Credentials.Logger, resp, start, reqID)
+		if err != nil {
+			return nil, resp, nil, err
+		}
+
+		// Handle rate-limiting (429 or 503)
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+			retryAfter := getRetryAfter(resp, c.oauth2Credentials.Logger)
+			if retryAfter > 0 {
+				time.Sleep(retryAfter)
+				continue
+			}
+		}
+
+		// Handle success
+		if resp.StatusCode < 300 {
+			break
+		}
+
+		// Handle other non-success status codes
+		if resp.StatusCode >= 300 {
+			resp.Body.Close()
+			return nil, resp, nil, fmt.Errorf("API responded with code: %d", resp.StatusCode)
 		}
 	}
 
