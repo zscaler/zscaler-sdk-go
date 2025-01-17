@@ -150,7 +150,7 @@ type Count struct {
 
 func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {
 	v := new(PolicySet)
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + "/policySet/policyType/" + policyType)
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + "/policySet/policyType/" + policyType
 	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err

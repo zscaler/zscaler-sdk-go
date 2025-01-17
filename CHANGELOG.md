@@ -212,7 +212,7 @@ Refer to the [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/READ
 - Golang: **v1.22**
 
 #### ZIA PAC Files
-[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/288) - Added the following new ZIA API Endpoints:
   - Added `GET /pacFiles` to Retrieves the list of all PAC files which are in deployed state.
   - Added `GET /pacFiles/{pacId}/version` to Retrieves all versions of a PAC file based on the specified ID.
   - Added `GET /pacFiles/{pacId}/version/{pacVersion}` to Retrieves a specific version of a PAC file based on the specified ID.
@@ -249,20 +249,42 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
 | `idpId`       | _(String)_ The ZPA IdP ID from the onboarded Identity Provider.| `ZPA_IDP_ID` |
 | `scimCloud`       | _(String)_ The ZPA SCIM Cloud for your ZPA Tenant.| `ZPA_SCIM_CLOUD` |
 
-#### ZPA SCIM API Endpoints
-[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
+#### ZPA SCIM API Endpoints - (NEW)
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/288) - Added the following ZPA SCIM API Endpoints:
   - Added `GET /Groups` Fetch All Groups with pagination
   - Added `GET /Groups/{groupId}` Fetch a Group By ID
   - Added `POST /Groups` Create a new Group
   - Added `PUT /Groups/{groupId}` Update a new Group
   - Added `PATCH /Groups/{groupId}` Partially Update a Group
 
-[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/288) - Added the following ZPA SCIM API Endpoints:
   - Added `GET /Users` Fetch All Users with pagination
   - Added `GET /Users/{userID}` Fetch a User By ID
   - Added `POST /Groups` Create a new User
   - Added `PUT /Groups/{userID}` Update a new User
   - Added `PATCH /Groups/{userID}` Partially Update a User
+
+#### ZWA - Zscaler Workflow Automation (NEW)
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/288) - Added new ZWA endpoint:
+  - Added `GET /dlp/v1/incidents/transactions/{transactionId}` Gets the list of all DLP incidents associated with the transaction ID
+  - Added `GET /dlp/v1/incidents/{dlpIncidentId}` Gets the DLP incident details based on the incident ID.
+  - Added `DELETE /dlp/v1/incidents/{dlpIncidentId}` Deletes the DLP incident for the specified incident ID.
+  - Added `GET /dlp/v1/incidents{dlpIncidentId}/change-history` Gets the details of updates made to an incident based on the given ID and timeline.
+  - Added `GET /dlp/v1/incidents/{dlpIncidentId}/tickets` Gets the information of the ticket generated for the incident. For example, ticket type, ticket ID, ticket status, etc.
+  - Added `POST /dlp/v1/incidents/{dlpIncidentId}/incident-groups/search` Filters a list of DLP incident groups to which the specified incident ID belongs.
+  - Added `POST /dlp/v1/incidents/{dlpIncidentId}/close` Updates the status of the incident to resolved and closes the incident with a resolution label and a resolution code.
+  - Added `POST /dlp/v1/incidents/{dlpIncidentId}/notes` Adds notes to the incident during updates or status changes.
+  - Added `POST /dlp/v1/incidents/{dlpIncidentId}/labels` Assign lables (a label name and it's associated value) to DLP incidents.
+  - Added `POST /dlp/v1/incidents/search` Filters DLP incidents based on the given time range and the field values.
+  - Added `GET /dlp/v1/incidents/{dlpIncidentId}/triggers` Downloads the actual data that triggered the incident.
+  - Added `GET /dlp/v1/incidents/{dlpIncidentId}/evidence` Gets the evidence URL of the incident. 
+
+**Notes** 
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |    
+| `key_secret`       | _(String)_ The ZWA string that contains the key secret.| `ZWA_API_SECRET` |
+| `cloud`       | _(String)_ The ZWA string containing cloud provisioned for your organization.| `ZWA_CLOUD` |
 
 # 2.732.0 (October 31, 2024)
 
