@@ -1134,6 +1134,67 @@ func main() {
 }
 ```
 
+### ZWA native authentication
+
+For authentication via Zscaler Workflow Automation (ZWA), you must provide `key_id`, `key_secret`
+
+The ZWA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to.
+
+### ZWA Environment variables
+
+You can provide credentials via the `ZWA_API_KEY_ID`, `ZWA_API_SECRET` environment variables, representing your ZDX `key_id`, `key_secret` of your ZWA account, respectively.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |    
+| `key_secret`       | _(String)_ The ZWA string that contains the key secret.| `ZWA_API_SECRET` |
+| `cloud`       | _(String)_ The ZWA string containing cloud provisioned for your organization.| `ZWA_CLOUD` |
+
+**NOTE**: The Zscaler Workflow Automation (ZWA) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
+
+### ZWA Client Initialization
+
+```go
+import (
+ "log"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
+)
+
+func main() {
+	key_id := os.Getenv("ZWA_API_KEY_ID")
+	key_secret := os.Getenv("ZWA_API_SECRET")
+	cloud := os.Getenv("ZWA_CLOUD") // Optional
+
+ zwaCfg, err := zwa.NewConfiguration(
+	zwa.WithZWAAPIKeyID(key_id),
+	zwa.WithZWAAPISecret(key_secret),
+  zwa.WithZWACloud(cloud),
+	zwa.WithDebug(true),
+ )
+ if err != nil {
+  log.Fatalf("Error creating ZWA configuration: %v", err)
+ }
+
+ zwaClient, err := zwa.NewClient(zwaCfg)
+ if err != nil {
+  log.Fatalf("Error creating ZWA client: %v", err)
+ }
+
+ service := services.New(zwaClient)
+
+	dlpIncidentID := "167867439920099003"
+
+	evidence, _, err := dlp_incidents.GetDLPIncidentTriggers(ctx, service, dlpIncidentID)
+	if err != nil {
+		log.Fatalf("Error fetching DLP incident evidence: %v", err)
+	}
+
+	fmt.Printf("Evidence Details: %+v\n", evidence)
+}
+```
+
 Hard-coding any of the Zscaler API credentials works for quick tests, but for real
 projects you should use a more secure way of storing these values (such as
 environment variables). This library supports a few different configuration
