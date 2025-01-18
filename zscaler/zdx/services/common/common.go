@@ -32,8 +32,8 @@ type GetFromToFilters struct {
 
 // Centralized safe conversion function
 func SafeCastToInt(value int64) (int, error) {
-	minInt := int64(-1 << 31)      // Minimum value of int
-	maxInt := int64((1 << 31) - 1) // Maximum value of int
+	minInt := int64(-1 << 31)      // Minimum value of int32
+	maxInt := int64((1 << 31) - 1) // Maximum value of int32
 
 	if value < minInt || value > maxInt {
 		return 0, fmt.Errorf("value %d is out of range for int type", value)
