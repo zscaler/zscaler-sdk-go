@@ -1,5 +1,7 @@
 package common
 
+import "log"
+
 type Metric struct {
 	Metric     string      `json:"metric,omitempty"`
 	Unit       string      `json:"unit,omitempty"`
@@ -26,4 +28,12 @@ type GetFromToFilters struct {
 	Limit int `json:"limit,omitempty" url:"limit,omitempty"`
 	// Search for a user name or email. The search results include active users for the first 1000 matches.
 	Q string `json:"q,omitempty" url:"q,omitempty"`
+}
+
+// Centralized safe conversion function
+func SafeCastToInt(value int64) int {
+	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
+		log.Fatalf("[ERROR] Value %d is out of range for int type\n", value)
+	}
+	return int(value)
 }

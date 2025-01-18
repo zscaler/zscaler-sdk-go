@@ -98,10 +98,10 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Define filters
+	// Use safeCastToInt for conversion
 	filters := common.GetFromToFilters{
-		From: int(fromTime),
-		To:   int(toTime),
+		From: common.SafeCastToInt(fromTime),
+		To:   common.SafeCastToInt(toTime),
 	}
 
 	// Get app metrics

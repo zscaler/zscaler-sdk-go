@@ -97,14 +97,10 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	fromInput = strings.TrimSpace(fromInput)
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
-		if err == nil {
-			if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-				log.Fatalf("[ERROR] Start time is out of range for int type\n")
-			}
-			from = parsedFrom
-		} else {
+		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
+		from = parsedFrom
 	}
 
 	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
@@ -112,14 +108,10 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	toInput = strings.TrimSpace(toInput)
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
-		if err == nil {
-			if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-				log.Fatalf("[ERROR] End time is out of range for int type\n")
-			}
-			to = parsedTo
-		} else {
+		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
+		to = parsedTo
 	}
 
 	if to-from > 14*24*60*60 {
@@ -127,8 +119,8 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	}
 
 	return common.GetFromToFilters{
-		From: int(from),
-		To:   int(to),
+		From: common.SafeCastToInt(from),
+		To:   common.SafeCastToInt(to),
 	}
 }
 
@@ -178,7 +170,7 @@ func displayAlerts(alerts []alerts.Alert) {
 		if alert.EndedOn > 0 {
 			endedOn = time.Unix(int64(alert.EndedOn), 0).Format("2006-01-02 15:04:05")
 		} else {
-			endedOn = "N/A" // or some placeholder to indicate that it's still ongoing
+			endedOn = "N/A"
 		}
 		table.Append([]string{
 			strconv.Itoa(alert.ID),
@@ -196,7 +188,6 @@ func displayAlerts(alerts []alerts.Alert) {
 }
 
 func displayAlertDetails(alert alerts.Alert) {
-	// Display main alert details
 	mainTable := tablewriter.NewWriter(os.Stdout)
 	mainTable.SetHeader([]string{"ID", "Rule Name", "Severity", "Alert Type", "Status", "Started On", "Ended On"})
 
@@ -218,33 +209,6 @@ func displayAlertDetails(alert alerts.Alert) {
 		endedOn,
 	})
 	mainTable.Render()
-
-	// Display geolocation details
-	fmt.Println("\nGeolocation Details:")
-	geoTable := tablewriter.NewWriter(os.Stdout)
-	geoTable.SetHeader([]string{"Geolocation ID", "Num Devices"})
-	for _, geo := range alert.Geolocations {
-		geoTable.Append([]string{geo.ID, strconv.Itoa(geo.NumDevices)})
-	}
-	geoTable.Render()
-
-	// Display department details
-	fmt.Println("\nDepartment Details:")
-	deptTable := tablewriter.NewWriter(os.Stdout)
-	deptTable.SetHeader([]string{"Department Name", "Num Devices"})
-	for _, dept := range alert.Departments {
-		deptTable.Append([]string{dept.Name, strconv.Itoa(dept.NumDevices)})
-	}
-	deptTable.Render()
-
-	// Display location details
-	fmt.Println("\nLocation Details:")
-	locTable := tablewriter.NewWriter(os.Stdout)
-	locTable.SetHeader([]string{"Location Name", "Num Devices"})
-	for _, loc := range alert.Locations {
-		locTable.Append([]string{loc.Name, strconv.Itoa(loc.NumDevices)})
-	}
-	locTable.Render()
 }
 
 func displayAffectedDevices(devices []alerts.Device) {
