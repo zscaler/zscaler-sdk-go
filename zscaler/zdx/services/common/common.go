@@ -1,6 +1,6 @@
 package common
 
-import "log"
+import "fmt"
 
 type Metric struct {
 	Metric     string      `json:"metric,omitempty"`
@@ -31,9 +31,12 @@ type GetFromToFilters struct {
 }
 
 // Centralized safe conversion function
-func SafeCastToInt(value int64) int {
-	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
-		log.Fatalf("[ERROR] Value %d is out of range for int type\n", value)
+func SafeCastToInt(value int64) (int, error) {
+	minInt := int64(-1 << 31)      // Minimum value of int
+	maxInt := int64((1 << 31) - 1) // Maximum value of int
+
+	if value < minInt || value > maxInt {
+		return 0, fmt.Errorf("value %d is out of range for int type", value)
 	}
-	return int(value)
+	return int(value), nil
 }

@@ -77,11 +77,20 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Use SafeCastToInt for conversion
+	// Use SafeCastToInt for conversion with error handling
+	fromInt, err := common.SafeCastToInt(fromTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+	toInt, err := common.SafeCastToInt(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
 	filters := devices.GeoLocationFilter{
 		GetFromToFilters: common.GetFromToFilters{
-			From: common.SafeCastToInt(fromTime),
-			To:   common.SafeCastToInt(toTime),
+			From: fromInt,
+			To:   toInt,
 		},
 	}
 

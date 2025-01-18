@@ -17,10 +17,11 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
 
-type App struct {
-	ID    int     `json:"id"`
-	Name  string  `json:"name"`
-	Score float32 `json:"score"`
+type AppMetric struct {
+	Metric    string
+	Unit      string
+	TimeStamp int64
+	Value     float64
 }
 
 func main() {
@@ -52,6 +53,15 @@ func main() {
 
 	ctx := context.Background()
 
+	// Prompt for application ID
+	fmt.Print("Enter application ID: ")
+	appIDInput, _ := reader.ReadString('\n')
+	appIDInput = strings.TrimSpace(appIDInput)
+	appID, err := strconv.Atoi(appIDInput)
+	if err != nil {
+		log.Fatalf("[ERROR] Invalid application ID: %v\n", err)
+	}
+
 	// Prompt for from time
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
 	fromInput, _ := reader.ReadString('\n')
@@ -72,9 +82,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
-		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
@@ -82,42 +89,51 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
-		}
 		toTime = parsedTo
 	}
 
-	// Use safeCastToInt for conversion
-	filters := common.GetFromToFilters{
-		From: common.SafeCastToInt(fromTime),
-		To:   common.SafeCastToInt(toTime),
-	}
-
-	// Get all apps
-	appsList, _, err := applications.GetAllApps(ctx, service, filters)
+	// Convert int64 values safely to int
+	fromInt, err := common.SafeCastToInt(fromTime)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all apps failed: %v\n", err)
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+	toInt, err := common.SafeCastToInt(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
 	}
 
-	// Extract app details and display in table format
-	var appData []App
-	for _, app := range appsList {
-		appData = append(appData, App{
-			ID:    app.ID,
-			Name:  app.Name,
-			Score: app.Score,
-		})
+	filters := common.GetFromToFilters{
+		From: fromInt,
+		To:   toInt,
+	}
+
+	// Get app metrics
+	metricsList, _, err := applications.GetAppMetrics(ctx, service, appID, filters)
+	if err != nil {
+		log.Fatalf("[ERROR] getting app metrics failed: %v\n", err)
+	}
+
+	// Extract app metric details and display in table format
+	var metricData []AppMetric
+	for _, metric := range metricsList {
+		for _, dp := range metric.DataPoints {
+			metricData = append(metricData, AppMetric{
+				Metric:    metric.Metric,
+				Unit:      metric.Unit,
+				TimeStamp: int64(dp.TimeStamp),
+				Value:     dp.Value,
+			})
+		}
 	}
 
 	// Display the data in a formatted table
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"App ID", "App Name", "Score"})
+	table.SetHeader([]string{"Metric", "Unit", "Timestamp", "Value"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
-	for _, app := range appData {
-		table.Append([]string{strconv.Itoa(app.ID), app.Name, fmt.Sprintf("%.2f", app.Score)})
+	for _, metric := range metricData {
+		table.Append([]string{metric.Metric, metric.Unit, strconv.FormatInt(metric.TimeStamp, 10), fmt.Sprintf("%.2f", metric.Value)})
 	}
 
 	table.Render()

@@ -56,29 +56,32 @@ func main() {
 
 	switch choice {
 	case "a":
-		// Prompt for optional filters
+		// Retrieve ongoing alerts
 		filters := promptForFilters(reader, false)
 		getOngoingAlerts(service, filters)
 	case "b":
-		// Prompt for optional filters
+		// Retrieve historical alerts
 		filters := promptForFilters(reader, false)
 		getHistoricalAlerts(service, filters)
 	case "c":
-		// Prompt for alert ID
+		// Retrieve alert details
 		fmt.Print("Enter alert ID: ")
-		alertID, _ := reader.ReadString('\n')
-		alertID = strings.TrimSpace(alertID)
+		alertID := strings.TrimSpace(readInput(reader))
 		getAlertDetails(service, alertID)
 	case "d":
-		// Prompt for alert ID and optional filters
+		// Retrieve affected devices for specific AlertID
 		fmt.Print("Enter alert ID: ")
-		alertID, _ := reader.ReadString('\n')
-		alertID = strings.TrimSpace(alertID)
+		alertID := strings.TrimSpace(readInput(reader))
 		filters := promptForFilters(reader, false)
 		getAffectedDevices(service, alertID, filters)
 	default:
 		log.Fatalf("[ERROR] Invalid choice: %s\n", choice)
 	}
+}
+
+func readInput(reader *bufio.Reader) string {
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
 }
 
 func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFromToFilters {
@@ -93,8 +96,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	to = now.Unix()
 
 	fmt.Print("Enter start time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
-	fromInput, _ := reader.ReadString('\n')
-	fromInput = strings.TrimSpace(fromInput)
+	fromInput := readInput(reader)
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
 		if err != nil {
@@ -103,9 +105,8 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 		from = parsedFrom
 	}
 
-	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
-	toInput, _ := reader.ReadString('\n')
-	toInput = strings.TrimSpace(toInput)
+	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to now): ")
+	toInput := readInput(reader)
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
 		if err != nil {
@@ -118,9 +119,19 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 		log.Fatalf("[ERROR] The time range cannot exceed 14 days.\n")
 	}
 
+	fromInt, err := common.SafeCastToInt(from)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
+	toInt, err := common.SafeCastToInt(to)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
 	return common.GetFromToFilters{
-		From: common.SafeCastToInt(from),
-		To:   common.SafeCastToInt(to),
+		From: fromInt,
+		To:   toInt,
 	}
 }
 
@@ -148,7 +159,7 @@ func getAlertDetails(service *services.Service, alertID string) {
 	if err != nil {
 		log.Fatalf("Error getting alert details: %v", err)
 	}
-	displayAlertDetails(*alertDetails) // Dereference the pointer
+	displayAlertDetails(*alertDetails)
 }
 
 func getAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) {

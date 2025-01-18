@@ -82,9 +82,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
-		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
@@ -92,16 +89,22 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
-		}
 		toTime = parsedTo
 	}
 
-	// Use safeCastToInt for conversion
+	// Convert int64 values safely to int
+	fromInt, err := common.SafeCastToInt(fromTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+	toInt, err := common.SafeCastToInt(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
 	filters := common.GetFromToFilters{
-		From: common.SafeCastToInt(fromTime),
-		To:   common.SafeCastToInt(toTime),
+		From: fromInt,
+		To:   toInt,
 	}
 
 	// Get app metrics
