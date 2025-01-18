@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,30 +12,40 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
 
 	// Prompt the user for device ID
 	fmt.Print("Enter device ID: ")
@@ -92,7 +103,7 @@ func main() {
 	}
 
 	// Call GetEvents with the provided device ID and filters
-	deviceEvents, resp, err := devices.GetEvents(service, deviceID, filters)
+	deviceEvents, resp, err := devices.GetEvents(ctx, service, deviceID, filters)
 	if err != nil {
 		log.Fatalf("Error getting events: %v", err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,10 +11,10 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 type Device struct {
@@ -25,13 +26,31 @@ type Device struct {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
 
 	// Prompt for from time
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
@@ -49,7 +68,6 @@ func main() {
 	toTime := now.Unix()
 
 	var fromInt, toInt int
-	var err error
 
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
@@ -83,14 +101,6 @@ func main() {
 		}
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	deviceService := services.New(cli)
-
 	// Define filters
 	filters := devices.GetDevicesFilters{
 		GetFromToFilters: common.GetFromToFilters{
@@ -100,7 +110,7 @@ func main() {
 	}
 
 	// Get all devices
-	devicesList, _, err := devices.GetAllDevices(deviceService, filters)
+	devicesList, _, err := devices.GetAllDevices(ctx, service, filters)
 	if err != nil {
 		log.Fatalf("[ERROR] getting all devices failed: %v\n", err)
 	}

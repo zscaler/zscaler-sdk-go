@@ -13,23 +13,182 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v2.74.1``
+``Last updated: v3.0.0``
 
 ---
 
-# 2.74.1 (January 4, 2024)
+# Changelog
+
+# 3.0.0 (January 15, 2025) - BREAKING CHANGES
 
 ## Notes
-- Golang: **v1.22**
+- Golang: **v1.23**
 
-### Bug Fixes
-[PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Fixed ZPA Double Encoding of HTTP GET Request Params - Issue #291
-[PR #292](https://github.com/zscaler/zscaler-sdk-go/pull/292) - Updated go mod packages
+#### Zscaler OneAPI Support
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): Added support for [OneAPI](https://help.zscaler.com/oneapi/understanding-oneapi) Oauth2 authentication support through [Zidentity](https://help.zscaler.com/zidentity/what-zidentity).
+
+**NOTES** 
+  - Starting at v3.0.0 version this SDK provides dual API client functionality and is backwards compatible with the legacy Zscaler API framework.
+  - The new OneAPI framework is compatible only with the following products `ZCC/ZIA/ZPA`.
+  - The following products `ZCON` - Cloud Connector and `ZDX` and Zscaler Digital Experience, authentication methods remain unnaffected.
+
+Refer to the [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md) page for details on client instantiation, and authentication requirements on each individual product.
+
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): All API clients now support Config Setter object `ZCC/ZCON/ZDX/ZIA/ZPA`
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286): Added Ability to pass `context` to each method that is sent into the request.
+
+#### ZIA Sandbox Submission - BREAKING CHANGES
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Authentication to Zscaler Sandbox now use the following attributes during client instantiation.
+ - `sandboxToken` - Can also be sourced from the `ZSCALER_SANDBOX_TOKEN` environment variable.
+ - `sandboxCloud` - Can also be sourced from the `ZSCALER_SANDBOX_CLOUD` environment variable.
+
+**NOTE** The previous `ZIA_SANDBOX_TOKEN` has been deprecated.
+
+#### ZIA Sandbox Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /sandboxRules` to retrieve the list of all Sandbox policy rules.
+  - Added `GET /sandboxRules/{ruleId}` to retrieve the Sandbox policy rule information based on the specified ID.
+  - Added `POST /sandboxRules` to add a Sandbox policy rule. 
+  - Added `PUT /sandboxRules/{ruleId}` to update the Sandbox policy rule configuration for the specified ID.
+  - Added `DELETE /sandboxRules/{ruleId}` to delete the Sandbox policy rule based on the specified ID.
+
+#### ZIA DNS Control Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /firewallDnsRules` to retrieve the list of all DNS Control policy rules.
+  - Added `GET /firewallDnsRules/{ruleId}` to retrieve the DNS Control policy rule information based on the specified ID.
+  - Added `POST /firewallDnsRules` to add a DNS Control policy rules. 
+  - Added `PUT /firewallDnsRules/{ruleId}` to update the DNS Control policy rule configuration for the specified ID.
+  - Added `DELETE /firewallDnsRules/{ruleId}` to delete the DNS Control policy rule based on the specified ID.
+
+#### ZIA IPS Control Rules
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /firewallIpsRules` to retrieve the list of all IPS Control policy rules.
+  - Added `GET /firewallIpsRules/{ruleId}` to retrieve the IPS Control policy rule information based on the specified ID.
+  - Added `POST /firewallIpsRules` to add a IPS Control policy rule. 
+  - Added `PUT /firewallIpsRules/{ruleId}` to update the IPS Control policy rule configuration for the specified ID.
+  - Added `DELETE /firewallIpsRules/{ruleId}` to delete the IPS Control policy rule based on the specified ID.
+
+#### ZIA File Type Control Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /fileTypeRules` to retrieve the list of all File Type Control policy rules.
+  - Added `GET /fileTypeRules/lite` to retrieve the list of all File Type Control policy rules.
+  - Added `GET /fileTypeRules/{ruleId}` to retrieve the File Type Control policy rule information based on the specified ID.
+  - Added `POST /fileTypeRules` to add a File Type Control policy rule. 
+  - Added `PUT /fileTypeRules/{ruleId}` to update the File Type Control policy rule configuration for the specified ID.
+  - Added `DELETE /fileTypeRules/{ruleId}` to delete the File Type Control policy rule based on the specified ID.
+
+#### ZIA Forwarding Control Policy - Proxy Gateways
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /proxyGateways` to retrieve the proxy gateway information.
+  - Added `GET /proxyGateways/lite` to retrieve the name and ID of the proxy.
+
+#### ZIA Cloud Nanolog Streaming Service (NSS)
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /nssFeeds` to retrieve the cloud NSS feeds.
+  - Added `GET /nssFeeds/{feedId}` to retrieve information about cloud NSS feed based on the specified ID.
+  - Added `POST /nssFeeds` to add a new cloud NSS feed.
+  - Added `PUT /nssFeeds/{feedId}` to update cloud NSS feed configuration based on the specified ID.
+  - Added `DELETE /nssFeeds/{feedId}` to delete cloud NSS feed configuration based on the specified ID.
+  - Added `GET /nssFeeds/feedOutputDefaults` to retrieve the default cloud NSS feed output format for different log types.
+  - Added `GET /nssFeeds/testConnectivity/{feedId}` to test the connectivity of cloud NSS feed based on the specified ID
+  - Added `POST /nssFeeds/validateFeedFormat` to validates the cloud NSS feed format and returns the validation result
+
+#### ZIA Advanced Threat Protection Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cyberThreatProtection/advancedThreatSettings` to retrieve the advanced threat configuration settings.
+  - Added `PUT /cyberThreatProtection/advancedThreatSettings` to update the advanced threat configuration settings.
+  - Added `GET /cyberThreatProtection/maliciousUrls` to retrieve the malicious URLs added to the denylist in the Advanced Threat Protection (ATP) policy
+  - Added `PUT /cyberThreatProtection/maliciousUrls` to updates the malicious URLs added to the denylist in ATP policy
+  - Added `GET /cyberThreatProtection/securityExceptions` to retrieves information about the security exceptions configured for the ATP policy
+  - Added `PUT /cyberThreatProtection/securityExceptions` to update security exceptions for the ATP policy
+  
+#### ZIA Advanced Threat Protection Policy
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cyberThreatProtection/atpMalwareInspection` to retrieve the traffic inspection configurations of Malware Protection policy
+  - Added `PUT /cyberThreatProtection/atpMalwareInspection` to update the traffic inspection configurations of Malware Protection policy.
+  - Added `GET /cyberThreatProtection/atpMalwareProtocols` to retrieve the protocol inspection configurations of Malware Protection policy
+  - Added `PUT /cyberThreatProtection/atpMalwareProtocols` to update the protocol inspection configurations of Malware Protection policy.
+  - Added `GET /cyberThreatProtection/malwareSettings` to retrieve the malware protection policy configuration details
+  - Added `PUT /cyberThreatProtection/malwareSettings` to update the malware protection policy configuration details.
+  - Added `GET /cyberThreatProtection/malwarePolicy` to retrieve information about the security exceptions configured for the Malware Protection policy
+  - Added `PUT /cyberThreatProtection/malwarePolicy` to update security exceptions for the Malware Protection policy. 
+
+#### ZIA URL & Cloud App Control Policy Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /advancedUrlFilterAndCloudAppSettings` to retrieve information about URL and Cloud App Control advanced policy settings
+  - Added `PUT /advancedUrlFilterAndCloudAppSettings` to update the URL and Cloud App Control advanced policy settings
+
+#### ZIA Authentication Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /authSettings` to retrieve the organization's default authentication settings information, including authentication profile and Kerberos authentication information.
+  - Added `GET /authSettings/lite` to retrieve organization's default authentication settings information.
+  - Added `PUT /authSettings` to update the organization's default authentication settings information.
+
+#### ZIA Advanced Settings
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /advancedSettings` to retrieve information about the advanced settings.
+  - Added `PUT /advancedSettings` to update the advanced settings configuration.
+
+#### ZIA Cloud Applications
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /cloudApplications/policy` Retrieves a list of Predefined and User Defined Cloud Applications associated with the DLP rules, Cloud App Control rules, Advanced Settings, Bandwidth Classes, and File Type Control rules.
+  - Added `GET /cloudApplications/sslPolicy` Retrieves a list of Predefined and User Defined Cloud Applications associated with the SSL Inspection rules.
+
+#### ZIA Shadow IT Report
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+- Added `PUT /cloudApplications/bulkUpdate` To Update application status and tag information for predefined or custom cloud applications based on the IDs specified
+- Added `GET /cloudApplications/lite` Gets the list of predefined and custom cloud applications
+- Added `GET /customTags` Gets the list of custom tags available to assign to cloud applications
+- Added `POST /shadowIT/applications/export` Export the Shadow IT Report (in CSV format) for the cloud applications recognized by Zscaler based on their usage in your organization.
+- Added `POST /shadowIT/applications/{entity}/exportCsv` Export the Shadow IT Report (in CSV format) for the list of users or known locations identified with using the cloud applications specified in the request.
+
+#### ZIA Remote Assistance Support
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /remoteAssistance` to retrieve information about the Remote Assistance option.
+  - Added `PUT /remoteAssistance` to update information about the Remote Assistance option. Using this option, you can allow Zscaler Support to access your organization’s ZIA Admin Portal for a specified time period to troubleshoot issues.
+
+#### ZIA Organization Details
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /orgInformation` to retrieve detailed organization information, including headquarter location, geolocation, address, and contact details.
+  - Added `GET /orgInformation/lite` to retrieve minimal organization information.
+  - Added `GET /subscriptions` to retrieve information about the list of subscriptions enabled for your tenant. Subscriptions define the various features and levels of functionality that are available to your organization.
+
+#### ZIA End User Notification
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /eun` to retrieve information browser-based end user notification (EUN) configuration details.
+  - Added `PUT /eun` to update the browser-based end user notification (EUN) configuration details.
+
+#### ZIA Admin Audit Logs
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /auditlogEntryReport` to retrieve the status of a request for an audit log report.
+  - Added `POST /auditlogEntryReport` to create an audit log report for the specified time period and saves it as a CSV file.
+  - Added `DELETE /auditlogEntryReport` to cancel the request to create an audit log report.
+  - Added `GET /auditlogEntryReport/download` to download the most recently created audit log report.
+
+#### ZIA Extranets
+[PR #288](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /extranet` to retrieve the list of extranets configured for the organization
+  - Added `GET /extranet/lite` Retrieves the name-ID pairs of all extranets configured for an organization
+  - Added `GET /extranet/{Id}` Retrieves information about an extranet based on the specified ID.
+  - Added `POST /extranet` Adds a new extranet for the organization.
+  - Added `PUT /extranet/{Id}` Updates an extranet based on the specified ID
+  - Added `DELETE /extranet/{Id}` Deletes an extranet based on the specified ID
 
 # 2.74.0 (November 14, 2024)
 
 ## Notes
 - Golang: **v1.22**
+
+#### ZIA PAC Files
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following new ZIA API Endpoints:
+  - Added `GET /pacFiles` to Retrieves the list of all PAC files which are in deployed state.
+  - Added `GET /pacFiles/{pacId}/version` to Retrieves all versions of a PAC file based on the specified ID.
+  - Added `GET /pacFiles/{pacId}/version/{pacVersion}` to Retrieves a specific version of a PAC file based on the specified ID.
+  - Added `POST /pacFiles` to Adds a new custom PAC file.
+  - Added `DELETE /pacFiles/{pacId}` to Deletes an existing PAC file including all of its versions based on the specified ID.
+  - Added `PUT /pacFiles/{pacId}/version/{pacVersion}/action/{pacVersionAction}` to Performs the specified action on the PAC file version and updates the file status.
+  - Added `POST /pacFiles/validate` to send the PAC file content for validation and returns the validation result.
+  - Added `POST /pacFiles/{pacId}/version/{clonedPacVersion}` to Adds a new PAC file version by branching an existing version based on the specified ID.
 
 ### ZPA Additions
 
@@ -59,14 +218,14 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
 | `scimCloud`       | _(String)_ The ZPA SCIM Cloud for your ZPA Tenant.| `ZPA_SCIM_CLOUD` |
 
 #### ZPA SCIM API Endpoints
-[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
   - Added `GET /Groups` Fetch All Groups with pagination
   - Added `GET /Groups/{groupId}` Fetch a Group By ID
   - Added `POST /Groups` Create a new Group
   - Added `PUT /Groups/{groupId}` Update a new Group
   - Added `PATCH /Groups/{groupId}` Partially Update a Group
 
-[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints
+[PR #286](https://github.com/zscaler/zscaler-sdk-go/pull/286) - Added the following ZPA SCIM API Endpoints:
   - Added `GET /Users` Fetch All Users with pagination
   - Added `GET /Users/{userID}` Fetch a User By ID
   - Added `POST /Groups` Create a new User
@@ -87,6 +246,34 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
 
 
 # 2.731.0 (October 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Enhancements
+
+  - Zscaler Cloud Connector (ZCON)
+    - Added `GET /provUrl` endpoint to list provisioning templates.
+    - Added `GET /provUrl/{id}` endpoint to retrieve a specific provisioning template.
+    - Added `POST /provUrl` endpoint to create provisioning template.
+    - Added `PUT /provUrl/{id}` endpoint to update a specific provisioning template.
+    - Added `DELETE /provUrl/{id}` endpoint to delete a specific provisioning template.
+
+### Internal Changes
+
+[PR #281](https://github.com/zscaler/zscaler-sdk-go/pull/281) - Added new ZPA Attributes:
+  - Resource: `applicationsegment`
+    * `extranetEnabled`
+    * `apiProtectionEnabled`
+    * `zpnErId`
+
+  - Resource: `policysetcontrollerv1` and `policysetcontrollerv2`
+    * `disabled`
+    * `extranetEnabled`
+    * `extranetDTO`
+    * `privilegedPortalCapabilities`
+
+# 2.73.0 (October 30, 2024)
 
 ## Notes
 - Golang: **v1.22**
@@ -165,7 +352,7 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
   - `latitude` - (Number) The latitude coordinate of the GRE tunnel source.
   - `longitude` - (Number) The longitude coordinate of the GRE tunnel source.
   - `subcloud` - (String) The longitude coordinate of the GRE tunnel source.
-  
+
 # 2.72.0 (August 13, 2024)
 
 ## Notes
@@ -180,7 +367,7 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
 ### Bug Fixes
 
 [PR #270](https://github.com/zscaler/zscaler-sdk-go/pull/270) - Fixed `ports` attribute from `string` to `slice of intergers` in `locationmanagement`.
-  
+
 # 2.71.0 (August 11, 2024)
 
 ## Notes
@@ -261,7 +448,7 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
   - `cbibannercontroller`
   - `cbicertificatecontroller`
   - `cbiprofilecontroller`
-  
+
 # 2.61.9 (July 5, 2024)
 
 ## Notes
@@ -286,7 +473,7 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
   - `cbicertificatecontroller`
   - `cbiprofilecontroller`
   - `cbizpaprofile`
-  
+
 # 2.61.7 (July 2, 2024)
 
 ## Notes
@@ -334,13 +521,12 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
     - `enabled`
     - `applications` - If no specific applications are added here, then deep linking is applied to all of your applications.
 
-
 # 2.61.5 (July 2, 2024)
 
 ## Notes
 - Golang: **v1.21**
 
-### Enhancement
+### Bug Fixes
 
 - [PR #264](https://github.com/zscaler/zscaler-sdk-go/pull/264) - Fixed ZPA `policysetcontroller` and `policysetcontrollerv2` attributes `appConnectorGroups`, `serviceEdgeGroups`, `appServerGroups` by removing the `omitempty` tag
 
@@ -396,7 +582,7 @@ You can provide credentials via the `ZPA_SCIM_TOKEN`, `ZPA_IDP_ID`, `ZPA_SCIM_CL
 
 ### Documentation
 - [PR #259](https://github.com/zscaler/zscaler-sdk-go/pull/259) - Added several ZDX CLI based examples into the examples. [ZDX Examples](https://github.com/zscaler/zscaler-sdk-go/tree/master/examples/zdx). The results returned by the API are displayed in table format.
-  
+
 # 2.61.0 (June 14, 2024)
 
 ## Notes
@@ -516,7 +702,7 @@ To learn more about microtenants see: [About Microtenants](https://help.zscaler.
     * `filePassword`
 
 - [PR #247](https://github.com/zscaler/zscaler-sdk-go/pull/247) - Added getAppsByType endpoint - Get all configured `BROWSER_ACCESS`, `INSPECT`, `SECURE_REMOTE_ACCESS` application segments.
-    
+
 # 2.5.0 (May 6, 2024)
 
 ## Notes
@@ -573,7 +759,6 @@ To learn more about microtenants see: [About Microtenants](https://help.zscaler.
 - [PR #237](https://github.com/zscaler/zscaler-sdk-go/pull/237) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `CONSOLE` objectType
 - [PR #238](https://github.com/zscaler/zscaler-sdk-go/pull/238) - Fixed ZPA `ConvertV1ResponseToV2Request` due to missing `ZpnIsolationProfileID` attribute
 
-
 # 2.4.3 (March 13, 2024)
 
 ## Notes
@@ -604,7 +789,7 @@ To learn more about microtenants see: [About Microtenants](https://help.zscaler.
 # 2.4.0 (March 7, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### ZPA Additions
 
@@ -668,7 +853,7 @@ ment
 # 2.3.11 (February 28, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### Fixes
 
@@ -687,7 +872,7 @@ ment
 # 2.3.9 (February 12, 2024)
 
 ## Notes
-- Golang: **v1.19**
+- Golang: **v1.21**
 
 ### Fixes
 
@@ -785,11 +970,9 @@ ment
 ## Notes
 - Golang: **v1.19**
 
-### Fixes
+### Enhacements
 
 - [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added support to 🆕 ZIA Cloud Browser Isolation Profile endpoint ``/browserIsolation/profiles``
-
-- [PR #202](https://github.com/zscaler/zscaler-sdk-go/pull/202) Added `cbiProfile` feature to ZIA `url filtering policy` resource
 
 # 2.2.2 (December 10, 2023)
 
@@ -901,7 +1084,17 @@ ment
 
 - [PR #167](https://github.com/zscaler/zscaler-sdk-go/pull/167) Added ZPA LSS Config Controller `ResourceLHSRHSValue` to allow for more granular SIEM policy configuration.
 
-# 2.1.0 (September 14, 2023)
+# 2.1.0 (September 22, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #166](https://github.com/zscaler/zscaler-sdk-go/pull/166) Added new ZIA Firewall attribute ``excludeSrcCountries``
+- [PR #166](https://github.com/zscaler/zscaler-sdk-go/pull/166) Added support documents and updated README page.
+
+# 2.1.0-beta (September 14, 2023)
 
 ## Notes
 - Golang: **v1.19**

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,10 +11,10 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/applications"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
 
 type AppScore struct {
@@ -26,13 +27,31 @@ type AppScore struct {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
 
 	// Prompt for application ID
 	fmt.Print("Enter application ID: ")
@@ -79,14 +98,6 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	appService := services.New(cli)
-
 	// Define filters
 	filters := common.GetFromToFilters{
 		From: int(fromTime),
@@ -94,7 +105,7 @@ func main() {
 	}
 
 	// Get app scores
-	scoresList, _, err := applications.GetAppScores(appService, appID, filters)
+	scoresList, _, err := applications.GetAppScores(ctx, service, appID, filters)
 	if err != nil {
 		log.Fatalf("[ERROR] getting app scores failed: %v\n", err)
 	}
