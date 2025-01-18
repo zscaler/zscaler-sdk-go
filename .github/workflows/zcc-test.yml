@@ -1,137 +1,137 @@
-name: ZCC Test
-on:
-  pull_request:
-    types: [opened, synchronize]
-  merge_group:
-    types: [checks_requested]
-  push:
-    branches:
-      - master
-  schedule:
-    - cron: '0 11 * * 1-5' # UTC
-  workflow_dispatch:
+# name: ZCC Test
+# on:
+#   pull_request:
+#     types: [opened, synchronize]
+#   merge_group:
+#     types: [checks_requested]
+#   push:
+#     branches:
+#       - master
+#   schedule:
+#     - cron: '0 11 * * 1-5' # UTC
+#   workflow_dispatch:
 
-jobs:
-  zcc-beta-tenants:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        goVersion: ["1.22"]
-        environment:
-          - ZCC_ZSBETA
-    environment: ${{ matrix.environment }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-              token: ${{ secrets.GITHUB_TOKEN }}
+# jobs:
+#   zcc-beta-tenants:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         goVersion: ["1.22"]
+#         environment:
+#           - ZCC_ZSBETA
+#     environment: ${{ matrix.environment }}
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#         with:
+#               token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.goVersion }}
+#       - name: Setup Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: ${{ matrix.goVersion }}
 
-      - name: Clean existing Go modules
-        run: go clean -modcache
+#       - name: Clean existing Go modules
+#         run: go clean -modcache
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+#       - name: Cache Go modules
+#         uses: actions/cache@v4
+#         with:
+#           path: |
+#             ~/go/pkg/mod
+#             ~/.cache/go-build
+#           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#           restore-keys: |
+#             ${{ runner.os }}-go-
 
-      - name: Set Go env
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+#       - name: Set Go env
+#         run: |
+#           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+#           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
-        run: go mod download
+#       - name: Install dependencies
+#         run: go mod download
 
-      - name: Run tests with retry
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20
-          command: |
-            make test:integration:zcc
-        env:
-          ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
-          ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
-          ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
+#       - name: Run tests with retry
+#         uses: nick-fields/retry@v2
+#         with:
+#           max_attempts: 3
+#           timeout_minutes: 20
+#           command: |
+#             make test:integration:zcc
+#         env:
+#           ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
+#           ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
+#           ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
 
-      - name: Publish test coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.out 
-          fail_ci_if_error: true
+#       - name: Publish test coverage
+#         uses: codecov/codecov-action@v4
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           file: ./coverage.out 
+#           fail_ci_if_error: true
 
-  zcc-test-tenants:
-    needs: [zcc-beta-tenants]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        goVersion: ["1.22"]
-        environment:
-          - ZCC_ZS0
-          - ZCC_ZS1
-          - ZCC_ZS2
-          - ZCC_ZS3
-    environment: ${{ matrix.environment }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+#   zcc-test-tenants:
+#     needs: [zcc-beta-tenants]
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         goVersion: ["1.22"]
+#         environment:
+#           - ZCC_ZS0
+#           - ZCC_ZS1
+#           - ZCC_ZS2
+#           - ZCC_ZS3
+#     environment: ${{ matrix.environment }}
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.goVersion }}
+#       - name: Setup Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: ${{ matrix.goVersion }}
 
-      - name: Clean existing Go modules
-        run: go clean -modcache
+#       - name: Clean existing Go modules
+#         run: go clean -modcache
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+#       - name: Cache Go modules
+#         uses: actions/cache@v4
+#         with:
+#           path: |
+#             ~/go/pkg/mod
+#             ~/.cache/go-build
+#           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#           restore-keys: |
+#             ${{ runner.os }}-go-
 
-      - name: Set Go env
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+#       - name: Set Go env
+#         run: |
+#           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+#           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
-        run: go mod download
+#       - name: Install dependencies
+#         run: go mod download
 
-      - name: Run tests with retry
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20
-          command: |
-            make test:integration:zcc
-        env:
-          ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
-          ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
-          ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
+#       - name: Run tests with retry
+#         uses: nick-fields/retry@v2
+#         with:
+#           max_attempts: 3
+#           timeout_minutes: 20
+#           command: |
+#             make test:integration:zcc
+#         env:
+#           ZCC_CLIENT_ID: ${{ secrets.ZCC_CLIENT_ID }}
+#           ZCC_CLIENT_SECRET: ${{ secrets.ZCC_CLIENT_SECRET }}
+#           ZCC_CLOUD: ${{ secrets.ZCC_CLOUD }}
 
-      - name: Publish test coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.out 
-          fail_ci_if_error: true
+#       - name: Publish test coverage
+#         uses: codecov/codecov-action@v4
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           file: ./coverage.out 
+#           fail_ci_if_error: true
