@@ -98,7 +98,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	fmt.Print("Enter start time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
 	fromInput := readInput(reader)
 	if fromInput != "" {
-		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
+		parsedFrom, err := strconv.ParseInt(fromInput, 10, 32)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
@@ -108,7 +108,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to now): ")
 	toInput := readInput(reader)
 	if toInput != "" {
-		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
+		parsedTo, err := strconv.ParseInt(toInput, 10, 32)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
