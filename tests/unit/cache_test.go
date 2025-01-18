@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/stretchr/testify/assert"
-	"github.com/zscaler/zscaler-sdk-go/v2/cache"
 )
 
 func Test_cache_key_can_be_created_from_request_object(t *testing.T) {
