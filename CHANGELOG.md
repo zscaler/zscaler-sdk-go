@@ -6,7 +6,7 @@
 - Golang: **v1.22**
 
 ### ZIA SSL Inspection Rules
-[PR #293](https://github.com/zscaler/zscaler-sdk-go/pull/293) - Added the following new ZIA API Endpoints:
+[PR #295](https://github.com/zscaler/zscaler-sdk-go/pull/295) - Added the following new ZIA API Endpoints:
     - Added `GET /sslInspectionRules` Retrieves all SSL inspection rules.
     - Added `GET /sslInspectionRules/{ruleId}` Retrieves the SSL inspection rule based on the specified ID
     - Added `POST /sslInspectionRules` Creates a new SSL inspection rule

@@ -71,6 +71,7 @@ jobs:
           ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
           ZSCALER_VANITY_DOMAIN: ${{ secrets.ZSCALER_VANITY_DOMAIN }}
           ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
+          ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
           ZSCALER_SANDBOX_TOKEN: ${{ secrets.ZSCALER_SANDBOX_TOKEN }}
           ZSCALER_SANDBOX_CLOUD: ${{ secrets.ZSCALER_SANDBOX_CLOUD }}
 
