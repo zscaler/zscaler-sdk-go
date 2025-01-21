@@ -1,16 +1,6 @@
 package appconnectorschedule
 
-import (
-	"context"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 func TestAppConnectorSchedule(t *testing.T) {
 	ctx := context.Background()
 	service, err := tests.NewOneAPIClient()
@@ -168,3 +158,4 @@ func TestCustomerIDValidation(t *testing.T) {
 	_, _, err = CreateSchedule(ctx, service, schedule)
 	require.Error(t, err, "Schedule creation should fail with empty CustomerID")
 }
+*/

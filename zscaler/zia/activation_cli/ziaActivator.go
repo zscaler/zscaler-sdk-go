@@ -32,7 +32,7 @@ func main() {
 		zscaler.WithClientSecret(clientSecret),
 		zscaler.WithVanityDomain(vanityDomain),
 		zscaler.WithZscalerCloud(zscalerCloud), // Optional, can be an empty string if not set
-		zscaler.WithUserAgentExtra("zscaler-sdk-go"),
+		zscaler.WithUserAgentExtra(""),
 	)
 	if err != nil {
 		log.Fatalf("[ERROR] Failed creating ZIA configuration: %v\n", err)
@@ -46,7 +46,7 @@ func main() {
 
 	// Call the activation API using the instantiated client
 	resp, err := activation.CreateActivation(context.Background(), cli, activation.Activation{
-		Status: "active",
+		Status: "ACTIVE",
 	})
 	if err != nil {
 		log.Printf("[ERROR] Activation Failed: %v\n", err)

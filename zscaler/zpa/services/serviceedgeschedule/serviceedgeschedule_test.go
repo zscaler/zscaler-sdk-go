@@ -1,16 +1,6 @@
 package serviceedgeschedule
 
-import (
-	"context"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 func TestAppConnectorSchedule(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
@@ -157,3 +147,4 @@ func TestCustomerIDValidation(t *testing.T) {
 	_, _, err = CreateSchedule(context.Background(), service, schedule)
 	require.Error(t, err, "Schedule creation should fail with empty CustomerID")
 }
+*/

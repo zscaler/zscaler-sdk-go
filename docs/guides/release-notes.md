@@ -13,11 +13,23 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.0.0``
+``Last updated: v3.1.0``
 
 ---
 
 # Changelog
+
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA SSL Inspection Rules
+[PR #295](https://github.com/zscaler/zscaler-sdk-go/pull/295) - Added the following new ZIA API Endpoints:
+    - Added `GET /sslInspectionRules` Retrieves all SSL inspection rules.
+    - Added `GET /sslInspectionRules/{ruleId}` Retrieves the SSL inspection rule based on the specified ID
+    - Added `POST /sslInspectionRules` Creates a new SSL inspection rule
+    - Added `PUT /sslInspectionRules/{ruleId}` Updates the SSL inspection rule based on the specified ID
+    - Added `DELETE /sslInspectionRules/{ruleId}` Deletes an existing SSL inspection rule based on the specified ID
 
 # 3.0.0 (January 20, 2025) - BREAKING CHANGES
 
