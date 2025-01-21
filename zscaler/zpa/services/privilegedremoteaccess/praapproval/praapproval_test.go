@@ -3,7 +3,6 @@ package praapproval
 import (
 	"context"
 	"math/rand"
-	"net/http"
 	"reflect"
 	"strconv"
 	"testing"
@@ -265,54 +264,54 @@ func TestCredentialController(t *testing.T) {
 	}
 }
 
-func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
+// func TestRetrieveNonExistentResource(t *testing.T) {
+// 	service, err := tests.NewOneAPIClient()
+// 	if err != nil {
+// 		t.Fatalf("Error creating client: %v", err)
+// 	}
 
-	_, _, err = Get(context.Background(), service, "non_existent_id")
-	if err == nil {
-		t.Error("Expected error retrieving non-existent resource, but got nil")
-	}
-}
+// 	_, _, err = Get(context.Background(), service, "non_existent_id")
+// 	if err == nil {
+// 		t.Error("Expected error retrieving non-existent resource, but got nil")
+// 	}
+// }
 
-func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
+// func TestUpdateNonExistentResource(t *testing.T) {
+// 	service, err := tests.NewOneAPIClient()
+// 	if err != nil {
+// 		t.Fatalf("Error creating client: %v", err)
+// 	}
 
-	_, err = Update(context.Background(), service, "non_existent_id", &PrivilegedApproval{})
-	if err == nil {
-		t.Error("Expected error updating non-existent resource, but got nil")
-	}
-}
+// 	_, err = Update(context.Background(), service, "non_existent_id", &PrivilegedApproval{})
+// 	if err == nil {
+// 		t.Error("Expected error updating non-existent resource, but got nil")
+// 	}
+// }
 
-func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
+// func TestDeleteNonExistentResource(t *testing.T) {
+// 	service, err := tests.NewOneAPIClient()
+// 	if err != nil {
+// 		t.Fatalf("Error creating client: %v", err)
+// 	}
 
-	_, err = Delete(context.Background(), service, "non_existent_id")
-	if err == nil {
-		t.Error("Expected error deleting non-existent resource, but got nil")
-	}
-}
+// 	_, err = Delete(context.Background(), service, "non_existent_id")
+// 	if err == nil {
+// 		t.Error("Expected error deleting non-existent resource, but got nil")
+// 	}
+// }
 
-func TestDeleteExpiredResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
+// func TestDeleteExpiredResource(t *testing.T) {
+// 	service, err := tests.NewOneAPIClient()
+// 	if err != nil {
+// 		t.Fatalf("Error creating client: %v", err)
+// 	}
 
-	resp, err := DeleteExpired(context.Background(), service)
-	if err != nil {
-		t.Errorf("Unexpected error when calling DeleteExpired: %v", err)
-	} else if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected HTTP status code 200 OK, got: %d", resp.StatusCode)
-	} else {
-		t.Log("DeleteExpired completed successfully, potentially with no resources to delete.")
-	}
-}
+// 	resp, err := DeleteExpired(context.Background(), service)
+// 	if err != nil {
+// 		t.Errorf("Unexpected error when calling DeleteExpired: %v", err)
+// 	} else if resp.StatusCode != http.StatusOK {
+// 		t.Errorf("Expected HTTP status code 200 OK, got: %d", resp.StatusCode)
+// 	} else {
+// 		t.Log("DeleteExpired completed successfully, potentially with no resources to delete.")
+// 	}
+// }

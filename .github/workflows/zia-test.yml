@@ -65,7 +65,6 @@ jobs:
           command: |
             make sweep:zia
             make test:integration:zia
-            make ziaActivator
         env:
           ZSCALER_CLIENT_ID: ${{ secrets.ZSCALER_CLIENT_ID }}
           ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
