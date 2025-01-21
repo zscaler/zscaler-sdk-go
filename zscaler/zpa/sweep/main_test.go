@@ -3,8 +3,10 @@ package sweep
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"reflect"
 	"runtime"
@@ -26,6 +28,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/lssconfigcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/policysetcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praapproval"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praconsole"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredential"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praportal"
@@ -78,7 +81,7 @@ func sweep() error {
 
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zscaler.Client) error{
-		// sweepPrivilegedApproval,
+		sweepPrivilegedApproval,
 		sweepApplicationSegment,
 		sweepSegmentGroup,
 		sweepServerGroup,
@@ -536,7 +539,6 @@ func sweepPRAPortal(client *zscaler.Client) error {
 	return nil
 }
 
-/*
 func sweepPrivilegedApproval(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
 
@@ -563,4 +565,3 @@ func sweepPrivilegedApproval(client *zscaler.Client) error {
 	log.Printf("[INFO] Successfully deleted all privileged approvals")
 	return nil
 }
-*/

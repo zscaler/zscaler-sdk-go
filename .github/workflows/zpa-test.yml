@@ -68,6 +68,7 @@ jobs:
           ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
           ZSCALER_VANITY_DOMAIN: ${{ secrets.ZSCALER_VANITY_DOMAIN }}
           ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZSCALER_SDK_LOG: ${{ secrets.ZSCALER_SDK_LOG }}
           ZSCALER_SDK_VERBOSE: ${{ secrets.ZSCALER_SDK_VERBOSE }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
