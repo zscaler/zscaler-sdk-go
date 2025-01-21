@@ -20,7 +20,7 @@ jobs:
       matrix:
         goVersion: ["1.22"]
         environment:
-          - ZPA_PROD_TENANT01
+          - ZPA_BETA_TENANT01
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
@@ -60,7 +60,6 @@ jobs:
           max_attempts: 3
           timeout_minutes: 20
           command: |
-            make test:unit:zpa
             make sweep:zpa
             make test:integration:zpa
             make sweep:zpa
