@@ -22,13 +22,13 @@ type SSLInspectionRules struct {
 	// The name of the SSL Inspection rule
 	Name string `json:"name,omitempty"`
 
-	// Additional information about the Sandbox rule
+	// Additional information about the SSL Inspection rule
 	Description string `json:"description,omitempty"`
 
-	// The action taken when traffic matches the DLP policy rule criteria.
+	// The action taken when traffic matches the SSL Inspection rule criteria.
 	Action Action `json:"action,omitempty"`
 
-	// Enables or disables the DLP policy rule.
+	// Enables or disables the SSL Inspection rule.
 	State string `json:"state,omitempty"`
 
 	// Access privilege to this rule based on the admin's RBA
