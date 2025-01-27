@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.1.1 (January 27, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #296](https://github.com/zscaler/zscaler-sdk-go/pull/296) - Fixed ZIA Rate limit override issue to prevent inadivertant panic.
+
 # 3.1.0 (January 20, 2025)
 
 ## Notes
