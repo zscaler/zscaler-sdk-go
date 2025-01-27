@@ -13,12 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.0``
+``Last updated: v3.1.1``
 
 ---
 
 # Changelog
 
+# 3.1.1 (January 27, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #296](https://github.com/zscaler/zscaler-sdk-go/pull/296) - Fixed ZIA Rate limit override issue to prevent inadivertant panic.
 
 ## Notes
 - Golang: **v1.22**
