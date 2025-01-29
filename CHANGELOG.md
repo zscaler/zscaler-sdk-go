@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.1.2 (January 28, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #297](https://github.com/zscaler/zscaler-sdk-go/pull/297) - Fixed ZIA SSL Inspection Proxy Gateway attribute.
+
 # 3.1.1 (January 27, 2025)
 
 ## Notes

@@ -95,7 +95,7 @@ type SSLInspectionRules struct {
 
 	// The proxy chaining gateway for which this rule is applicable.
 	// Ignore if the forwarding method is not Proxy Chaining.
-	ProxyGateways []common.IDNameExtensions `json:"proxyGateways,omitempty"`
+	ProxyGateways []common.IDName `json:"proxyGateways,omitempty"`
 
 	// Name-ID pairs of rule labels associated with the rule
 	Labels []common.IDNameExtensions `json:"labels,omitempty"`
