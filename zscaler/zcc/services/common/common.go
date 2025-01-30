@@ -58,6 +58,55 @@ func queryParamsToURLValues(params interface{}) (url.Values, error) {
 	return values, nil
 }
 
+// func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, queryParams interface{}, pageSize int) ([]T, error) {
+// 	pagination := NewPagination(pageSize)
+// 	var allResults []T
+// 	page := 1
+
+// 	for {
+// 		var pageResults []T
+
+// 		// Update the query parameters with pagination details
+// 		q := url.Values{}
+// 		if queryParams != nil {
+// 			// Convert queryParams to URL values if needed
+// 			queryString, err := queryParamsToURLValues(queryParams)
+// 			if err != nil {
+// 				return nil, fmt.Errorf("failed to parse query params: %w", err)
+// 			}
+// 			q = queryString
+// 		}
+
+// 		// Add pagination parameters
+// 		q.Set("pageSize", fmt.Sprintf("%d", pagination.PageSize))
+// 		q.Set("page", fmt.Sprintf("%d", page))
+
+// 		// Include the optional `search` parameter if present in queryParams
+// 		if searchValue, ok := queryParams.(map[string]interface{})["search"]; ok {
+// 			q.Set("search", fmt.Sprintf("%v", searchValue))
+// 		}
+
+// 		// Build the final endpoint URL
+// 		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
+
+// 		// Fetch the current page
+// 		_, err := client.NewRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		allResults = append(allResults, pageResults...)
+
+// 		// Break if the number of results is less than the page size (last page)
+// 		if len(pageResults) < pagination.PageSize {
+// 			break
+// 		}
+// 		page++
+// 	}
+
+// 	return allResults, nil
+// }
+
 func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, queryParams interface{}, pageSize int) ([]T, error) {
 	pagination := NewPagination(pageSize)
 	var allResults []T
@@ -66,10 +115,9 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 	for {
 		var pageResults []T
 
-		// Update the query parameters with pagination details
 		q := url.Values{}
 		if queryParams != nil {
-			// Convert queryParams to URL values if needed
+			// Safely convert struct -> url.Values
 			queryString, err := queryParamsToURLValues(queryParams)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse query params: %w", err)
@@ -77,27 +125,21 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 			q = queryString
 		}
 
-		// Add pagination parameters
 		q.Set("pageSize", fmt.Sprintf("%d", pagination.PageSize))
 		q.Set("page", fmt.Sprintf("%d", page))
 
-		// Include the optional `search` parameter if present in queryParams
-		if searchValue, ok := queryParams.(map[string]interface{})["search"]; ok {
-			q.Set("search", fmt.Sprintf("%v", searchValue))
-		}
+		// The old map[string]interface{} check can be removed
+		// since we rely on queryParamsToURLValues to handle "search" or any extra fields.
 
-		// Build the final endpoint URL
 		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
 
-		// Fetch the current page
-		_, err := client.NewRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
+		_, err := client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
 		if err != nil {
 			return nil, err
 		}
 
 		allResults = append(allResults, pageResults...)
 
-		// Break if the number of results is less than the page size (last page)
 		if len(pageResults) < pagination.PageSize {
 			break
 		}

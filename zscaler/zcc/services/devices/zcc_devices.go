@@ -51,6 +51,8 @@ type GetDevices struct {
 type GetDevicesQueryParams struct {
 	Username string `url:"username,omitempty"`
 	OsType   string `url:"osType,omitempty"`
+	Page     int    `url:"page,omitempty"`
+	PageSize int    `url:"pageSize,omitempty"`
 }
 
 type DeviceCleanupInfo struct {
