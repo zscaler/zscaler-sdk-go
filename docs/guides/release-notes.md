@@ -17,10 +17,14 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-# 3.1.3 (January 30, 2025)
+# 3.1.3 (February 5, 2025)
 
 ## Notes
 - Golang: **v1.22**
+
+### ZIA SSL Inspection Rules
+[PR #301](https://github.com/zscaler/zscaler-sdk-go/pull/301) - Added the following new ZIA API Endpoints:
+    - Added `POST /exportPolicies` Exports the rules configured for the specified policy types to JSON files.
 
 ### Bug Fixes
 
