@@ -5,8 +5,11 @@
 ## Notes
 - Golang: **v1.22**
 
-### ZIA Policy Export
+### Bug Fixes
 [PR #302](https://github.com/zscaler/zscaler-sdk-go/pull/302) - Implemented fix on the legacy API clients for `ZCC`, `ZIA` and `ZPA` to prevent rate limit override after client instantiation.
+
+### Internal Changes
+[PR #302](https://github.com/zscaler/zscaler-sdk-go/pull/302) - Updated SDK Header version to `v3.1.4`
 
 # 3.1.3 (February 5, 2025)
 
