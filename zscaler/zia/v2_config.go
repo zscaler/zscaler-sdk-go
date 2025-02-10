@@ -445,8 +445,8 @@ func setHttpClients(cfg *Configuration) {
 		// log.Printf("[DEBUG] ZIA HTTP client initialized successfully.")
 	}
 
-	// Configure the generic HTTP client
-	cfg.HTTPClient = getHTTPClient(log, nil, cfg)
+	// Remove the call that overwrote the ZIA client:
+	// cfg.HTTPClient = getHTTPClient(log, nil, cfg)
 	if cfg.HTTPClient == nil {
 		log.Printf("[ERROR] Failed to initialize generic HTTP client.")
 	} else {

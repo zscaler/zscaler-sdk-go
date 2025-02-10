@@ -1,11 +1,19 @@
 # Changelog
 
+# 3.1.4 (February 10, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA Policy Export
+[PR #302](https://github.com/zscaler/zscaler-sdk-go/pull/302) - Implemented fix on the legacy API clients for `ZCC`, `ZIA` and `ZPA` to prevent rate limit override after client instantiation.
+
 # 3.1.3 (February 5, 2025)
 
 ## Notes
 - Golang: **v1.22**
 
-### ZIA SSL Inspection Rules
+### ZIA Policy Export
 [PR #301](https://github.com/zscaler/zscaler-sdk-go/pull/301) - Added the following new ZIA API Endpoints:
     - Added `POST /exportPolicies` Exports the rules configured for the specified policy types to JSON files.
 
