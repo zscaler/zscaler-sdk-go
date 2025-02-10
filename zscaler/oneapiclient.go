@@ -123,7 +123,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg := &Configuration{
 		DefaultHeader: make(map[string]string),
 		Logger:        logger,
-		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.1.4", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		Debug:         false,
 		Context:       context.Background(), // Set default context
 	}

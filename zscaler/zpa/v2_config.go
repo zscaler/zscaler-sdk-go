@@ -31,7 +31,7 @@ const (
 )
 
 const (
-	VERSION           = "3.0.0"
+	VERSION           = "3.1.4"
 	ZPA_CLIENT_ID     = "ZPA_CLIENT_ID"
 	ZPA_CLIENT_SECRET = "ZPA_CLIENT_SECRET"
 	ZPA_CUSTOMER_ID   = "ZPA_CUSTOMER_ID"
@@ -405,8 +405,8 @@ func setHttpClients(cfg *Configuration) {
 		// log.Printf("[DEBUG] ZPA HTTP client initialized successfully.")
 	}
 
-	// Configure the generic HTTP client
-	cfg.HTTPClient = getHTTPClient(log, nil, cfg)
+	// Remove the call that overwrote the ZPA client:
+	// cfg.HTTPClient = getHTTPClient(log, nil, cfg)
 	if cfg.HTTPClient == nil {
 		log.Printf("[ERROR] Failed to initialize generic HTTP client.")
 	} else {

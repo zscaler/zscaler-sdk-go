@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.3``
+``Last updated: v3.1.4``
 
 ---
+
+# 3.1.4 (February 10, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### ZIA Policy Export
+[PR #302](https://github.com/zscaler/zscaler-sdk-go/pull/302) - Implemented fix on the legacy API clients for `ZCC`, `ZIA` and `ZPA` to prevent rate limit override after client instantiation.
 
 # 3.1.3 (February 5, 2025)
 

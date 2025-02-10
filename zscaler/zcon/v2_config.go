@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	VERSION       = "3.0.0"
+	VERSION       = "3.1.4"
 	ZCON_USERNAME = "ZCON_USERNAME"
 	ZCON_PASSWORD = "ZCON_PASSWORD"
 	ZCON_API_KEY  = "ZCON_API_KEY"
