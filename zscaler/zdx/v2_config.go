@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	VERSION        = "3.0.0"
+	VERSION        = "3.1.4"
 	ZDX_API_KEY_ID = "ZDX_API_KEY_ID"
 	ZDX_API_SECRET = "ZDX_API_SECRET"
 )

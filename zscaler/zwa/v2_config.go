@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	VERSION        = "3.0.0"
+	VERSION        = "3.1.4"
 	ZWA_API_KEY_ID = "ZWA_API_KEY_ID"
 	ZWA_API_SECRET = "ZWA_API_SECRET"
 )
