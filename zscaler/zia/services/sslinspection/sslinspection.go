@@ -228,44 +228,64 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]SSLInspectionRules
 }
 
 func validateSSLInspectionRule(rule *SSLInspectionRules) error {
-	// Quick nil-check just in case
+	// Quick nil-check
 	if rule == nil {
 		return fmt.Errorf("rule cannot be nil")
 	}
 
-	// 1. DO_NOT_DECRYPT + showEUN => ocspCheck cannot be true (and vice versa)
-	// if rule.Action.Type == "DO_NOT_DECRYPT" {
-	// 	if rule.Action.ShowEUN && rule.Action.DoNotDecryptSubActions.OcspCheck {
-	// 		return fmt.Errorf(
-	// 			"OCSPCheck cannot be true when action.type is 'DO_NOT_DECRYPT' and action.showEUN is true (and vice versa)",
-	// 		)
-	// 	}
-	// }
-
-	// 2. DO_NOT_DECRYPT + bypassOtherPolicies => no sub-fields can be set
-	if rule.Action.Type == "DO_NOT_DECRYPT" && rule.Action.DoNotDecryptSubActions.BypassOtherPolicies {
-		// Check that decryptSubActions is basically empty
-		if rule.Action.DecryptSubActions != (&DecryptSubActions{}) {
-			return fmt.Errorf(
-				"when action.type is 'DO_NOT_DECRYPT' and bypassOtherPolicies is true, decryptSubActions must not be set",
-			)
+	// Validate based on action type
+	switch rule.Action.Type {
+	case "DECRYPT":
+		// Ensure decryptSubActions is set and not empty
+		if rule.Action.DecryptSubActions == nil {
+			return fmt.Errorf("when action.type is 'DECRYPT', decryptSubActions block must be set")
 		}
-		// Check that the *other* doNotDecryptSubActions fields are empty (besides bypassOtherPolicies itself)
-		if rule.Action.DoNotDecryptSubActions.ServerCertificates != "" ||
-			rule.Action.DoNotDecryptSubActions.OcspCheck ||
-			rule.Action.DoNotDecryptSubActions.BlockSslTrafficWithNoSniEnabled ||
-			rule.Action.DoNotDecryptSubActions.MinTLSVersion != "" {
-			return fmt.Errorf(
-				"when action.type is 'DO_NOT_DECRYPT' and bypassOtherPolicies is true, none of the doNotDecryptSubActions fields (except bypassOtherPolicies) can be set",
-			)
-		}
-	}
 
-	// 3. DECRYPT => showEUN cannot be set
-	if rule.Action.Type == "DECRYPT" && rule.Action.ShowEUN {
-		return fmt.Errorf(
-			"when action.type is 'DECRYPT', action.showEUN cannot be set (must be false)",
-		)
+		// Ensure all required fields in decryptSubActions are set
+		if rule.Action.DecryptSubActions.ServerCertificates == "" ||
+			rule.Action.DecryptSubActions.MinClientTLSVersion == "" ||
+			rule.Action.DecryptSubActions.MinServerTLSVersion == "" {
+			return fmt.Errorf("when action.type is 'DECRYPT', all required fields in decryptSubActions must be set")
+		}
+
+		if !rule.Action.OverrideDefaultCertificate && rule.Action.SSLInterceptionCert != nil {
+			return fmt.Errorf("when action.type is 'DECRYPT' and overrideDefaultCertificate is false, sslInterceptionCert cannot be set")
+		}
+
+	case "DO_NOT_DECRYPT":
+		// Ensure doNotDecryptSubActions is set and not empty
+		if rule.Action.DoNotDecryptSubActions == nil {
+			return fmt.Errorf("when action.type is 'DO_NOT_DECRYPT', doNotDecryptSubActions block must be set")
+		}
+
+		// If bypassOtherPolicies is true, serverCertificates and minTLSVersion cannot be set
+		if rule.Action.DoNotDecryptSubActions.BypassOtherPolicies {
+			if rule.Action.DoNotDecryptSubActions.ServerCertificates != "" ||
+				rule.Action.DoNotDecryptSubActions.MinTLSVersion != "" {
+				return fmt.Errorf("when action.type is 'DO_NOT_DECRYPT' and bypassOtherPolicies is true, serverCertificates and minTLSVersion cannot be set")
+			}
+		} else {
+			// If bypassOtherPolicies is false, ensure serverCertificates and minTLSVersion are set
+			if rule.Action.DoNotDecryptSubActions.ServerCertificates == "" ||
+				rule.Action.DoNotDecryptSubActions.MinTLSVersion == "" {
+				return fmt.Errorf("when action.type is 'DO_NOT_DECRYPT' and bypassOtherPolicies is false, serverCertificates and minTLSVersion must be set")
+			}
+		}
+
+	case "BLOCK":
+		// Ensure decryptSubActions and doNotDecryptSubActions are not set
+		if rule.Action.DecryptSubActions != nil || rule.Action.DoNotDecryptSubActions != nil {
+			return fmt.Errorf("when action.type is 'BLOCK', neither decryptSubActions nor doNotDecryptSubActions can be set")
+		}
+
+		// When action.type is BLOCK and overrideDefaultCertificate is false,
+		// sslInterceptionCert cannot be set
+		if !rule.Action.OverrideDefaultCertificate && rule.Action.SSLInterceptionCert != nil {
+			return fmt.Errorf("when action.type is 'BLOCK' and overrideDefaultCertificate is false, sslInterceptionCert cannot be set")
+		}
+
+	default:
+		return fmt.Errorf("invalid action type: %s", rule.Action.Type)
 	}
 
 	return nil
