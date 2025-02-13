@@ -227,6 +227,7 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]SSLInspectionRules
 	return rules, err
 }
 
+// validateSSLInspectionRule checks that the provided rule adheres to the business logic.
 func validateSSLInspectionRule(rule *SSLInspectionRules) error {
 	// Quick nil-check
 	if rule == nil {
@@ -250,6 +251,11 @@ func validateSSLInspectionRule(rule *SSLInspectionRules) error {
 
 		if !rule.Action.OverrideDefaultCertificate && rule.Action.SSLInterceptionCert != nil {
 			return fmt.Errorf("when action.type is 'DECRYPT' and overrideDefaultCertificate is false, sslInterceptionCert cannot be set")
+		}
+
+		// Ensure showEUN and showEUNATP are not set
+		if rule.Action.ShowEUN || rule.Action.ShowEUNATP {
+			return fmt.Errorf("when action.type is 'DECRYPT', neither showEUN nor showEUNATP can be set")
 		}
 
 	case "DO_NOT_DECRYPT":
@@ -282,6 +288,11 @@ func validateSSLInspectionRule(rule *SSLInspectionRules) error {
 		// sslInterceptionCert cannot be set
 		if !rule.Action.OverrideDefaultCertificate && rule.Action.SSLInterceptionCert != nil {
 			return fmt.Errorf("when action.type is 'BLOCK' and overrideDefaultCertificate is false, sslInterceptionCert cannot be set")
+		}
+
+		// Ensure showEUNATP is not set
+		if rule.Action.ShowEUNATP {
+			return fmt.Errorf("when action.type is 'BLOCK', showEUNATP cannot be set")
 		}
 
 	default:
