@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.1.5 (February 12, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #304](https://github.com/zscaler/zscaler-sdk-go/pull/304) - Fixed ZIA `ssl_inspection` validation options.
+
 # 3.1.4 (February 10, 2025)
 
 ## Notes
