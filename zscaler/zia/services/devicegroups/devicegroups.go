@@ -128,7 +128,7 @@ func GetDevicesByID(ctx context.Context, service *zscaler.Service, deviceID int)
 func GetDevicesByName(ctx context.Context, service *zscaler.Service, deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
+	err := common.ReadAllPages(ctx, service.Client, (devicesEndpoint), &devices)
 	if err != nil {
 		return nil, err
 	}

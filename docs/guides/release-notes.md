@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.5``
+``Last updated: v3.1.6``
 
 ---
+
+# 3.1.6 (February 14, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #305](https://github.com/zscaler/zscaler-sdk-go/pull/305) - Fixed ZIA device management function `GetDevicesByName` pagination, by removing duplicated pagination parameters.
 
 # 3.1.5 (February 12, 2025)
 

@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.1.6 (February 14, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #305](https://github.com/zscaler/zscaler-sdk-go/pull/305) - Fixed ZIA device management function `GetDevicesByName` pagination, by removing duplicated pagination parameters.
+
 # 3.1.5 (February 12, 2025)
 
 ## Notes
