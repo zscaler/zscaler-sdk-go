@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.1.7 (March 5, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #308](https://github.com/zscaler/zscaler-sdk-go/pull/308) - Fixed ZPA `customerversionprofile` resource with new attributes
+
 # 3.1.6 (February 14, 2025)
 
 ## Notes

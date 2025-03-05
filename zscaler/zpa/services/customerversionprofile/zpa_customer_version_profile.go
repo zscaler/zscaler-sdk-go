@@ -16,24 +16,32 @@ const (
 )
 
 type CustomerVersionProfile struct {
-	CreationTime                  string                        `json:"creationTime,omitempty"`
-	CustomScopeCustomerIDs        []CustomScopeCustomerIDs      `json:"customScopeCustomerIds"`
-	CustomScopeRequestCustomerIDs CustomScopeRequestCustomerIDs `json:"customScopeRequestCustomerIds"`
-	CustomerID                    string                        `json:"customerId"`
-	Description                   string                        `json:"description"`
-	ID                            string                        `json:"id,omitempty"`
-	ModifiedBy                    string                        `json:"modifiedBy"`
-	ModifiedTime                  string                        `json:"modifiedTime"`
-	Name                          string                        `json:"name"`
-	UpgradePriority               string                        `json:"upgradePriority"`
-	Versions                      []Versions                    `json:"versions"`
-	VisibilityScope               string                        `json:"visibilityScope"`
+	CreationTime                   string                        `json:"creationTime,omitempty"`
+	CustomScopeCustomerIDs         []CustomScopeCustomerIDs      `json:"customScopeCustomerIds"`
+	CustomScopeRequestCustomerIDs  CustomScopeRequestCustomerIDs `json:"customScopeRequestCustomerIds"`
+	CustomerID                     string                        `json:"customerId"`
+	Description                    string                        `json:"description"`
+	ID                             string                        `json:"id,omitempty"`
+	ModifiedBy                     string                        `json:"modifiedBy"`
+	ModifiedTime                   string                        `json:"modifiedTime"`
+	Name                           string                        `json:"name"`
+	Versions                       []Versions                    `json:"versions"`
+	VisibilityScope                string                        `json:"visibilityScope"`
+	UpgradePriority                string                        `json:"upgradePriority"`
+	NumberOfAssistants             string                        `json:"numberOfAssistants"`
+	NumberOfCustomers              string                        `json:"numberOfCustomers"`
+	NumberOfPrivateBrokers         string                        `json:"numberOfPrivateBrokers"`
+	NumberOfSiteControllers        string                        `json:"numberOfSiteControllers"`
+	NumberOfUpdatedAssistants      string                        `json:"numberOfUpdatedAssistants"`
+	NumberOfUpdatedPrivateBrokers  string                        `json:"numberOfUpdatedPrivateBrokers"`
+	NumberOfUpdatedSiteControllers string                        `json:"numberOfUpdatedSiteControllers"`
 }
 
 type CustomScopeCustomerIDs struct {
+	Name                 string `json:"name"`
 	CustomerID           string `json:"customerId"`
 	ExcludeConstellation bool   `json:"excludeConstellation"`
-	Name                 string `json:"name"`
+	IsPartner            bool   `json:"isPartner"`
 }
 
 type CustomScopeRequestCustomerIDs struct {
@@ -42,9 +50,9 @@ type CustomScopeRequestCustomerIDs struct {
 }
 
 type Versions struct {
-	CreationTime             string `json:"creationTime,omitempty"`
-	CustomerID               string `json:"customerId"`
 	ID                       string `json:"id,omitempty"`
+	CustomerID               string `json:"customerId"`
+	CreationTime             string `json:"creationTime,omitempty"`
 	ModifiedBy               string `json:"modifiedBy"`
 	ModifiedTime             string `json:"modifiedTime"`
 	Platform                 string `json:"platform"`

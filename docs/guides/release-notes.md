@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.6``
+``Last updated: v3.1.7``
 
 ---
+
+# 3.1.7 (March 5, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #308](https://github.com/zscaler/zscaler-sdk-go/pull/308) - Fixed ZPA `customerversionprofile` resource with new attributes
 
 # 3.1.6 (February 14, 2025)
 
