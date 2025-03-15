@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.7``
+``Last updated: v3.1.8``
 
 ---
+
+# 3.1.8 (March 14, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #310](https://github.com/zscaler/zscaler-sdk-go/pull/310) - Fixed ZPA Pagination Encoding. The ZPA API Client now supports partial searches as supported by the API engine itself.
 
 # 3.1.7 (March 5, 2025)
 

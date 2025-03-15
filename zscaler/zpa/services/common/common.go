@@ -206,6 +206,43 @@ func getMicroTenantByName(ctx context.Context, client *zscaler.Client, microTena
 }
 
 // GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
+// func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
+// 	if (filters.MicroTenantID == nil || *filters.MicroTenantID == "") && filters.MicroTenantName != nil && *filters.MicroTenantName != "" {
+// 		// get microtenant id by name
+// 		mt, resp, err := getMicroTenantByName(ctx, client, *filters.MicroTenantName)
+// 		if err == nil {
+// 			return nil, resp, err
+// 		}
+// 		if mt != nil {
+// 			filters.MicroTenantID = &mt.ID
+// 		}
+// 	}
+
+// 	// Updated filter search: replace spaces with '&' for the API's search query format
+// 	// filters.Search = strings.ReplaceAll(filters.Search, " ", "&")
+// 	// filters.Search = url.QueryEscape(filters.Search)
+// 	// filters.Search = sanitizeSearchQuery(filters.Search)
+// 	// ✅ Ensure Search term is sanitized correctly (prevent double encoding)
+// 	if filters.Search != "" {
+// 		filters.Search = sanitizeSearchQuery(filters.Search)
+// 	}
+// 	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
+// 	if err != nil {
+// 		return nil, resp, err
+// 	}
+// 	var l []T
+// 	for page := 2; page <= totalPages; page++ {
+// 		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, page, DefaultPageSize, filters)
+// 		if err != nil {
+// 			return nil, resp, err
+// 		}
+// 		result = append(result, l...)
+// 	}
+
+// 	return result, resp, nil
+// }
+
+// GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
 func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
 	if (filters.MicroTenantID == nil || *filters.MicroTenantID == "") && filters.MicroTenantName != nil && *filters.MicroTenantName != "" {
 		// get microtenant id by name
@@ -218,13 +255,27 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 		}
 	}
 
-	// Updated filter search: replace spaces with '&' for the API's search query format
-	filters.Search = strings.ReplaceAll(filters.Search, " ", "&")
+	// Ensure Search term is sanitized correctly (prevent double encoding)
+	if filters.Search != "" {
+		filters.Search = sanitizeSearchQuery(filters.Search)
+	}
 
+	// Attempt full search first.
 	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
+	// If the full search fails and the query contains multiple words, try a partial search.
+	if err != nil && strings.Count(filters.Search, " ") > 0 {
+		tokens := strings.Split(filters.Search, " ")
+		if len(tokens) >= 2 {
+			// For example, use only the first two words.
+			partialSearch := strings.Join(tokens[:2], " ")
+			filters.Search = partialSearch
+			totalPages, result, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
+		}
+	}
 	if err != nil {
 		return nil, resp, err
 	}
+
 	var l []T
 	for page := 2; page <= totalPages; page++ {
 		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, page, DefaultPageSize, filters)
@@ -236,7 +287,6 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 
 	return result, resp, nil
 }
-
 func GetAllPagesScimGenericWithSearch[T any](
 	ctx context.Context,
 	client *zpa.ScimClient,
@@ -296,4 +346,17 @@ func GetAllPagesScimGenericWithSearch[T any](
 
 	// Return all resources if no specific item was found
 	return allResources, lastResp, nil
+}
+
+func sanitizeSearchQuery(query string) string {
+	// Remove special characters except spaces and alphanumeric characters
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
+	query = re.ReplaceAllString(query, "")
+
+	// Replace multiple spaces with a single space
+	reSpace := regexp.MustCompile(`\s+`)
+	query = reSpace.ReplaceAllString(query, " ")
+
+	// Trim spaces (but do NOT encode again)
+	return strings.TrimSpace(query)
 }
