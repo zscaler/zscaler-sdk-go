@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.11``
+``Last updated: v3.1.12``
 
 ---
+
+# 3.1.12 (March 25, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #315](https://github.com/zscaler/zscaler-sdk-go/pull/315) - Fixed ZPA URL Encoding to support edge cases containing special characters.
+
+[PR #315](https://github.com/zscaler/zscaler-sdk-go/pull/315) - Fixed ZCC API Client instantiation/mapping across all functions.
 
 # 3.1.11 (March 25, 2025)
 

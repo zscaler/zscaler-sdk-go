@@ -388,8 +388,8 @@ func GetAllPagesScimGenericWithSearch[T any](
 // }
 
 func sanitizeSearchQuery(query string) string {
-	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, and slashes
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-]`)
+	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
 	query = re.ReplaceAllString(query, "")
 
 	// Replace multiple spaces with a single space
