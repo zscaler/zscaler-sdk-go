@@ -46,7 +46,7 @@ func ForceRemoveDevices(ctx context.Context, service *zscaler.Service, request R
 	fullURL := fmt.Sprintf("%s?pageSize=%d", forceRemoveDevicesEndpoint, pagination.PageSize)
 
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo(ctx, "POST", fullURL, nil, &request, &response)
+	_, err := service.Client.NewZccRequestDo(ctx, "POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func RemoveMachineTunnel(ctx context.Context, service *zscaler.Service, hostName
 
 	// Make the request
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo(ctx, "POST", removeMachineTunnelEndpoint, nil, payload, &response)
+	_, err := service.Client.NewZccRequestDo(ctx, "POST", removeMachineTunnelEndpoint, nil, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %w", err)
 	}

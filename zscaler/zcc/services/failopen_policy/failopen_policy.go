@@ -58,7 +58,7 @@ func UpdateFailOpenPolicy(ctx context.Context, service *zscaler.Service, openPol
 	var updatedPolicy WebFailOpenPolicy
 
 	// Make the PUT request to update the web policy
-	_, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, openPolicy, &updatedPolicy)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, openPolicy, &updatedPolicy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web policy: %w", err)
 	}

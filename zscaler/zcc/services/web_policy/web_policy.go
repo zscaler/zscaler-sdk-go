@@ -265,7 +265,7 @@ func ActivateWebPolicy(ctx context.Context, service *zscaler.Service, activation
 	var updatedActivation WebPolicyActivation
 
 	// Make the PUT request to activate the web policy
-	_, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, activation, &updatedActivation)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, activation, &updatedActivation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to activate web policy: %w", err)
 	}
@@ -286,7 +286,7 @@ func UpdateWebPolicy(ctx context.Context, service *zscaler.Service, webPolicy *W
 	var updatedWebPolicy WebPolicy
 
 	// Make the PUT request to update the web policy
-	_, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, webPolicy, &updatedWebPolicy)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, webPolicy, &updatedWebPolicy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web policy: %w", err)
 	}
