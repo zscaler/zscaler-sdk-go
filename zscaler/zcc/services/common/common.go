@@ -90,7 +90,7 @@ func queryParamsToURLValues(params interface{}) (url.Values, error) {
 // 		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
 
 // 		// Fetch the current page
-// 		_, err := client.NewRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
+// 		_, err := client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
 // 		if err != nil {
 // 			return nil, err
 // 		}

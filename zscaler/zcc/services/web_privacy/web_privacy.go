@@ -59,7 +59,7 @@ func UpdatePrivacyInfo(ctx context.Context, service *zscaler.Service, info *WebP
 	var updatedPrivacyInfo WebPrivacyInfo
 
 	// Make the PUT request to update the web privacy info
-	_, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, info, &updatedPrivacyInfo)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, info, &updatedPrivacyInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web privacy info: %w", err)
 	}

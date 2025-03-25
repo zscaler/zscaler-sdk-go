@@ -146,7 +146,7 @@ func GetForwardingProfileByCompanyID(ctx context.Context, service *zscaler.Servi
 
 	// Fetch the API response
 	var profiles []ForwardingProfile
-	_, err := service.Client.NewRequestDo(ctx, "GET", endpoint, queryParams, nil, &profiles)
+	_, err := service.Client.NewZccRequestDo(ctx, "GET", endpoint, queryParams, nil, &profiles)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch forwarding profiles: %w", err)
 	}
@@ -166,7 +166,7 @@ func CreateForwardingProfile(ctx context.Context, service *zscaler.Service, prof
 	var createdProfile ForwardingProfile
 
 	// Make the POST request to create the forwarding profile
-	_, err := service.Client.NewRequestDo(ctx, "POST", url, nil, profile, &createdProfile)
+	_, err := service.Client.NewZccRequestDo(ctx, "POST", url, nil, profile, &createdProfile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create forwarding profile: %w", err)
 	}

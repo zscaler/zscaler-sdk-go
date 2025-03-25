@@ -39,14 +39,12 @@ type TrustedNetworksResponse struct {
 	TrustedNetworkContracts []TrustedNetwork `json:"trustedNetworkContracts"`
 }
 
-func GetMultipleTrustedNetworks(ctx context.Context, service *zscaler.Service, search, searchType string, page, pageSize *int) (*TrustedNetworksResponse, error) {
-	// Construct the endpoint URL
+func GetMultipleTrustedNetworks(ctx context.Context, service *zscaler.Service, search, searchType string, page, pageSize *int) (*TrustedNetworksResponse, *http.Response, error) {
 	endpoint := fmt.Sprintf("%s/listByCompany", trustedNetworkEndpoint)
 
-	// Construct query parameters
 	queryParams := common.QueryParams{
-		Search:     search,
-		SearchType: searchType,
+		Search: search,
+		// SearchType: searchType,
 	}
 	if page != nil {
 		queryParams.Page = *page
@@ -55,72 +53,126 @@ func GetMultipleTrustedNetworks(ctx context.Context, service *zscaler.Service, s
 		queryParams.PageSize = *pageSize
 	}
 
-	// Fetch the API response
 	var response TrustedNetworksResponse
-	_, err := service.Client.NewRequestDo(ctx, "GET", endpoint, queryParams, nil, &response)
+
+	resp, err := service.Client.NewZccRequestDo(ctx, "GET", endpoint, queryParams, nil, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch trusted networks: %w", err)
+		return nil, resp, fmt.Errorf("failed to fetch trusted networks: %w", err)
 	}
 
-	// Handle cases where totalCount > 0 but no results are returned
 	if response.TotalCount > 0 && len(response.TrustedNetworkContracts) == 0 {
-		return nil, fmt.Errorf("totalCount is %d, but no trusted networks are returned", response.TotalCount)
+		return nil, resp, fmt.Errorf("totalCount is %d, but no trusted networks are returned", response.TotalCount)
 	}
 
-	return &response, nil
+	return &response, resp, nil
 }
 
-func CreateTrustedNetwork(ctx context.Context, service *zscaler.Service, network *TrustedNetwork) (*TrustedNetwork, error) {
-	if network == nil {
-		return nil, errors.New("rule is required")
+func GetTrustedNetworkByName(ctx context.Context, service *zscaler.Service, name string) (*TrustedNetwork, *http.Response, error) {
+	pageSize := 1000
+	page := 1
+
+	for {
+		res, resp, err := GetMultipleTrustedNetworks(ctx, service, "", "", &page, &pageSize)
+		if err != nil {
+			return nil, resp, err
+		}
+
+		for _, tn := range res.TrustedNetworkContracts {
+			if tn.NetworkName == name {
+				return &tn, resp, nil
+			}
+		}
+
+		if len(res.TrustedNetworkContracts) < pageSize {
+			break
+		}
+		page++
 	}
 
-	// Construct the URL for the create endpoint
+	return nil, nil, fmt.Errorf("trusted network with name '%s' not found", name)
+}
+
+func GetTrustedNetworkByID(ctx context.Context, service *zscaler.Service, id string) (*TrustedNetwork, *http.Response, error) {
+	pageSize := 1000
+	page := 1
+
+	for {
+		res, resp, err := GetMultipleTrustedNetworks(ctx, service, "", "", &page, &pageSize)
+		if err != nil {
+			return nil, resp, err
+		}
+
+		for _, tn := range res.TrustedNetworkContracts {
+			if tn.ID == id {
+				return &tn, resp, nil
+			}
+		}
+
+		// If we got less than the page size, we’re done
+		if len(res.TrustedNetworkContracts) < pageSize {
+			break
+		}
+		page++
+	}
+
+	return nil, nil, fmt.Errorf("trusted network with ID %s not found", id)
+}
+
+func CreateTrustedNetwork(ctx context.Context, service *zscaler.Service, network *TrustedNetwork) (*TrustedNetwork, *http.Response, error) {
+	if network == nil {
+		return nil, nil, errors.New("network is required")
+	}
+
 	url := fmt.Sprintf("%s/create", trustedNetworkEndpoint)
 
-	// Initialize a variable to hold the response
-	var createdNetwork TrustedNetwork
-
-	// Make the POST request to create the trusted network
-	_, err := service.Client.NewRequestDo(ctx, "POST", url, nil, network, &createdNetwork)
+	// Send creation request
+	resp, err := service.Client.NewZccRequestDo(ctx, "POST", url, nil, network, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create trusted network: %w", err)
+		return nil, resp, fmt.Errorf("failed to create trusted network: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning trusted network from create: %s", createdNetwork.ID)
-	return &createdNetwork, nil
+	// Lookup the resource by networkName since the response doesn't include ID
+	createdNetwork, _, err := GetTrustedNetworkByName(ctx, service, network.NetworkName)
+	if err != nil {
+		return nil, resp, fmt.Errorf("trusted network created, but failed to retrieve by name '%s': %w", network.NetworkName, err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] returning trusted network from create (via lookup): ID=%s, Name=%s", createdNetwork.ID, createdNetwork.NetworkName)
+	return createdNetwork, resp, nil
 }
 
-func UpdateTrustedNetwork(ctx context.Context, service *zscaler.Service, network *TrustedNetwork) (*TrustedNetwork, error) {
+func UpdateTrustedNetwork(ctx context.Context, service *zscaler.Service, network *TrustedNetwork) (*TrustedNetwork, *http.Response, error) {
 	if network == nil {
-		return nil, errors.New("network is required")
+		return nil, nil, errors.New("network is required")
 	}
 
-	// Construct the URL for the update endpoint
 	url := fmt.Sprintf("%s/edit", trustedNetworkEndpoint)
 
-	// Initialize a variable to hold the response
 	var updatedNetwork TrustedNetwork
 
-	// Make the PUT request to update the trusted network
-	_, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, network, &updatedNetwork)
+	resp, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, network, &updatedNetwork)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update trusted network: %w", err)
+		return nil, resp, fmt.Errorf("failed to update trusted network: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning trusted network from update: %s", updatedNetwork)
-	return &updatedNetwork, nil
+	service.Client.GetLogger().Printf("[DEBUG] returning trusted network from update: %s", updatedNetwork.ID)
+	return &updatedNetwork, resp, nil
 }
 
-func DeleteTrustedNetwork(ctx context.Context, service *zscaler.Service, networkID int) (*http.Response, error) {
-	// Construct the complete endpoint with /delete
-	endpoint := fmt.Sprintf("%s/%d/delete", trustedNetworkEndpoint, networkID)
-
-	// Make the DELETE request
-	err := service.Client.Delete(ctx, endpoint)
-	if err != nil {
-		return nil, err
+func DeleteTrustedNetwork(ctx context.Context, service *zscaler.Service, networkID string) (*http.Response, error) {
+	if networkID == "" {
+		return nil, fmt.Errorf("network ID is required for deletion")
 	}
 
-	return nil, nil
+	// Construct the delete endpoint URL
+	endpoint := fmt.Sprintf("%s/%s/delete", trustedNetworkEndpoint, networkID)
+
+	// Make the DELETE request using NewZccRequestDo
+	resp, err := service.Client.NewZccRequestDo(ctx, "DELETE", endpoint, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete trusted network: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Deleted trusted network ID: %s", networkID)
+	return resp, nil
 }
