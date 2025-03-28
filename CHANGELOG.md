@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.1.13 (March 28, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #316](https://github.com/zscaler/zscaler-sdk-go/pull/316) - Fixed `zpa_service_edge_controller` `listen_ips` mismatched attribute type.
+
 # 3.1.12 (March 25, 2025)
 
 ## Notes

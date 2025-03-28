@@ -29,7 +29,7 @@ const (
 	contentTypeJSON         = "application/json"
 	MaxNumOfRetries         = 100
 	RetryWaitMaxSeconds     = 20
-	RetryWaitMinSeconds     = 5
+	RetryWaitMinSeconds     = 10
 	loggerPrefix            = "oneapi-logger: "
 )
 
