@@ -23,8 +23,8 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - Golang: **v1.22**
 
 ### Bug Fixes
+[PR #316](https://github.com/zscaler/zscaler-sdk-go/pull/316) - Fixed `credential` block attribute in the ZPA `policysetcontrollerv2` resource.
 [PR #316](https://github.com/zscaler/zscaler-sdk-go/pull/316) - Fixed `zpa_service_edge_controller` `listen_ips` mismatched attribute type.
-
 
 # 3.1.12 (March 25, 2025)
 
