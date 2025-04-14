@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.1.13``
+``Last updated: v3.1.14``
 
 ---
+
+# 3.1.14 (April 14, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #319](https://github.com/zscaler/zscaler-sdk-go/pull/319) - Set pointer in the `credential` block attribute in the ZPA `policysetcontrollerv2` resource.
 
 # 3.1.13 (March 28, 2025)
 
