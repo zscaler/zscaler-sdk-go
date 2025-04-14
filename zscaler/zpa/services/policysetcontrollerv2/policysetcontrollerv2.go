@@ -74,10 +74,10 @@ type PolicyRuleResource struct {
 	AppServerGroups              []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
-	Credential                   Credential                            `json:"credential,omitempty"`
+	Credential                   *Credential                           `json:"credential,omitempty"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
-	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
+	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
 }
 
 type Conditions struct {
@@ -135,7 +135,7 @@ type PolicyRule struct {
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
 	Conditions                   []PolicyRuleResourceConditions        `json:"conditions,omitempty"`
-	Credential                   Credential                            `json:"credential,omitempty"`
+	Credential                   *Credential                           `json:"credential"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
 	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
@@ -170,7 +170,7 @@ type OperandsResourceLHSRHSValue struct {
 }
 
 type Credential struct {
-	ID   string `json:"id"`
+	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 }
 
