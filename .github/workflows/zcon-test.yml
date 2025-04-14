@@ -1,4 +1,4 @@
-name: ZCON Test
+name: ZTW Test
 
 on:
   pull_request:
@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  zcon-beta-tests:
-    environment: ZCON_ZSCALER_BETA
+  ztw-beta-tests:
+    environment: ZTW_ZSCALER_BETA
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -53,13 +53,13 @@ jobs:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
           command: |
-            make test:integration:zcon
-            make zconActivator
+            make test:integration:ztw
+            make ztwActivator
         env:
-          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
-          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
-          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
-          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+          ZTW_USERNAME: ${{ secrets.ZTW_USERNAME }}
+          ZTW_PASSWORD: ${{ secrets.ZTW_PASSWORD }}
+          ZTW_API_KEY: ${{ secrets.ZTW_API_KEY }}
+          ZTW_CLOUD: ${{ secrets.ZTW_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
           ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
 
@@ -70,16 +70,16 @@ jobs:
           file: ./coverage.out 
           fail_ci_if_error: true
 
-  zcon-tests-tenants:
-    needs: [zcon-beta-tests]
+  ztw-tests-tenants:
+    needs: [ztw-beta-tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         goVersion: ["1.22"]
         environment:
-          - ZCON_ZSCLOUD
-          - ZCON_ZSCALER_THREE
+          - ZTW_ZSCLOUD
+          - ZTW_ZSCALER_THREE
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
@@ -114,13 +114,13 @@ jobs:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
           command: |
-            make test:integration:zcon
-            make zconActivator
+            make test:integration:ztw
+            make ztwActivator
         env:
-          ZCON_USERNAME: ${{ secrets.ZCON_USERNAME }}
-          ZCON_PASSWORD: ${{ secrets.ZCON_PASSWORD }}
-          ZCON_API_KEY: ${{ secrets.ZCON_API_KEY }}
-          ZCON_CLOUD: ${{ secrets.ZCON_CLOUD }}
+          ZTW_USERNAME: ${{ secrets.ZTW_USERNAME }}
+          ZTW_PASSWORD: ${{ secrets.ZTW_PASSWORD }}
+          ZTW_API_KEY: ${{ secrets.ZTW_API_KEY }}
+          ZTW_CLOUD: ${{ secrets.ZTW_CLOUD }}
           ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
           ZSCALER_SDK_CACHE_DISABLED: ${{ secrets.ZSCALER_SDK_CACHE_DISABLED }}
           

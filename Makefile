@@ -27,7 +27,7 @@ help:
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              	Run all tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zcc        	Run only zcc integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:integration:zcon        	Run only zcon integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:ztw        	Run only ztw integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
@@ -79,7 +79,7 @@ sweep\:zia:
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
 	@make test:integration:zcc
-	@make test:integration:zcon
+	@make test:integration:ztw
 	@make test:integration:zdx
 	@make test:integration:zpa
 	@make test:integration:zia
@@ -90,13 +90,13 @@ test\:integration\:zcc:
 	go tool cover -html=zcccoverage.out -o zcccoverage.html
 
 
-test\:integration\:zcon:
-	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zscaler/zcon/... -parallel 20 -timeout 60m
-	go tool cover -html=zconcoverage.out -o zconcoverage.html
+test\:integration\:ztw:
+	@echo "$(COLOR_ZSCALER)Running ztw integration tests...$(COLOR_NONE)"
+	go test -v -race -cover -coverprofile=ztwcoverage.out -covermode=atomic ./zscaler/ztw/... -parallel 20 -timeout 60m
+	go tool cover -html=ztwcoverage.out -o ztwcoverage.html
 
 test\:integration\:zdx:
-	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
+	@echo "$(COLOR_ZSCALER)Running ztw integration tests...$(COLOR_NONE)"
 	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zscaler/zdx/... -parallel 4 -timeout 60m
 	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
 	@go tool cover -func zdxcoverage.out | grep total:
@@ -121,9 +121,9 @@ test\:unit\zcc:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit/zcc -test.v
 
-test\:unit\zcon:
+test\:unit\ztw:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zcon -test.v
+	go test -failfast -race ./tests/unit/ztw -test.v
 
 test\:unit\zdx:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
@@ -140,7 +140,7 @@ test\:unit\:zpa:
 test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -race ./tests/unit/zcc -test.v
-	go test -race ./tests/unit/zcon -test.v
+	go test -race ./tests/unit/ztw -test.v
 	go test -race ./tests/unit/zdx -test.v
 	go test -race ./tests/unit/zia -test.v
 	go test -race ./tests/unit/zpa -test.v
@@ -160,20 +160,20 @@ ziaActivator:
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/ziaActivator ./zscaler/zia/activation_cli/ziaActivator.go
 
-zconActivator: GOOS=$(shell go env GOOS)
-zconActivator: GOARCH=$(shell go env GOARCH)
+ztwActivator: GOOS=$(shell go env GOOS)
+ztwActivator: GOARCH=$(shell go env GOARCH)
 ifeq ($(OS),Windows_NT)  # is Windows_NT on XP, 2000, 7, Vista, 10...
-zconActivator: DESTINATION=C:\Windows\System32
+ztwActivator: DESTINATION=C:\Windows\System32
 else
-zconActivator: DESTINATION=/usr/local/bin
+ztwActivator: DESTINATION=/usr/local/bin
 endif
-zconActivator:
-	@echo "==> Installing zconActivator cli $(DESTINATION)"
-	cd ./zscaler/zcon/services/activation_cli
+ztwActivator:
+	@echo "==> Installing ztwActivator cli $(DESTINATION)"
+	cd ./zscaler/ztw/services/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
-	@rm -f $(DESTINATION)/zconActivator
-	@go build -o $(DESTINATION)/zconActivator ./zscaler/zcon/services/activation_cli/zconActivator.go
+	@rm -f $(DESTINATION)/ztwActivator
+	@go build -o $(DESTINATION)/ztwActivator ./zscaler/ztw/services/activation_cli/ztwActivator.go
 
 
 check-fmt:

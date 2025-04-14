@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
 const (
@@ -91,36 +91,36 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 	return client, nil
 }
 
-func NewZConClient() (*zcon.Client, error) {
+func NewZTWClient() (*ztw.Client, error) {
 	// Fetch credentials from environment variables
-	username := os.Getenv("ZCON_USERNAME")
-	password := os.Getenv("ZCON_PASSWORD")
-	apiKey := os.Getenv("ZCON_API_KEY")
-	cloud := os.Getenv("ZCON_CLOUD")
+	username := os.Getenv("ZTW_USERNAME")
+	password := os.Getenv("ZTW_PASSWORD")
+	apiKey := os.Getenv("ZTW_API_KEY")
+	cloud := os.Getenv("ZTW_CLOUD")
 
 	if username == "" || password == "" || apiKey == "" || cloud == "" {
-		return nil, fmt.Errorf("missing ZCON credentials: ensure ZCON_USERNAME, ZCON_PASSWORD, ZCON_API_KEY and ZCON_CLOUD environment variables are set")
+		return nil, fmt.Errorf("missing ZTW credentials: ensure ZTW_USERNAME, ZTW_PASSWORD, ZTW_API_KEY and ZTW_CLOUD environment variables are set")
 	}
 
-	// Create a new ZCON configuration
-	zconCfg, err := zcon.NewConfiguration(
-		zcon.WithZconUsername(username),
-		zcon.WithZconPassword(password),
-		zcon.WithZconAPIKey(apiKey),
-		zcon.WithZconCloud(cloud),
-		zcon.WithDebug(false),
+	// Create a new ZTW configuration
+	ztwCfg, err := ztw.NewConfiguration(
+		ztw.WithZtwUsername(username),
+		ztw.WithZtwPassword(password),
+		ztw.WithZtwAPIKey(apiKey),
+		ztw.WithZtwCloud(cloud),
+		ztw.WithDebug(false),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create ZCON configuration: %w", err)
+		return nil, fmt.Errorf("failed to create ZTW configuration: %w", err)
 	}
 
-	// Initialize the ZCON client
-	zconClient, err := zcon.NewClient(zconCfg)
+	// Initialize the ZTW client
+	ztwClient, err := ztw.NewClient(ztwCfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create ZCON client: %w", err)
+		return nil, fmt.Errorf("failed to create ZTW client: %w", err)
 	}
 
-	return zconClient, nil
+	return ztwClient, nil
 }
 
 // ParseJSONRequest parses the JSON request body from the given HTTP request.

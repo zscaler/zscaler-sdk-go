@@ -25,6 +25,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	ztw "github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 	"gopkg.in/yaml.v3"
 )
 
@@ -59,6 +60,7 @@ type AuthToken struct {
 // Legacy struct holds and instance of each legacy API client to support backwards compatibility
 type LegacyClient struct {
 	ZiaClient *zia.Client
+	ZtwClient *ztw.Client
 	ZpaClient *zpa.Client
 	ZccClient *zcc.Client
 }
@@ -69,6 +71,7 @@ type Configuration struct {
 	HTTPClient     *http.Client
 	ZPAHTTPClient  *http.Client
 	ZIAHTTPClient  *http.Client
+	ZTWHTTPClient  *http.Client
 	ZCCHTTPClient  *http.Client
 	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`
 	UserAgent      string            `json:"userAgent,omitempty"`
@@ -186,6 +189,8 @@ func setHttpClients(cfg *Configuration) {
 	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
 	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
 
+	ztwRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZTW based on official limits and +1 sec buffer
+
 	// ZPA-specific rate limits:
 	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
 
@@ -198,6 +203,7 @@ func setHttpClients(cfg *Configuration) {
 	// Pass the config to getHTTPClient so it can access proxy settings
 	// cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
 	cfg.ZIAHTTPClient = getHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
+	cfg.ZTWHTTPClient = getHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
 	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)
 }
@@ -343,6 +349,8 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 		return client.oauth2Credentials.ZPAHTTPClient
 	case "zia":
 		return client.oauth2Credentials.ZIAHTTPClient
+	case "ztw":
+		return client.oauth2Credentials.ZTWHTTPClient
 	case "zcc":
 		return client.oauth2Credentials.ZCCHTTPClient
 	default:
@@ -355,6 +363,8 @@ func detectServiceType(endpoint string) string {
 	// Detect the service type based on the endpoint prefix
 	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
 		return "zia"
+	} else if strings.HasPrefix(path, "ztw") {
+		return "ztw"
 	} else if strings.HasPrefix(path, "zpa") {
 		return "zpa"
 	} else if strings.HasPrefix(endpoint, "/zcc") {
@@ -640,6 +650,15 @@ func WithZiaLegacyClient(ziaClient *zia.Client) ConfigSetter {
 			c.LegacyClient = &LegacyClient{}
 		}
 		c.LegacyClient.ZiaClient = ziaClient
+	}
+}
+
+func WithZtwLegacyClient(ztwClient *ztw.Client) ConfigSetter {
+	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &LegacyClient{}
+		}
+		c.LegacyClient.ZtwClient = ztwClient
 	}
 }
 

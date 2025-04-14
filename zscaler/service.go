@@ -6,6 +6,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
 type (
@@ -103,6 +104,21 @@ func NewLegacyZiaClient(config *zia.Configuration) (*Service, error) {
 	return newLegacyHelper(
 		WithLegacyClient(true),
 		WithZiaLegacyClient(ziaClient),
+		WithDebug(config.Debug),
+		// add other config mapping, if necessary
+	)
+}
+
+func NewLegacyZtwClient(config *ztw.Configuration) (*Service, error) {
+	ztwClient, err := ztw.NewClient(config)
+	if err != nil {
+		log.Fatalf("Error creating ZTW client: %v", err)
+		return nil, err
+	}
+
+	return newLegacyHelper(
+		WithLegacyClient(true),
+		WithZtwLegacyClient(ztwClient),
 		WithDebug(config.Debug),
 		// add other config mapping, if necessary
 	)
