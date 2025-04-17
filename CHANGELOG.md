@@ -1,11 +1,68 @@
 # Changelog
 
-# 3.1.13 (March 28, 2025)
+# 3.2.0 (April 16, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Cloud & Branch Connector - OneAPI Support
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Cloud & Branch Connector package is now compatible with OneAPI and Legacy API framework. Please refer to README for details.
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Cloud & Branch Connector package has been renamed from `zcon` to `ztw`
+
+### ZTW Policy Management
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Added the following new ZTW API Endpoints:
+    - Added `GET /ecRules/ecRdr` Retrieves the list of traffic forwarding rules.
+    - Added `PUT /ecRules/ecRdr/{ruleId}` Updates a traffic forwarding rule configuration based on the specified ID.
+    - Added `POST /ecRules/ecRdr` Creates a new traffic forwarding rule.
+    - Added `GET /ecRules/ecRdr/count` Retrieves the count of traffic forwarding rules available in the Cloud & Branch Connector Admin Portal.
+
+### ZTW Policy Resources
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Added the following new ZTW API Endpoints:
+    - Added `GET /ipSourceGroups` Retrieves the list of source IP groups.
+    - Added `GET /ipSourceGroups/lite` Retrieves the list of source IP groups. This request retrieves basic information about the source IP groups, such as name and ID. For extensive details, use the GET /ipSourceGroups request.
+    - Added `POST /ipSourceGroups` Adds a new custom source IP group.
+    - Added `DELETE /ipSourceGroups/{ipGroupId}` Deletes a source IP group based on the specified ID.
+    - Added `GET /ipDestinationGroups` Retrieves the list of destination IP groups.
+    - Added `GET /ipDestinationGroups/lite` Retrieves the list of destination IP groups. This request retrieves basic information about the destination IP groups, ID, name, and type. For extensive details, use the GET /ipDestinationGroups request.
+    - Added `POST /ipDestinationGroups` Adds a new custom destination IP group.
+    - Added `DELETE /ipDestinationGroups/{ipGroupId}` Deletes the destination IP group based on the specified ID. Default destination groups that are automatically created cannot be deleted.
+    - Added `GET /ipGroups` Retrieves the list of IP pools.
+    - Added `GET /ipGroups/lite` Retrieves the list of IP pools. This request retrieves basic information about the IP pools, such as name and ID. For extensive details, use the GET /ipGroups request.
+    - Added `POST /ipGroups` Adds a new custom IP pool.
+    - Added `DELETE /ipGroups/{ipGroupId}` Deletes an IP pool based on the specified ID.
+    - Added `GET /networkServices` Retrieves the list of all network services. The search parameters find matching values within the name or description attributes.
+    - Added `POST /networkServices` Creates a new network service.
+    - Added `PUT /networkServices/{serviceId}` Updates the network service information for the specified service ID.
+    - Added `DELETE /networkServices/{serviceId}` Deletes the network service for the specified ID.
+    - Added `GET /networkServicesGroups` Retrieves the list of network service groups.
+    - Added `GET /zpaResources/applicationSegments` Retrieves the list of ZPA application segments that can be configured in traffic forwarding rule criteria.
+
+### ZIA Admin Role Endpoints
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Added the following new ZIA API Endpoints:
+    - Added `GET /adminRoles/{roleId}` Retrieves the admin role based on the specified ID
+    - Added `GET /adminRoles/lite` Retrieves a name and ID dictionary of all admin roles. The list only includes the name and ID for all admin roles. 
+    - Added `POST /adminRoles` Adds an admin role.
+    - Added `PUT /adminRoles/{roleId}` Updates the admin role based on the specified ID.
+    - Added `DELETE /adminRoles/{roleId}` Deletes the admin role based on the specified ID.
+
+### Bug Fixes
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Enhanced Updated function on ZPA `applicationsegmentpra` package to include the attribute `deleteAppsPra` in the payload during PRA application removal.
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZTW Cloud Connector ECGroup `ECVM` Struct.
+
+# 3.1.14 (April 14, 2025)
 
 ## Notes
 - Golang: **v1.22**
 
 ### Bug Fixes
+[PR #319](https://github.com/zscaler/zscaler-sdk-go/pull/319) - Set pointer in the credential block attribute in the ZPA `policysetcontrollerv2` resource.
+
+
+# 3.1.13 (March 28, 2025)
+
+## Notes
+- Golang: **v1.22**
+
 ### Bug Fixes
 [PR #316](https://github.com/zscaler/zscaler-sdk-go/pull/316) - Fixed `credential` block attribute in the ZPA `policysetcontrollerv2` resource.
 [PR #316](https://github.com/zscaler/zscaler-sdk-go/pull/316) - Fixed `zpa_service_edge_controller` `listen_ips` mismatched attribute type.

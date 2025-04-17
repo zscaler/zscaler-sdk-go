@@ -30,7 +30,7 @@ type ECGateway struct {
 	FailClosed bool `json:"failClosed,omitempty"`
 
 	// indicates that traffic must be dropped when both primary and secondary proxies defined in the gateway are unreachable.
-	ManualPrimary string `json:"failClomanualPrimarysed,omitempty"`
+	ManualPrimary string `json:"manualPrimary,omitempty"`
 
 	// Specifies the secondary proxy through which traffic must be forwarded.
 	ManualSecondary string `json:"manualSecondary,omitempty"`

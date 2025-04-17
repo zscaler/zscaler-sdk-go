@@ -152,34 +152,84 @@ func Create(ctx context.Context, service *zscaler.Service, appSegmentPra AppSegm
 	return v, resp, nil
 }
 
+// func Update(ctx context.Context, service *zscaler.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
+// 	// Step 1: Retrieve the existing resource to get current `appId` and `praAppId`
+// 	existingResource, _, err := Get(ctx, service, id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Set the primary app ID
+// 	appSegmentPra.ID = existingResource.ID
+
+// 	// Step 2: Map existing `praApps` entries by `Name` to get `praAppId` for each sub-application
+// 	existingPraApps := make(map[string]PRAApps)
+// 	for _, praApp := range existingResource.PRAApps {
+// 		existingPraApps[praApp.Name] = praApp
+// 	}
+
+// 	// Step 3: Inject `appId` and `praAppId` into each entry in `appsConfig`
+// 	for i, appConfig := range appSegmentPra.CommonAppsDto.AppsConfig {
+// 		if existingApp, ok := existingPraApps[appConfig.Name]; ok {
+// 			appSegmentPra.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID // main app ID
+// 			appSegmentPra.CommonAppsDto.AppsConfig[i].PRAAppID = existingApp.ID   // praAppId for sub-app
+// 		}
+// 	}
+
+// 	// Check if `commonAppsDto` actually has entries, set to nil if empty
+// 	if len(appSegmentPra.CommonAppsDto.AppsConfig) == 0 {
+// 		appSegmentPra.CommonAppsDto = CommonAppsDto{}
+// 	}
+// 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
+// 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return resp, err
+// }
+
 func Update(ctx context.Context, service *zscaler.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
-	// Step 1: Retrieve the existing resource to get current `appId` and `praAppId`
 	existingResource, _, err := Get(ctx, service, id)
 	if err != nil {
 		return nil, err
 	}
-
-	// Set the primary app ID
 	appSegmentPra.ID = existingResource.ID
 
-	// Step 2: Map existing `praApps` entries by `Name` to get `praAppId` for each sub-application
+	// Step 2: Map existing PRA apps by name
 	existingPraApps := make(map[string]PRAApps)
 	for _, praApp := range existingResource.PRAApps {
 		existingPraApps[praApp.Name] = praApp
 	}
 
-	// Step 3: Inject `appId` and `praAppId` into each entry in `appsConfig`
+	// Step 3: Re-inject praAppId and appId into each AppsConfig entry
 	for i, appConfig := range appSegmentPra.CommonAppsDto.AppsConfig {
 		if existingApp, ok := existingPraApps[appConfig.Name]; ok {
-			appSegmentPra.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID // main app ID
-			appSegmentPra.CommonAppsDto.AppsConfig[i].PRAAppID = existingApp.ID   // praAppId for sub-app
+			appSegmentPra.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID
+			appSegmentPra.CommonAppsDto.AppsConfig[i].PRAAppID = existingApp.ID
 		}
 	}
 
-	// Check if `commonAppsDto` actually has entries, set to nil if empty
-	if len(appSegmentPra.CommonAppsDto.AppsConfig) == 0 {
+	// ✅ Step 4: Detect and append deleted PRA apps
+	remainingPraAppIDs := make(map[string]struct{})
+	for _, app := range appSegmentPra.CommonAppsDto.AppsConfig {
+		remainingPraAppIDs[app.PRAAppID] = struct{}{}
+	}
+	var deleted []string
+	for _, existing := range existingResource.PRAApps {
+		if _, found := remainingPraAppIDs[existing.ID]; !found {
+			deleted = append(deleted, existing.ID)
+			service.Client.GetLogger().Printf("[DEBUG]Marking praAppId for deletion: %s", existing.ID)
+		}
+	}
+	if len(deleted) > 0 {
+		appSegmentPra.CommonAppsDto.DeletedPraApps = deleted
+	}
+
+	// Step 5: Cleanup if necessary
+	if len(appSegmentPra.CommonAppsDto.AppsConfig) == 0 && len(appSegmentPra.CommonAppsDto.DeletedPraApps) == 0 {
 		appSegmentPra.CommonAppsDto = CommonAppsDto{}
 	}
+
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {
