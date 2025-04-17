@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.2.0``
+``Last updated: v3.2.1``
 
 ---
+
+# 3.2.1 (April 17, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZIA Admin Roles endpoint.
 
 # 3.2.0 (April 16, 2025)
 
