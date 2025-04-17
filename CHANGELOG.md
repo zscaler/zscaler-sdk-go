@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.2.1 (April 17, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZIA Admin Roles endpoint.
+
 # 3.2.0 (April 16, 2025)
 
 ## Notes

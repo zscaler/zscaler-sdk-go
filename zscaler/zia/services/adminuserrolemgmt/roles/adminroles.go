@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	adminRolesEndpoint = "/zia/api/v1/adminRoles/lite"
+	adminRolesEndpoint = "/zia/api/v1/adminRoles"
 )
 
 type AdminRoles struct {
