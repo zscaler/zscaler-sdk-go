@@ -89,6 +89,11 @@ type AssociatedProfileNames struct {
 	Name string `json:"name,omitempty"`
 }
 
+type CommonIDName struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 // ZPA Common Structs to Avoid Repetion
 type CommonConfigDetails struct {
 	Name   string `json:"name,omitempty"`
