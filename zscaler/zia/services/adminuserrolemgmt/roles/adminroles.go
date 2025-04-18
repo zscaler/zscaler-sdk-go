@@ -29,7 +29,7 @@ type AdminRoles struct {
 	PolicyAccess string `json:"policyAccess,omitempty"`
 
 	// Alerting access permission
-	AlertingAccess string `json:"alertingAccess"`
+	AlertingAccess string `json:"alertingAccess,omitempty"`
 
 	// Username access permission. When set to NONE, the username will be obfuscated
 	UsernameAccess string `json:"usernameAccess,omitempty"`
@@ -38,7 +38,7 @@ type AdminRoles struct {
 	DeviceInfoAccess string `json:"deviceInfoAccess,omitempty"`
 
 	// Dashboard access permission
-	DashboardAccess string `json:"dashboardAccess"`
+	DashboardAccess string `json:"dashboardAccess,omitempty"`
 
 	// Report access permission
 	ReportAccess string `json:"reportAccess,omitempty"`
@@ -53,7 +53,7 @@ type AdminRoles struct {
 	IsAuditor bool `json:"isAuditor,omitempty"`
 
 	// List of functional areas to which this role has access. This attribute is subject to change
-	Permissions []string `json:"permissions,omitempty"`
+	Permissions []string `json:"permissions"`
 
 	// Feature access permission. Indicates which features an admin role can access and if the admin has both read and write access, or read-only access.
 	FeaturePermissions map[string]interface{} `json:"featurePermissions,omitempty"`
