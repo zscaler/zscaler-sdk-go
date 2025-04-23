@@ -240,14 +240,15 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 		url := cfg.BaseURL.String() + "/v1/oauth/token"
 
 		attempts := 0
-		maxAttempts := 5
-		backoffFactor := 1
-		additionalDelay := 5 * time.Second // Optional delay for retries
+		maxAttempts := int(cfg.ZDX.Client.RateLimit.MaxRetries)
+		if maxAttempts == 0 {
+			maxAttempts = 5
+		}
 
 		for attempts < maxAttempts {
 			req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
 			if err != nil {
-				logger.Printf("[ERROR] Failed to create request for user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+				logger.Printf("[ERROR] Failed to create request for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 				return nil, fmt.Errorf("[ERROR] Failed to create request for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 			}
 
@@ -258,66 +259,48 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 
 			resp, err := cfg.HTTPClient.Do(req)
 			if err != nil {
-				logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+				logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 				return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 			}
 			defer resp.Body.Close()
 
-			// Read the response body
 			respBody, err := io.ReadAll(resp.Body)
 			if err != nil {
-				logger.Printf("[ERROR] Failed to read response for user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+				logger.Printf("[ERROR] Failed to read response for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 				return nil, fmt.Errorf("[ERROR] Failed to read response for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 			}
 
-			// Handle rate-limited responses
-			if resp.StatusCode == http.StatusTooManyRequests {
-				rateLimitReset := resp.Header.Get("RateLimit-Reset")
-				var sleepTime time.Duration
-				if rateLimitReset != "" {
-					resetTime, err := strconv.ParseInt(rateLimitReset, 10, 64)
-					if err == nil {
-						sleepTime = time.Until(time.Unix(resetTime, 0))
-					}
-				}
-
-				if sleepTime <= 0 {
-					// Fallback to exponential backoff
-					sleepTime = time.Duration(backoffFactor) * time.Second
-					backoffFactor *= 2
-				}
-
-				logger.Printf("[WARN] Rate limit exceeded. Retrying in %s (attempt %d/%d)", sleepTime, attempts+1, maxAttempts)
-				time.Sleep(sleepTime + additionalDelay)
+			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+				// Use the centralized retry logic
+				sleepTime := getRetryAfter(resp, logger, 2) // Default proactive threshold = 2
+				logger.Printf("[WARN] Rate limit hit (attempt %d/%d). Retrying in %s", attempts+1, maxAttempts, sleepTime)
+				time.Sleep(sleepTime)
 				attempts++
 				continue
 			}
 
-			// Handle non-2xx responses
 			if resp.StatusCode >= 300 {
-				logger.Printf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s\n", ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
-				return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s", ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
+				logger.Printf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s",
+					ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
+				return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, got HTTP status: %d, response body: %s, url: %s",
+					ZDX_API_KEY_ID, maskedAPIKeyID, resp.StatusCode, respBody, url)
 			}
 
-			// Parse the successful authentication response
 			var authToken AuthToken
 			err = json.Unmarshal(respBody, &authToken)
 			if err != nil {
-				logger.Printf("[ERROR] Failed to parse response for user %s=%s, err: %v\n", ZDX_API_KEY_ID, maskedAPIKeyID, err)
+				logger.Printf("[ERROR] Failed to parse response for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 				return nil, fmt.Errorf("[ERROR] Failed to parse response for user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 			}
 
-			// Store the token in the configuration
 			cfg.ZDX.Client.AuthToken = &authToken
 			return &authToken, nil
 		}
 
-		// Exceeded maximum attempts
-		logger.Printf("[ERROR] Rate limit retries exceeded for user %s=%s\n", ZDX_API_KEY_ID, maskedAPIKeyID)
+		logger.Printf("[ERROR] Rate limit retries exceeded for user %s=%s", ZDX_API_KEY_ID, maskedAPIKeyID)
 		return nil, fmt.Errorf("[ERROR] Rate limit retries exceeded for user %s=%s", ZDX_API_KEY_ID, maskedAPIKeyID)
 	}
 
-	// Return the existing valid token
 	return cfg.ZDX.Client.AuthToken, nil
 }
 
