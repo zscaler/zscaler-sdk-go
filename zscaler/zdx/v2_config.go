@@ -92,10 +92,11 @@ type Configuration struct {
 			} `yaml:"proxy"`
 			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZDX_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
-				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZDX_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZDX_CLIENT_RATE_LIMIT_MIN_WAIT"`
-				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZDX_CLIENT_RATE_LIMIT_MAX_WAIT"`
-				BackoffConf  *BackoffConfig
+				MaxRetries              int32         `yaml:"maxRetries" envconfig:"ZDX_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin            time.Duration `yaml:"minWait" envconfig:"ZDX_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax            time.Duration `yaml:"maxWait" envconfig:"ZDX_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				RetryRemainingThreshold int           `yaml:"remainingThreshold" envconfig:"ZDX_CLIENT_RATE_LIMIT_REMAINING_THRESHOLD"`
+				BackoffConf             *BackoffConfig
 			} `yaml:"rateLimit"`
 		} `yaml:"client"`
 		Testing struct {

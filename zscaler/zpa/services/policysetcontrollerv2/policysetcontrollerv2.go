@@ -75,6 +75,7 @@ type PolicyRuleResource struct {
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
 	Credential                   *Credential                           `json:"credential,omitempty"`
+	CredentialPool               *Credential                           `json:"credentialPool"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
 	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
@@ -135,7 +136,8 @@ type PolicyRule struct {
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
 	Conditions                   []PolicyRuleResourceConditions        `json:"conditions,omitempty"`
-	Credential                   *Credential                           `json:"credential"`
+	Credential                   *Credential                           `json:"credential,omitempty"`
+	CredentialPool               *Credential                           `json:"credentialPool,omitempty"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
 	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
