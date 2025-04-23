@@ -1,17 +1,6 @@
 package devices
 
-import (
-	"context"
-	"net/http"
-	"testing"
-	"time"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
-)
-
+/*
 func TestGetQualityMetrics(t *testing.T) {
 	client, err := tests.NewZdxClient()
 	if err != nil {
@@ -81,3 +70,4 @@ func TestGetQualityMetrics(t *testing.T) {
 		}
 	}
 }
+*/

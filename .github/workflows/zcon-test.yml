@@ -12,6 +12,10 @@ on:
     - cron: "0 11 * * 1-5" # UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   ztw-beta-tests:
     environment: ZTW_ZSCALER_BETA
