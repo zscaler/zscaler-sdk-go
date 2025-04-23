@@ -252,9 +252,8 @@ func getRetryAfter(resp *http.Response, cfg *Configuration) time.Duration {
 			ratelimitLimit, ratelimitRemaining, ratelimitReset, retryAfterHeader)
 	}
 
-	// Preemptive backoff if we're about to be rate limited
 	if ratelimitRemaining != "" {
-		if remaining, err := strconv.Atoi(ratelimitRemaining); err == nil && int32(remaining) < threshold {
+		if remaining, err := strconv.Atoi(ratelimitRemaining); err == nil && remaining < int(threshold) {
 			if ratelimitReset != "" {
 				if resetSecs, err := strconv.Atoi(ratelimitReset); err == nil {
 					l.Printf("[INFO] Approaching rate limit (remaining=%d); waiting %ds", remaining, resetSecs+1)
