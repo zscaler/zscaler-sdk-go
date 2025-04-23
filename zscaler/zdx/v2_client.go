@@ -12,6 +12,7 @@ import (
 	"html"
 	"io"
 	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -84,22 +85,28 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		retryableClient.RetryMax = math.MaxInt32
 	}
 
+	// Use configured threshold or fallback to 2
+	threshold := cfg.ZDX.Client.RateLimit.BackoffConf
+	var proactiveThreshold int
+	if threshold != nil && threshold.MaxNumOfRetries > 0 {
+		proactiveThreshold = threshold.MaxNumOfRetries
+	} else {
+		proactiveThreshold = 2
+	}
+
 	// Backoff logic with rate limit headers
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
-			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
-				retryAfter := getRetryAfter(resp, l)
-				if retryAfter > 0 {
-					return retryAfter
-				}
+			retryAfter := getRetryAfter(resp, l, proactiveThreshold)
+			if retryAfter > 0 {
+				return retryAfter
 			}
 
-			if resp.Request != nil {
+			if resp.Request != nil && rateLimiter != nil {
 				wait, delay := rateLimiter.Wait(resp.Request.Method)
 				if wait {
 					return delay
 				}
-				return 0
 			}
 		}
 
@@ -116,9 +123,10 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.Logger = l
 
 	// Set request timeout
-	retryableClient.HTTPClient.Timeout = cfg.ZDX.Client.RequestTimeout
-	if retryableClient.HTTPClient.Timeout == 0 {
+	if cfg.ZDX.Client.RequestTimeout == 0 {
 		retryableClient.HTTPClient.Timeout = time.Second * 60
+	} else {
+		retryableClient.HTTPClient.Timeout = cfg.ZDX.Client.RequestTimeout
 	}
 
 	// Configure proxy settings
@@ -161,39 +169,30 @@ func containsInt(codes []int, code int) bool {
 	return false
 }
 
-func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
-	// Extract rate limit headers
-	rateLimitRemaining := resp.Header.Get("RateLimit-Remaining")
-	rateLimitReset := resp.Header.Get("RateLimit-Reset")
+func getRetryAfter(resp *http.Response, l logger.Logger, threshold int) time.Duration {
+	remaining := resp.Header.Get("X-Ratelimit-Remaining-Second")
+	limit := resp.Header.Get("X-Ratelimit-Limit-Second")
 
-	l.Printf("[INFO] RateLimit-Remaining: %s", rateLimitRemaining)
-	l.Printf("[INFO] RateLimit-Reset: %s", rateLimitReset)
+	l.Printf("[DEBUG] X-Ratelimit-Remaining-Second: %s", remaining)
+	l.Printf("[DEBUG] X-Ratelimit-Limit-Second: %s", limit)
 
-	// Parse RateLimit-Remaining
-	remaining, err := strconv.Atoi(rateLimitRemaining)
-	if err != nil {
-		l.Printf("[WARN] Failed to parse RateLimit-Remaining header: %v", err)
-		remaining = 1 // Assume remaining is 1 to prevent immediate retries
-	}
-
-	// If remaining requests are 0, calculate sleep time from RateLimit-Reset
-	if remaining == 0 && rateLimitReset != "" {
-		resetTime, err := strconv.ParseInt(rateLimitReset, 10, 64)
-		if err != nil {
-			l.Printf("[WARN] Failed to parse RateLimit-Reset header: %v", err)
-		} else {
-			currentTime := time.Now().Unix()
-			sleepTime := resetTime - currentTime
-			if sleepTime > 0 {
-				l.Printf("[INFO] Rate limit reached. Retrying in %d seconds.", sleepTime)
-				return time.Duration(sleepTime) * time.Second
-			}
+	// Preemptive backoff before hitting the limit
+	if remaining != "" {
+		if val, err := strconv.Atoi(remaining); err == nil && val < threshold {
+			jitter := time.Duration(rand.Intn(500)) * time.Millisecond
+			l.Printf("[INFO] Approaching rate limit (remaining=%d < threshold=%d), backing off for 1s + %s jitter", val, threshold, jitter)
+			return time.Second + jitter
 		}
 	}
 
-	// Fallback to exponential backoff if headers are insufficient
-	l.Printf("[INFO] Falling back to default retry delay.")
-	return time.Second * 5
+	// Retry after actual 429 (fallback strategy)
+	if resp.StatusCode == http.StatusTooManyRequests {
+		l.Printf("[WARN] 429 received, applying fallback retry delay (2s)")
+		return 2 * time.Second
+	}
+
+	// Default fallback delay for other cases
+	return 500 * time.Millisecond
 }
 
 // getRetryOnStatusCodes return a list of http status codes we want to apply retry on.

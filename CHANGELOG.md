@@ -9,6 +9,7 @@
 
 [PR #323](https://github.com/zscaler/zscaler-sdk-go/pull/323) – Fixed ZPA resource `pracredentialpool` missing attribute `credentialMappingCount`
 [PR #323](https://github.com/zscaler/zscaler-sdk-go/pull/323) – Fixed ZPA resource `policysetcontrollerv2` attribute `credentialPool` pointer
+[PR #323](https://github.com/zscaler/zscaler-sdk-go/pull/323) – Fixed ZDX rate limit handling in the `getRetryAfter` function by correctly parsing and calculating retry delays based on the headers: `X-Ratelimit-Remaining-Second` and `X-Ratelimit-Limit-Second`.
 
 # 3.2.3 (April 22, 2025)
 
