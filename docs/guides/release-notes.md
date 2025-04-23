@@ -13,9 +13,31 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.2.1``
+``Last updated: v3.2.3``
 
 ---
+
+# 3.2.3 (April 22, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #322](https://github.com/zscaler/zscaler-sdk-go/pull/322) – Improved OneAPI client rate limit handling by leveraging all available headers for more accurate retry behavior:
+
+- `X-Ratelimit-Reset`
+- `X-Ratelimit-Remaining`
+- `X-Ratelimit-Limit`
+
+This enhancement enables proactive throttling and reduces the likelihood of encountering 429 responses by calculating wait times more precisely.
+
+# 3.2.2 (April 17, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZIA Admin Roles endpoint.
 
 # 3.2.1 (April 17, 2025)
 
