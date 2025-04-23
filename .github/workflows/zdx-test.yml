@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - cron: '0 11 * * 1-5' # UTC
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,10 +19,6 @@ permissions:
   # we recommend testing at a regular interval not necessarily tied to code changes. This will
   # ensure you are alerted to something breaking due to an API change, even if the code did not
   # change.
-
-  schedule:
-    - cron: '0 11 * * 1-5' # UTC
-  workflow_dispatch:
 
 jobs:
   # zdx-zsbeta-tests:
