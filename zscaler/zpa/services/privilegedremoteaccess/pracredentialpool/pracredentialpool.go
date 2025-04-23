@@ -29,6 +29,8 @@ type CredentialPool struct {
 
 	PRACredentials []common.CommonIDName `json:"credentials"`
 
+	CredentialMappingCount string `json:"credentialMappingCount,omitempty"`
+
 	// The time the privileged credential is created.
 	CreationTime string `json:"creationTime,omitempty"`
 
@@ -73,13 +75,24 @@ func GetByName(ctx context.Context, service *zscaler.Service, credentialName str
 }
 
 func Create(ctx context.Context, service *zscaler.Service, credential *CredentialPool) (*CredentialPool, *http.Response, error) {
-	v := new(CredentialPool)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 
-	return v, resp, nil
+	// Do a follow-up GetAll to find the created resource by name
+	all, _, err := GetAll(ctx, service)
+	if err != nil {
+		return nil, resp, fmt.Errorf("credential pool created, but failed to fetch for ID lookup: %w", err)
+	}
+
+	for _, c := range all {
+		if strings.EqualFold(c.Name, credential.Name) {
+			return &c, resp, nil
+		}
+	}
+
+	return nil, resp, fmt.Errorf("credential pool created, but could not locate ID for name: %s", credential.Name)
 }
 
 func Update(ctx context.Context, service *zscaler.Service, credentialID string, credentialRequest *CredentialPool) (*http.Response, error) {

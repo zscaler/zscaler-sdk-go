@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.2.3``
+``Last updated: v3.2.4``
 
 ---
+
+# 3.2.4 (April 23, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #323](https://github.com/zscaler/zscaler-sdk-go/pull/323) – Fixed ZPA resource `pracredentialpool` missing attribute `credentialMappingCount`
+[PR #323](https://github.com/zscaler/zscaler-sdk-go/pull/323) – Fixed ZPA resource `policysetcontrollerv2` attribute `credentialPool` pointer
 
 # 3.2.3 (April 22, 2025)
 
