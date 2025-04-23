@@ -226,23 +226,26 @@ memory cache configure the client with `WithCache(false)`.
 
 ## Connection Retry / Rate Limiting
 
-By default this SDK retries requests that are returned with a 429 exception. To
-disable this functionality set `ZSCALER_CLIENT_REQUEST_TIMEOUT` and
-`ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES` to `0`.
+By default, this SDK retries requests that are returned with a `429` (Too Many Requests) or `503` (Service Unavailable) response. To disable this functionality, set both `ZSCALER_CLIENT_REQUEST_TIMEOUT` and `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES` to `0`.
 
-Setting only one of the values to zero disables that check. Meaning, by
-default, four retry attempts will be made. If you set
-`ZSCALER_CLIENT_REQUEST_TIMEOUT` to 45 seconds and
-`ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES` to `0`. This SDK will continue to retry
-indefinitely for 45 seconds. If both values are non zero, this SDK attempts to
-retry until either of the conditions are met (not both).
+Setting only one of the values to `0` disables that specific check. For example:
 
-We use the Date header from the server to calculate the delta, as it's more
-reliable than system time. But always add 1 second to account for some clock
-skew in our service:
+- If you set `ZSCALER_CLIENT_REQUEST_TIMEOUT=45` and `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES=0`, the SDK will retry **indefinitely** for up to 45 seconds.
+- If both are set to non-zero values, the SDK will retry until **either** condition is met (timeout or max retries).
+- If both are set to `0`, no retries will occur.
+
+### Retry Header Logic
+
+When rate limiting is triggered, the SDK uses the following headers to determine when and how long to wait before retrying:
+
+- `Retry-After` – preferred if available, as it provides an explicit retry duration (in seconds or `duration` format)
+- `X-Ratelimit-Reset` – fallback if `Retry-After` is not present; interpreted as **relative seconds until reset**
+- `X-Ratelimit-Remaining` – used for **proactive backoff** to avoid hitting the rate limit entirely
+
+We add a 1-second buffer to all retry values to account for possible clock skew.
 
 ```go
-backoff_seconds = header['X-Rate-Limit-Reset'] - header['Date'] + 1s
+backoff_seconds = header["X-Ratelimit-Reset"] + 1
 ```
 
 If the `backoff_seconds` calculation exceeds the request timeout, the initial
@@ -265,6 +268,7 @@ func main() {
     zscaler.WithVanityDomain("acme")
     zscaler.WithRequestTimeout(45),
     zscaler.WithRateLimitMaxRetries(3),
+    zscaler.WithRateLimitRemainingThreshold(5),
   )
   if err != nil {
     fmt.Printf("Error: %v\n", err)
@@ -272,6 +276,11 @@ func main() {
   client := zscaler.NewOneAPIClient(config)
 }
 ```
+
+### Notes
+
+- `Retry-After` and `X-Ratelimit-Reset` are interpreted as relative durations, not epoch timestamps.
+- The SDK does not rely on the Date header for timing due to Zscaler’s headers being relative, not absolute.
 
 ### ZPA - List All SCIM Groups By IDP
 
@@ -673,6 +682,7 @@ The client is configured with a configuration setter object passed to the `NewOn
 | WithTestingDisableHttpsCheck(httpsCheck bool) | Disable net/http SSL checks |
 | WithRequestTimeout(requestTimeout int64) | HTTP request time out in seconds |
 | WithRateLimitMaxRetries(maxRetries int32) | Max number of request retries when http request times out |
+| WithRateLimitRemainingThreshold(retryRemainingThreshold int32) | Max number of request retries when http request times out |
 | WithRateLimitMaxWait(maxWait int32) | Max wait time to wait before next retry |
 | WithRateLimitMinWait(minWait int32) | Min wait time to wait before next retry |
 | WithDebug(debug int32) | Enable debug mode for troubleshooting |
@@ -691,6 +701,7 @@ The Zscaler Client's base configuration starts at
 | WithTestingDisableHttpsCheck(false) |
 | WithRequestTimeout(0) |
 | WithRateLimitMaxRetries(2) |
+| WithRateLimitRemainingThreshold (5) |
 
 ### Context
 

@@ -113,7 +113,8 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
-				retryAfter := getRetryAfter(resp, l)
+				// retryAfter := getRetryAfter(resp, l)
+				retryAfter := getRetryAfter(resp, cfg)
 				if retryAfter > 0 {
 					return retryAfter
 				}
@@ -180,6 +181,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	return retryableClient.StandardClient()
 }
 
+/*
 // getRetryAfter checks for the Retry-After header or response body to determine retry wait time.
 func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 	retryAfterHeader := resp.Header.Get("Retry-After")
@@ -224,6 +226,69 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 	}
 
 	// Fallback to default wait time if no Retry-After or x-ratelimit-reset headers exist
+	return time.Second * time.Duration(RetryWaitMinSeconds)
+}
+*/
+
+func getRetryAfter(resp *http.Response, cfg *Configuration) time.Duration {
+	l := cfg.Logger
+	retryAfterHeader := resp.Header.Get("Retry-After")
+	if retryAfterHeader == "" {
+		retryAfterHeader = resp.Header.Get("retry-after")
+	}
+	ratelimitReset := resp.Header.Get("X-Ratelimit-Reset")
+	ratelimitRemaining := resp.Header.Get("X-Ratelimit-Remaining")
+	ratelimitLimit := resp.Header.Get("X-Ratelimit-Limit")
+
+	// Use config-defined threshold, or fallback to 2
+	threshold := cfg.Zscaler.Client.RateLimit.RetryRemainingThreshold
+	if threshold == 0 {
+		threshold = 2
+	}
+
+	// Log everything if debugging
+	if cfg.Debug {
+		l.Printf("[DEBUG] Rate limit headers: Limit=%s, Remaining=%s, Reset=%s, Retry-After=%s",
+			ratelimitLimit, ratelimitRemaining, ratelimitReset, retryAfterHeader)
+	}
+
+	// Preemptive backoff if we're about to be rate limited
+	if ratelimitRemaining != "" {
+		if remaining, err := strconv.Atoi(ratelimitRemaining); err == nil && int32(remaining) < threshold {
+			if ratelimitReset != "" {
+				if resetSecs, err := strconv.Atoi(ratelimitReset); err == nil {
+					l.Printf("[INFO] Approaching rate limit (remaining=%d); waiting %ds", remaining, resetSecs+1)
+					return time.Duration(resetSecs+1) * time.Second
+				}
+			}
+			l.Printf("[INFO] Approaching rate limit and no reset header; fallback delay %ds", RetryWaitMinSeconds)
+			return time.Second * time.Duration(RetryWaitMinSeconds)
+		}
+	}
+
+	// Retry-After header handling
+	if retryAfterHeader != "" {
+		if sleep, err := strconv.ParseInt(retryAfterHeader, 10, 64); err == nil {
+			l.Printf("[INFO] Retry-After used: %ds", sleep)
+			return time.Second * time.Duration(sleep+1)
+		}
+		if dur, err := time.ParseDuration(retryAfterHeader); err == nil {
+			l.Printf("[INFO] Retry-After used (duration): %s", dur)
+			return dur + time.Second
+		}
+		l.Printf("[INFO] Could not parse Retry-After header: %s", retryAfterHeader)
+	}
+
+	// Reset-based retry
+	if ratelimitReset != "" {
+		if resetSecs, err := strconv.Atoi(ratelimitReset); err == nil {
+			l.Printf("[INFO] X-Ratelimit-Reset used: %ds", resetSecs)
+			return time.Duration(resetSecs+1) * time.Second
+		}
+	}
+
+	// Final fallback
+	l.Printf("[INFO] No rate limit headers found; fallback wait: %ds", RetryWaitMinSeconds)
 	return time.Second * time.Duration(RetryWaitMinSeconds)
 }
 
@@ -375,7 +440,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 		// Handle rate-limiting (429 or 503)
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
-			retryAfter := getRetryAfter(resp, c.oauth2Credentials.Logger)
+			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
 				time.Sleep(retryAfter)
 				continue

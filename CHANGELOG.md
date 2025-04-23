@@ -1,6 +1,22 @@
 # Changelog
 
-# 3.2.1 (April 17, 2025)
+# 3.2.3 (April 22, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+[PR #322](https://github.com/zscaler/zscaler-sdk-go/pull/322) – Improved OneAPI client rate limit handling by leveraging all relevant response headers to calculate retry delays and prevent unnecessary 429 responses:
+
+- `Retry-After` (preferred when available)
+- `X-Ratelimit-Reset` (fallback, interpreted as relative seconds)
+- `X-Ratelimit-Remaining` (used for proactive throttling)
+
+The SDK now supports **proactive backoff** when remaining request quota falls below a configurable threshold (default: `2`), helping reduce the chance of hitting rate limits under burst traffic conditions.
+
+You can customize this threshold using the environment variable `ZSCALER_CLIENT_REMAINING_THRESHOLD` or the new config setter `WithRateLimitRemainingThreshold()`.
+
+# 3.2.2 (April 17, 2025)
 
 ## Notes
 - Golang: **v1.22**
@@ -56,6 +72,7 @@
 ### Bug Fixes
 [PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Enhanced Updated function on ZPA `applicationsegmentpra` package to include the attribute `deleteAppsPra` in the payload during PRA application removal.
 [PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZTW Cloud Connector ECGroup `ECVM` Struct.
+[PR #320](https://github.com/zscaler/zscaler-sdk-go/pull/320) - Fixed ZIA Admin Roles endpoint.
 
 # 3.1.14 (April 14, 2025)
 

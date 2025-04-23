@@ -105,9 +105,10 @@ type Configuration struct {
 			} `yaml:"proxy"`
 			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
-				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
-				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				MaxRetries              int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin            time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax            time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				RetryRemainingThreshold int32         `yaml:"remainingThreshold" envconfig:"ZSCALER_CLIENT_REMAINING_THRESHOLD"`
 			} `yaml:"rateLimit"`
 		} `yaml:"client"`
 		Testing struct {
@@ -582,6 +583,13 @@ func WithRateLimitMaxWait(maxWait time.Duration) ConfigSetter {
 func WithRateLimitMinWait(minWait time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RateLimit.RetryWaitMin = minWait
+		setHttpClients(c)
+	}
+}
+
+func WithRateLimitRemainingThreshold(threshold int32) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.RateLimit.RetryRemainingThreshold = threshold
 		setHttpClients(c)
 	}
 }
