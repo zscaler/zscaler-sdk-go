@@ -50,10 +50,11 @@ type ZPAAppSegments struct {
 }
 
 type UserGroups struct {
-	ID       int    `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	IdpID    int    `json:"idp_id,omitempty"`
-	Comments string `json:"comments,omitempty"`
+	ID              int    `json:"id,omitempty"`
+	Name            string `json:"name,omitempty"`
+	IdpID           int    `json:"idp_id,omitempty"`
+	Comments        string `json:"comments,omitempty"`
+	IsSystemDefined string `json:"isSystemDefined,omitempty"`
 }
 
 type UserDepartment struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -29,7 +30,7 @@ type Users struct {
 	Email string `json:"email,omitempty"`
 
 	// List of Groups a user belongs to. Groups are used in policies.
-	Groups []common.IDNameExtensions `json:"groups,omitempty"`
+	Groups []common.UserGroups `json:"groups,omitempty"`
 
 	// Department a user belongs to
 	Department *common.UserDepartment `json:"department,omitempty"`
@@ -164,4 +165,33 @@ func GetAllUsers(ctx context.Context, service *zscaler.Service) ([]Users, error)
 		return nil, err
 	}
 	return users, nil
+}
+
+func GetAllAuditors(ctx context.Context, service *zscaler.Service) ([]Users, error) {
+	var users []Users
+	err := common.ReadAllPages(ctx, service.Client, usersEndpoint+"/auditors", &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func GetUserReferences(ctx context.Context, service *zscaler.Service, name *string, includeAdminUsers *bool) ([]common.IDNameExternalID, error) {
+	endpoint := usersEndpoint + "/references"
+	queryParams := url.Values{}
+
+	if name != nil && strings.TrimSpace(*name) != "" {
+		queryParams.Add("name", *name)
+	}
+	if includeAdminUsers != nil {
+		queryParams.Add("includeAdminUsers", strconv.FormatBool(*includeAdminUsers))
+	}
+
+	if len(queryParams) > 0 {
+		endpoint += "?" + queryParams.Encode()
+	}
+
+	var users []common.IDNameExternalID
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &users)
+	return users, err
 }

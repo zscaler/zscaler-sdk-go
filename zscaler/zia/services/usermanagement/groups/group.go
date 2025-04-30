@@ -2,7 +2,9 @@ package groups
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -26,6 +28,9 @@ type Groups struct {
 
 	// Additional information about the group
 	Comments string `json:"comments,omitempty"`
+
+	// Additional information about the group
+	IsSystemDefined bool `json:"isSystemDefined,omitempty"`
 }
 
 func GetGroups(ctx context.Context, service *zscaler.Service, groupID int) (*Groups, error) {
@@ -69,8 +74,49 @@ func GetGroupByName(ctx context.Context, service *zscaler.Service, targetGroup s
 	return nil, fmt.Errorf("no group found with name: %s", targetGroup)
 }
 
+func Create(ctx context.Context, service *zscaler.Service, groupID *Groups) (*Groups, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, groupsEndpoint, *groupID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	createdGroup, ok := resp.(*Groups)
+	if !ok {
+		return nil, nil, errors.New("object returned from api was not a group pointer")
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG]returning new group from create: %d", createdGroup.ID)
+	return createdGroup, nil, nil
+}
+
+func Update(ctx context.Context, service *zscaler.Service, groupID int, groups *Groups) (*Groups, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", groupsEndpoint, groupID), *groups)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedGroup, _ := resp.(*Groups)
+
+	service.Client.GetLogger().Printf("[DEBUG]returning updates group from update: %d", updatedGroup.ID)
+	return updatedGroup, nil, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service, groupID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", groupsEndpoint, groupID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
 func GetAllGroups(ctx context.Context, service *zscaler.Service) ([]Groups, error) {
 	var groups []Groups
 	err := common.ReadAllPages(ctx, service.Client, groupsEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &groups)
+	return groups, err
+}
+
+func GetAllLite(ctx context.Context, service *zscaler.Service) ([]Groups, error) {
+	var groups []Groups
+	err := common.ReadAllPages(ctx, service.Client, groupsEndpoint+"/lite", &groups)
 	return groups, err
 }

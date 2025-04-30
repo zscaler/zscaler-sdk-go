@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	adminUsersEndpoint = "/zia/api/v1/adminUsers"
+	adminUsersEndpoint     = "/zia/api/v1/adminUsers"
+	passwordExpiryEndpoint = "/zia/api/v1/passwordExpiry/settings"
 )
 
 type AdminUsers struct {
@@ -100,6 +101,11 @@ type ExecMobileAppTokens struct {
 	DeviceName  string `json:"deviceName,omitempty"`
 }
 
+type PasswordExpiry struct {
+	PasswordExpirationEnabled bool `json:"passwordExpirationEnabled,omitempty"`
+	PasswordExpiryDays        int  `json:"passwordExpiryDays,omitempty"`
+}
+
 func GetAdminUsers(ctx context.Context, service *zscaler.Service, adminUserId int) (*AdminUsers, error) {
 	v := new(AdminUsers)
 	relativeURL := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserId)
@@ -171,4 +177,21 @@ func GetAllAdminUsers(ctx context.Context, service *zscaler.Service) ([]AdminUse
 	var adminUsers []AdminUsers
 	err := common.ReadAllPages(ctx, service.Client, adminUsersEndpoint+"?includeAuditorUsers=true&includeAdminUsers=true", &adminUsers)
 	return adminUsers, err
+}
+
+func GetPasswordExpirySettings(ctx context.Context, service *zscaler.Service) ([]PasswordExpiry, error) {
+	var expiry []PasswordExpiry
+	err := common.ReadAllPages(ctx, service.Client, passwordExpiryEndpoint, &expiry)
+	return expiry, err
+}
+
+func UpdatePasswordExpirySettings(ctx context.Context, service *zscaler.Service, advancedSettings *PasswordExpiry) (*PasswordExpiry, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, (passwordExpiryEndpoint), *advancedSettings)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedSettings, _ := resp.(*PasswordExpiry)
+
+	service.Client.GetLogger().Printf("[DEBUG]returning updates password expiry from update: %d", updatedSettings)
+	return updatedSettings, nil, nil
 }

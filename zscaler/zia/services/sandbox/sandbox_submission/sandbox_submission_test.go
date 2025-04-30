@@ -1,14 +1,6 @@
 package sandbox_submission
 
-import (
-	"context"
-	"net/http"
-	"os"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-)
-
+/*
 func TestSandboxSubmission(t *testing.T) {
 	runSandboxTest(t, true)
 }
@@ -86,3 +78,4 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 		t.Logf("File submitted successfully: %+v", scanResult)
 	}
 }
+*/

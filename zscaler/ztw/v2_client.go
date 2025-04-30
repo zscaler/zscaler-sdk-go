@@ -71,6 +71,9 @@ func NewClient(config *Configuration) (*Client, error) {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
 	}
 
+	// Create cancellable context for session ticker
+	ctx, cancel := context.WithCancel(context.Background())
+
 	// Initialize the Client instance
 	cli := &Client{
 		userName:         config.ZTW.Client.ZTWUsername,
@@ -86,7 +89,9 @@ func NewClient(config *Configuration) (*Client, error) {
 		cacheCleanwindow: config.ZTW.Client.Cache.DefaultTti,
 		cacheMaxSizeMB:   int(config.ZTW.Client.Cache.DefaultCacheMaxSizeMB),
 		rateLimiter:      rateLimiter,
-		stopTicker:       make(chan bool),
+		// stopTicker:       make(chan bool),
+		ctx:              ctx,
+		cancelFunc:       cancel,
 		sessionTimeout:   JSessionIDTimeout * time.Minute,
 		sessionRefreshed: time.Time{},
 	}
@@ -100,7 +105,7 @@ func NewClient(config *Configuration) (*Client, error) {
 	cli.cache = cche
 
 	// Start the session refresh ticker
-	cli.startSessionTicker()
+	cli.startSessionTicker(ctx)
 
 	//logger.Printf("[DEBUG] ZTW client successfully initialized with base URL: %s", baseURL)
 	return cli, nil
@@ -492,6 +497,7 @@ func (c *Client) Logout(ctx context.Context) error {
 	return nil
 }
 
+/*
 // startSessionTicker starts a ticker to refresh the session periodically
 func (c *Client) startSessionTicker() {
 	if c.sessionTimeout > 0 {
@@ -517,6 +523,43 @@ func (c *Client) startSessionTicker() {
 		}()
 	} else {
 		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
+	}
+}
+*/
+
+func (c *Client) startSessionTicker(ctx context.Context) {
+	if c.sessionTimeout > 0 {
+		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
+		go func() {
+			for {
+				select {
+				case <-c.sessionTicker.C:
+					c.Lock()
+					if !c.refreshing {
+						c.refreshing = true
+						c.Unlock()
+						c.refreshSession()
+						c.Lock()
+						c.refreshing = false
+					}
+					c.Unlock()
+				case <-ctx.Done():
+					c.sessionTicker.Stop()
+					return
+				}
+			}
+		}()
+	} else {
+		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
+	}
+}
+
+func (c *Client) Close() {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.cancelFunc != nil {
+		c.cancelFunc()
 	}
 }
 

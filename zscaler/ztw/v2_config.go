@@ -74,8 +74,10 @@ type Client struct {
 	cacheMaxSizeMB   int
 	rateLimiter      *rl.RateLimiter
 	sessionTicker    *time.Ticker
-	stopTicker       chan bool
-	refreshing       bool
+	// stopTicker       chan bool
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	refreshing bool
 }
 
 type Session struct {
