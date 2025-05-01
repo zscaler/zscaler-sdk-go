@@ -29,6 +29,7 @@ type NSSServers struct {
 	Name      string `json:"name,omitempty"`
 	Status    string `json:"status,omitempty"`
 	State     string `json:"state,omitempty"`
+	Type      string `json:"type,omitempty"`
 	IcapSvrId int    `json:"icapSvrId,omitempty"`
 }
 
