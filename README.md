@@ -998,11 +998,11 @@ func main() {
 }
 ```
 
-### ZCON native authentication
+### ZTW native authentication
 
 * For authentication via Zscaler Client Connector, you must provide `username`, `password`, `api_key` and `cloud`
 
-The ZCON Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+The ZTW Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
 
 * `zscaler`
 * `zscalerone`
@@ -1014,20 +1014,20 @@ The ZCON Cloud is identified by several cloud name prefixes, which determines wh
 * `zscalerten`
 * `zspreview`
 
-### ZCON Environment variables
+### ZTW Environment variables
 
-You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_KEY`, `ZCON_CLOUD` environment variables, representing your ZCON `username`, `password`, `api_key` and `cloud` respectively.
+You can provide credentials via the `ZTW_USERNAME`, `ZTW_PASSWORD`, `ZTW_API_KEY`, `ZTW_CLOUD` environment variables, representing your ZTW `username`, `password`, `api_key` and `cloud` respectively.
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |
-| `password`       | _(String)_ A string that contains the password for the API admin.| `ZCON_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |
-| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZCON_CLOUD` |
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZTW_USERNAME` |
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZTW_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTW_API_KEY` |
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTW_CLOUD` |
 
-**NOTE**: The Zscaler Cloud Connector (ZCON) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
+**NOTE**: The Zscaler Cloud Connector (ZTW) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
 
-### ZCON Client Initialization
+### ZTW Client Initialization
 
 ```go
 import (
@@ -1035,36 +1035,34 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcon/services/locationmanagement/location"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/location"
 )
 
 func main() {
-	username := os.Getenv("ZCON_USERNAME")
-	password := os.Getenv("ZCON_PASSWORD")
-	apiKey   := os.Getenv("ZCON_API_KEY")
-	zconCloud := os.Getenv("ZCON_CLOUD")
+	username := os.Getenv("ZTW_USERNAME")
+	password := os.Getenv("ZTW_PASSWORD")
+	apiKey   := os.Getenv("ZTW_API_KEY")
+	ztwCloud := os.Getenv("ZTW_CLOUD")
 
-	zconCfg, err := zcon.NewConfiguration(
-		zcon.WithZconUsername(username),
-		zcon.WithZconPassword(password),
-		zcon.WithZconAPIKey(apiKey),
-		zcon.WithZconCloud(zconCloud),
-		zcon.WithDebug(true),
+  ztwCfg, err := ztw.NewConfiguration(
+		ztw.WithZtwUsername(username),
+		ztw.WithZtwPassword(password),
+		ztw.WithZtwAPIKey(apiKey),
+		ztw.WithZtwCloud(ztwCloud),
+		ztw.WithDebug(true),
 	)
 	if err != nil {
-		log.Fatalf("Error creating ZCON configuration: %v", err)
+		log.Fatalf("Error creating ZTW configuration: %v", err)
 	}
 
-	zconClient, err := zcon.NewClient(zconCfg)
+	service, err := zscaler.NewLegacyZtwClient(ztwCfg)
 	if err != nil {
-		log.Fatalf("Failed to create ZCON client: %v", err)
+		log.Fatalf("Error creating ZTW client: %v", err)
 	}
 
-	service := services.New(zconClient)
-
-	ctx := context.Background()
+	ctx := context.TODO()
 	locations, err := location.GetAll(ctx, service)
 	if err != nil {
 		log.Fatalf("Error listing locations: %v", err)

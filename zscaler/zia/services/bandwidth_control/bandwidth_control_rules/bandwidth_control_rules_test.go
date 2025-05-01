@@ -1,7 +1,19 @@
-package groups
+package bandwidth_control_rules
 
-/* {"code":"INVALID_INPUT_ARGUMENT","message":"Authentication type is not hosted"}
-/ * This test only works for Non Zidentity Tenants
+import (
+	"context"
+	"fmt"
+	"log"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+)
+
 const (
 	maxRetries    = 3
 	retryInterval = 2 * time.Second
@@ -32,40 +44,64 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestAccGroupManagement(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	comments := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateComments := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+func TestFirewallFilteringRule(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	group := Groups{
-		Name:     name,
-		Comments: comments,
+	rule := BandwidthControlRules{
+		Name:         name,
+		Description:  name,
+		Order:        1,
+		MaxBandwidth: 100,
+		MinBandwidth: 20,
+		Protocols: []string{
+			"WEBSOCKETSSL_RULE",
+			"WEBSOCKET_RULE",
+			"DOHTTPS_RULE",
+			"TUNNELSSL_RULE",
+			"HTTP_PROXY",
+			"FOHTTP_RULE",
+			"FTP_RULE",
+			"HTTPS_RULE",
+			"HTTP_RULE",
+			"SSL_RULE",
+			"TUNNEL_RULE"},
+		BandwidthClasses: []common.IDNameExtensions{
+			{
+				ID: 4,
+			},
+			{
+				ID: 8,
+			},
+		},
 	}
 
-	var createdResource *Groups
+	var createdResource *BandwidthControlRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = Create(context.Background(), service, &group)
+		createdResource, err = Create(context.Background(), service, &rule)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
+	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-zero, but got 0")
+		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created group '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -73,52 +109,54 @@ func TestAccGroupManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved group '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved bandwidth control rule '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
-	retrievedResource.Comments = updateComments
+	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := GetGroups(context.Background(), service, createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Comments != updateComments {
-		t.Errorf("Expected retrieved updated resource description '%s', but got '%s'", updateComments, updatedResource.Comments)
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetGroupByName(context.Background(), service, name)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	if retrievedByNameResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedResource.Comments != updateComments {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, err := GetAllGroups(context.Background(), service)
+	allResources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(resources) == 0 {
+	if len(allResources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
+
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range resources {
+	for _, resource := range allResources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -127,25 +165,32 @@ func TestAccGroupManagement(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
+	// Introduce a delay before deleting
+	time.Sleep(5 * time.Second) // sleep for 5 seconds
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
+		_, getErr := Get(context.Background(), service, createdResource.ID)
+		if getErr != nil {
+			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
+		}
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = GetGroups(context.Background(), service, createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*Groups, error) {
-	var resource *Groups
+func tryRetrieveResource(s *zscaler.Service, id int) (*BandwidthControlRules, error) {
+	var resource *BandwidthControlRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		// Use the passed context (ctx) instead of context.Background()
-		resource, err = GetGroups(ctx, service, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -159,10 +204,10 @@ func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) 
 func TestRetrieveNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = GetGroups(context.Background(), service, 0)
+	_, err = Get(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -171,8 +216,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 func TestDeleteNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
+
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
@@ -182,10 +228,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 func TestUpdateNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(context.Background(), service, 0, &Groups{})
+	_, err = Update(context.Background(), service, 0, &BandwidthControlRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -194,12 +240,11 @@ func TestUpdateNonExistentResource(t *testing.T) {
 func TestGetByNameNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = GetGroupByName(context.Background(), service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/
