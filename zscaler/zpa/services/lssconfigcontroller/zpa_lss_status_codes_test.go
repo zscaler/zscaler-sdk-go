@@ -15,6 +15,11 @@ func TestGetAllStatusCodes(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	statusCodes, resp, err := GetStatusCodes(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Failed to get status codes: %v", err)
@@ -43,6 +48,11 @@ func TestStatusCodesErrorResponse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// Fetch the client types and the HTTP response
 	statusCodes, httpResponse, err := GetStatusCodes(context.Background(), service)

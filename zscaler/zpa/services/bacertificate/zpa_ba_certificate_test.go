@@ -22,6 +22,12 @@ func TestBACertificates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Certificate generation
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {

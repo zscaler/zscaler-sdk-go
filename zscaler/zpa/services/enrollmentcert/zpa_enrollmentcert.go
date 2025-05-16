@@ -43,17 +43,21 @@ type EnrollmentCert struct {
 }
 
 type GenerateEnrollmentCSR struct {
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name                    string `json:"name,omitempty"`
+	Description             string `json:"description,omitempty"`
+	ZRSAEncryptedPrivateKey string `json:"zrsaencryptedprivatekey,omitempty"`
+	CSR                     string `json:"csr,omitempty"`
 }
 
 type GenerateSelfSignedCert struct {
-	Name                string `json:"name,omitempty"`
-	Description         string `json:"description,omitempty"`
-	ValidFromInEpochSec string `json:"validFromInEpochSec,omitempty"`
-	ValidToInEpochSec   string `json:"validToInEpochSec,omitempty"`
-	RootCertificateID   string `json:"rootCertificateId,omitempty"`
-	MicrotenantID       string `json:"microtenantId,omitempty"`
+	Name                    string `json:"name,omitempty"`
+	Description             string `json:"description,omitempty"`
+	ValidFromInEpochSec     string `json:"validFromInEpochSec,omitempty"`
+	ValidToInEpochSec       string `json:"validToInEpochSec,omitempty"`
+	RootCertificateID       string `json:"rootCertificateId,omitempty"`
+	MicrotenantID           string `json:"microtenantId,omitempty"`
+	ZRSAEncryptedPrivateKey string `json:"zrsaencryptedprivatekey,omitempty"`
+	Certificate             string `json:"certificate,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, id string) (*EnrollmentCert, *http.Response, error) {
@@ -83,20 +87,20 @@ func GetByName(ctx context.Context, service *zscaler.Service, certName string) (
 
 func Create(ctx context.Context, service *zscaler.Service, cert *EnrollmentCert) (*EnrollmentCert, *http.Response, error) {
 	v := new(EnrollmentCert)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint, cert, v, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint, nil, cert, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, certID string, Cert *EnrollmentCert) (*http.Response, error) {
+func Update(ctx context.Context, service *zscaler.Service, certID string, cert *EnrollmentCert) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint, certID)
-	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, Cert, nil, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, nil, cert, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, certID string) (*http.Response, error) {
@@ -119,7 +123,7 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]EnrollmentCert, *h
 
 func GenerateCSR(ctx context.Context, service *zscaler.Service, cert *GenerateEnrollmentCSR) (*GenerateEnrollmentCSR, *http.Response, error) {
 	v := new(GenerateEnrollmentCSR)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint+"/csr/generate", cert, v, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint+"/csr/generate", nil, cert, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -128,7 +132,7 @@ func GenerateCSR(ctx context.Context, service *zscaler.Service, cert *GenerateEn
 
 func GenerateSelfSigned(ctx context.Context, service *zscaler.Service, cert *GenerateSelfSignedCert) (*GenerateSelfSignedCert, *http.Response, error) {
 	v := new(GenerateSelfSignedCert)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint+"/selfsigned/generate", cert, v, nil)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint+"/selfsigned/generate", nil, cert, v)
 	if err != nil {
 		return nil, nil, err
 	}

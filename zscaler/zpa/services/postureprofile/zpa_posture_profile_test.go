@@ -17,6 +17,11 @@ func TestPostureProfiles(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -78,6 +83,11 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting posture profiles: %v", err)
@@ -108,6 +118,11 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// Assuming a profile with the name "CrowdStrike_ZPA_ZTA_40" exists
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -173,6 +188,11 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Use GetByName to fetch a known Posture Profile
 	knownName := "CrowdStrike_ZPA_ZTA_40"
 	posture, _, err := GetByName(context.Background(), service, knownName)
@@ -200,6 +220,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

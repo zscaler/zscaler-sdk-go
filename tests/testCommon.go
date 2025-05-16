@@ -12,6 +12,7 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
@@ -173,4 +174,36 @@ func NewZdxClient() (*zdx.Client, error) {
 	}
 
 	return zdxClient, nil
+}
+
+func NewZPAClient() (*zscaler.Service, error) {
+	// Fetch credentials from environment variables
+	client_id := os.Getenv("ZPA_CLIENT_ID")
+	client_secret := os.Getenv("ZPA_CLIENT_SECRET")
+	customer_id := os.Getenv("ZPA_CUSTOMER_ID")
+	cloud := os.Getenv("ZPA_CLOUD")
+
+	if client_id == "" || client_secret == "" || customer_id == "" || cloud == "" {
+		return nil, fmt.Errorf("missing ZPA credentials: ensure ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID and ZPA_CLOUD environment variables are set")
+	}
+
+	// Create a new ZPA configuration
+	zpaCfg, err := zpa.NewConfiguration(
+		zpa.WithZPAClientID(client_id),
+		zpa.WithZPAClientSecret(client_secret),
+		zpa.WithZPACustomerID(customer_id),
+		zpa.WithZPACloud(cloud),
+		zpa.WithDebug(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZPA configuration: %w", err)
+	}
+
+	// ✅ Return the legacy client (type *zscaler.Service)
+	service, err := zscaler.NewLegacyZpaClient(zpaCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ZPA legacy client: %w", err)
+	}
+
+	return service, nil
 }

@@ -16,6 +16,11 @@ func TestCredentialController(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	credController := Credential{
 		Name:           name,
 		Description:    name,
@@ -124,6 +129,11 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
@@ -135,6 +145,11 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
@@ -148,6 +163,11 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, err = Update(context.Background(), service, "non_existent_id", &Credential{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
@@ -159,6 +179,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
@@ -176,6 +201,11 @@ func TestPRACredentialMove(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// Step 1: Create a new Microtenant
 	authDomainList, _, err := authdomain.GetAllAuthDomains(service)

@@ -55,7 +55,19 @@ type PRAPortal struct {
 	// Indicates if the Notification Banner is enabled (true) or disabled (false).
 	UserNotificationEnabled bool `json:"userNotificationEnabled"`
 
-	MicroTenantID string `json:"microtenantId,omitempty"`
+	ExtDomain string `json:"extDomain"`
+
+	ExtDomainName string `json:"extDomainName"`
+
+	ExtDomainTranslation string `json:"extDomainTranslation"`
+
+	ExtLabel string `json:"extLabel"`
+
+	UserPortalGid string `json:"userPortalGid,omitempty"`
+
+	UserPortalName string `json:"userPortalName,omitempty"`
+
+	GetcName string `json:"getcName,omitempty"`
 
 	// The name of the Microtenant.
 	MicroTenantName string `json:"microtenantName,omitempty"`

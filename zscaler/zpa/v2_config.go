@@ -31,7 +31,7 @@ const (
 )
 
 const (
-	VERSION           = "3.1.4"
+	VERSION           = "3.4.0"
 	ZPA_CLIENT_ID     = "ZPA_CLIENT_ID"
 	ZPA_CLIENT_SECRET = "ZPA_CLIENT_SECRET"
 	ZPA_CUSTOMER_ID   = "ZPA_CUSTOMER_ID"

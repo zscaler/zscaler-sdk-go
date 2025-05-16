@@ -23,6 +23,11 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	appGroup := appconnectorgroup.AppConnectorGroup{
 		Name:                     appConnGroupName,
 		Description:              appConnGroupName,

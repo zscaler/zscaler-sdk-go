@@ -154,11 +154,63 @@ func NewLegacyZpaClient(config *zpa.Configuration) (*Service, error) {
 	)
 }
 
-type ScimService struct {
-	ScimClient *zpa.ScimClient
+// type ScimService struct {
+// 	ScimClient *zpa.ScimClient
+// }
+
+// // NewScimService initializes a SCIM-based ZPA Service with *zpa.ScimConfig
+// func NewScimService(scimClient *zpa.ScimClient) *ScimService {
+// 	return &ScimService{ScimClient: scimClient}
+// }
+
+type ScimZPAService struct {
+	Config *zpa.ScimConfiguration
+	Client *zpa.ScimZpaClient
 }
 
-// NewScimService initializes a SCIM-based ZPA Service with *zpa.ScimConfig
-func NewScimService(scimClient *zpa.ScimClient) *ScimService {
-	return &ScimService{ScimClient: scimClient}
+func NewZPAScimService(cfg *zpa.ScimConfiguration) *ScimZPAService {
+	if cfg == nil {
+		return nil
+	}
+
+	return &ScimZPAService{
+		Config: cfg,
+		Client: &zpa.ScimZpaClient{
+			ScimConfig: &zpa.ZPAScimConfig{
+				BaseURL:     cfg.BaseURL,
+				HTTPClient:  cfg.HTTPClient,
+				AuthToken:   cfg.ZPAScim.Client.ZPAScimToken,
+				IDPId:       cfg.ZPAScim.Client.ZPAIdPID,
+				Logger:      cfg.Logger,
+				UserAgent:   cfg.UserAgent,
+				RateLimiter: nil,
+			},
+		},
+	}
+}
+
+type ScimZIAService struct {
+	Config *zia.ScimConfiguration
+	Client *zia.ScimZiaClient
+}
+
+func NewZIAScimService(cfg *zia.ScimConfiguration) *ScimZIAService {
+	if cfg == nil {
+		return nil
+	}
+
+	return &ScimZIAService{
+		Config: cfg,
+		Client: &zia.ScimZiaClient{
+			ScimConfig: &zia.ZIAScimConfig{
+				BaseURL:     cfg.BaseURL,
+				HTTPClient:  cfg.HTTPClient,
+				AuthToken:   cfg.ZIAScim.Client.ZIAScimApiToken,
+				TenantID:    cfg.ZIAScim.Client.ZIAScimTenantID,
+				Logger:      cfg.Logger,
+				UserAgent:   cfg.UserAgent,
+				RateLimiter: nil,
+			},
+		},
+	}
 }

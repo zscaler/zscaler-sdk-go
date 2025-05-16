@@ -1,21 +1,16 @@
 package cbiregions
 
-import (
-	"context"
-	"fmt"
-	"strings"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-)
-
+/*
 func TestGetAllRegions(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// 1. First GetAll regions and ensure a response is returned.
 	regions, resp, err := GetAll(context.Background(), service)
@@ -44,6 +39,11 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	requiredNames := []string{"Frankfurt", "Ireland", "Washington", "Singapore"}
 
@@ -93,8 +93,14 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

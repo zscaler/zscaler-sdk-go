@@ -17,21 +17,21 @@ const (
 )
 
 type AppConnectorGroup struct {
+	ID                            string                                `json:"id,omitempty"`
+	Name                          string                                `json:"name,omitempty"`
+	Description                   string                                `json:"description,omitempty"`
+	Enabled                       bool                                  `json:"enabled"`
 	CityCountry                   string                                `json:"cityCountry"`
 	CountryCode                   string                                `json:"countryCode,omitempty"`
 	CreationTime                  string                                `json:"creationTime,omitempty"`
-	Description                   string                                `json:"description,omitempty"`
 	DNSQueryType                  string                                `json:"dnsQueryType,omitempty"`
-	Enabled                       bool                                  `json:"enabled"`
 	ConnectorGroupType            string                                `json:"connectorGroupType,omitempty"`
 	GeoLocationID                 string                                `json:"geoLocationId,omitempty"`
-	ID                            string                                `json:"id,omitempty"`
 	Latitude                      string                                `json:"latitude,omitempty"`
 	Location                      string                                `json:"location,omitempty"`
 	Longitude                     string                                `json:"longitude,omitempty"`
 	ModifiedBy                    string                                `json:"modifiedBy,omitempty"`
 	ModifiedTime                  string                                `json:"modifiedTime,omitempty"`
-	Name                          string                                `json:"name,omitempty"`
 	OverrideVersionProfile        bool                                  `json:"overrideVersionProfile"`
 	PRAEnabled                    bool                                  `json:"praEnabled"`
 	WAFDisabled                   bool                                  `json:"wafDisabled"`
@@ -49,6 +49,10 @@ type AppConnectorGroup struct {
 	MicroTenantName               string                                `json:"microtenantName,omitempty"`
 	SiteID                        string                                `json:"siteId,omitempty"`
 	SiteName                      string                                `json:"siteName,omitempty"`
+	ReadOnly                      bool                                  `json:"readOnly,omitempty"`
+	RestrictionType               string                                `json:"restrictionType,omitempty"`
+	ZscalerManaged                bool                                  `json:"zscalerManaged,omitempty"`
+	DCHostingInfo                 string                                `json:"dcHostingInfo,omitempty"`
 	AppServerGroup                []AppServerGroup                      `json:"serverGroups,omitempty"`
 	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
 	NPAssistantGroup              NPAssistantGroup                      `json:"npAssistantGroup,omitempty"`
@@ -67,27 +71,28 @@ type AppServerGroup struct {
 }
 
 type NPAssistantGroup struct {
+	ID                  string      `json:"id,omitempty"`
 	AppConnectorGroupID string      `json:"appConnectorGroupId,omitempty"`
 	CreationTime        string      `json:"creationTime,omitempty"`
-	ID                  string      `json:"id,omitempty"`
-	LanSubnets          []LanSubnet `json:"lanSubnets,omitempty"`
 	ModifiedBy          string      `json:"modifiedBy,omitempty"`
 	ModifiedTime        string      `json:"modifiedTime,omitempty"`
+	MTU                 string      `json:"mtu,omitempty"`
+	LanSubnets          []LanSubnet `json:"lanSubnets,omitempty"`
 }
 
 type LanSubnet struct {
+	ID                  string        `json:"id,omitempty"`
+	Name                string        `json:"name,omitempty"`
+	Description         string        `json:"description,omitempty"`
 	AppConnectorGroupID string        `json:"appConnectorGroupId,omitempty"`
 	CreationTime        string        `json:"creationTime,omitempty"`
-	Description         string        `json:"description,omitempty"`
-	FQDNs               []string      `json:"fqdns,omitempty"`
-	ID                  string        `json:"id,omitempty"`
 	ModifiedBy          string        `json:"modifiedBy,omitempty"`
 	ModifiedTime        string        `json:"modifiedTime,omitempty"`
-	Name                string        `json:"name,omitempty"`
 	NPDnsNsRecord       NPDnsNsRecord `json:"npDnsNsRecord,omitempty"`
-	NPServerIPs         []string      `json:"npserverips,omitempty"`
 	OldAuditString      string        `json:"oldAuditString,omitempty"`
 	Subnet              string        `json:"subnet,omitempty"`
+	NPServerIPs         []string      `json:"npserverips,omitempty"`
+	FQDNs               []string      `json:"fqdns,omitempty"`
 }
 
 type NPDnsNsRecord struct {

@@ -25,11 +25,15 @@ type ServerGroup struct {
 	IpAnchored         bool                                    `json:"ipAnchored"`
 	ConfigSpace        string                                  `json:"configSpace,omitempty"`
 	DynamicDiscovery   bool                                    `json:"dynamicDiscovery"`
+	ExtranetEnabled    bool                                    `json:"extranetEnabled"`
 	CreationTime       string                                  `json:"creationTime,omitempty"`
 	ModifiedBy         string                                  `json:"modifiedBy,omitempty"`
 	ModifiedTime       string                                  `json:"modifiedTime,omitempty"`
 	MicroTenantID      string                                  `json:"microtenantId,omitempty"`
 	MicroTenantName    string                                  `json:"microtenantName,omitempty"`
+	ReadOnly           bool                                    `json:"readOnly,omitempty"`
+	RestrictionType    string                                  `json:"restrictionType,omitempty"`
+	ZscalerManaged     bool                                    `json:"zscalerManaged,omitempty"`
 	AppConnectorGroups []appconnectorgroup.AppConnectorGroup   `json:"appConnectorGroups"`
 	Servers            []appservercontroller.ApplicationServer `json:"servers"`
 	Applications       []Applications                          `json:"applications"`

@@ -51,6 +51,7 @@ type PolicyRuleResource struct {
 	ExtranetEnabled              bool                                  `json:"extranetEnabled,omitempty"`
 	Action                       string                                `json:"action,omitempty"`
 	ActionID                     string                                `json:"actionId,omitempty"`
+	PostActions                  map[string]interface{}                `json:"postActions,omitempty"`
 	CreationTime                 string                                `json:"creationTime,omitempty"`
 	ModifiedBy                   string                                `json:"modifiedBy,omitempty"`
 	ModifiedTime                 string                                `json:"modifiedTime,omitempty"`
@@ -70,6 +71,9 @@ type PolicyRuleResource struct {
 	ZpnInspectionProfileName     string                                `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID                string                                `json:"microtenantId"`
 	MicroTenantName              string                                `json:"microtenantName,omitempty"`
+	ReadOnly                     bool                                  `json:"readOnly,omitempty"`
+	RestrictionType              string                                `json:"restrictionType,omitempty"`
+	ZscalerManaged               bool                                  `json:"zscalerManaged,omitempty"`
 	Conditions                   []PolicyRuleResourceConditions        `json:"conditions"`
 	AppServerGroups              []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
@@ -78,7 +82,7 @@ type PolicyRuleResource struct {
 	CredentialPool               *Credential                           `json:"credentialPool"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
-	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
+	ExtranetDTO                  common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
 }
 
 type Conditions struct {
@@ -113,6 +117,7 @@ type PolicyRule struct {
 	Name                         string                                `json:"name,omitempty"`
 	Action                       string                                `json:"action,omitempty"`
 	ActionID                     string                                `json:"actionId,omitempty"`
+	PostActions                  map[string]interface{}                `json:"postActions,omitempty"`
 	CustomMsg                    string                                `json:"customMsg,omitempty"`
 	Description                  string                                `json:"description,omitempty"`
 	Disabled                     string                                `json:"disabled,omitempty"`
@@ -132,6 +137,9 @@ type PolicyRule struct {
 	ZpnInspectionProfileName     string                                `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID                string                                `json:"microtenantId"`
 	MicroTenantName              string                                `json:"microtenantName,omitempty"`
+	ReadOnly                     bool                                  `json:"readOnly,omitempty"`
+	RestrictionType              string                                `json:"restrictionType,omitempty"`
+	ZscalerManaged               bool                                  `json:"zscalerManaged,omitempty"`
 	AppServerGroups              []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
@@ -139,7 +147,7 @@ type PolicyRule struct {
 	Credential                   *Credential                           `json:"credential,omitempty"`
 	CredentialPool               *Credential                           `json:"credentialPool,omitempty"`
 	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
-	ExtranetDTO                  ExtranetDTO                           `json:"extranetDTO,omitempty"`
+	ExtranetDTO                  common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
 	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
 }
 
@@ -183,29 +191,6 @@ type PrivilegedCapabilities struct {
 	ModifiedTime  string   `json:"modifiedTime,omitempty"`
 	MicroTenantID string   `json:"microtenantId"`
 	Capabilities  []string `json:"capabilities,omitempty"`
-}
-
-type ExtranetDTO struct {
-	LocationDTO      []LocationDTO      `json:"locationDTO,omitempty"`
-	LocationGroupDTO []LocationGroupDTO `json:"locationGroupDTO,omitempty"`
-	ZiaErName        string             `json:"ziaErName,omitempty"`
-	ZpnErID          string             `json:"zpnErId,omitempty"`
-}
-
-type LocationDTO struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-type LocationGroupDTO struct {
-	ID           string        `json:"id,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	ZiaLocations []ZiaLocation `json:"ziaLocations,omitempty"`
-}
-
-type ZiaLocation struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
 }
 
 type PrivilegedPortalCapabilities struct {

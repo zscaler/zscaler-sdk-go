@@ -53,9 +53,10 @@ func GetByName(ctx context.Context, service *zscaler.Service, samlAttrName strin
 	return nil, resp, fmt.Errorf("no saml attribute named '%s' was found", samlAttrName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, attribute *SamlAttribute) (*SamlAttribute, *http.Response, error) {
+func Create(ctx context.Context, service *zscaler.Service, samlAttribute *SamlAttribute) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, attribute, v, nil)
+	url := fmt.Sprintf("%s%s%s", mgmtConfigV1, service.Client.GetCustomerID(), samlAttributeEndpoint)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", url, nil, samlAttribute, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -63,21 +64,21 @@ func Create(ctx context.Context, service *zscaler.Service, attribute *SamlAttrib
 }
 
 func Update(ctx context.Context, service *zscaler.Service, samlAttributeID string, attribute *SamlAttribute) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, samlAttributeID)
-	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, attribute, nil, nil)
+	url := fmt.Sprintf("%s%s%s%s", mgmtConfigV1, service.Client.GetCustomerID(), samlAttributeEndpoint+"/", samlAttributeID)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", url, nil, attribute, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, samlAttributeID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, samlAttributeID)
-	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
+	url := fmt.Sprintf("%s%s%s%s", mgmtConfigV1, service.Client.GetCustomerID(), samlAttributeEndpoint+"/", samlAttributeID)
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", url, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]SamlAttribute, *http.Response, error) {

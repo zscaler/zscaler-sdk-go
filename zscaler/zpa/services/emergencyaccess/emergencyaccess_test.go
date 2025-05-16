@@ -21,6 +21,10 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 	// Create new resource
 	createdResource, _, err := Create(context.Background(), service, &EmergencyAccess{
 		ActivatedOn:       "1",

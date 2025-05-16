@@ -34,6 +34,8 @@ type AppSegmentInspection struct {
 	ICMPAccessType            string                    `json:"icmpAccessType,omitempty"`
 	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled,omitempty"`
 	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	APIProtectionEnabled      bool                      `json:"apiProtectionEnabled"`
+	ExtranetEnabled           bool                      `json:"extranetEnabled"`
 	MatchStyle                string                    `json:"matchStyle,omitempty"`
 	SelectConnectorCloseToApp bool                      `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                      `json:"doubleEncrypt"`
@@ -49,6 +51,10 @@ type AppSegmentInspection struct {
 	UseInDrMode               bool                      `json:"useInDrMode"`
 	MicroTenantID             string                    `json:"microtenantId,omitempty"`
 	MicroTenantName           string                    `json:"microtenantName,omitempty"`
+	ReadOnly                  bool                      `json:"readOnly,omitempty"`
+	RestrictionType           string                    `json:"restrictionType,omitempty"`
+	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
@@ -59,6 +65,7 @@ type AppSegmentInspection struct {
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
 	AppServerGroups           []servergroup.ServerGroup `json:"serverGroups,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
+	ZPNERID                   common.ZPNERID            `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {

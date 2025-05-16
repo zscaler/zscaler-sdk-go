@@ -16,6 +16,7 @@ const (
 )
 
 type AdministratorController struct {
+	ID                   string   `json:"id,omitempty"`
 	Username             string   `json:"username,omitempty"`
 	DisplayName          string   `json:"displayName,omitempty"`
 	Email                string   `json:"email,omitempty"`
@@ -35,12 +36,17 @@ type AdministratorController struct {
 	LocalLoginDisabled   bool     `json:"localLoginDisabled,omitempty"`
 	PinSession           bool     `json:"pinSession,omitempty"`
 	IsLocked             bool     `json:"isLocked,omitempty"`
-	SyncVersion          int      `json:"syncVersion,omitempty"`
-	DeliveryTag          int      `json:"deliveryTag,omitempty"`
+	SyncVersion          string   `json:"syncVersion,omitempty"`
+	DeliveryTag          string   `json:"deliveryTag,omitempty"`
 	OperationType        string   `json:"operationType,omitempty"`
 	GroupIds             []string `json:"groupIds,omitempty"`
-	MicrotenantId        int      `json:"microtenantId,omitempty"`
+	MicrotenantId        string   `json:"microtenantId,omitempty"`
 	MicrotenantName      string   `json:"microtenantName,omitempty"`
+	Role                 Role     `json:"role,omitempty"`
+}
+
+type Role struct {
+	ID string `json:"id,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, adminID string) (*AdministratorController, *http.Response, error) {
@@ -96,6 +102,7 @@ func Delete(ctx context.Context, service *zscaler.Service, adminID string) (*htt
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]AdministratorController, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + administratorEndpoint
+
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AdministratorController](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

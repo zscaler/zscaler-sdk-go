@@ -18,27 +18,25 @@ const (
 )
 
 type ServiceEdgeGroup struct {
+	ID                            string                                        `json:"id,omitempty"`
+	Name                          string                                        `json:"name,omitempty"`
+	Description                   string                                        `json:"description,omitempty"`
+	Enabled                       bool                                          `json:"enabled"`
 	CityCountry                   string                                        `json:"cityCountry,omitempty"`
 	CountryCode                   string                                        `json:"countryCode,omitempty"`
 	CreationTime                  string                                        `json:"creationTime,omitempty"`
-	Description                   string                                        `json:"description,omitempty"`
-	Enabled                       bool                                          `json:"enabled"`
 	GeoLocationID                 string                                        `json:"geoLocationId,omitempty"`
 	GraceDistanceEnabled          bool                                          `json:"graceDistanceEnabled"`
 	GraceDistanceValue            string                                        `json:"graceDistanceValue,omitempty"`
 	GraceDistanceValueUnit        string                                        `json:"graceDistanceValueUnit,omitempty"`
-	ID                            string                                        `json:"id,omitempty"`
 	IsPublic                      string                                        `json:"isPublic,omitempty"`
 	Latitude                      string                                        `json:"latitude,omitempty"`
 	Location                      string                                        `json:"location,omitempty"`
 	Longitude                     string                                        `json:"longitude,omitempty"`
 	ModifiedBy                    string                                        `json:"modifiedBy,omitempty"`
 	ModifiedTime                  string                                        `json:"modifiedTime,omitempty"`
-	Name                          string                                        `json:"name,omitempty"`
 	UseInDrMode                   bool                                          `json:"useInDrMode"`
 	OverrideVersionProfile        bool                                          `json:"overrideVersionProfile"`
-	ServiceEdges                  []serviceedgecontroller.ServiceEdgeController `json:"serviceEdges,omitempty"`
-	TrustedNetworks               []trustednetwork.TrustedNetwork               `json:"trustedNetworks,omitempty"`
 	UpgradeDay                    string                                        `json:"upgradeDay,omitempty"`
 	UpgradeTimeInSecs             string                                        `json:"upgradeTimeInSecs,omitempty"`
 	VersionProfileID              string                                        `json:"versionProfileId,omitempty"`
@@ -52,6 +50,11 @@ type ServiceEdgeGroup struct {
 	MicroTenantName               string                                        `json:"microtenantName,omitempty"`
 	SiteID                        string                                        `json:"siteId,omitempty"`
 	SiteName                      string                                        `json:"siteName,omitempty"`
+	ReadOnly                      bool                                          `json:"readOnly,omitempty"`
+	RestrictionType               string                                        `json:"restrictionType,omitempty"`
+	ZscalerManaged                bool                                          `json:"zscalerManaged,omitempty"`
+	ServiceEdges                  []serviceedgecontroller.ServiceEdgeController `json:"serviceEdges,omitempty"`
+	TrustedNetworks               []trustednetwork.TrustedNetwork               `json:"trustedNetworks,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, serviceEdgeGroupID string) (*ServiceEdgeGroup, *http.Response, error) {

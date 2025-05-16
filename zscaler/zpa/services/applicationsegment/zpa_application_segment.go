@@ -55,6 +55,9 @@ type ApplicationSegmentResource struct {
 	MicroTenantID             string                                           `json:"microtenantId,omitempty"`
 	MicroTenantName           string                                           `json:"microtenantName,omitempty"`
 	MatchStyle                string                                           `json:"matchStyle,omitempty"`
+	ReadOnly                  bool                                             `json:"readOnly,omitempty"`
+	RestrictionType           string                                           `json:"restrictionType,omitempty"`
+	ZscalerManaged            bool                                             `json:"zscalerManaged,omitempty"`
 	TCPPortRanges             []string                                         `json:"tcpPortRanges"`
 	UDPPortRanges             []string                                         `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts                            `json:"tcpPortRange,omitempty"`
@@ -66,7 +69,7 @@ type ApplicationSegmentResource struct {
 	ClientlessApps            []applicationsegmentbrowseraccess.ClientlessApps `json:"clientlessApps,omitempty"`
 	ShareToMicrotenants       []string                                         `json:"shareToMicrotenants"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
-	ZPNERID                   ZPNERID                                          `json:"zpnErId"`
+	ZPNERID                   common.ZPNERID                                   `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -94,18 +97,6 @@ type AppServerGroups struct {
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
 	Name             string `json:"name"`
-}
-
-type ZPNERID struct {
-	ID              string `json:"id,omitempty"`
-	CreationTime    string `json:"creationTime,omitempty"`
-	ModifiedBy      string `json:"modifiedBy,omitempty"`
-	ModifiedTime    string `json:"modifiedTime,omitempty"`
-	ZIACloud        string `json:"ziaCloud,omitempty"`
-	ZIAErID         string `json:"ziaErId,omitempty"`
-	ZIAErName       string `json:"ziaErName,omitempty"`
-	ZIAModifiedTime string `json:"ziaModifiedTime,omitempty"`
-	ZIAOrgID        string `json:"ziaOrgId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {

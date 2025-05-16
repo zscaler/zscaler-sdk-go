@@ -14,6 +14,11 @@ func TestGetAllPlatforms(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Test case: Normal scenario
 	t.Run("TestGetAllPlatformsNormal", func(t *testing.T) {
 		platforms, resp, err := GetAllPlatforms(context.Background(), service)

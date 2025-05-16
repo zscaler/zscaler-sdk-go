@@ -58,6 +58,9 @@ type AppConnector struct {
 	UpgradeStatus                    string                       `json:"upgradeStatus,omitempty"`
 	MicroTenantID                    string                       `json:"microtenantId,omitempty"`
 	MicroTenantName                  string                       `json:"microtenantName,omitempty"`
+	ReadOnly                         bool                         `json:"readOnly,omitempty"`
+	RestrictionType                  string                       `json:"restrictionType,omitempty"`
+	ZscalerManaged                   bool                         `json:"zscalerManaged,omitempty"`
 	ZPNSubModuleUpgrade              []common.ZPNSubModuleUpgrade `json:"zpnSubModuleUpgradeList,omitempty"`
 }
 

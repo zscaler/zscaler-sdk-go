@@ -27,6 +27,7 @@ type CloudConnectorGroup struct {
 	Name            string            `json:"name,omitempty"`
 	ZiaCloud        string            `json:"ziaCloud,omitempty"`
 	ZiaOrgid        string            `json:"ziaOrgId,omitempty"`
+	ZnfGroupType    string            `json:"znfGroupType,omitempty"`
 }
 
 type CloudConnectors struct {
@@ -43,6 +44,9 @@ type CloudConnectors struct {
 	SigningCert     map[string]interface{} `json:"signingCert,omitempty"`
 	MicroTenantID   string                 `json:"microtenantId,omitempty"`
 	MicroTenantName string                 `json:"microtenantName,omitempty"`
+	ReadOnly        bool                   `json:"readOnly,omitempty"`
+	RestrictionType string                 `json:"restrictionType,omitempty"`
+	ZscalerManaged  bool                   `json:"zscalerManaged,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {

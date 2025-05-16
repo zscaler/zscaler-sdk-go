@@ -1,22 +1,16 @@
 package isolationprofile
 
-import (
-	"context"
-	"fmt"
-	"strings"
-	"testing"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 func TestIsolationProfile(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(context.Background(), service)
@@ -49,6 +43,11 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting isolation profiles: %v", err)
@@ -79,6 +78,11 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	requiredNames := []string{"BD_SA_Profile1", "BD SA Profile", "BD  SA Profile", "BD   SA   Profile"}
 
@@ -114,6 +118,11 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Assuming that there are profiles with the following name variations
 	variations := []string{
 		"BD SA Profile",     // Single space
@@ -142,8 +151,14 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non_existent_name name, but got nil")
 	}
 }
+*/

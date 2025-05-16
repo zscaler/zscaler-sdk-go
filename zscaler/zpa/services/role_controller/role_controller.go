@@ -25,7 +25,7 @@ type RoleController struct {
 	MicrotenantID             string                 `json:"microtenantId,omitempty"`
 	MicrotenantName           string                 `json:"microtenantName,omitempty"`
 	Description               string                 `json:"description,omitempty"`
-	BypassAccestorAccessCheck bool                   `json:"bypassAccestorAccessCheck,omitempty"`
+	BypassAccestorAccessCheck bool                   `json:"bypassRemoteAssistanceCheck,omitempty"`
 	CustomRole                bool                   `json:"customRole,omitempty"`
 	SystemRole                bool                   `json:"systemRole,omitempty"`
 	RestrictedRole            bool                   `json:"restrictedRole,omitempty"`
@@ -39,47 +39,52 @@ type RoleController struct {
 
 type Permission struct {
 	ID             string    `json:"id,omitempty"`
+	PermissionMask string    `json:"permissionMask,omitempty"`
+	Role           string    `json:"role,omitempty"`
+	CustomerID     string    `json:"customerId,omitempty"`
 	ModifiedTime   string    `json:"modifiedTime,omitempty"`
 	CreationTime   string    `json:"creationTime,omitempty"`
 	ModifiedBy     string    `json:"modifiedBy,omitempty"`
-	PermissionMask string    `json:"permissionMask,omitempty"`
 	ClassType      ClassType `json:"classType,omitempty"`
-	Role           string    `json:"role,omitempty"`
-	CustomerID     string    `json:"customerId,omitempty"`
-}
-
-type ClassType struct {
-	ID             string `json:"id,omitempty"`
-	ModifiedTime   string `json:"modifiedTime,omitempty"`
-	CreationTime   string `json:"creationTime,omitempty"`
-	ModifiedBy     string `json:"modifiedBy,omitempty"`
-	ACLClass       string `json:"aclClass,omitempty"`
-	FriendlyName   string `json:"friendlyName,omitempty"`
-	LocalScopeMask string `json:"localScopeMask,omitempty"`
-	CustomerID     string `json:"customerId,omitempty"`
-}
-
-type ClassPermissionGroup struct {
-	ID                        string            `json:"id,omitempty"`
-	ModifiedTime              string            `json:"modifiedTime,omitempty"`
-	CreationTime              string            `json:"creationTime,omitempty"`
-	ModifiedBy                string            `json:"modifiedBy,omitempty"`
-	Name                      string            `json:"name,omitempty"`
-	Hidden                    bool              `json:"hidden,omitempty"`
-	Internal                  bool              `json:"internal,omitempty"`
-	LocalScopePermissionGroup bool              `json:"localScopePermissionGroup,omitempty"`
-	ClassPermissions          []ClassPermission `json:"classPermissions,omitempty"`
 }
 
 type ClassPermission struct {
 	Permission PermissionDetail `json:"permission,omitempty"`
 	ClassType  ClassType        `json:"classType,omitempty"`
+
+	ID           string `json:"id,omitempty"`
+	CreationTime string `json:"creationTime,omitempty"`
+	ModifiedTime string `json:"modifiedTime,omitempty"`
+	ModifiedBy   string `json:"modifiedBy,omitempty"`
 }
 
 type PermissionDetail struct {
 	Mask    string `json:"mask,omitempty"`
-	Type    string `json:"type,omitempty"`
 	MaxMask string `json:"maxMask,omitempty"`
+	Type    string `json:"type,omitempty"` // FULL or VIEW_ONLY
+}
+
+type ClassType struct {
+	ID             string `json:"id,omitempty"`
+	ACLClass       string `json:"aclClass,omitempty"`
+	FriendlyName   string `json:"friendlyName,omitempty"`
+	CustomerID     string `json:"customerId,omitempty"`
+	LocalScopeMask string `json:"localScopeMask,omitempty"`
+	CreationTime   string `json:"creationTime,omitempty"`
+	ModifiedTime   string `json:"modifiedTime,omitempty"`
+	ModifiedBy     string `json:"modifiedBy,omitempty"`
+}
+
+type ClassPermissionGroup struct {
+	ID                        string            `json:"id,omitempty"`
+	Name                      string            `json:"name,omitempty"`
+	CreationTime              string            `json:"creationTime,omitempty"`
+	ModifiedTime              string            `json:"modifiedTime,omitempty"`
+	ModifiedBy                string            `json:"modifiedBy,omitempty"`
+	Hidden                    bool              `json:"hidden,omitempty"`
+	Internal                  bool              `json:"internal,omitempty"`
+	LocalScopePermissionGroup bool              `json:"localScopePermissionGroup,omitempty"`
+	ClassPermissions          []ClassPermission `json:"classPermissions,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, roleID string) (*RoleController, *http.Response, error) {
@@ -142,13 +147,12 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]RoleController, *h
 	return list, resp, nil
 }
 
-func GetPermissionGroups(ctx context.Context, service *zscaler.Service) (*RoleController, *http.Response, error) {
-	v := new(RoleController)
-	relativeURL := mgmtConfig + service.Client.GetCustomerID() + permissionGroupsEndpoint
-	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, &v)
+func GetPermissionGroups(ctx context.Context, service *zscaler.Service) ([]ClassPermissionGroup, *http.Response, error) {
+	var groups []ClassPermissionGroup
+	url := mgmtConfig + service.Client.GetCustomerID() + permissionGroupsEndpoint
+	resp, err := service.Client.NewRequestDo(ctx, "GET", url, nil, nil, &groups)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return v, resp, nil
+	return groups, resp, nil
 }

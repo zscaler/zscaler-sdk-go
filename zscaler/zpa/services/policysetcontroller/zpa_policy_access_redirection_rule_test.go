@@ -18,6 +18,11 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	svcEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	svcEdgeGroup, _, err := serviceedgegroup.Create(context.Background(), service, serviceedgegroup.ServiceEdgeGroup{
 		Name:                   svcEdgeGroupName,

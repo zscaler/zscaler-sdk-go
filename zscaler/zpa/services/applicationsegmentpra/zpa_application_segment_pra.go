@@ -33,6 +33,8 @@ type AppSegmentPRA struct {
 	MatchStyle                string                    `json:"matchStyle,omitempty"`
 	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
 	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	ExtranetEnabled           bool                      `json:"extranetEnabled"`
+	APIProtectionEnabled      bool                      `json:"apiProtectionEnabled"`
 	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                      `json:"isCnameEnabled"`
 	IpAnchored                bool                      `json:"ipAnchored"`
@@ -48,6 +50,10 @@ type AppSegmentPRA struct {
 	UseInDrMode               bool                      `json:"useInDrMode"`
 	MicroTenantID             string                    `json:"microtenantId,omitempty"`
 	MicroTenantName           string                    `json:"microtenantName,omitempty"`
+	ReadOnly                  bool                      `json:"readOnly,omitempty"`
+	RestrictionType           string                    `json:"restrictionType,omitempty"`
+	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
@@ -58,6 +64,7 @@ type AppSegmentPRA struct {
 	PRAApps                   []PRAApps                 `json:"praApps"`
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
+	ZPNERID                   common.ZPNERID            `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {
