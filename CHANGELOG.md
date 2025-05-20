@@ -1,5 +1,16 @@
 # Changelog
 
+# 3.3.1 (May 20, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #333](https://github.com/zscaler/zscaler-sdk-go/pull/333) – Fixed ZIA parameter values `sortOrder` and `sortBy` for pagination.
+ - `sortOrder` - Supported Values: `asc`, `desc`, `ruleExecution`
+ - `sortBy` - Supported Values: `id`, `name`, `expiry`, `status`, `externalId`, `rank`
+
 # 3.3.0 (April 30, 2025) - NEW ZIA ENDPOINT RESOURCES
 
 ## Notes

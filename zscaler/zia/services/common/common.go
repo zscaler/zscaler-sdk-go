@@ -184,8 +184,8 @@ type (
 )
 
 const (
-	ASCSortOrder          SortOrder = "ASC"
-	DESCSortOrder                   = "DESC"
+	ASCSortOrder          SortOrder = "asc"
+	DESCSortOrder                   = "desc"
 	IDSortField           SortField = "id"
 	NameSortField                   = "name"
 	CreationTimeSortField           = "creationTime"
