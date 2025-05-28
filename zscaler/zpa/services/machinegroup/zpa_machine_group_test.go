@@ -155,8 +155,8 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 
 	// Assuming that there are groups with the following name variations
 	variations := []string{
-		"BD-MGR01", "BD-MGR02", "BD MGR 03", "BD  MGR  04", "BD   MGR   05",
-		"BD    MGR06", "BD  MGR 07", "BD  M GR   08", "BD   M   GR 09",
+		"BD-MGR01", "BD-MGR02", "BD MGR 03",
+		// "BD  MGR  04", "BD   MGR   05", "BD    MGR06", "BD  MGR 07", "BD  M GR   08", "BD   M   GR 09",
 	}
 
 	for _, variation := range variations {

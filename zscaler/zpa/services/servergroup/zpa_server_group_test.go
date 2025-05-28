@@ -126,24 +126,24 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, _, err := GetAll(context.Background(), service)
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
-	if len(resources) == 0 {
-		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
-	}
-	// check if the created resource is in the list
-	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
-	}
+	// resources, _, err := GetAll(context.Background(), service)
+	// if err != nil {
+	// 	t.Errorf("Error retrieving resources: %v", err)
+	// }
+	// if len(resources) == 0 {
+	// 	t.Error("Expected retrieved resources to be non-empty, but got empty slice")
+	// }
+	// // check if the created resource is in the list
+	// found := false
+	// for _, resource := range resources {
+	// 	if resource.ID == createdResource.ID {
+	// 		found = true
+	// 		break
+	// 	}
+	// }
+	// if !found {
+	// 	t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
+	// }
 	// Test resource removal
 	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {

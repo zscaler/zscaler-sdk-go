@@ -79,7 +79,7 @@ func TestInspectionProfile(t *testing.T) {
 		}
 	}()
 
-	predefinedControlsByGroup, err := inspection_predefined_controls.GetAllByGroup(context.Background(), service, "OWASP_CRS/3.3.0", "Preprocessors")
+	predefinedControlsByGroup, err := inspection_predefined_controls.GetAllByGroup(context.Background(), service, "OWASP_CRS/3.3.0", "Internal Error")
 	if err != nil {
 		t.Errorf("Error getting predefined controls by group: %v", err)
 		return

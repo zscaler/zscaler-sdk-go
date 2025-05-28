@@ -99,15 +99,15 @@ func TestGetAllByGroup(t *testing.T) {
 
 func TestGetControlGroup(t *testing.T) {
 	t.Run("TestValidControlGroup", func(t *testing.T) {
-		// service, err := tests.NewOneAPIClient()
-		// if err != nil {
-		// 	t.Fatalf("Error creating client: %v", err)
-		// }
-
-		service, err := tests.NewZPAClient()
+		service, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
+
+		// service, err := tests.NewZPAClient()
+		// if err != nil {
+		// 	t.Fatalf("Error creating client: %v", err)
+		// }
 		version := "OWASP_CRS/3.3.0"
 		groupName := "Protocol Issues"
 
@@ -122,15 +122,15 @@ func TestGetControlGroup(t *testing.T) {
 	})
 
 	t.Run("TestNonExistentControlGroup", func(t *testing.T) {
-		// service, err := tests.NewOneAPIClient()
-		// if err != nil {
-		// 	t.Fatalf("Error creating client: %v", err)
-		// }
-
-		service, err := tests.NewZPAClient()
+		service, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
+
+		// service, err := tests.NewZPAClient()
+		// if err != nil {
+		// 	t.Fatalf("Error creating client: %v", err)
+		// }
 		version := "OWASP_CRS/3.3.0"
 		nonExistentGroupName := "ThisControlGroupNameDoesNotExist"
 

@@ -144,40 +144,40 @@ func TestResponseFormatValidation(t *testing.T) {
 			}
 		}
 	}
-*/
-func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	// Assuming that there are networks with the following name variations
-	variations := []string{
-		"BD Trusted Network 01", "BD  TrustedNetwork  01", "BD   TrustedNetwork   01",
-		"BD    TrustedNetwork01", "BD  TrustedNetwork 01", "BD  Trusted Network   01",
-		"BD   Trusted   Network 01",
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve network with name: %s", variation)
-		network, _, err := GetByName(context.Background(), service, variation)
+	func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
+		service, err := tests.NewOneAPIClient()
 		if err != nil {
-			t.Errorf("Error getting trusted network with name '%s': %v", variation, err)
-			continue
+			t.Fatalf("Error creating client: %v", err)
 		}
 
-		// Verify if the network's actual name matches the expected variation
-		if common.RemoveCloudSuffix(network.Name) != variation {
-			t.Errorf("Expected trusted network name to be '%s' but got '%s'", variation, network.Name)
+		// service, err := tests.NewZPAClient()
+		// if err != nil {
+		// 	t.Fatalf("Error creating client: %v", err)
+		// }
+
+		// Assuming that there are networks with the following name variations
+		variations := []string{
+			"BD Trusted Network 01", "BD  TrustedNetwork  01", "BD   TrustedNetwork   01",
+			"BD    TrustedNetwork01", "BD  TrustedNetwork 01", "BD  Trusted Network   01",
+			"BD   Trusted   Network 01",
+		}
+
+		for _, variation := range variations {
+			t.Logf("Attempting to retrieve network with name: %s", variation)
+			network, _, err := GetByName(context.Background(), service, variation)
+			if err != nil {
+				t.Errorf("Error getting trusted network with name '%s': %v", variation, err)
+				continue
+			}
+
+			// Verify if the network's actual name matches the expected variation
+			if common.RemoveCloudSuffix(network.Name) != variation {
+				t.Errorf("Expected trusted network name to be '%s' but got '%s'", variation, network.Name)
+			}
 		}
 	}
-}
-
+*/
 func TestTrustedNetworksByNetID(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {

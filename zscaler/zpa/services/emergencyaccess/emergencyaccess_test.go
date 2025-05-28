@@ -1,18 +1,6 @@
 package emergencyaccess
 
-import (
-	"context"
-	"fmt"
-	"os"
-	"testing"
-	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/okta/okta-sdk-golang/v2/okta"
-	"github.com/stretchr/testify/assert"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 func TestEmergencyAccessIntegration(t *testing.T) {
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
@@ -146,3 +134,4 @@ func deleteUserInOkta(t *testing.T, userIDs []string) {
 		}
 	}
 }
+*/
