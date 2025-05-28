@@ -1,12 +1,12 @@
 # Changelog
 
-# 3.4.0 (May 15, 2025) - NEW ZPA ENDPOINT RESOURCES
+# 3.4.0 (May 28, 2025) - NEW ZPA ENDPOINT RESOURCES
 
 ## Notes
 - Golang: **v1.23**
 
 ### ZPA Administrator Controller
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Added the following new ZPA API Endpoints:
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added the following new ZPA API Endpoints:
     - Added `GET /administrators` Retrieves a list of administrators in a tenant. A maximum of 200 administrators are returned per request.
     - Added `GET /administrators/{admin_id}` Retrieves administrator details for a specific `{admin_id}`
     - Added `POST /administrators` Create an local administrator account
@@ -14,7 +14,7 @@
     - Added `DELETE /administrators/{admin_id}` Delete a local administrator account for a specific `{admin_id}`
 
 ### ZPA Role Controller
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Added the following new ZPA API Endpoints:
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added the following new ZPA API Endpoints:
     - Added `GET /permissionGroups` Retrieves all the default permission groups.
     - Added `GET /roles` Retrieves a list of all configured roles in a tenant.
     - Added `GET /roles/{admin_id}` Retrieves a role details for a specific `{role_id}`
@@ -23,7 +23,7 @@
     - Added `DELETE /roles/{role_id}` Delete a role for a specific `{role_id}`
 
 ### ZPA Enrollment Certificate Controller
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Added the following new ZPA API Endpoints:
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added the following new ZPA API Endpoints:
     - Added `POST /enrollmentCert/csr/generate` Creates a CSR for a new enrollment Certificate
     - Added `POST /enrollmentCert/selfsigned/generate` Creates a self signed Enrollment Certificate
     - Added `POST /enrollmentCert` Creates a enrollment Certificate
@@ -31,24 +31,38 @@
     - Added `DELETE /enrollmentCert/{cert_id}` Delete an existing enrollment Certificate
 
 ### ZPA SAML Attribute Controller
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Added the following new ZPA API Endpoints:
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added the following new ZPA API Endpoints:
     - Added `POST /samlAttribute` Adds a new `SamlAttribute` for a given tenant
     - Added `PUT /samlAttribute/{attr_id}` Update an existing `SamlAttribute` for a given tenant
     - Added `DELETE /samlAttribute/{attr_id}` Delete an existing `SamlAttribute` for a given tenant
 
 ### ZPA Client-Settings Controller
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Added the following new ZPA API Endpoints:
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added the following new ZPA API Endpoints:
     - Added `GET /clientSetting` Retrieves `clientSetting` details. `ClientCertType` defaults to `CLIENT_CONNECTOR`
     - Added `POST /clientSetting` Create or update `clientSetting` for a customer. `ClientCertType` defaults to `CLIENT_CONNECTOR`
     - Added `DELETE /clientSetting` Delete an existing `clientSetting`. `ClientCertType` defaults to `CLIENT_CONNECTOR`
     - Added `GET /clientSetting/all` Retrieves all `clientSetting` details.
 
+### ZPA Privileged Remote Access Portal
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added support for PRA User Portal with Zscaler Managed Certificate
+
 #### ZIA SCIM API
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - This SDK now supports direct interaction with the ZIA SCIM API Endpoint for user and group management. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md)
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - This SDK now supports direct interaction with the ZIA SCIM API Endpoint for user and group management. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md)
 
 #### ZPA SCIM API
-[PR #330](https://github.com/zscaler/zscaler-sdk-go/pull/330) - Enhanced interaction with ZPA SCIM API via ConfigSetter support and easier client instantiation. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md)
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Enhanced interaction with ZPA SCIM API via ConfigSetter support and easier client instantiation. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md)
 
+# 3.3.1 (May 20, 2025)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #333](https://github.com/zscaler/zscaler-sdk-go/pull/333) – Fixed ZIA parameter values `sortOrder` and `sortBy` for pagination.
+ - `sortOrder` - Supported Values: `asc`, `desc`, `ruleExecution`
+ - `sortBy` - Supported Values: `id`, `name`, `expiry`, `status`, `externalId`, `rank`
+ 
 # 3.3.0 (April 30, 2025) - NEW ZIA ENDPOINT RESOURCES
 
 ## Notes
