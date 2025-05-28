@@ -52,6 +52,11 @@
 #### ZPA SCIM API
 [PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Enhanced interaction with ZPA SCIM API via ConfigSetter support and easier client instantiation. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md)
 
+### Bug Fixes
+
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) – Fixed ZPA central pagination engine `getAllPagesGenericWithCustomFilters` to appropriately parse the response on empty lists. Change was done due to upstream api changes.
+
+
 # 3.3.1 (May 20, 2025)
 
 ## Notes

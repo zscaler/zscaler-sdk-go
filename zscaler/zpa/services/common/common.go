@@ -173,38 +173,52 @@ func InList(list []string, item string) bool {
 	return false
 }
 
-/*
-func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
-	var v struct {
-		TotalPages interface{} `json:"totalPages"`
-		List       []T         `json:"list"`
-	}
-	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
-		Search2:       filters.Search,
-		MicroTenantID: filters.MicroTenantID,
-		PageSize:      pageSize,
-		Page:          page,
-		SortBy:        filters.SortBy,
-		SortOrder:     filters.SortOrder,
-	}, nil, &v)
-	if err != nil {
-		return 0, nil, resp, err
-	}
+// func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
+// 	var paged struct {
+// 		TotalPages interface{} `json:"totalPages"`
+// 		List       []T         `json:"list"`
+// 	}
 
-	pages := fmt.Sprintf("%v", v.TotalPages)
-	totalPages, _ := strconv.Atoi(pages)
+// 	var rawList []T
 
-	return totalPages, v.List, resp, nil
-}
-*/
+// 	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
+// 		Search2:       filters.Search,
+// 		MicroTenantID: filters.MicroTenantID,
+// 		PageSize:      pageSize,
+// 		Page:          page,
+// 		SortBy:        filters.SortBy,
+// 		SortOrder:     filters.SortOrder,
+// 	}, nil, &paged)
+
+// 	if err == nil && len(paged.List) > 0 {
+// 		// ✅ Standard paginated response
+// 		pages := fmt.Sprintf("%v", paged.TotalPages)
+// 		totalPages, _ := strconv.Atoi(pages)
+// 		return totalPages, paged.List, resp, nil
+// 	}
+
+// 	// 🔄 Retry as raw array (non-paginated)
+// 	resp, err = client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
+// 		Search2:       filters.Search,
+// 		MicroTenantID: filters.MicroTenantID,
+// 		PageSize:      pageSize,
+// 		Page:          page,
+// 		SortBy:        filters.SortBy,
+// 		SortOrder:     filters.SortOrder,
+// 	}, nil, &rawList)
+// 	if err != nil {
+// 		return 0, nil, resp, err
+// 	}
+
+// 	// ✅ API returned a raw array: treat as single page
+// 	return 1, rawList, resp, nil
+// }
 
 func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	var paged struct {
 		TotalPages interface{} `json:"totalPages"`
 		List       []T         `json:"list"`
 	}
-
-	var rawList []T
 
 	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
 		Search2:       filters.Search,
@@ -215,28 +229,15 @@ func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 		SortOrder:     filters.SortOrder,
 	}, nil, &paged)
 
-	if err == nil && len(paged.List) > 0 {
-		// ✅ Standard paginated response
-		pages := fmt.Sprintf("%v", paged.TotalPages)
-		totalPages, _ := strconv.Atoi(pages)
-		return totalPages, paged.List, resp, nil
-	}
-
-	// 🔄 Retry as raw array (non-paginated)
-	resp, err = client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
-		Search2:       filters.Search,
-		MicroTenantID: filters.MicroTenantID,
-		PageSize:      pageSize,
-		Page:          page,
-		SortBy:        filters.SortBy,
-		SortOrder:     filters.SortOrder,
-	}, nil, &rawList)
 	if err != nil {
 		return 0, nil, resp, err
 	}
 
-	// ✅ API returned a raw array: treat as single page
-	return 1, rawList, resp, nil
+	pages := fmt.Sprintf("%v", paged.TotalPages)
+	totalPages, _ := strconv.Atoi(pages)
+
+	// Even if totalPages == 0, return list to prevent fallback to raw array
+	return totalPages, paged.List, resp, nil
 }
 
 func getAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
