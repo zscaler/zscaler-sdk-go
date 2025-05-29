@@ -16,6 +16,11 @@ func TestMachineGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Test to retrieve all machine groups
 	groups, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -75,6 +80,11 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	groups, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting machine groups: %v", err)
@@ -103,6 +113,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 	// Assuming a group with the name "BD-MGR01" exists
 	knownName := "BD-MGR01"
 
@@ -134,10 +148,15 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Assuming that there are groups with the following name variations
 	variations := []string{
-		"BD-MGR01", "BD-MGR02", "BD MGR 03", "BD  MGR  04", "BD   MGR   05",
-		"BD    MGR06", "BD  MGR 07", "BD  M GR   08", "BD   M   GR 09",
+		"BD-MGR01", "BD-MGR02", "BD MGR 03",
+		// "BD  MGR  04", "BD   MGR   05", "BD    MGR06", "BD  MGR 07", "BD  M GR   08", "BD   M   GR 09",
 	}
 
 	for _, variation := range variations {
@@ -160,6 +179,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

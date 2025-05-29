@@ -3,10 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 )
 
 const pageSize = 1000
@@ -204,4 +206,58 @@ func GetSortParams(sortBy SortField, sortOrder SortOrder) string {
 		params += "sortOrder=" + string(sortOrder)
 	}
 	return params
+}
+
+func GetAllPagesScimPostWithSearch[T any](
+	ctx context.Context,
+	client *zia.ScimZiaClient,
+	searchEndpoint string,
+	itemsPerPage int,
+	searchFunc func(T) bool,
+) ([]T, *http.Response, error) {
+	if itemsPerPage <= 0 || itemsPerPage > 100 {
+		itemsPerPage = 100
+	}
+
+	startIndex := 1
+	var all []T
+	var lastResp *http.Response
+
+	for {
+		// Construct POST body with SCIM pagination
+		body := map[string]interface{}{
+			"schemas":    []string{"urn:ietf:params:scim:api:messages:2.0:SearchRequest"},
+			"startIndex": startIndex,
+			"count":      itemsPerPage,
+		}
+
+		var result struct {
+			Resources    []T `json:"Resources"`
+			TotalResults int `json:"totalResults"`
+		}
+
+		resp, err := client.DoRequest(ctx, http.MethodPost, searchEndpoint, body, &result)
+		if err != nil {
+			return nil, resp, fmt.Errorf("SCIM POST pagination failed: %w", err)
+		}
+		lastResp = resp
+
+		// Filter and short-circuit if searchFunc is used
+		if searchFunc != nil {
+			for _, item := range result.Resources {
+				if searchFunc(item) {
+					return []T{item}, resp, nil
+				}
+			}
+		}
+
+		all = append(all, result.Resources...)
+
+		if startIndex+itemsPerPage > result.TotalResults || len(result.Resources) == 0 {
+			break
+		}
+		startIndex += itemsPerPage
+	}
+
+	return all, lastResp, nil
 }

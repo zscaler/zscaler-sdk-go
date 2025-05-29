@@ -13,6 +13,11 @@ func TestIdPController(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	providers, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting identity providers: %v", err)
@@ -71,6 +76,11 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	providers, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting identity provider: %v", err)
@@ -99,6 +109,10 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")

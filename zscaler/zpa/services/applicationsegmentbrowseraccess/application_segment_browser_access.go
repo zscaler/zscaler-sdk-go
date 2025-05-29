@@ -25,6 +25,7 @@ type BrowserAccess struct {
 	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
 	BypassType                string                    `json:"bypassType,omitempty"`
 	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	ExtranetEnabled           bool                      `json:"extranetEnabled"`
 	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
 	MatchStyle                string                    `json:"matchStyle,omitempty"`
 	ConfigSpace               string                    `json:"configSpace,omitempty"`
@@ -32,6 +33,7 @@ type BrowserAccess struct {
 	Enabled                   bool                      `json:"enabled"`
 	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled"`
 	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	APIProtectionEnabled      bool                      `json:"apiProtectionEnabled"`
 	SelectConnectorCloseToApp bool                      `json:"selectConnectorCloseToApp"`
 	DoubleEncrypt             bool                      `json:"doubleEncrypt"`
 	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
@@ -48,6 +50,10 @@ type BrowserAccess struct {
 	CreationTime              string                    `json:"creationTime,omitempty"`
 	ModifiedBy                string                    `json:"modifiedBy,omitempty"`
 	ModifiedTime              string                    `json:"modifiedTime,omitempty"`
+	ReadOnly                  bool                      `json:"readOnly,omitempty"`
+	RestrictionType           string                    `json:"restrictionType,omitempty"`
+	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
@@ -55,6 +61,7 @@ type BrowserAccess struct {
 	ClientlessApps            []ClientlessApps          `json:"clientlessApps,omitempty"`
 	AppServerGroups           []servergroup.ServerGroup `json:"serverGroups,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
+	ZPNERID                   common.ZPNERID            `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {

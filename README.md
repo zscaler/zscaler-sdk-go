@@ -861,6 +861,75 @@ func main() {
 }
 ```
 
+### ZIA SCIM API
+
+This SDK supports direct interaction with the ZIA SCIM API endpoints. The SCIM APIs allow you to use custom SCIM clients to make REST API calls to Zscaler. The same way as the regular ZIA API, all SCIM APIs are rate limited.
+For more details [About SCIM APIs](https://help.zscaler.com/zia/scim-api-examples)
+
+**NOTE**: Zscaler SCIM servers have a rate limit of 5 requests per second. In order to avoid retries, configure your application to comply with this.
+
+The ZIA Cloud is identified by several cloud name prefixes, which determines which API endpoint the requests should be sent to. The following cloud environments are supported:
+
+* `zscaler`
+* `zscalerone`
+* `zscalertwo`
+* `zscalerthree`
+* `zscloud`
+* `zscalerbeta`
+* `zscalergov`
+* `zscalerten`
+* `zspreview`
+
+### ZIA SCIM API Environment variables
+
+You can provide credentials via the `ZIA_SCIM_API_TOKEN`, `ZIA_SCIM_CLOUD`, `ZIA_SCIM_TENANT_ID` environment variables, representing your ZIA `zia_scim_api_token`, `zia_scim_cloud`, and `zia_scim_tenant_id` of your ZIA account, respectively.
+
+~> **NOTE** `ZIA_SCIM_CLOUD` environment variable is only required. This environment variable is used to identify the correct SCIM API gateway where the API requests should be forwarded to.
+
+| Argument     | Description | Environment variable |
+|--------------|-------------|-------------------|
+| `zia_scim_api_token`       | _(String)_ A string that contains the ZIA SCIM API Token | `ZIA_SCIM_API_TOKEN` |
+| `zia_scim_cloud`       | _(String)_ A string that contains the ZIA Identity cloud environment | `ZIA_SCIM_CLOUD` |
+| `zia_scim_tenant_id`       | _(String)_ A string that contains the ZIA Tenant ID i.e `24326813/61233` | `ZIA_SCIM_TENANT_ID` |
+
+### ZIA API SCIM Client Initialization
+
+```go
+import (
+ "context"
+ "fmt"
+ "log"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/scim_api"
+)
+
+func main() {
+	scimToken := os.Getenv("ZIA_SCIM_API_TOKEN")
+	scimCloud := os.Getenv("ZIA_SCIM_CLOUD")
+	tenantID := os.Getenv("ZIA_SCIM_TENANT_ID")
+
+	scimClient, err := zia.NewScimConfig(
+		zia.WithScimToken(scimToken),
+		zia.WithScimCloud(scimCloud),
+		zia.WithTenantID(tenantID),
+	)
+	if err != nil {
+		log.Fatalf("Failed to create SCIM client: %v", err)
+	}
+
+	service := zscaler.NewZIAScimService(scimClient) // This now properly initializes the Client
+
+	ctx := context.Background()
+	users, _, err := scim_api.GetAllUsers(ctx, service)
+	if err != nil {
+		log.Fatalf("Error retrieving SCIM users: %v", err)
+	}
+	log.Printf("Retrieved SCIM Users: %+v\n", users)
+}
+```
+
 ### ZPA SCIM API
 
 This SDK supports direct interaction with the ZPA SCIM API endpoints. The SCIM APIs allow you to use custom SCIM clients to make REST API calls to Zscaler. The same way as the regular ZPA API All SCIM APIs are rate limited.
@@ -913,7 +982,7 @@ func main() {
 		log.Fatalf("failed to create SCIM client: %v", err)
 	}
 
-	service := zscaler.NewScimService(scimClient)
+	service := zscaler.NewZPAScimService(scimClient)
 
   ctx := context.Background()
 	groups, _, err := scim_api.GetAllGroups(ctx, service)

@@ -11,65 +11,71 @@ import (
 )
 
 const (
-	userScimConfigEndpoint = "/v2/Users/"
+	userScimConfigEndpoint = "/v2/Users"
 )
 
 // ScimUsers represents the response from the /users endpoint
+// ScimUser represents the SCIM User payload (both core + enterprise extension).
 type ScimUser struct {
-	Schemas     []string    `json:"schemas"`
-	ID          string      `json:"id"`
-	ExternalID  *string     `json:"externalId,omitempty"`
-	DisplayName string      `json:"displayName"`
-	Meta        common.Meta `json:"meta"`
+	Schemas    []string `json:"schemas"`
+	ID         string   `json:"id,omitempty"`
+	ExternalID string   `json:"externalId,omitempty"`
+
+	// core attributes
+	Division     string `json:"division,omitempty"`
+	NickName     string `json:"nickName,omitempty"`
+	Organization string `json:"organization,omitempty"`
+	UserType     string `json:"userType,omitempty"`
+	CostCenter   string `json:"costCenter,omitempty"`
+	UserName     string `json:"userName,omitempty"`
+	Active       bool   `json:"active,omitempty"`
+	DisplayName  string `json:"displayName,omitempty"`
+
+	// enterprise extension
+	Enterprise EnterpriseFields `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
+
+	// multi‐valued / complex attrs
+	Name   Name    `json:"name,omitempty"`
+	Emails []Email `json:"emails,omitempty"`
+
+	Meta common.Meta `json:"meta,omitempty"`
 }
 
-// User represents an individual user within the Resources array
-type User struct {
-	Schemas     []string       `json:"schemas"`
-	ID          string         `json:"id"`
-	ExternalID  string         `json:"externalId"`
-	Active      bool           `json:"active"`
-	UserName    string         `json:"userName"`
-	DisplayName string         `json:"displayName,omitempty"`
-	Name        UserName       `json:"name"`
-	Groups      []UserGroup    `json:"groups,omitempty"`
-	Enterprise  EnterpriseUser `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
-	Meta        common.Meta    `json:"meta"`
+// EnterpriseFields holds everything under the “urn:enterprise” extension.
+type EnterpriseFields struct {
+	Division     string `json:"division,omitempty"`
+	Organization string `json:"organization,omitempty"`
+	CostCenter   string `json:"costCenter,omitempty"`
+	Department   string `json:"department,omitempty"`
 }
 
-// UserName represents the user's name information
-type UserName struct {
-	FamilyName string `json:"familyName"`
-	GivenName  string `json:"givenName"`
+// Name is the SCIM “name” block.
+type Name struct {
+	Formatted  string `json:"formatted,omitempty"`
+	FamilyName string `json:"familyName,omitempty"`
+	GivenName  string `json:"givenName,omitempty"`
 }
 
-// UserGroup represents a group that the user belongs to
-type UserGroup struct {
-	Display string `json:"display"`
-	Value   string `json:"value"`
-	Ref     string `json:"$ref"`
+// Email is a single entry in the “emails” array.
+type Email struct {
+	Value string `json:"value"`
 }
 
-// EnterpriseUser represents the enterprise-specific extension for user details
-type EnterpriseUser struct {
-	Department string `json:"department"`
-}
-
-func GetUser(ctx context.Context, service *zscaler.ScimService, userID string) (*ScimUser, *http.Response, error) {
+func GetUser(ctx context.Context, service *zscaler.ScimZPAService, userID string) (*ScimUser, *http.Response, error) {
 	v := new(ScimUser)
-	relativeURL := fmt.Sprintf("%s%s/%s", service.ScimClient.ScimConfig.IDPId, userScimConfigEndpoint, userID)
-	resp, err := service.ScimClient.DoRequest(ctx, http.MethodGet, relativeURL, nil, v)
+	relativeURL := fmt.Sprintf("%s%s/%s", service.Client.ScimConfig.IDPId, userScimConfigEndpoint, userID)
+	resp, err := service.Client.DoRequest(ctx, http.MethodGet, relativeURL, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func GetUserByName(ctx context.Context, service *zscaler.ScimService, userName string) (*ScimUser, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s", service.ScimClient.ScimConfig.IDPId, groupScimConfigEndpoint)
+func GetUserByName(ctx context.Context, service *zscaler.ScimZPAService, userName string) (*ScimUser, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s%s", service.Client.ScimConfig.IDPId, userScimConfigEndpoint)
 
 	// Use the pagination function with a search function
-	list, resp, err := common.GetAllPagesScimGenericWithSearch[ScimUser](ctx, service.ScimClient, relativeURL, 10, func(group ScimUser) bool {
+	list, resp, err := common.GetAllPagesScimGenericWithSearch(ctx, service.Client, relativeURL, 10, func(group ScimUser) bool {
 		return strings.EqualFold(group.DisplayName, userName)
 	})
 	if err != nil {
@@ -84,36 +90,38 @@ func GetUserByName(ctx context.Context, service *zscaler.ScimService, userName s
 	return &list[0], resp, nil
 }
 
-func CreateUser(ctx context.Context, service *zscaler.ScimService, scimUser *ScimUser) (*ScimUser, *http.Response, error) {
+func CreateUser(ctx context.Context, service *zscaler.ScimZPAService, scimUser *ScimUser) (*ScimUser, *http.Response, error) {
 	v := new(ScimUser)
-	resp, err := service.ScimClient.DoRequest(ctx, http.MethodPost, userScimConfigEndpoint, scimUser, v)
+	relativeURL := service.Client.ScimConfig.IDPId + userScimConfigEndpoint
+
+	resp, err := service.Client.DoRequest(ctx, http.MethodPost, relativeURL, scimUser, v)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 	return v, resp, nil
 }
 
-func UpdateUser(ctx context.Context, service *zscaler.ScimService, userID string, ScimUser *ScimUser) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s/%s", service.ScimClient.ScimConfig.IDPId, userScimConfigEndpoint, userID)
-	resp, err := service.ScimClient.DoRequest(ctx, http.MethodPut, relativeURL, nil, nil)
+func UpdateUser(ctx context.Context, service *zscaler.ScimZPAService, userID string, scimUser *ScimUser) (*http.Response, error) {
+	relativeURL := service.Client.ScimConfig.IDPId + userScimConfigEndpoint + "/" + userID
+	resp, err := service.Client.DoRequest(ctx, http.MethodPut, relativeURL, scimUser, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
-func PatchUser(ctx context.Context, service *zscaler.ScimService, userID string, ScimUser *ScimUser) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s/%s", service.ScimClient.ScimConfig.IDPId, userScimConfigEndpoint, userID)
-	resp, err := service.ScimClient.DoRequest(ctx, http.MethodPatch, relativeURL, nil, nil)
+func PatchUser(ctx context.Context, service *zscaler.ScimZPAService, userID string, scimUser *ScimUser) (*http.Response, error) {
+	relativeURL := service.Client.ScimConfig.IDPId + userScimConfigEndpoint + "/" + userID
+	resp, err := service.Client.DoRequest(ctx, http.MethodPatch, relativeURL, scimUser, nil)
 	if err != nil {
 		return nil, err
 	}
-	return resp, err
+	return resp, nil
 }
 
-func DeleteUser(ctx context.Context, service *zscaler.ScimService, userID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s/%s", service.ScimClient.ScimConfig.IDPId, userScimConfigEndpoint, userID)
-	resp, err := service.ScimClient.DoRequest(ctx, http.MethodDelete, relativeURL, nil, nil)
+func DeleteUser(ctx context.Context, service *zscaler.ScimZPAService, userID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s%s/%s", service.Client.ScimConfig.IDPId, userScimConfigEndpoint, userID)
+	resp, err := service.Client.DoRequest(ctx, http.MethodDelete, relativeURL, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +129,9 @@ func DeleteUser(ctx context.Context, service *zscaler.ScimService, userID string
 	return resp, nil
 }
 
-func GetAllUsers(ctx context.Context, service *zscaler.ScimService, count ...int) ([]ScimUser, *http.Response, error) {
+func GetAllUsers(ctx context.Context, service *zscaler.ScimZPAService, count ...int) ([]ScimUser, *http.Response, error) {
 	// Construct the base URL for SCIM groups
-	relativeURL := fmt.Sprintf("%s%s", service.ScimClient.ScimConfig.IDPId, userScimConfigEndpoint)
+	relativeURL := fmt.Sprintf("%s%s", service.Client.ScimConfig.IDPId, userScimConfigEndpoint)
 
 	// Extract count or pass 0 to let the pagination function handle defaults
 	itemsPerPage := 0
@@ -132,5 +140,5 @@ func GetAllUsers(ctx context.Context, service *zscaler.ScimService, count ...int
 	}
 
 	// Call the pagination function with nil as the searchFunc
-	return common.GetAllPagesScimGenericWithSearch[ScimUser](ctx, service.ScimClient, relativeURL, itemsPerPage, nil)
+	return common.GetAllPagesScimGenericWithSearch[ScimUser](ctx, service.Client, relativeURL, itemsPerPage, nil)
 }

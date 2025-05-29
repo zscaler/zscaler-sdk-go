@@ -13,6 +13,11 @@ func TestGetAllFormats(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// List of logTypes to be tested
 	logTypes := []string{
 		"zpn_ast_comprehensive_stats",

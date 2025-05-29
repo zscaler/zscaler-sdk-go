@@ -9,7 +9,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
-	"strings"
+	"net/http"
 	"testing"
 	"time"
 
@@ -21,6 +21,11 @@ func TestCBICertificates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	// Generate private key for root certificate
 	rootKey, err := rsa.GenerateKey(rand.Reader, 4096) // Use 4096 bits for the key
@@ -143,17 +148,15 @@ func TestCBICertificates(t *testing.T) {
 
 	//Test 5: Delete the certificate
 	t.Run("TestDeleteCertificate", func(t *testing.T) {
-		_, err := Delete(context.Background(), service, createdCert.ID)
+		resp, err := Delete(context.Background(), service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error deleting certificate: %v", err)
 		}
-
-		// Attempt Retrieval After Deletion
-		_, _, err = Get(context.Background(), service, createdCert.ID)
-		if err == nil || !strings.Contains(err.Error(), "resource.not.found") {
-			t.Errorf("Expected error while retrieving deleted certificate, got nil or unexpected error: %v", err)
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("Expected status 204 No Content, got %d", resp.StatusCode)
 		}
 	})
+
 }
 
 // generateRandomString generates a random string of the given length

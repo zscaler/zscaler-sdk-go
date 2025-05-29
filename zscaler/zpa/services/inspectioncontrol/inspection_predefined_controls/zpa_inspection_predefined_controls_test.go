@@ -13,6 +13,11 @@ func TestInspectionPredefinedControls(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Corrected this line to include the version
 	controls, err := GetAll(context.Background(), service, "OWASP_CRS/3.3.0")
 	if err != nil {
@@ -50,6 +55,11 @@ func TestGetAllByGroup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	version := "OWASP_CRS/3.3.0"
 
@@ -93,6 +103,11 @@ func TestGetControlGroup(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
+
+		// service, err := tests.NewZPAClient()
+		// if err != nil {
+		// 	t.Fatalf("Error creating client: %v", err)
+		// }
 		version := "OWASP_CRS/3.3.0"
 		groupName := "Protocol Issues"
 
@@ -112,6 +127,10 @@ func TestGetControlGroup(t *testing.T) {
 			t.Fatalf("Error creating client: %v", err)
 		}
 
+		// service, err := tests.NewZPAClient()
+		// if err != nil {
+		// 	t.Fatalf("Error creating client: %v", err)
+		// }
 		version := "OWASP_CRS/3.3.0"
 		nonExistentGroupName := "ThisControlGroupNameDoesNotExist"
 

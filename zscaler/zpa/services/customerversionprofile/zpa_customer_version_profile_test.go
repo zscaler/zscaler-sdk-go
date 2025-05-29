@@ -17,6 +17,11 @@ func TestCustomerVersionProfile(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Normal case for GetAll
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -58,6 +63,11 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	requiredNames := []string{"New Release", "Default", "Previous Default", "Default - el8"}
 	anyVariationSucceeded := false

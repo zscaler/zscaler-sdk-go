@@ -19,6 +19,11 @@ func TestCBIProfileController(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	cbiRegionsList, _, err := cbiregions.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting cbi regions: %v", err)

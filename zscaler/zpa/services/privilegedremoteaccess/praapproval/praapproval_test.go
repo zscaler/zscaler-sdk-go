@@ -69,6 +69,11 @@ func TestCredentialController(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,

@@ -23,6 +23,11 @@ func TestPRAConsole(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
@@ -233,6 +238,11 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
@@ -245,6 +255,11 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
@@ -256,6 +271,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

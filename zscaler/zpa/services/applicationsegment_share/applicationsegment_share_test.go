@@ -27,7 +27,11 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// Function to create microtenant with retries
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	// Function to create microtenant with retries
 	createMicrotenantWithRetry := func(name, description string) (*microtenants.MicroTenant, error) {
 		microtenant := microtenants.MicroTenant{

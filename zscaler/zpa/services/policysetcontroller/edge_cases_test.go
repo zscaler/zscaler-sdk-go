@@ -19,6 +19,11 @@ func TestNonExistentResourceOperations(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	for _, policyType := range policyTypes {
 		t.Run(policyType, func(t *testing.T) {
 			// Testing retrieve non-existent resource

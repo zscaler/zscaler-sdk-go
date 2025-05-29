@@ -20,11 +20,16 @@ import (
 func TestCreateApplicationSegmentPRA(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
 		Description: segmentGroupName,

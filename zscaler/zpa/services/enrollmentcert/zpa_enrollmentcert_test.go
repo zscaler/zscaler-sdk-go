@@ -17,6 +17,11 @@ func TestEnrollmentCert(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	certificates, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting enrollment certificates: %v", err)
@@ -83,6 +88,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
@@ -94,6 +104,11 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	requiredNames := []string{"Root", "Client", "Connector", "Service Edge", "Isolation Client"}
 

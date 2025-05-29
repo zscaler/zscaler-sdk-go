@@ -19,6 +19,11 @@ func getTestIdpId(t *testing.T) string {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
@@ -52,6 +57,11 @@ func TestSCIMGroup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
@@ -107,6 +117,11 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	testIdpId := getTestIdpId(t)
 
 	// Retrieve a list of SCIM groups
@@ -155,6 +170,11 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	testIdpId := getTestIdpId(t)
 
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -187,6 +207,11 @@ func TestNonExistentSCIMGroupName(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
 	testIdpId := getTestIdpId(t)
 	_, _, err = GetByName(context.Background(), service, "NonExistentName", testIdpId)
 	if err == nil {
@@ -199,6 +224,11 @@ func TestEmptyResponse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	testIdpId := getTestIdpId(t)
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -217,6 +247,11 @@ func TestGetSCIMGroupByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	testIdpId := getTestIdpId(t)
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -249,6 +284,11 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	testIdpId := getTestIdpId(t)
 

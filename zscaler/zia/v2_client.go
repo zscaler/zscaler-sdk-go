@@ -28,86 +28,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
-/*
-func NewClient(config *Configuration) (*Client, error) {
-	if config == nil {
-		return nil, errors.New("configuration cannot be nil")
-	}
-
-	// Enable Debug logging if the Debug flag is set
-	if config.Debug {
-		_ = os.Setenv("ZSCALER_SDK_LOG", "true")
-		_ = os.Setenv("ZSCALER_SDK_VERBOSE", "true")
-		config.Logger = logger.GetDefaultLogger(loggerPrefix)
-	}
-
-	logger := logger.GetDefaultLogger(loggerPrefix)
-
-	// Validate ZIA Cloud
-	if config.ZIA.Client.ZIACloud == "" {
-		logger.Printf("[ERROR] Missing ZIA cloud configuration.")
-		return nil, errors.New("ZIACloud configuration is missing")
-	}
-
-	// Construct the base URL
-	baseURL := config.BaseURL.String()
-
-	// Validate authentication credentials
-	if config.ZIA.Client.ZIAUsername == "" || config.ZIA.Client.ZIAPassword == "" || config.ZIA.Client.ZIAApiKey == "" {
-		logger.Printf("[ERROR] Missing required ZIA credentials (username, password, or API key).")
-		return nil, errors.New("missing required ZIA credentials")
-	}
-
-	// Initialize rate limiter
-	rateLimiter := rl.NewRateLimiter(
-		int(config.ZIA.Client.RateLimit.MaxRetries),
-		int(config.ZIA.Client.RateLimit.RetryWaitMin.Seconds()),
-		int(config.ZIA.Client.RateLimit.RetryWaitMax.Seconds()),
-		int(config.ZIA.Client.RequestTimeout.Seconds()),
-	)
-
-	// Initialize HTTP client
-	httpClient := config.HTTPClient
-	if httpClient == nil {
-		httpClient = getHTTPClient(logger, rateLimiter, config)
-	}
-
-	// Initialize the Client instance
-	cli := &Client{
-		userName:         config.ZIA.Client.ZIAUsername,
-		password:         config.ZIA.Client.ZIAPassword,
-		apiKey:           config.ZIA.Client.ZIAApiKey,
-		cloud:            config.ZIA.Client.ZIACloud,
-		HTTPClient:       httpClient,
-		URL:              baseURL,
-		Logger:           logger,
-		UserAgent:        config.UserAgent,
-		cacheEnabled:     config.ZIA.Client.Cache.Enabled,
-		cacheTtl:         config.ZIA.Client.Cache.DefaultTtl,
-		cacheCleanwindow: config.ZIA.Client.Cache.DefaultTti,
-		cacheMaxSizeMB:   int(config.ZIA.Client.Cache.DefaultCacheMaxSizeMB),
-		rateLimiter:      rateLimiter,
-		stopTicker:       make(chan bool),
-		sessionTimeout:   JSessionIDTimeout * time.Minute,
-		sessionRefreshed: time.Time{},
-	}
-
-	// Initialize the cache
-	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
-	if err != nil {
-		logger.Printf("[WARN] Failed to initialize cache, using NopCache: %v", err)
-		cche = cache.NewNopCache()
-	}
-	cli.cache = cche
-
-	// Start the session refresh ticker
-	cli.startSessionTicker()
-
-	//logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
-	return cli, nil
-}
-*/
-
 func NewClient(config *Configuration) (*Client, error) {
 	if config == nil {
 		return nil, errors.New("configuration cannot be nil")
@@ -573,36 +493,6 @@ func (c *Client) Logout(ctx context.Context) error {
 	}
 	return nil
 }
-
-/*
-// startSessionTicker starts a ticker to refresh the session periodically
-func (c *Client) startSessionTicker() {
-	if c.sessionTimeout > 0 {
-		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
-		go func() {
-			for {
-				select {
-				case <-c.sessionTicker.C:
-					c.Lock()
-					if !c.refreshing {
-						c.refreshing = true
-						c.Unlock()
-						c.refreshSession()
-						c.Lock()
-						c.refreshing = false
-					}
-					c.Unlock()
-				case <-c.stopTicker:
-					c.sessionTicker.Stop()
-					return
-				}
-			}
-		}()
-	} else {
-		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
-	}
-}
-*/
 
 func (c *Client) startSessionTicker(ctx context.Context) {
 	if c.sessionTimeout > 0 {
