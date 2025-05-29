@@ -1,5 +1,15 @@
 # Changelog
 
+# 3.4.1 (May 28, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
+### ZPA Privileged Remote Access Portal
+[PR #335](https://github.com/zscaler/zscaler-sdk-go/pull/335) - Added support for PRA User Portal with Zscaler Managed Certificate
+
 # 3.4.0 (May 28, 2025) - NEW ZPA ENDPOINT RESOURCES
 
 ## Notes

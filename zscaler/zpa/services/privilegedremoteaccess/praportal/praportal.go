@@ -71,6 +71,25 @@ type PRAPortal struct {
 
 	// The name of the Microtenant.
 	MicroTenantName string `json:"microtenantName,omitempty"`
+
+	// The name of the Microtenant.
+	MicroTenantID string `json:"microtenantId,omitempty"`
+
+	ObjectType string `json:"objectType,omitempty"`
+
+	Action string `json:"action,omitempty"`
+
+	CertManagedByZsRadio string `json:"certManagedByZsRadio,omitempty"`
+
+	IsSRAPortal bool `json:"isSRAPortal,omitempty"`
+
+	ManagedByZs bool `json:"managedByZs,omitempty"`
+
+	ScopeName string `json:"scopeName,omitempty"`
+
+	HideInfoTooltip bool `json:"hideInfoTooltip,omitempty"`
+
+	RestrictedEntity bool `json:"restrictedEntity,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, portalID string) (*PRAPortal, *http.Response, error) {
