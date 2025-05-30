@@ -101,6 +101,10 @@ type ClientlessApps struct {
 	MicroTenantID       string `json:"microtenantId,omitempty"`
 	MicroTenantName     string `json:"microtenantName,omitempty"`
 	TrustUntrustedCert  bool   `json:"trustUntrustedCert"`
+	ExtDomain           string `json:"extDomain"`
+	ExtLabel            string `json:"extLabel"`
+	ExtDomainName       string `json:"extDomainName"`
+	ExtID               string `json:"extId"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, appID string) (*BrowserAccess, *http.Response, error) {
