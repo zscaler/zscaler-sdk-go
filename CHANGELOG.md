@@ -1,5 +1,16 @@
 # Changelog
 
+# 3.4.2 (May 29, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
+### ZPA Privileged Remote Access Portal
+[PR #338](https://github.com/zscaler/zscaler-sdk-go/pull/338) - Added support for Zscaler Managed Certificate to resource `zpa_application_segment_browser_access`
+
+
 # 3.4.1 (May 28, 2025)
 
 ## Notes
