@@ -13,7 +13,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.4.1``
+``Last updated: v3.4.2``
 
 ---
 
