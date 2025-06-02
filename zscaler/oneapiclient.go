@@ -344,7 +344,10 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 
 // getServiceHTTPClient returns the appropriate http client for the current service
 func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
-	service := detectServiceType(endpoint)
+	service, err := detectServiceType(endpoint)
+	if err != nil {
+		return client.oauth2Credentials.HTTPClient
+	}
 	switch service {
 	case "zpa":
 		return client.oauth2Credentials.ZPAHTTPClient
@@ -359,20 +362,19 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 	}
 }
 
-func detectServiceType(endpoint string) string {
+func detectServiceType(endpoint string) (string, error) {
 	path := strings.TrimPrefix(endpoint, "/")
 	// Detect the service type based on the endpoint prefix
 	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
-		return "zia"
+		return "zia", nil
 	} else if strings.HasPrefix(path, "ztw") {
-		return "ztw"
+		return "ztw", nil
 	} else if strings.HasPrefix(path, "zpa") {
-		return "zpa"
+		return "zpa", nil
 	} else if strings.HasPrefix(endpoint, "/zcc") {
-		return "zcc"
+		return "zcc", nil
 	}
-
-	panic("unsupported service")
+	return "", fmt.Errorf("unsupported service")
 }
 
 // GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
