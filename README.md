@@ -95,7 +95,7 @@ As of the publication of SDK version => 3.x, OneAPI is available for programmati
 * [ZPA API](https://help.zscaler.com/oneapi/understanding-oneapi#:~:text=Workload%20Groups-,ZPA%20API,-Zscaler%20Private%20Access)
 * [Zscaler Client Connector API](https://help.zscaler.com/oneapi/understanding-oneapi#:~:text=Version%20Profiles-,Zscaler%20Client%20Connector%20API,-Zscaler%20Client%20Connector)
 
-**NOTE** All other products succh as Zscaler Cloud Connector (ZCON) and Zscaler Digital Experience (ZDX) are supported only via the legacy authentication method described in this README.
+**NOTE** All Zscaler Digital Experience (ZDX), and Zscaler Workflow Automation (ZWA) are currently supported only via the legacy authentication method described in this README.
 
 ### OneAPI (API Client Scope)
 

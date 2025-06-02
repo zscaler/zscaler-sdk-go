@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.4.3 (June 2, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
+[PR #339](https://github.com/zscaler/zscaler-sdk-go/pull/339) - Fixed OneAPI Client retry-
+
 # 3.4.2 (May 29, 2025)
 
 ## Notes
