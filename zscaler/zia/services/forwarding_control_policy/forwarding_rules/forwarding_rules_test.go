@@ -2,7 +2,6 @@ package forwarding_rules
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strings"
 	"testing"
@@ -70,20 +69,6 @@ func TestForwardingRulesDirect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating Forwarding Control Rule resource: %v", err)
 	}
-
-	defer func() {
-		// Attempt to delete the resource
-		_, delErr := Delete(context.Background(), service, createdResource.ID)
-		if delErr != nil {
-			// If the error indicates the resource is already deleted, log it as information
-			if strings.Contains(delErr.Error(), "409") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
-				t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
-			} else {
-				// If the deletion error is not due to the resource being missing, log it as an actual error
-				t.Errorf("Error deleting Forwarding Control Rule resource: %v", delErr)
-			}
-		}
-	}()
 
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
@@ -156,10 +141,6 @@ func TestForwardingRulesDirect(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(context.Background(), service, createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
