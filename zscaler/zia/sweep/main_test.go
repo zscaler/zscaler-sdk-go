@@ -15,6 +15,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/alerts"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
@@ -112,6 +113,7 @@ func sweep() error {
 		sweepSandboxSettings,
 		sweepSecurityPolicySettings,
 		sweepUserAuthenticationSettings,
+		sweepAlertsSubscription,
 	}
 
 	// Execute each sweep function
@@ -729,6 +731,27 @@ func sweepSandboxRules(client *zscaler.Client) error {
 		err, _ := sandbox_rules.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete sandbox rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
+func sweepAlertsSubscription(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := alerts.GetAll(context.Background(), service)
+	if err != nil {
+		log.Printf("[ERROR] Failed to get alerts: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Email, "alert@") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Email: %s", r.ID, r.Email)
+		err, _ := alerts.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete alert with ID: %d, Email: %s: %v", r.ID, r.Email, err)
 		}
 	}
 	return nil
