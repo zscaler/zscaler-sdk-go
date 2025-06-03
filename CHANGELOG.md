@@ -5,7 +5,11 @@
 ## Notes
 - Golang: **v1.23**
 
+### Documentation
+- Fixed README typos and clarified service detection description.
+
 ### Bug Fixes
+- Corrected YAML tag in `.goreleaser.yml`.
 
 [PR #339](https://github.com/zscaler/zscaler-sdk-go/pull/339) - Fixed an issue in the OneAPI client where initial API requests could fail with 401 Unauthorized if a valid OAuth2 token had not yet been obtained. The client now performs immediate authentication before starting the background token renewal ticker, ensuring the token is always present on first use. Removed incorrect retry logic for 401 responses.
 
