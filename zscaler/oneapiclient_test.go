@@ -22,3 +22,21 @@ func TestUserAgentWithExtra(t *testing.T) {
 	userAgent := "zscaler-sdk-go/" + VERSION + " golang/" + runtime.Version() + " " + runtime.GOOS + "/" + runtime.GOARCH + " extra/info"
 	require.Equal(t, userAgent, configuration.UserAgent)
 }
+
+func TestDetectServiceTypeUnknown(t *testing.T) {
+	_, err := detectServiceType("/foo")
+	require.Error(t, err)
+}
+
+func TestGetServiceHTTPClientUnknown(t *testing.T) {
+	cfg, err := NewConfiguration()
+	require.NoError(t, err)
+
+	svc, err := NewOneAPIClient(cfg)
+	require.NoError(t, err)
+
+	generic := cfg.HTTPClient
+
+	httpClient := svc.Client.getServiceHTTPClient("/foo")
+	require.Equal(t, generic, httpClient)
+}

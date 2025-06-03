@@ -46,6 +46,9 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
+	if err := cli.authenticate(); err != nil {
+		return nil, fmt.Errorf("initial authentication failed: %w", err)
+	}
 	if !config.UseLegacyClient {
 		// Start token renewal ticker
 		cli.startTokenRenewalTicker()
@@ -180,55 +183,6 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.HTTPClient.Transport = transport
 	return retryableClient.StandardClient()
 }
-
-/*
-// getRetryAfter checks for the Retry-After header or response body to determine retry wait time.
-func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
-	retryAfterHeader := resp.Header.Get("Retry-After")
-	// x-ratelimit-reset: The time (in seconds) remaining in the current window after which the rate limit resets.
-	ratelimitReset := resp.Header.Get("x-ratelimit-reset")
-	// Date header from the response
-	dateHeader := resp.Header.Get("Date")
-
-	if retryAfterHeader != "" {
-		// Try to parse the Retry-After value as an integer (seconds)
-		if sleep, err := strconv.ParseInt(retryAfterHeader, 10, 64); err == nil {
-			l.Printf("[INFO] got Retry-After from header: %s\n", retryAfterHeader)
-			return time.Second * time.Duration(sleep+1) // Add 1 second padding
-		} else {
-			// Fallback: try parsing it as a duration (like "13s" from ZPA)
-			dur, err := time.ParseDuration(retryAfterHeader)
-			if err == nil {
-				l.Printf("[INFO] got Retry-After duration from header: %s\n", retryAfterHeader)
-				return dur + time.Second // Add 1 second padding
-			}
-			l.Printf("[INFO] error parsing Retry-After header: %v\n", err)
-		}
-	} else if ratelimitReset != "" {
-		// Handle x-ratelimit-reset and Date headers
-		resetSeconds, err := strconv.Atoi(ratelimitReset)
-		if err == nil {
-			// Use the Date header for more accurate timing
-			requestDate, err := time.Parse("Mon, 02 Jan 2006 15:04:05 GMT", dateHeader)
-			if err != nil {
-				// Log the error but proceed without using the Date header if parsing fails
-				l.Printf("[INFO] error parsing Date header, defaulting to x-ratelimit-reset: %v\n", err)
-				return time.Duration(resetSeconds+1) * time.Second // Fallback to just x-ratelimit-reset + 1 second padding
-			}
-
-			// Calculate the remaining time until rate limit reset using the Date header
-			currentUnix := requestDate.Unix()
-			waitTime := int64(resetSeconds) - currentUnix + 1 // Adding 1 second padding
-			l.Printf("[INFO] x-ratelimit-reset header used, wait time calculated using Date header: %d seconds\n", waitTime)
-			return time.Duration(waitTime) * time.Second
-		}
-		l.Printf("[INFO] error parsing x-ratelimit-reset header: %v\n", err)
-	}
-
-	// Fallback to default wait time if no Retry-After or x-ratelimit-reset headers exist
-	return time.Second * time.Duration(RetryWaitMinSeconds)
-}
-*/
 
 func getRetryAfter(resp *http.Response, cfg *Configuration) time.Duration {
 	l := cfg.Logger

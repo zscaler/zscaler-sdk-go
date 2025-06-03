@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.4.3 (June 2, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
+[PR #339](https://github.com/zscaler/zscaler-sdk-go/pull/339) - Fixed an issue in the OneAPI client where initial API requests could fail with 401 Unauthorized if a valid OAuth2 token had not yet been obtained. The client now performs immediate authentication before starting the background token renewal ticker, ensuring the token is always present on first use. Removed incorrect retry logic for 401 responses.
+
 # 3.4.2 (May 29, 2025)
 
 ## Notes
