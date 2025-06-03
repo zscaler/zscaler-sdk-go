@@ -95,7 +95,7 @@ type Configuration struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZSCALER_CLIENT_PROXY_PORT"`
