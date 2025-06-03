@@ -67,7 +67,7 @@ To install the Zscaler GO SDK in your project:
 
 * An administrator account in the Zscaler products you want to interact with.
 * [OneAPI](https://help.zscaler.com/oneapi/understanding-oneapi): If using the OneAPI entrypoint you must have a API Client created in the [Zidentity platform](https://help.zscaler.com/zidentity/about-api-clients)
-* Legacy Framework: If using the legacy API framework you must have API Keys credentials in the the respective Zscaler cloud products.
+* Legacy Framework: If using the legacy API framework you must have API Keys credentials in the respective Zscaler cloud products.
 * For more information on getting started with Zscaler APIs visit one of the following links:
 
 * [OneAPI](https://help.zscaler.com/oneapi/understanding-oneapi)
@@ -83,7 +83,7 @@ The latest versions => 3.x of this SDK provides dual API client capability and c
 
 Versions of this SDK <= v2.x only support the legacy API platform. If your Zscaler tenant has not been migrated to the new Zscaler [Zidentity platform](https://help.zscaler.com/zidentity/what-zidentity).
 
-If your organization is not ready to move into the Zidentity platform, this SDK can be configured for backwards compatibility by leveraging a built-in attribuite called `use_legacy_client` or environment variable `ZSCALER_USE_LEGACY_CLIENT`.
+If your organization is not ready to move into the Zidentity platform, this SDK can be configured for backwards compatibility by leveraging a built-in attribute called `use_legacy_client` or environment variable `ZSCALER_USE_LEGACY_CLIENT`.
 
    :warning: **Caution**: Zscaler does not recommend hard-coding credentials into arguments, as they can be exposed in plain text in version control systems. Use environment variables instead.
 
@@ -122,7 +122,7 @@ You can provide credentials via the `ZSCALER_CLIENT_ID`, `ZSCALER_CLIENT_SECRET`
 
 ### Alternative OneAPI Cloud Environments
 
-OneAPI supports authentication and can interact with alternative Zscaler enviornments i.e `beta`, `alpha` etc. To authenticate to these environments you must provide the following values:
+OneAPI supports authentication and can interact with alternative Zscaler environments i.e `beta`, `alpha` etc. To authenticate to these environments you must provide the following values:
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
@@ -1047,8 +1047,8 @@ func main() {
 		log.Fatalf("Error creating ZCC configuration: %v", err)
 	}
 
-	// Initialize ZPA client
-	service, err := zscaler.NewLegacyZccClient(zpaCfg)
+        // Initialize ZCC client
+        service, err := zscaler.NewLegacyZccClient(zccCfg)
 	if err != nil {
 		log.Fatalf("Error creating ZCC client: %v", err)
 	}
@@ -1094,7 +1094,7 @@ You can provide credentials via the `ZTW_USERNAME`, `ZTW_PASSWORD`, `ZTW_API_KEY
 | `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTW_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTW_CLOUD` |
 
-**NOTE**: The Zscaler Cloud Connector (ZTW) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
+**NOTE**: The Zscaler Cloud Connector (ZTW) API Client instantiation DOES NOT require the use of the `useLegacyClient` attribute.
 
 ### ZTW Client Initialization
 
@@ -1152,14 +1152,14 @@ The ZDX Cloud is identified by several cloud name prefixes, which determines whi
 
 ### ZDX Environment variables
 
-You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environment variables, representing your ZDX `APIKey`, `SecretKey` of your ZDX account, respectively.
+You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_SECRET` environment variables, representing your ZDX `APIKey`, `SecretKey` of your ZDX account, respectively.
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
 | `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |
-| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` |
+| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_SECRET` |
 
-**NOTE**: The Zscaler Digital Experience (ZDX) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
+**NOTE**: The Zscaler Digital Experience (ZDX) API Client instantiation DOES NOT require the use of the `useLegacyClient` attribute.
 
 ### ZDX Client Initialization
 
@@ -1228,7 +1228,7 @@ You can provide credentials via the `ZWA_API_KEY_ID`, `ZWA_API_SECRET` environme
 | `key_secret`       | _(String)_ The ZWA string that contains the key secret.| `ZWA_API_SECRET` |
 | `cloud`       | _(String)_ The ZWA string containing cloud provisioned for your organization.| `ZWA_CLOUD` |
 
-**NOTE**: The Zscaler Workflow Automation (ZWA) API Client instantiation DOES NOT require the use of the the `useLegacyClient` attribute.
+**NOTE**: The Zscaler Workflow Automation (ZWA) API Client instantiation DOES NOT require the use of the `useLegacyClient` attribute.
 
 ### ZWA Client Initialization
 
