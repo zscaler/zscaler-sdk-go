@@ -14,7 +14,7 @@ const (
 	mgmtConfig = "/zpa/mgmtconfig/v1/admin/customers/"
 )
 
-// TODO: because there isn't an endpoint to get all provisionning keys, we need to have all association type here
+// TODO: because there isn't an endpoint to get all provisioning keys, we need to have all association types here
 var ProvisioningKeyAssociationTypes []string = []string{
 	"CONNECTOR_GRP",
 	"SERVICE_EDGE_GRP",
