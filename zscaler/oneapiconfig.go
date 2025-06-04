@@ -92,6 +92,17 @@ func (c *Client) startTokenRenewalTicker() {
 	}
 }
 
+// Close stops the token renewal ticker and cleans up resources.
+func (c *Client) Close() {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.stopTicker != nil {
+		close(c.stopTicker)
+		c.stopTicker = nil
+	}
+}
+
 func (client *Client) GetLogger() logger.Logger {
 	return client.oauth2Credentials.Logger
 }
@@ -175,7 +186,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// Disable HTTPS check if the configuration requests it
 	if cfg.Zscaler.Testing.DisableHttpsCheck {
 		transport.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: false, // This disables HTTPS certificate validation
+			InsecureSkipVerify: true, // This disables HTTPS certificate validation
 		}
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}

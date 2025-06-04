@@ -8,7 +8,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
-// DELETE METHOD IS MISSING BUT AVAILABLE THROUGH THE UI
 func TestAlertSubscriptions(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
@@ -71,5 +70,17 @@ func TestAlertSubscriptions(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("Expected alert subscription with ID %d to be in the list, but it wasn't", updatedAlert.ID)
+	}
+
+	// Step 5: Delete the alert subscription
+	_, err = Delete(ctx, service, updatedAlert.ID)
+	if err != nil {
+		t.Fatalf("Error deleting alert subscription: %v", err)
+	}
+
+	// Confirm deletion by attempting to retrieve
+	_, err = Get(ctx, service, updatedAlert.ID)
+	if err == nil {
+		t.Errorf("Expected error retrieving deleted alert subscription with ID %d, but got none", updatedAlert.ID)
 	}
 }

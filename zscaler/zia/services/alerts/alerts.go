@@ -37,12 +37,6 @@ func Get(ctx context.Context, service *zscaler.Service, subscriptionID int) (*Al
 	return &subscription, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]AlertSubscriptions, error) {
-	var alerts []AlertSubscriptions
-	err := common.ReadAllPages(ctx, service.Client, alertsEndpoint, &alerts)
-	return alerts, err
-}
-
 func Create(ctx context.Context, service *zscaler.Service, alerts *AlertSubscriptions) (*AlertSubscriptions, *http.Response, error) {
 	resp, err := service.Client.Create(ctx, alertsEndpoint, *alerts)
 	if err != nil {
@@ -67,4 +61,19 @@ func Update(ctx context.Context, service *zscaler.Service, subscriptionID int, a
 
 	service.Client.GetLogger().Printf("[DEBUG]returning updates alert subscription from update: %d", updatedAlert.ID)
 	return updatedAlert, nil, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service, subscriptionID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", alertsEndpoint, subscriptionID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service) ([]AlertSubscriptions, error) {
+	var alerts []AlertSubscriptions
+	err := common.ReadAllPages(ctx, service.Client, alertsEndpoint, &alerts)
+	return alerts, err
 }
