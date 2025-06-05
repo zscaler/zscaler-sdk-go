@@ -32,6 +32,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 [PR #343](https://github.com/zscaler/zscaler-sdk-go/pull/343) - Document README typo fixes and YAML tag correction as part of the 3.4.3 entry
 [PR #345](https://github.com/zscaler/zscaler-sdk-go/pull/345) - Fix `InsecureSkipVerify` flag so TLS checks can be disabled in testing
 [PR #345](https://github.com/zscaler/zscaler-sdk-go/pull/345) - Add `Close()` method to stop token renewal ticker
+[PR #346](https://github.com/zscaler/zscaler-sdk-go/pull/346) - Fixed ZPA Pagination encoding for special edge cases.
 
 ### Documentation
 [PR #340](https://github.com/zscaler/zscaler-sdk-go/pull/340) - Fixed README typos and clarified service detection description.
