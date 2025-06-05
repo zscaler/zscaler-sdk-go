@@ -1,6 +1,6 @@
 # Changelog
 
-# 3.4.3 (June 3, 2025)
+# 3.4.3 (June 5, 2025)
 
 ## Notes
 - Golang: **v1.23**
