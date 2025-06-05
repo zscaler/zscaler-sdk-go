@@ -17,16 +17,25 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-# 3.4.3 (June 3, 2025)
+# 3.4.3 (June 5, 2025)
 
 ## Notes
 - Golang: **v1.23**
+
+### Enhancements
+[PR #345](https://github.com/zscaler/zscaler-sdk-go/pull/345) - Added `DELETE` method for ZIA `alertSubscriptions/{alertSubscriptionId}`
 
 ### Bug Fixes
 [PR #339](https://github.com/zscaler/zscaler-sdk-go/pull/339) - Fixed an issue in the OneAPI client where initial API requests could fail with 401 Unauthorized if a valid OAuth2 token had not yet been obtained. The client now performs immediate authentication before starting the background token renewal ticker, ensuring the token is always present on first use. Removed incorrect retry logic for 401 responses.
 [PR #341](https://github.com/zscaler/zscaler-sdk-go/pull/341) - Corrected `YAML` tag for `DefaultCacheMaxSizeMB` fields to use `defaultSize`
 [PR #342](https://github.com/zscaler/zscaler-sdk-go/pull/342) - Fix comment referencing provisioning keys in ZPA service
 [PR #343](https://github.com/zscaler/zscaler-sdk-go/pull/343) - Document README typo fixes and YAML tag correction as part of the 3.4.3 entry
+[PR #345](https://github.com/zscaler/zscaler-sdk-go/pull/345) - Fix `InsecureSkipVerify` flag so TLS checks can be disabled in testing
+[PR #345](https://github.com/zscaler/zscaler-sdk-go/pull/345) - Add `Close()` method to stop token renewal ticker
+[PR #346](https://github.com/zscaler/zscaler-sdk-go/pull/346) - Fixed ZPA Pagination encoding for special edge cases.
+
+### Documentation
+[PR #340](https://github.com/zscaler/zscaler-sdk-go/pull/340) - Fixed README typos and clarified service detection description.
 
 # 3.4.2 (May 29, 2025)
 

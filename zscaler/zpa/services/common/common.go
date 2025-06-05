@@ -397,6 +397,24 @@ func GetAllPagesScimGenericWithSearch[T any](
 }
 
 func sanitizeSearchQuery(query string) string {
+	// First, trim spaces
+	query = strings.TrimSpace(query)
+
+	// If the query is already URL encoded (contains %), return as-is
+	if strings.Contains(query, "%") {
+		return query
+	}
+
+	// For queries that appear to be complex (contain commas, dashes between words, etc.)
+	// we'll preserve these characters and let URL encoding handle them
+	if strings.Contains(query, ",") || (strings.Contains(query, "-") && strings.Contains(query, " ")) {
+		// Replace multiple spaces with a single space
+		reSpace := regexp.MustCompile(`\s+`)
+		query = reSpace.ReplaceAllString(query, " ")
+		return query
+	}
+
+	// Original behavior for backward compatibility
 	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
 	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
 	query = re.ReplaceAllString(query, "")
@@ -405,6 +423,18 @@ func sanitizeSearchQuery(query string) string {
 	reSpace := regexp.MustCompile(`\s+`)
 	query = reSpace.ReplaceAllString(query, " ")
 
-	// Trim spaces (but do NOT encode again)
 	return strings.TrimSpace(query)
 }
+
+// func sanitizeSearchQuery(query string) string {
+// 	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
+// 	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
+// 	query = re.ReplaceAllString(query, "")
+
+// 	// Replace multiple spaces with a single space
+// 	reSpace := regexp.MustCompile(`\s+`)
+// 	query = reSpace.ReplaceAllString(query, " ")
+
+// 	// Trim spaces (but do NOT encode again)
+// 	return strings.TrimSpace(query)
+// }
