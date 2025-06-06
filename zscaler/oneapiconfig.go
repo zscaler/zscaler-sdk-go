@@ -45,15 +45,15 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
-	if err := cli.authenticate(); err != nil {
-		return nil, fmt.Errorf("initial authentication failed: %w", err)
-	}
+
 	if !config.UseLegacyClient {
-		// Start token renewal ticker
+		// Authenticate and start token renewal
+		if err := cli.authenticate(); err != nil {
+			return nil, fmt.Errorf("initial authentication failed: %w", err)
+		}
 		cli.startTokenRenewalTicker()
 	}
 
-	// Return the service directly
 	return NewService(cli, nil), nil
 }
 
@@ -502,6 +502,9 @@ func (c *Client) authValid() bool {
 
 // Unified authentication function to refresh OAuth2 tokens
 func (c *Client) authenticate() error {
+	if c.oauth2Credentials.UseLegacyClient {
+		return nil // skip authentication for legacy client
+	}
 	c.Lock()
 	defer c.Unlock()
 

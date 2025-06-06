@@ -1,5 +1,25 @@
 # Changelog
 
+# 3.4.4 (June 6, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### New ZIA Endpoint - Virtual ZEN Clusters:
+
+[PR #348](https://github.com/zscaler/zscaler-sdk-go/pull/348) Added the following new ZIA API Endpoints:
+    - Added `GET /virtualZenClusters` Retrieves a list of ZIA Virtual Service Edge clusters.
+    - Added `GET /virtualZenClusters/{cluster_id}` Retrieves the Virtual Service Edge cluster based on the specified ID
+    - Added `POST /virtualZenClusters` Adds a new Virtual Service Edge cluster. 
+    - Added `PUT /virtualZenClusters/{cluster_id}` Updates the Virtual Service Edge cluster based on the specified ID
+    - Added `DELETE /virtualZenClusters/{cluster_id}` Deletes the Virtual Service Edge cluster based on the specified ID
+
+### Enhancements
+[PR #348](https://github.com/zscaler/zscaler-sdk-go/pull/348) - Added new Policy Client Types: `zpn_client_type_zapp_partner`, `zpn_client_type_vdi`, `zpn_client_type_zia_inspection`
+
+### Bug Fixes
+[PR #348](https://github.com/zscaler/zscaler-sdk-go/pull/348) - The SDK's NewOneAPIClient() function was performing OAuth2 authentication unconditionally, which caused the to hang or fail during legacy client initialization. The logic has been updated to skip authentication when the legacy client is in use.
+
 # 3.4.3 (June 5, 2025)
 
 ## Notes
