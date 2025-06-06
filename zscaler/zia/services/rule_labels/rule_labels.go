@@ -63,8 +63,8 @@ func GetRuleLabelByName(ctx context.Context, service *zscaler.Service, labelName
 	return nil, fmt.Errorf("no rule label found with name: %s", labelName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
-	resp, err := service.Client.Create(ctx, ruleLabelsEndpoint, *ruleLabelID)
+func Create(ctx context.Context, service *zscaler.Service, Labels *RuleLabels) (*RuleLabels, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, ruleLabelsEndpoint, *Labels)
 	if err != nil {
 		return nil, nil, err
 	}
