@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -46,7 +45,7 @@ func Get(ctx context.Context, service *zscaler.Service, nssID int) (*NSSServers,
 
 func GetByName(ctx context.Context, service *zscaler.Service, serverName string) (*NSSServers, error) {
 	var nssServers []NSSServers
-	err := common.ReadAllPages(ctx, service.Client, nssServersEndpoint, &nssServers)
+	err := service.Client.Read(ctx, nssServersEndpoint, &nssServers)
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +110,6 @@ func GetAll(ctx context.Context, service *zscaler.Service, serverType *string) (
 	}
 
 	var nssServers []NSSServers
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &nssServers)
+	err := service.Client.Read(ctx, endpoint, &nssServers)
 	return nssServers, err
 }

@@ -8,16 +8,13 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 )
 
 func TestGetAllUsers(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Define a time filter for the last 2 hours
 	now := time.Now()
@@ -52,12 +49,10 @@ func TestGetAllUsers(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Define a time filter for the last 2 hours
 	now := time.Now()

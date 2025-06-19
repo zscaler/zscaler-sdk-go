@@ -52,7 +52,7 @@ type RiskProfiles struct {
 	DataEncryptionInTransit   []string                  `json:"dataEncryptionInTransit,omitempty"`
 	RiskIndex                 []int                     `json:"riskIndex,omitempty"`
 	ModifiedBy                *common.IDNameExtensions  `json:"modifiedBy,omitempty"`
-	CustomTags                []common.IDNameExtensions `json:"customTags,omitempty"`
+	CustomTags                []common.IDNameExternalID `json:"customTags,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, profileID int) (*RiskProfiles, error) {

@@ -7,16 +7,13 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 )
 
 func TestGetDepartments(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	now := time.Now()
 	from := now.Add(-2 * time.Hour).Unix()
@@ -48,12 +45,10 @@ func TestGetDepartments(t *testing.T) {
 }
 
 func TestGetLocations(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	now := time.Now()
 	from := now.Add(-2 * time.Hour).Unix()

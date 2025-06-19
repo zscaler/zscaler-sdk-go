@@ -8,18 +8,15 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
 
 func TestGetDeviceApp(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Define a time filter for the last 2 hours
 	now := time.Now()
@@ -76,12 +73,10 @@ func TestGetDeviceApp(t *testing.T) {
 }
 
 func TestGetDeviceAllApps(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Define a time filter for the last 2 hours
 	now := time.Now()

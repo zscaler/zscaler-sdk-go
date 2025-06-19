@@ -25,11 +25,12 @@ type CloudApplicationInstances struct {
 }
 
 type InstanceIdentifiers struct {
-	InstanceID          int                      `json:"instanceId,omitempty"`
-	InstanceIdentifiers string                   `json:"instanceIdentifiers,omitempty"`
-	InstanceType        string                   `json:"instanceType,omitempty"`
-	ModifiedAt          int                      `json:"modifiedAt,omitempty"`
-	ModifiedBy          *common.IDNameExtensions `json:"modifiedBy,omitempty"`
+	InstanceID             int                      `json:"instanceId,omitempty"`
+	InstanceIdentifier     string                   `json:"instanceIdentifier,omitempty"`
+	InstanceIdentifierName string                   `json:"instanceIdentifierName,omitempty"`
+	IdentifierType         string                   `json:"identifierType,omitempty"`
+	ModifiedAt             int                      `json:"modifiedAt,omitempty"`
+	ModifiedBy             *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, instanceID int) (*CloudApplicationInstances, error) {

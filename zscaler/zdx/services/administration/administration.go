@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	departmentsEndpoint = "v1/administration/departments"
-	locationsEndpoint   = "v1/administration/locations"
+	departmentsEndpoint = "/zdx/v1/administration/departments"
+	locationsEndpoint   = "/zdx/v1/administration/locations"
 )
 
 type Department struct {
@@ -36,7 +36,7 @@ type GetLocationsFilters struct {
 }
 
 // Gets the list of configured departments.
-func GetDepartments(ctx context.Context, service *services.Service, filters GetDepartmentsFilters) ([]Department, *http.Response, error) {
+func GetDepartments(ctx context.Context, service *zscaler.Service, filters GetDepartmentsFilters) ([]Department, *http.Response, error) {
 	var departments []Department
 	path := departmentsEndpoint
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &departments)
@@ -47,7 +47,7 @@ func GetDepartments(ctx context.Context, service *services.Service, filters GetD
 }
 
 // Gets the list of configured locations.
-func GetLocations(ctx context.Context, service *services.Service, filters GetLocationsFilters) ([]Location, *http.Response, error) {
+func GetLocations(ctx context.Context, service *zscaler.Service, filters GetLocationsFilters) ([]Location, *http.Response, error) {
 	var locations []Location
 	path := locationsEndpoint
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &locations)

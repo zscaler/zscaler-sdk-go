@@ -1,4 +1,4 @@
-package cloudbrowserisolation
+package browser_isolation
 
 import (
 	"context"

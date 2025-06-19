@@ -20,6 +20,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/cache"
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 const (
@@ -434,8 +435,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 		// Handle other non-success status codes
 		if resp.StatusCode >= 300 {
-			resp.Body.Close()
-			return nil, resp, nil, fmt.Errorf("API responded with code: %d", resp.StatusCode)
+			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("API error"))
 		}
 	}
 

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/cloudbrowserisolation"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/browser_isolation"
 )
 
 const (
@@ -53,7 +53,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	cbiProfileList, err := cloudbrowserisolation.GetAll(context.Background(), service)
+	cbiProfileList, err := browser_isolation.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting cbi profile: %v", err)
 		return
@@ -73,7 +73,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		Protocols:      []string{"HTTPS_RULE", "HTTP_RULE"},
 		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
 		UserAgentTypes: []string{"OPERA", "FIREFOX", "MSIE", "MSEDGE", "CHROME", "SAFARI", "MSCHREDGE"},
-		CBIProfile: CBIProfile{
+		CBIProfile: browser_isolation.CBIProfile{
 			ID:   cbiProfileList[0].ID,
 			Name: cbiProfileList[0].Name,
 			URL:  cbiProfileList[0].URL,

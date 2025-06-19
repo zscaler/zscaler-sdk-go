@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/browser_isolation"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
@@ -129,23 +130,8 @@ type URLFilteringRule struct {
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   CBIProfile `json:"cbiProfile"`
-	CBIProfileID int        `json:"cbiProfileId"`
-}
-
-type CBIProfile struct {
-	ProfileSeq int `json:"profileSeq"`
-	// The universally unique identifier (UUID) for the browser isolation profile
-	ID string `json:"id"`
-
-	// Name of the browser isolation profile
-	Name string `json:"name"`
-
-	// The browser isolation profile URL
-	URL string `json:"url"`
-
-	// (Optional) Indicates whether this is a default browser isolation profile. Zscaler sets this field.
-	DefaultProfile bool `json:"defaultProfile"`
+	CBIProfile   browser_isolation.CBIProfile `json:"cbiProfile"`
+	CBIProfileID int                          `json:"cbiProfileId"`
 }
 
 type URLAdvancedPolicySettings struct {

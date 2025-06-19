@@ -13,9 +13,64 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.4.4``
+``Last updated: v3.5.0``
 
 ---
+
+# 3.5.0 (June 19, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Zscaler Digital Experience (ZDX) - OneAPI Support
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) - Zscaler Digital Experience (ZDX) API endpoints are now supported via OneAPI.
+
+### New ZIA Endpoint - Browser Control Policy
+
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZIA API Endpoints:
+    - Added `GET /browserControlSettings` Retrieves the Browser Control status and the list of configured browsers in the Browser Control policy
+    - Added `PUT /browserControlSettings` Updates the Browser Control settings.
+
+### New ZIA Endpoint - SaaS Security API (Casb DLP Rules)
+
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZIA API Endpoints:
+    - Added `GET /casbDlpRules` Retrieves the SaaS Security Data at Rest Scanning Data Loss Prevention (DLP) rules based on the specified rule type.
+    - Added `GET /casbDlpRules/{ruleId}` Retrieves the SaaS Security Data at Rest Scanning DLP rule based on the specified ID
+    - Added `GET /casbDlpRules/all` Retrieves all the SaaS Security Data at Rest Scanning DLP rules
+    - Added `POST /casbDlpRules` Adds a new SaaS Security Data at Rest Scanning DLP rule
+    - Added `PUT /casbDlpRules/{ruleId}` Updates the SaaS Security Data at Rest Scanning DLP rule based on the specified ID
+    - Added `DELETE /casbDlpRules/{ruleId}` Deletes the SaaS Security Data at Rest Scanning DLP rule based on the specified ID
+
+### New ZIA Endpoint - SaaS Security API (Casb Malware Rules)
+
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZIA API Endpoints:
+    - Added `GET /casbMalwareRules` Retrieves the SaaS Security Data at Rest Scanning Malware Detection rules based on the specified rule type.
+    - Added `GET /casbMalwareRules/{ruleId}` Retrieves the SaaS Security Data at Rest Scanning Malware Detection rule based on the specified ID
+    - Added `GET /casbMalwareRules/all` Retrieves all the SaaS Security Data at Rest Scanning Malware Detection rules
+    - Added `POST /casbMalwareRules` Adds a new SaaS Security Data at Rest Scanning Malware Detection rule.
+    - Added `PUT /casbMalwareRules/{ruleId}` Updates the SaaS Security Data at Rest Scanning Malware Detection rule based on the specified ID
+    - Added `DELETE /casbMalwareRules/{ruleId}` Deletes the SaaS Security Data at Rest Scanning Malware Detection rule based on the specified ID
+
+### New ZIA Endpoint - SaaS Security API
+
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZIA API Endpoints:
+    - Added `GET /domainProfiles/lite` Retrieves the domain profile summary.
+    - Added `GET /quarantineTombstoneTemplate/lite` Retrieves the templates for the tombstone file created when a file is quarantined
+    - Added `GET /casbEmailLabel/lite` Retrieves the email labels generated for the SaaS Security API policies in a user's email account
+    - Added `GET /casbTenant/{tenantId}/tags/policy` Retrieves the tags used in the policy rules associated with a tenant, based on the tenant ID.
+    - Added `GET /casbTenant/lite` Retrieves information about the SaaS application tenant
+
+### New ZIA Location Management Attributes - Extranet Support
+
+[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) The following attributes have been introduced to support Extranet feature configuration:
+  - `extranet` - The ID of the extranet resource that must be assigned to the location
+  - `extranetIpPool` - The ID of the traffic selector specified in the extranet
+  - `extranetDns` - The ID of the DNS server configuration used in the extranet
+  - `defaultExtranetTsPool` - A Boolean value indicating that the traffic selector specified in the extranet is the designated default traffic selector
+  - `defaultExtranetDns` - A Boolean value indicating that the DNS server configuration used in the extranet is the designated default DNS server
+
+### Internal Enhancements
+* [PR #350](https://github.com/zscaler/zscaler-sdk-python/pull/350) - Enhanced `CheckErrorInResponse` function to parse and display API error messages more clearly.
 
 # 3.4.4 (June 6, 2025)
 

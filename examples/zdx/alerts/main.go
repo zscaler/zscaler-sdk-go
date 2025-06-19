@@ -11,38 +11,32 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/alerts"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	apiKey := os.Getenv("ZDX_API_KEY_ID")
-	apiSecret := os.Getenv("ZDX_API_SECRET")
+	clientID := os.Getenv("ZSCALER_CLIENT_ID")
+	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
+	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
 
 	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		// Uncomment the line below if connecting to a custom ZDX cloud
-		// zdx.WithZDXCloud("zdxbeta"),
-		zdx.WithDebug(true),
+	zdxCfg, err := zscaler.NewConfiguration(
+		zscaler.WithClientID(clientID),
+		zscaler.WithClientSecret(clientSecret),
+		zscaler.WithVanityDomain(vanityDomain),
+		zscaler.WithDebug(true),
 	)
 	if err != nil {
 		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
+	service, err := zscaler.NewOneAPIClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
+		log.Fatalf("Error creating OneAPI client: %v", err)
 	}
-
-	// Wrap the ZDX client in a Service instance
-	service := services.New(zdxClient)
 
 	// Prompt the user to choose an alert type
 	fmt.Println("Choose the Alert Type:")
@@ -135,7 +129,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	}
 }
 
-func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters) {
+func getOngoingAlerts(service *zscaler.Service, filters common.GetFromToFilters) {
 	ctx := context.Background()
 	alertsResponse, _, err := alerts.GetOngoingAlerts(ctx, service, filters)
 	if err != nil {
@@ -144,7 +138,7 @@ func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters
 	displayAlerts(alertsResponse.Alerts)
 }
 
-func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) {
+func getHistoricalAlerts(service *zscaler.Service, filters common.GetFromToFilters) {
 	ctx := context.Background()
 	alertsResponse, _, err := alerts.GetHistoricalAlerts(ctx, service, filters)
 	if err != nil {
@@ -153,7 +147,7 @@ func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilt
 	displayAlerts(alertsResponse.Alerts)
 }
 
-func getAlertDetails(service *services.Service, alertID string) {
+func getAlertDetails(service *zscaler.Service, alertID string) {
 	ctx := context.Background()
 	alertDetails, _, err := alerts.GetAlert(ctx, service, alertID)
 	if err != nil {
@@ -162,7 +156,7 @@ func getAlertDetails(service *services.Service, alertID string) {
 	displayAlertDetails(*alertDetails)
 }
 
-func getAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) {
+func getAffectedDevices(service *zscaler.Service, alertID string, filters common.GetFromToFilters) {
 	ctx := context.Background()
 	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(ctx, service, alertID, filters)
 	if err != nil {

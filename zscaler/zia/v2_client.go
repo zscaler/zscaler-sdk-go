@@ -645,10 +645,12 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 			break
 		}
 
-		resp.Body.Close()
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
-			return nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			errResp := errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			resp.Body.Close()
+			return nil, errResp
 		}
+
 	}
 
 	// Read response body
@@ -669,7 +671,6 @@ func (client *Client) WithFreshCache() {
 	client.freshCache = true
 }
 
-// Create sends an HTTP POST request.
 func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
@@ -683,32 +684,81 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 		return nil, err
 	}
 
-	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
+	// Perform the request
+	respBody, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
+		// This will already be a *ErrorResponse if triggered by CheckErrorInResponse
 		return nil, err
 	}
-	if len(resp) > 0 {
-		// Check if the response is an array of strings
-		var stringArrayResponse []string
-		if json.Unmarshal(resp, &stringArrayResponse) == nil {
-			return stringArrayResponse, nil
-		}
 
-		// Otherwise, handle as usual
-		responseObject := reflect.New(t).Interface()
-		err = json.Unmarshal(resp, &responseObject)
-		if err != nil {
-			return nil, err
-		}
-		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-
-		c.Logger.Printf("Created Object with ID %v", id)
-		return responseObject, nil
-	} else {
-		// in case of 204 no content
-		return nil, nil
+	if len(respBody) == 0 {
+		return nil, nil // 204 No Content
 	}
+
+	// Detect content type safely
+	contentType := http.DetectContentType(respBody)
+	if !strings.Contains(contentType, "application/json") {
+		return nil, errorx.NewOneAPIFallbackError(respBody, "POST", endpoint, c.URL)
+	}
+
+	// Handle string array response
+	var stringArrayResponse []string
+	if json.Unmarshal(respBody, &stringArrayResponse) == nil {
+		return stringArrayResponse, nil
+	}
+
+	// Decode into target object
+	responseObject := reflect.New(t).Interface()
+	if err := json.Unmarshal(respBody, &responseObject); err != nil {
+		return nil, fmt.Errorf("failed to decode response body as JSON: %w", err)
+	}
+
+	id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+	c.Logger.Printf("Created Object with ID %v", id)
+
+	return responseObject, nil
 }
+
+// Create sends an HTTP POST request.
+// func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
+// 	if o == nil {
+// 		return nil, errors.New("tried to create with a nil payload not a Struct")
+// 	}
+// 	t := reflect.TypeOf(o)
+// 	if t.Kind() != reflect.Struct {
+// 		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
+// 	}
+// 	data, err := json.Marshal(o)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	resp, err := c.Request(ctx, endpoint, "POST", data, "application/json")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if len(resp) > 0 {
+// 		// Check if the response is an array of strings
+// 		var stringArrayResponse []string
+// 		if json.Unmarshal(resp, &stringArrayResponse) == nil {
+// 			return stringArrayResponse, nil
+// 		}
+
+// 		// Otherwise, handle as usual
+// 		responseObject := reflect.New(t).Interface()
+// 		err = json.Unmarshal(resp, &responseObject)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+
+// 		c.Logger.Printf("Created Object with ID %v", id)
+// 		return responseObject, nil
+// 	} else {
+// 		// in case of 204 no content
+// 		return nil, nil
+// 	}
+// }
 
 func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if slice == nil {
@@ -792,8 +842,15 @@ func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error
 		return err
 	}
 
-	err = json.Unmarshal(resp, o)
-	if err != nil {
+	if len(resp) == 0 {
+		return nil
+	}
+
+	if !strings.Contains(http.DetectContentType(resp), "application/json") {
+		return errorx.NewOneAPIFallbackError(resp, "GET", endpoint, c.URL)
+	}
+
+	if err := json.Unmarshal(resp, o); err != nil {
 		return err
 	}
 
@@ -824,21 +881,21 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 		return nil, err
 	}
 
-	// Send the HTTP request
 	resp, err := c.Request(ctx, endpoint, method, data, contentType)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check for an empty response body (e.g., 204 No Content)
 	if len(resp) == 0 {
-		return nil, nil // Return nil for responseObject and no error
+		return nil, nil
 	}
 
-	// Unmarshal response body into the provided struct type
+	if !strings.Contains(http.DetectContentType(resp), "application/json") {
+		return nil, errorx.NewOneAPIFallbackError(resp, method, endpoint, c.URL)
+	}
+
 	responseObject := reflect.New(t).Interface()
-	err = json.Unmarshal(resp, &responseObject)
-	if err != nil {
+	if err := json.Unmarshal(resp, &responseObject); err != nil {
 		return nil, fmt.Errorf("error decoding response body: %w", err)
 	}
 
@@ -847,10 +904,20 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 
 // Delete ...
 func (c *Client) Delete(ctx context.Context, endpoint string) error {
-	_, err := c.Request(ctx, endpoint, "DELETE", nil, "application/json")
+	resp, err := c.Request(ctx, endpoint, "DELETE", nil, "application/json")
 	if err != nil {
 		return err
 	}
+
+	if len(resp) == 0 {
+		return nil
+	}
+
+	if !strings.Contains(http.DetectContentType(resp), "application/json") {
+		return errorx.NewOneAPIFallbackError(resp, "DELETE", endpoint, c.URL)
+	}
+
+	// no further decoding expected
 	return nil
 }
 

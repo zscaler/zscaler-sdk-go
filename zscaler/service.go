@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
@@ -134,6 +135,21 @@ func NewLegacyZccClient(config *zcc.Configuration) (*Service, error) {
 	return newLegacyHelper(
 		WithLegacyClient(true),
 		WithZccLegacyClient(zccClient),
+		WithDebug(config.Debug),
+		// add other config mapping, if necessary
+	)
+}
+
+func NewLegacyZdxClient(config *zdx.Configuration) (*Service, error) {
+	zdxClient, err := zdx.NewClient(config)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+		return nil, err
+	}
+
+	return newLegacyHelper(
+		WithLegacyClient(true),
+		WithZdxLegacyClient(zdxClient),
 		WithDebug(config.Debug),
 		// add other config mapping, if necessary
 	)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
@@ -15,7 +15,7 @@ const (
 )
 
 // Gets the application's ZDX score trend. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAppScores(ctx context.Context, service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetAppScores(ctx context.Context, service *zscaler.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, scoreEndpoint)
@@ -42,7 +42,7 @@ If not specified, it defaults to End to End latency.
 If the time range is not specified, the endpoint defaults to the last 2 hours.
 */
 // Gets the application's metric trend.
-func GetAppMetrics(ctx context.Context, service *services.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetAppMetrics(ctx context.Context, service *zscaler.Service, appID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, metricsEndpoint)

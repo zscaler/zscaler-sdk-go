@@ -1,4 +1,4 @@
-package cloudbrowserisolation
+package browser_isolation
 
 import (
 	"context"
@@ -13,7 +13,7 @@ const (
 	cbiProfileEndpoint = "/zia/api/v1/browserIsolation/profiles"
 )
 
-type IsolationProfile struct {
+type CBIProfile struct {
 	ID string `json:"id,omitempty"`
 
 	// Name of the browser isolation profile
@@ -27,8 +27,8 @@ type IsolationProfile struct {
 }
 
 // Updated GetByName function
-func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*IsolationProfile, error) {
-	var cbiProfiles []IsolationProfile
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*CBIProfile, error) {
+	var cbiProfiles []CBIProfile
 	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
 	if err != nil {
 		return nil, checkNotSubscribedError(err)
@@ -42,8 +42,8 @@ func GetByName(ctx context.Context, service *zscaler.Service, profileName string
 }
 
 // Updated GetAll function
-func GetAll(ctx context.Context, service *zscaler.Service) ([]IsolationProfile, error) {
-	var cbiProfiles []IsolationProfile
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CBIProfile, error) {
+	var cbiProfiles []CBIProfile
 	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
 	return cbiProfiles, checkNotSubscribedError(err)
 }

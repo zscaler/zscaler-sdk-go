@@ -1,4 +1,4 @@
-package tenant_restriction
+package tenancy_restriction
 
 import (
 	"context"
@@ -31,6 +31,8 @@ type TenancyRestrictionProfile struct {
 	ItemDataPrimary             []string `json:"itemDataPrimary,omitempty"`
 	ItemDataSecondary           []string `json:"itemDataSecondary,omitempty"`
 	ItemValue                   []string `json:"itemValue,omitempty"`
+	LastModifiedTime            int      `json:"lastModifiedTime,omitempty"`
+	LastModifiedUserID          int      `json:"lastModifiedUserId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, profileID int) (*TenancyRestrictionProfile, error) {
@@ -44,7 +46,7 @@ func Get(ctx context.Context, service *zscaler.Service, profileID int) (*Tenancy
 	return &profile, nil
 }
 
-func GetInstanceByName(ctx context.Context, service *zscaler.Service, profileName string) (*TenancyRestrictionProfile, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*TenancyRestrictionProfile, error) {
 	var profiles []TenancyRestrictionProfile
 	err := common.ReadAllPages(ctx, service.Client, tenantRestrictionEndpoint, &profiles)
 	if err != nil {

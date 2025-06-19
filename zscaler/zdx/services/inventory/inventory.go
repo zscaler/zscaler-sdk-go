@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	softwareEndpoint    = "v1/inventory/software"
-	softwareKeyEndpoint = "v1/inventory/software"
+	softwareEndpoint    = "/zdx/v1/inventory/software"
+	softwareKeyEndpoint = "/zdx/v1/inventory/software"
 )
 
 type SoftwareOverviewResponse struct {
@@ -47,7 +47,7 @@ type SoftwareUserList struct {
 	InstallDate     string `json:"install_date,omitempty"`
 }
 
-func GetSoftware(ctx context.Context, service *services.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
+func GetSoftware(ctx context.Context, service *zscaler.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
 	var response SoftwareOverviewResponse
 	path := softwareEndpoint
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &response)
@@ -57,7 +57,7 @@ func GetSoftware(ctx context.Context, service *services.Service, filters GetSoft
 	return response.Software, response.NextOffset, resp, nil
 }
 
-func GetSoftwareKey(ctx context.Context, service *services.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
+func GetSoftwareKey(ctx context.Context, service *zscaler.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
 	var response SoftwareKeyResponse
 	path := fmt.Sprintf("%v/%v", softwareKeyEndpoint, softwareKey)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &response)

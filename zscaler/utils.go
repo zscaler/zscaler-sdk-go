@@ -40,7 +40,7 @@ func unescapeHTML(entity interface{}) {
 }
 
 func removeOneApiEndpointPrefix(endpoint string) string {
-	// removes url prefix from oneapi to legacy api (/zia, /zpa, /zcc)
+	// removes url prefix from oneapi to legacy api (/zia, /zpa, /zcc, /zdx)
 	if strings.HasPrefix(endpoint, "/zia") {
 		return strings.TrimPrefix(endpoint, "/zia")
 	}
@@ -55,6 +55,9 @@ func removeOneApiEndpointPrefix(endpoint string) string {
 	}
 	if strings.HasPrefix(endpoint, "/zcc") {
 		return strings.TrimPrefix(endpoint, "/zcc")
+	}
+	if strings.HasPrefix(endpoint, "/zdx") {
+		return strings.TrimPrefix(endpoint, "/zdx")
 	}
 	return endpoint
 }
