@@ -69,26 +69,6 @@ func TestCloudAppControlRule(t *testing.T) {
 		t.Fatalf("Error creating Web Application Rule resource: %v", err)
 	}
 
-	// defer func() {
-	// 	time.Sleep(1 * time.Second) // Adding delay
-	// 	// Check if the resource exists before attempting to delete
-	// 	_, getErr := GetByRuleID(context.Background(), service, createdResource.Type, createdResource.ID)
-	// 	if getErr == nil {
-	// 		_, delErr := Delete(context.Background(), service, createdResource.Type, createdResource.ID)
-	// 		if delErr != nil {
-	// 			// If the error indicates the resource is already deleted, log it as information
-	// 			if strings.Contains(delErr.Error(), "409") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
-	// 				t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
-	// 			} else {
-	// 				// If the deletion error is not due to the resource being missing, log it as an actual error
-	// 				t.Errorf("Error deleting Web Application Rule resource: %v", delErr)
-	// 			}
-	// 		}
-	// 	} else {
-	// 		t.Logf("Resource with ID %d not found (already deleted).", createdResource.ID)
-	// 	}
-	// }()
-
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, rule.Type, createdResource.ID)
 	time.Sleep(1 * time.Second) // Adding delay

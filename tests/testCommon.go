@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -52,22 +53,31 @@ func TestPassword(length int) string {
 	return string(result)
 }
 
-// NewOneAPIClient instantiates a new OneAPI client for testing
 func NewOneAPIClient() (*zscaler.Service, error) {
 	// Fetch credentials directly from environment variables
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
 	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
-	zscalerCloud := os.Getenv("ZSCALER_CLOUD")         // Optional, set this if needed
-	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN") // Optional, set this if needed
-	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD") // Optional, set this if needed
+	zscalerCloud := os.Getenv("ZSCALER_CLOUD")         // Optional
+	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN") // Optional
+	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD") // Optional
 
-	// Ensure required environment variables are set
-	if clientID == "" || clientSecret == "" || vanityDomain == "" {
-		return nil, fmt.Errorf("required environment variables (ZSCALER_CLIENT_ID, ZSCALER_CLIENT_SECRET, ZSCALER_VANITY_DOMAIN) are not set")
+	// Collect missing keys
+	var missing []string
+	if clientID == "" {
+		missing = append(missing, "ZSCALER_CLIENT_ID")
+	}
+	if clientSecret == "" {
+		missing = append(missing, "ZSCALER_CLIENT_SECRET")
+	}
+	if vanityDomain == "" {
+		missing = append(missing, "ZSCALER_VANITY_DOMAIN")
+	}
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("missing required environment variables: %s", strings.Join(missing, ", "))
 	}
 
-	// Build the configuration using the environment variables
+	// Build the configuration
 	config, err := zscaler.NewConfiguration(
 		zscaler.WithClientID(clientID),
 		zscaler.WithClientSecret(clientSecret),
@@ -75,15 +85,12 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 		zscaler.WithZscalerCloud(zscalerCloud),
 		zscaler.WithSandboxToken(sandboxToken),
 		zscaler.WithSandboxCloud(sandboxCloud),
-		// zscaler.WithDebug(true),
 		zscaler.WithTestingDisableHttpsCheck(false),
-		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating configuration: %v", err)
 	}
 
-	// Instantiate the OneAPI client and pass the service name (e.g., "zia")
 	client, err := zscaler.NewOneAPIClient(config)
 	if err != nil {
 		return nil, fmt.Errorf("error creating OneAPI client: %v", err)
@@ -91,6 +98,46 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 
 	return client, nil
 }
+
+// NewOneAPIClient instantiates a new OneAPI client for testing
+// func NewOneAPIClient() (*zscaler.Service, error) {
+// 	// Fetch credentials directly from environment variables
+// 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
+// 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
+// 	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
+// 	zscalerCloud := os.Getenv("ZSCALER_CLOUD")         // Optional, set this if needed
+// 	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN") // Optional, set this if needed
+// 	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD") // Optional, set this if needed
+
+// 	// Ensure required environment variables are set
+// 	if clientID == "" || clientSecret == "" || vanityDomain == "" {
+// 		return nil, fmt.Errorf("required environment variables (ZSCALER_CLIENT_ID, ZSCALER_CLIENT_SECRET, ZSCALER_VANITY_DOMAIN) are not set")
+// 	}
+
+// 	// Build the configuration using the environment variables
+// 	config, err := zscaler.NewConfiguration(
+// 		zscaler.WithClientID(clientID),
+// 		zscaler.WithClientSecret(clientSecret),
+// 		zscaler.WithVanityDomain(vanityDomain),
+// 		zscaler.WithZscalerCloud(zscalerCloud),
+// 		zscaler.WithSandboxToken(sandboxToken),
+// 		zscaler.WithSandboxCloud(sandboxCloud),
+// 		// zscaler.WithDebug(true),
+// 		zscaler.WithTestingDisableHttpsCheck(false),
+// 		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
+// 	)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error creating configuration: %v", err)
+// 	}
+
+// 	// Instantiate the OneAPI client and pass the service name (e.g., "zia")
+// 	client, err := zscaler.NewOneAPIClient(config)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error creating OneAPI client: %v", err)
+// 	}
+
+// 	return client, nil
+// }
 
 func NewZTWClient() (*ztw.Client, error) {
 	// Fetch credentials from environment variables

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	analysisEndpoint = "v1/analysis"
+	analysisEndpoint = "/zdx/v1/analysis"
 )
 
 type AnalysisRequest struct {
@@ -31,7 +31,7 @@ type Result struct {
 	Times      []int  `json:"times"`
 }
 
-func GetAnalysis(ctx context.Context, service *services.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
+func GetAnalysis(ctx context.Context, service *zscaler.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
 	var response AnalysisResult
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, nil, nil, &response)
@@ -41,7 +41,7 @@ func GetAnalysis(ctx context.Context, service *services.Service, analysisID stri
 	return &response, resp, nil
 }
 
-func CreateAnalysis(ctx context.Context, service *services.Service, request AnalysisRequest) (*http.Response, error) {
+func CreateAnalysis(ctx context.Context, service *zscaler.Service, request AnalysisRequest) (*http.Response, error) {
 	path := analysisEndpoint
 	resp, err := service.Client.NewRequestDo(ctx, "POST", path, nil, request, nil)
 	if err != nil {
@@ -50,7 +50,7 @@ func CreateAnalysis(ctx context.Context, service *services.Service, request Anal
 	return resp, nil
 }
 
-func DeleteAnalysis(ctx context.Context, service *services.Service, analysisID string) (*http.Response, error) {
+func DeleteAnalysis(ctx context.Context, service *zscaler.Service, analysisID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, nil, nil, nil)
 	if err != nil {

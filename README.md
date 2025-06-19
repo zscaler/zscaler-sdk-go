@@ -25,7 +25,7 @@
 * [Pagination](#pagination)
 * [Contributing](#contributing)
 
-This repository contains the ZIA/ZPA/ZDX/ZCC/ZCON SDK for Golang. This SDK can be
+This repository contains the ZIA/ZPA/ZDX/ZCC/ZTW SDK for Golang. This SDK can be
 used in your server-side code to interact with the Zscaler platform
 
 This SDK is designed to support the new Zscaler API framework [OneAPI](https://help.zscaler.com/oneapi/understanding-oneapi)
@@ -75,7 +75,7 @@ To install the Zscaler GO SDK in your project:
 * [ZIA API](https://help.zscaler.com/zia/getting-started-zia-api)
 * [ZDX API](https://help.zscaler.com/zdx/understanding-zdx-api)
 * [ZCC API](https://help.zscaler.com/client-connector/getting-started-client-connector-api)
-* [ZCON API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
+* [ZTW API](https://help.zscaler.com/cloud-branch-connector/getting-started-cloud-branch-connector-api)
 
 ## Authentication<a id="authentication"></a>
 
@@ -95,7 +95,7 @@ As of the publication of SDK version => 3.x, OneAPI is available for programmati
 * [ZPA API](https://help.zscaler.com/oneapi/understanding-oneapi#:~:text=Workload%20Groups-,ZPA%20API,-Zscaler%20Private%20Access)
 * [Zscaler Client Connector API](https://help.zscaler.com/oneapi/understanding-oneapi#:~:text=Version%20Profiles-,Zscaler%20Client%20Connector%20API,-Zscaler%20Client%20Connector)
 
-**NOTE** All Zscaler Digital Experience (ZDX), and Zscaler Workflow Automation (ZWA) are currently supported only via the legacy authentication method described in this README.
+**NOTE** Zscaler Workflow Automation (ZWA) is currently supported only via the legacy authentication method described in this README.
 
 ### OneAPI (API Client Scope)
 

@@ -126,8 +126,10 @@ jobs:
           command: |
             make test:integration:zdx
         env:
-          ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
-          ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
+          ZSCALER_CLIENT_ID: ${{ secrets.ZSCALER_CLIENT_ID }}
+          ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
+          ZSCALER_VANITY_DOMAIN: ${{ secrets.ZSCALER_VANITY_DOMAIN }}
+          ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
 
       - name: Publish test coverage
         uses: codecov/codecov-action@v4

@@ -6,22 +6,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestDeepTraceSession(t *testing.T) {
 	name := "TestSession-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Step 1: Get all devices and retrieve the first device ID
 	now := time.Now()

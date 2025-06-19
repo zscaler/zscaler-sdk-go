@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
@@ -33,7 +33,7 @@ func generateWebProbePath(deviceID, appID, probeID int) string {
 // For Web Probes, you can access Page Fetch Time, Server Response Time, DNS Time, or Availability.
 // If not specified, it defaults to Page Fetch Time (PFT).
 // If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetWebProbes(ctx context.Context, service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
+func GetWebProbes(ctx context.Context, service *zscaler.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]common.Metric, *http.Response, error) {
 	var v []common.Metric
 	var single common.Metric
 	path := generateWebProbePath(deviceID, appID, probeID)
@@ -53,7 +53,7 @@ func GetWebProbes(ctx context.Context, service *services.Service, deviceID, appI
 }
 
 // Gets the list of all active web probes on a device. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAllWebProbes(ctx context.Context, service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
+func GetAllWebProbes(ctx context.Context, service *zscaler.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
 	var v []DeviceWebProbe
 	path := generateWebProbesPath(deviceID, appID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v) // Pass the address of v

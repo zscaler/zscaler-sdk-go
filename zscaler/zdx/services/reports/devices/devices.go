@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	devicesEndpoint = "v1/devices"
+	devicesEndpoint = "/zdx/v1/devices"
 )
 
 type DeviceDetail struct {
@@ -65,7 +65,7 @@ type Software struct {
 }
 
 // Gets the device details including the device model information, tunnel type, network, and software details. The JSON must contain the user ID and email address to associate the device to a user. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetDevice(ctx context.Context, service *services.Service, deviceID string) (*DeviceDetail, *http.Response, error) {
+func GetDevice(ctx context.Context, service *zscaler.Service, deviceID string) (*DeviceDetail, *http.Response, error) {
 	v := new(DeviceDetail)
 	path := fmt.Sprintf("%v/%v", devicesEndpoint, deviceID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, nil, nil, v)
@@ -76,7 +76,7 @@ func GetDevice(ctx context.Context, service *services.Service, deviceID string) 
 }
 
 // Gets the list of all active devices and its basic details. The JSON must contain the user's ID and email address to associate the device to the user. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAllDevices(ctx context.Context, service *services.Service, filters GetDevicesFilters) ([]DeviceDetail, *http.Response, error) {
+func GetAllDevices(ctx context.Context, service *zscaler.Service, filters GetDevicesFilters) ([]DeviceDetail, *http.Response, error) {
 	var v struct {
 		NextOffSet interface{}    `json:"next_offset"`
 		List       []DeviceDetail `json:"devices"`

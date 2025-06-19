@@ -153,8 +153,21 @@ type Locations struct {
 	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
 	IPv6Enabled bool `json:"ipv6Enabled,omitempty"`
 
-	// (Optional) Name-ID pair of the NAT64 prefix configured as the DNS64 prefix for the location. If specified, the DNS64 prefix is used for the IP addresses that reside in this location. If not specified, a prefix is selected from the set of supported prefixes. This field is applicable only if ipv6Enabled is set is true.
-	// Before you can configure a DNS64 prefix, you must send a GET request to /ipv6config/nat64prefix to retrieve the IDs of NAT64 prefixes, which can be configured as the DNS64 prefix.
+	// Indicates that the traffic selector specified in the extranet is the designated default traffic selector
+	DefaultExtranetTsPool bool `json:"defaultExtranetTsPool,omitempty"`
+
+	// Indicates that the DNS server configuration used in the extranet is the designated default DNS server
+	DefaultExtranetDns bool `json:"defaultExtranetDns,omitempty"`
+
+	// The ID of the extranet resource that must be assigned to the location
+	Extranet *common.IDCustom `json:"extranet,omitempty"`
+
+	// The ID of the traffic selector specified in the extranet
+	ExtranetIpPool *common.IDCustom `json:"extranetIpPool,omitempty"`
+
+	// The ID of the DNS server configuration used in the extranet
+	ExtranetDns *common.IDCustom `json:"extranetDns,omitempty"`
+
 	IPv6Dns64Prefix bool `json:"ipv6Dns64Prefix,omitempty"`
 
 	DynamiclocationGroups []common.IDNameExtensions `json:"dynamiclocationGroups"`

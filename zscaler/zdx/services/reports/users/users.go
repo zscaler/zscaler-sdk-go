@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	usersEndpoint = "v1/users"
+	usersEndpoint = "/zdx/v1/users"
 )
 
 type User struct {
@@ -42,7 +42,7 @@ type ZSLocation struct {
 }
 
 // Gets user details including the device information, active geolocations, and Zscaler locations. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetUser(ctx context.Context, service *services.Service, userID string) (*User, *http.Response, error) {
+func GetUser(ctx context.Context, service *zscaler.Service, userID string) (*User, *http.Response, error) {
 	v := new(User)
 	path := fmt.Sprintf("%v/%v", usersEndpoint, userID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, nil, nil, v)
@@ -53,7 +53,7 @@ func GetUser(ctx context.Context, service *services.Service, userID string) (*Us
 }
 
 // Gets the list of all active users, their devices, active geolocations, and Zscaler locations. If the time range is not specified, the endpoint defaults to the last 2 hours.
-func GetAllUsers(ctx context.Context, service *services.Service, filters GetUsersFilters) ([]User, *http.Response, error) {
+func GetAllUsers(ctx context.Context, service *zscaler.Service, filters GetUsersFilters) ([]User, *http.Response, error) {
 	var v struct {
 		NextOffSet interface{} `json:"next_offset"`
 		List       []User      `json:"users"`

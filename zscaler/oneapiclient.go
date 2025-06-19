@@ -24,6 +24,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 	ztw "github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
@@ -42,7 +43,7 @@ var (
 )
 
 const (
-	VERSION               = "3.4.0"
+	VERSION               = "3.5.0"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
 	ZSCALER_CLIENT_SECRET = "ZSCALER_CLIENT_SECRET"
 	ZSCALER_VANITY_DOMAIN = "ZSCALER_VANITY_DOMAIN"
@@ -64,6 +65,7 @@ type LegacyClient struct {
 	ZtwClient *ztw.Client
 	ZpaClient *zpa.Client
 	ZccClient *zcc.Client
+	ZdxClient *zdx.Client
 }
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
@@ -74,6 +76,7 @@ type Configuration struct {
 	ZIAHTTPClient  *http.Client
 	ZTWHTTPClient  *http.Client
 	ZCCHTTPClient  *http.Client
+	ZDXHTTPClient  *http.Client
 	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`
 	UserAgent      string            `json:"userAgent,omitempty"`
 	Debug          bool              `json:"debug,omitempty"`
@@ -199,6 +202,9 @@ func setHttpClients(cfg *Configuration) {
 	// ZCC-specific rate limits:
 	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
+	// ZCC-specific rate limits:
+	zdxRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
+
 	// Default case for unknown or unhandled services
 	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
 
@@ -208,6 +214,7 @@ func setHttpClients(cfg *Configuration) {
 	cfg.ZTWHTTPClient = getHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
 	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)
+	cfg.ZDXHTTPClient = getHTTPClient(cfg.Logger, zdxRateLimiter, cfg)
 }
 
 // Authenticate performs OAuth2 authentication and retrieves an AuthToken.
@@ -361,6 +368,8 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 		return client.oauth2Credentials.ZTWHTTPClient
 	case "zcc":
 		return client.oauth2Credentials.ZCCHTTPClient
+	case "zdx":
+		return client.oauth2Credentials.ZDXHTTPClient
 	default:
 		return client.oauth2Credentials.HTTPClient
 	}
@@ -377,6 +386,8 @@ func detectServiceType(endpoint string) (string, error) {
 		return "zpa", nil
 	} else if strings.HasPrefix(endpoint, "/zcc") {
 		return "zcc", nil
+	} else if strings.HasPrefix(endpoint, "/zdx") {
+		return "zdx", nil
 	}
 	return "", fmt.Errorf("unsupported service")
 }
@@ -691,5 +702,14 @@ func WithZccLegacyClient(zccClient *zcc.Client) ConfigSetter {
 			c.LegacyClient = &LegacyClient{}
 		}
 		c.LegacyClient.ZccClient = zccClient
+	}
+}
+
+func WithZdxLegacyClient(zdxClient *zdx.Client) ConfigSetter {
+	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &LegacyClient{}
+		}
+		c.LegacyClient.ZdxClient = zdxClient
 	}
 }

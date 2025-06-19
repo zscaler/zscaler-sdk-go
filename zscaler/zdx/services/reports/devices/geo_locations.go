@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -27,7 +27,7 @@ type Children struct {
 
 // Gets the list of all active geolocations for the time range specified.
 // If not specified, the endpoint defaults to the last 2 hours. The state and city data is retrieved only for the US.
-func GetGeoLocations(ctx context.Context, service *services.Service, filters GeoLocationFilter) ([]GeoLocation, *http.Response, error) {
+func GetGeoLocations(ctx context.Context, service *zscaler.Service, filters GeoLocationFilter) ([]GeoLocation, *http.Response, error) {
 	var v []GeoLocation
 	path := geoLocationsEndpoint
 	resp, err := service.Client.NewRequestDo(ctx, "GET", path, filters, nil, &v)

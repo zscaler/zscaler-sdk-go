@@ -7,18 +7,15 @@ import (
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 )
 
 func TestGetDeviceTopProcesses(t *testing.T) {
-	client, err := tests.NewZdxClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Step 1: Get all devices and retrieve the first device ID
 	now := time.Now()

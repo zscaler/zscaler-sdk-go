@@ -11,38 +11,32 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	apiKey := os.Getenv("ZDX_API_KEY_ID")
-	apiSecret := os.Getenv("ZDX_API_SECRET")
+	clientID := os.Getenv("ZSCALER_CLIENT_ID")
+	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
+	vanityDomain := os.Getenv("ZSCALER_VANITY_DOMAIN")
 
 	// Initialize ZDX configuration
-	zdxCfg, err := zdx.NewConfiguration(
-		zdx.WithZDXAPIKeyID(apiKey),
-		zdx.WithZDXAPISecret(apiSecret),
-		// Uncomment the line below if connecting to a custom ZDX cloud
-		// zdx.WithZDXCloud("zdxbeta"),
-		zdx.WithDebug(true),
+	zdxCfg, err := zscaler.NewConfiguration(
+		zscaler.WithClientID(clientID),
+		zscaler.WithClientSecret(clientSecret),
+		zscaler.WithVanityDomain(vanityDomain),
+		zscaler.WithDebug(true),
 	)
 	if err != nil {
 		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Initialize ZDX client
-	zdxClient, err := zdx.NewClient(zdxCfg)
+	service, err := zscaler.NewOneAPIClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("Error creating ZDX client: %v", err)
+		log.Fatalf("Error creating OneAPI client: %v", err)
 	}
-
-	// Wrap the ZDX client in a Service instance
-	service := services.New(zdxClient)
 
 	ctx := context.Background()
 
