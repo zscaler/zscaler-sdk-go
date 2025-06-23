@@ -684,10 +684,8 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 		return nil, err
 	}
 
-	// Perform the request
 	respBody, err := c.Request(ctx, endpoint, "POST", data, "application/json")
 	if err != nil {
-		// This will already be a *ErrorResponse if triggered by CheckErrorInResponse
 		return nil, err
 	}
 
@@ -695,13 +693,16 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 		return nil, nil // 204 No Content
 	}
 
-	// Detect content type safely
-	contentType := http.DetectContentType(respBody)
-	if !strings.Contains(contentType, "application/json") {
-		return nil, errorx.NewOneAPIFallbackError(respBody, "POST", endpoint, c.URL)
+	// Validate JSON before unmarshal
+	if !json.Valid(respBody) {
+		msg := strings.TrimSpace(string(respBody))
+		if strings.Contains(strings.ToLower(msg), "only through zscaler oneapi") {
+			return nil, errorx.NewOneAPIFallbackError(respBody, "POST", endpoint, c.URL)
+		}
+		return nil, fmt.Errorf("unexpected non-JSON response: %s", msg)
 	}
 
-	// Handle string array response
+	// Handle string array
 	var stringArrayResponse []string
 	if json.Unmarshal(respBody, &stringArrayResponse) == nil {
 		return stringArrayResponse, nil
@@ -841,17 +842,20 @@ func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error
 	if err != nil {
 		return err
 	}
-
 	if len(resp) == 0 {
 		return nil
 	}
 
-	if !strings.Contains(http.DetectContentType(resp), "application/json") {
-		return errorx.NewOneAPIFallbackError(resp, "GET", endpoint, c.URL)
+	if !json.Valid(resp) {
+		msg := strings.TrimSpace(string(resp))
+		if strings.Contains(strings.ToLower(msg), "only through zscaler oneapi") {
+			return errorx.NewOneAPIFallbackError(resp, "GET", endpoint, c.URL)
+		}
+		return fmt.Errorf("unexpected non-JSON response: %s", msg)
 	}
 
 	if err := json.Unmarshal(resp, o); err != nil {
-		return err
+		return fmt.Errorf("failed to decode response body as JSON: %w", err)
 	}
 
 	return nil
@@ -862,7 +866,6 @@ func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface
 	return c.updateGeneric(ctx, endpoint, o, "PUT", "application/json")
 }
 
-// Update ...
 func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
@@ -885,13 +888,16 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 	if err != nil {
 		return nil, err
 	}
-
 	if len(resp) == 0 {
 		return nil, nil
 	}
 
-	if !strings.Contains(http.DetectContentType(resp), "application/json") {
-		return nil, errorx.NewOneAPIFallbackError(resp, method, endpoint, c.URL)
+	if !json.Valid(resp) {
+		msg := strings.TrimSpace(string(resp))
+		if strings.Contains(strings.ToLower(msg), "only through zscaler oneapi") {
+			return nil, errorx.NewOneAPIFallbackError(resp, method, endpoint, c.URL)
+		}
+		return nil, fmt.Errorf("unexpected non-JSON response: %s", msg)
 	}
 
 	responseObject := reflect.New(t).Interface()
@@ -908,16 +914,19 @@ func (c *Client) Delete(ctx context.Context, endpoint string) error {
 	if err != nil {
 		return err
 	}
-
 	if len(resp) == 0 {
 		return nil
 	}
 
-	if !strings.Contains(http.DetectContentType(resp), "application/json") {
-		return errorx.NewOneAPIFallbackError(resp, "DELETE", endpoint, c.URL)
+	if !json.Valid(resp) {
+		msg := strings.TrimSpace(string(resp))
+		if strings.Contains(strings.ToLower(msg), "only through zscaler oneapi") {
+			return errorx.NewOneAPIFallbackError(resp, "DELETE", endpoint, c.URL)
+		}
+		return fmt.Errorf("unexpected non-JSON response: %s", msg)
 	}
 
-	// no further decoding expected
+	// no decoding needed
 	return nil
 }
 

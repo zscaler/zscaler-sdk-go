@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.0``
+``Last updated: v3.5.1``
 
 ---
+
+# 3.5.1 (June 23, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #351](https://github.com/zscaler/zscaler-sdk-go/pull/351) - Fixed `CheckErrorInResponse` function to parse and display API error messages more clearly in ZIA Legacy client.
 
 # 3.5.0 (June 19, 2025)
 
