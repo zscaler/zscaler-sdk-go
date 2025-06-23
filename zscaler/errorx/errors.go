@@ -51,13 +51,20 @@ func CheckErrorInResponse(res *http.Response, respErr error) error {
 	bodyBytes, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 
+	contentType := res.Header.Get("Content-Type")
+	isJSON := strings.Contains(contentType, "application/json")
+	msg := strings.TrimSpace(string(bodyBytes))
+
+	// ✅ Only fallback if it's non-JSON and the message matches known OneAPI error
+	if !isJSON && strings.Contains(strings.ToLower(msg), "only through zscaler oneapi") {
+		return NewOneAPIFallbackError(bodyBytes, res.Request.Method, res.Request.URL.Path, getBaseURL(res.Request.URL))
+	}
+
+	// Continue with normal JSON or generic error handling
 	parsed := &ParsedAPIError{
 		Status: res.StatusCode,
 		URL:    res.Request.URL.String(),
 	}
-
-	contentType := res.Header.Get("Content-Type")
-	isJSON := strings.Contains(contentType, "application/json")
 
 	if isJSON {
 		var jsonBody map[string]interface{}
@@ -81,13 +88,7 @@ func CheckErrorInResponse(res *http.Response, respErr error) error {
 			parsed.Message = fmt.Sprintf("Failed to parse JSON error body: %s", err.Error())
 		}
 	} else {
-		// Handle plain text or other content types
-		msg := strings.TrimSpace(string(bodyBytes))
-		if msg != "" {
-			parsed.Message = msg
-		} else {
-			parsed.Message = "Unknown error format"
-		}
+		parsed.Message = msg
 	}
 
 	return &ErrorResponse{
@@ -96,6 +97,10 @@ func CheckErrorInResponse(res *http.Response, respErr error) error {
 		Parsed:   parsed,
 		Message:  string(bodyBytes),
 	}
+}
+
+func getBaseURL(u *url.URL) string {
+	return fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 }
 
 func NewOneAPIFallbackError(respBody []byte, method, endpoint, baseURL string) *ErrorResponse {
