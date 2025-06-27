@@ -323,6 +323,9 @@ func Reorder(ctx context.Context, service *zscaler.Service, policySetID, ruleId 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
 // ruleIdOrders is a map[ruleID]Order
 func BulkReorder(ctx context.Context, service *zscaler.Service, policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
+	ruleMutex.Lock()
+	defer ruleMutex.Unlock()
+
 	policySet, resp, err := GetByPolicyType(context.Background(), service, policySetType)
 	if err != nil {
 		return resp, err
