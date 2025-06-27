@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.1``
+``Last updated: v3.5.2``
 
 ---
+
+# 3.5.2 (June 27, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #352](https://github.com/zscaler/zscaler-sdk-go/pull/352) - Added `ruleMutex.Lock()` to ZPA `policysetcontroller` function `BulkReorder` to prevent simulteneous API calls when invoking the bulk reordering endpoint.
 
 # 3.5.1 (June 23, 2025)
 
