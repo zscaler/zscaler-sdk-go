@@ -52,6 +52,8 @@ type URLFilteringRule struct {
 	// When set to true, a 'BLOCK' action triggered by the rule could be overridden. If true and both overrideGroup and overrideUsers are not set, the BLOCK triggered by this rule could be overridden for any users. If blockOverride is not set, 'BLOCK' action cannot be overridden.
 	BlockOverride bool `json:"blockOverride,omitempty"`
 
+	BrowserEunTemplateID int `json:"browserEunTemplateId,omitempty"`
+
 	// Time quota in minutes, after which the URL Filtering rule is applied. If not set, no quota is enforced. If a policy rule action is set to 'BLOCK', this field is not applicable.
 	TimeQuota int `json:"timeQuota,omitempty"`
 
