@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.3``
+``Last updated: v3.5.4``
 
 ---
+
+# 3.5.4 (July 23, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #357](https://github.com/zscaler/zscaler-sdk-go/pull/356) - Added `omitempty` to ZIA `cloud_nss` attributes to prevent JSON malformed.
 
 # 3.5.3 (July 22, 2025)
 

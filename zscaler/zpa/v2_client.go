@@ -569,6 +569,12 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 		return resp, err
 	}
 
+	// If 204 No Content, skip unmarshalling
+	if resp.StatusCode == http.StatusNoContent || len(respData) == 0 {
+		logger.LogResponse(client.Config.Logger, resp, start, reqID)
+		return resp, nil
+	}
+
 	// Decode the response into the provided variable if applicable
 	if v != nil {
 		if err := decodeJSON(respData, v); err != nil {
