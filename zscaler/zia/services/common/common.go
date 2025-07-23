@@ -41,6 +41,15 @@ type IDCustom struct {
 	Name string `json:"name,omitempty"`
 }
 
+type CommonNSS struct {
+	ID          int    `json:"id"`
+	PID         int    `json:"pid"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Deleted     bool   `json:"deleted"`
+	GetlID      int    `json:"getlId"`
+}
+
 type ZPAAppSegments struct {
 	// A unique identifier assigned to the Application Segment
 	ID int `json:"id"`
