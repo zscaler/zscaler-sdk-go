@@ -59,6 +59,8 @@ type FileTypeRules struct {
 	// Flag to check whether a file has active content or not
 	Unscannable bool `json:"unscannable"`
 
+	BrowserEunTemplateID int `json:"browserEunTemplateId,omitempty"`
+
 	// The list of cloud applications to which the File Type Control policy rule must be applied
 	// New to Review that.
 	CloudApplications []string `json:"cloudApplications,omitempty"`

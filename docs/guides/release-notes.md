@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.2``
+``Last updated: v3.5.3``
 
 ---
+
+# 3.5.3 (July 22, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #356](https://github.com/zscaler/zscaler-sdk-go/pull/356) - Fixed ZIA `bandwidth_classes` attribute `fileSize`
+[PR #356](https://github.com/zscaler/zscaler-sdk-go/pull/356) - Added attribute `browserEunTemplateId` to ZIA resources `filetypecontrol`, `urlfilteringpolicies`
+[PR #356](https://github.com/zscaler/zscaler-sdk-go/pull/356) - Fixed zpabeta url entrypoint in ZPA `config_scim` client.
 
 # 3.5.2 (June 27, 2025)
 

@@ -20,6 +20,7 @@ type BandwidthClasses struct {
 	IsNameL10nTag            bool     `json:"isNameL10nTag,omitempty"`
 	Name                     string   `json:"name,omitempty"`
 	GetfileSize              string   `json:"getfileSize,omitempty"`
+	FileSize                 string   `json:"fileSize,omitempty"`
 	Type                     string   `json:"type,omitempty"`
 	WebApplications          []string `json:"webApplications,omitempty"`
 	Urls                     []string `json:"urls,omitempty"`

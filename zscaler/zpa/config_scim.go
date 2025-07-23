@@ -28,7 +28,7 @@ const (
 	ZPA_IDP_ID         = "ZPA_IDP_ID"
 	ZPA_SCIM_CLOUD     = "ZPA_SCIM_CLOUD"
 	scimdefaultBaseURL = "https://scim1.private.zscaler.com/scim/1/"
-	scimbetaBaseURL    = "https://scim1.zpabeta.ne/scim/1/"
+	scimbetaBaseURL    = "https://scim1.zpabeta.net/scim/1/"
 	scimzpaTwoBaseUrl  = "https://scim1.zpatwo.net/scim/1/"
 	scimgovBaseURL     = "https://scim1.zpagov.net/scim/1/"
 	scimgovUsBaseURL   = "https://scim1.zpagov.us/scim/1/"
