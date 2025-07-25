@@ -6,7 +6,9 @@
 - Golang: **v1.23**
 
 ### Bug Fixes
-[PR #358](https://github.com/zscaler/zscaler-sdk-go/pull/358) - Added `omitempty` to ZIA `cloud_nss` attributes to prevent JSON malformed.
+[PR #358](https://github.com/zscaler/zscaler-sdk-go/pull/358) - Fixed ZIA URL Categories `GetAll` function to support optional parameters `customOnly` and `includeOnlyUrlKeywordCounts`
+[PR #358](https://github.com/zscaler/zscaler-sdk-go/pull/358) - Optimized OneAPI Client bearer token reuse during sessions.
+
 
 # 3.5.5 (July 24, 2025)
 
