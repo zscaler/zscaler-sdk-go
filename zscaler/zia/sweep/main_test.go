@@ -654,14 +654,14 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 
 func sweepURLCategories(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := urlcategories.GetAll(context.Background(), service)
+	resources, err := urlcategories.GetAll(context.Background(), service, false, false)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
 		return err
 	}
 
 	for _, r := range resources {
-		if !strings.HasPrefix(r.ConfiguredName, "tests-") {
+		if !strings.HasPrefix(r.ConfiguredName, "tests_") {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.ConfiguredName)
