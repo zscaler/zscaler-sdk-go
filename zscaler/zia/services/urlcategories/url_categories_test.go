@@ -126,7 +126,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(context.Background(), service)
+	resources, err := GetAll(context.Background(), service, false, false)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
