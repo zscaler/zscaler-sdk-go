@@ -438,7 +438,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
 					if req.Header.Get("Authorization") != "" {
 						authHeader := req.Header.Get("Authorization")
-						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header: Bearer %s...", authHeader[7:min(len(authHeader), 27)])
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
 					}
 				}
 
