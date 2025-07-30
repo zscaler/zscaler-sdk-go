@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.6``
+``Last updated: v3.5.7``
 
 ---
+
+# 3.5.7 (July 30, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #360](https://github.com/zscaler/zscaler-sdk-go/pull/360) - Added function `GetAllCustomURLCategories` to ZIA `url_categories` package.
 
 # 3.5.6 (July 24, 2025)
 
