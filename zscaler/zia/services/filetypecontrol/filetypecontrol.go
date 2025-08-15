@@ -50,6 +50,9 @@ type FileTypeRules struct {
 	// A Boolean value that indicates whether packet capture (PCAP) is enabled or not
 	CapturePCAP bool `json:"capturePCAP"`
 
+	// A Boolean field indicating whether the rule applies to password-protected files.
+	PasswordProtected bool `json:"passwordProtected"`
+
 	// File operation performed. This field is not applicable to the Lite API.
 	Operation string `json:"operation"`
 

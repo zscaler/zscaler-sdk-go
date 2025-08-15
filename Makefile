@@ -31,6 +31,7 @@ help:
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zidentity      Run only zidentity integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             			Run only unit tests$(COLOR_NONE)"
 
 
@@ -75,6 +76,10 @@ sweep\:zpa:
 sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
 	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
+
+sweep\:zidentity:
+	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
+	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zidentity/sweep -v -sweep=true
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"

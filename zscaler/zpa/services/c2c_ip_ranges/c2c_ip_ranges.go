@@ -1,4 +1,4 @@
-package c2cipranges
+package c2c_ip_ranges
 
 import (
 	"context"

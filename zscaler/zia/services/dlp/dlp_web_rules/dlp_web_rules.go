@@ -152,6 +152,9 @@ type WebDLPRules struct {
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
 
+	// Specifies one or more content locations from the available values as a match criteria for the rule to target specific sections of a file or transaction.
+	DlpContentLocationsScopes []string `json:"dlpContentLocationsScopes,omitempty"`
+
 	InspectHttpGetEnabled bool `json:"inspectHttpGetEnabled,omitempty"`
 }
 
