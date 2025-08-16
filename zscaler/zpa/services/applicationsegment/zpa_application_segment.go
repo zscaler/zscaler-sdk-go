@@ -99,6 +99,25 @@ type AppServerGroups struct {
 	Name             string `json:"name"`
 }
 
+// MultiMatchUnsupportedReferencesPayload represents the payload for GetMultiMatchUnsupportedReferences
+type MultiMatchUnsupportedReferencesPayload []string
+
+// MultiMatchUnsupportedReferencesResponse represents the response from GetMultiMatchUnsupportedReferences
+type MultiMatchUnsupportedReferencesResponse struct {
+	ID              string   `json:"id"`
+	AppSegmentName  string   `json:"appSegmentName"`
+	Domains         []string `json:"domains"`
+	TCPPorts        []string `json:"tcpPorts"`
+	MatchStyle      string   `json:"matchStyle"`
+	MicrotenantName string   `json:"microtenantName"`
+}
+
+// BulkUpdateMultiMatchPayload represents the payload for UpdatebulkUpdateMultiMatch
+type BulkUpdateMultiMatchPayload struct {
+	ApplicationIDs []int  `json:"applicationIds"`
+	MatchStyle     string `json:"matchStyle"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentEndpoint, applicationID)
@@ -168,4 +187,29 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationSegment
 		}
 	}
 	return result, resp, nil
+}
+
+func GetMultiMatchUnsupportedReferences(ctx context.Context, service *zscaler.Service, domainNames MultiMatchUnsupportedReferencesPayload) ([]MultiMatchUnsupportedReferencesResponse, *http.Response, error) {
+	// Validate that at least one domain name is provided
+	if len(domainNames) == 0 {
+		return nil, nil, fmt.Errorf("at least one domain name must be provided")
+	}
+
+	var v []MultiMatchUnsupportedReferencesResponse
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+appSegmentEndpoint+"/multimatchUnsupportedReferences", common.Filter{MicroTenantID: service.MicroTenantID()}, domainNames, &v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v, resp, nil
+}
+
+func UpdatebulkUpdateMultiMatch(ctx context.Context, service *zscaler.Service, payload BulkUpdateMultiMatchPayload) (*http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/bulkUpdateMultiMatch"
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, payload, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, err
 }

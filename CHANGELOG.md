@@ -1,19 +1,22 @@
 # Changelog
 
-# 3.6.0 (June xx, 2025)
+# 3.6.0 (August 16, 2025)
 
 ## Notes
 - Golang: **v1.23**
 
-### New ZPA Endpoint - Admin SSO Configuration Controller
+#### NEW Enhancement - ZIdentity API Support
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363): Zscaler [Zidentity](https://help.zscaler.com/zidentity/what-zidentity) API is now available and is supported by this SDK. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md) for authentication instructions.
+
+### New ZPA Endpoint - Admin SSO Configuration Controller
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /v2/ssoLoginOptions` Get SSO Login Details
     - Added `POST /v2/ssoLoginOptions` Updates SSO Options for customer
 
 ### New ZPA Endpoint - C2C IP Ranges
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `POST /v2/ipRanges/search` Get the IP Range by `page` and `pageSize`
     - Added `GET /v2/ipRanges` Get All the IP Range
     - Added `POST /v2/ipRanges` Add new IP Range
@@ -23,7 +26,7 @@
 
 ### New ZPA Endpoint - API Keys
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /apiKeys` Get all apiKeys details
     - Added `POST /apiKeys` Create api keys for customer
     - Added `GET /apiKeys/{id}` Get apiKeys details by ID
@@ -32,18 +35,18 @@
 
 ### New ZPA Endpoint - Customer Controller
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /v2/associationtype/{type}/domains` Get domains for a customer
     - Added `POST /v2/associationtype/{type}/domains` Add or update domains for a customer.
 
 ### New ZPA Endpoint - NPClient
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /vpnConnectedUsers` Get all applications configuired for a given customer
 
 ### New ZPA Endpoint - Private Cloud Controller Group
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /privateCloudControllerGroup` Get details of all configured Private Cloud Controller Groups
     - Added `POST /privateCloudControllerGroup` Add a new Private Cloud Controller Groups
     - Added `GET /privateCloudControllerGroup/{privateCloudControllerGroupId}` Get the Private Cloud Controller Group details for the specified ID
@@ -53,7 +56,7 @@
 
 ### New ZPA Endpoint - Private Cloud Controller Group
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /privateCloudController` Get all the configured Private Cloud Controller details
     - Added `PUT /privateCloudController/{privateCloudControllerGroupId}/restart` Trigger restart of the Private Cloud Controller
     - Added `GET /privateCloudController/{privateCloudControllerId}` Gets the Private Cloud Controller details for the specified ID.
@@ -62,7 +65,7 @@
 
 ### New ZPA Endpoint - User Portal Controller
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /userPortal` Get all configured User Portals
     - Added `GET /userPortal/{id}` Get User Portal for the specified ID
     - Added `PUT /userPortal/{Id}` Update User Portal for the specified ID
@@ -71,7 +74,7 @@
 
 ### New ZPA Endpoint - User Portal Link Controller
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /userPortalLink` Get all configured User Portal Links
     - Added `GET /userPortalLink/{id}` Get User Portal Link for the specified ID
     - Added `GET /userPortalLink/userPortal/{portalId}` Get User Portal Link for a given portal
@@ -82,11 +85,17 @@
 
 ### New ZPA Endpoint - Z-Path Config Override Controller
 
-[PR #350](https://github.com/zscaler/zscaler-sdk-go/pull/350) Added the following new ZPA API Endpoints:
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /configOverrides/{id}` Get config-override details by configId
     - Added `GET /configOverrides` Get all config-override details
     - Added `PUT /configOverrides/{id}` Update config-override for the specified ID
     - Added `POST /configOverrides` Create config-override
+
+### New ZPA Endpoint - Multimatch Domains
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /multimatchUnsupportedReferences` Get the unsupported feature references for multimatch for domains
+    - Added `GET /bulkUpdateMultiMatch` Update multimatch feature in multiple applications.
 
 # 3.5.4 (July 23, 2025)
 
