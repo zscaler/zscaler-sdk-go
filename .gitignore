@@ -18,6 +18,7 @@
 
 .idea/*
 /local_test
+local_test/
 vendor/
 go-test
 /go-test

@@ -13,34 +13,113 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.5.7``
+``Last updated: v3.6.0``
 
 ---
 
-# 3.5.7 (July 30, 2025)
+# 3.6.0 (August 18, 2025)
 
 ## Notes
 - Golang: **v1.23**
 
+#### NEW Enhancement - ZIdentity API Support
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363): Zscaler [Zidentity](https://help.zscaler.com/zidentity/what-zidentity) API is now available and is supported by this SDK. See [README](https://github.com/zscaler/zscaler-sdk-go/blob/master/README.md) for authentication instructions.
+
+### New ZPA Endpoint - Admin SSO Configuration Controller
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /v2/ssoLoginOptions` Get SSO Login Details
+    - Added `POST /v2/ssoLoginOptions` Updates SSO Options for customer
+
+### New ZPA Endpoint - C2C IP Ranges
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `POST /v2/ipRanges/search` Get the IP Range by `page` and `pageSize`
+    - Added `GET /v2/ipRanges` Get All the IP Range
+    - Added `POST /v2/ipRanges` Add new IP Range
+    - Added `GET /v2/ipRanges/{ipRangeId}` Get the IP Range Details
+    - Added `PUT /v2/ipRanges/{ipRangeId}` Update the IP Range Details
+    - Added `DELETE /v2/ipRanges/{ipRangeId}` Delete IP Range
+
+### New ZPA Endpoint - API Keys
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /apiKeys` Get all apiKeys details
+    - Added `POST /apiKeys` Create api keys for customer
+    - Added `GET /apiKeys/{id}` Get apiKeys details by ID
+    - Added `PUT /apiKeys/{id}` Update apiKeys by ID
+    - Added `DELETE /apiKeys/{id}` Delete apiKeys
+
+### New ZPA Endpoint - Customer Controller
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /v2/associationtype/{type}/domains` Get domains for a customer
+    - Added `POST /v2/associationtype/{type}/domains` Add or update domains for a customer.
+
+### New ZPA Endpoint - NPClient
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /vpnConnectedUsers` Get all applications configuired for a given customer
+
+### New ZPA Endpoint - Private Cloud Controller Group
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /privateCloudControllerGroup` Get details of all configured Private Cloud Controller Groups
+    - Added `POST /privateCloudControllerGroup` Add a new Private Cloud Controller Groups
+    - Added `GET /privateCloudControllerGroup/{privateCloudControllerGroupId}` Get the Private Cloud Controller Group details for the specified ID
+    - Added `PUT /privateCloudControllerGroup/{privateCloudControllerGroupId}` Update the Private Cloud Controller Group details for the specified ID
+    - Added `DELETE /privateCloudControllerGroup/{privateCloudControllerGroupId}` Delete the Private Cloud Controller Group for the specified ID
+    - Added `DELETE /privateCloudControllerGroup/summary` Get all the configured Private Cloud Controller Group ID and Name
+
+### New ZPA Endpoint - Private Cloud Controller Group
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /privateCloudController` Get all the configured Private Cloud Controller details
+    - Added `PUT /privateCloudController/{privateCloudControllerGroupId}/restart` Trigger restart of the Private Cloud Controller
+    - Added `GET /privateCloudController/{privateCloudControllerId}` Gets the Private Cloud Controller details for the specified ID.
+    - Added `PUT /privateCloudController/{privateCloudControllerId}` Updates the Private Cloud Controller for the specified ID
+    - Added `DELETE /privateCloudController/{privateCloudControllerId}` Delete the Private Cloud Controller for the specified ID
+
+### New ZPA Endpoint - User Portal Controller
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /userPortal` Get all configured User Portals
+    - Added `GET /userPortal/{id}` Get User Portal for the specified ID
+    - Added `PUT /userPortal/{Id}` Update User Portal for the specified ID
+    - Added `POST /userPortal` Add a new User Portal
+    - Added `DELETE /userPortal/{Id}` Delete a User Portal
+
+### New ZPA Endpoint - User Portal Link Controller
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /userPortalLink` Get all configured User Portal Links
+    - Added `GET /userPortalLink/{id}` Get User Portal Link for the specified ID
+    - Added `GET /userPortalLink/userPortal/{portalId}` Get User Portal Link for a given portal
+    - Added `PUT /userPortalLink/{Id}` Update User Portal Link for the specified ID
+    - Added `POST /userPortalLink` Add a new User Portal Link
+    - Added `POST /userPortalLink/bulk` Add list of User Portal Link
+    - Added `DELETE /userPortalLink/{Id}` Delete a User Portal Link for the specified ID
+
+### New ZPA Endpoint - Z-Path Config Override Controller
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /configOverrides/{id}` Get config-override details by configId
+    - Added `GET /configOverrides` Get all config-override details
+    - Added `PUT /configOverrides/{id}` Update config-override for the specified ID
+    - Added `POST /configOverrides` Create config-override
+
+### New ZPA Endpoint - Multimatch Domains
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
+    - Added `GET /multimatchUnsupportedReferences` Get the unsupported feature references for multimatch for domains
+    - Added `GET /bulkUpdateMultiMatch` Update multimatch feature in multiple applications.
+
+### New ZIA Cloud-to-Cloud - Receiver for Web DLP Rule
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added attribute `receiver` to support Cloud-to-Cloud - Receiver for Web DLP Rule configuration.
+
 ### Bug Fixes
-[PR #360](https://github.com/zscaler/zscaler-sdk-go/pull/360) - Added function `GetAllCustomURLCategories` to ZIA `url_categories` package.
-
-# 3.5.6 (July 24, 2025)
-
-## Notes
-- Golang: **v1.23**
-
-### Bug Fixes
-[PR #358](https://github.com/zscaler/zscaler-sdk-go/pull/358) - Fixed ZIA URL Categories `GetAll` function to support optional parameters `customOnly` and `includeOnlyUrlKeywordCounts`
-[PR #358](https://github.com/zscaler/zscaler-sdk-go/pull/358) - Optimized OneAPI Client bearer token reuse during sessions.
-
-# 3.5.5 (July 24, 2025)
-
-## Notes
-- Golang: **v1.23**
-
-### Bug Fixes
-[PR #357](https://github.com/zscaler/zscaler-sdk-go/pull/357) - Added `omitempty` to ZIA `cloud_nss` attributes to prevent JSON malformed.
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) - Fixed ZIA `urlfilteringpolicies` `GET` function to return the complete payload.
 
 # 3.5.4 (July 23, 2025)
 
@@ -48,7 +127,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - Golang: **v1.23**
 
 ### Bug Fixes
-[PR #357](https://github.com/zscaler/zscaler-sdk-go/pull/357) - Added `omitempty` to ZIA `cloud_nss` attributes to prevent JSON malformed.
+[PR #357](https://github.com/zscaler/zscaler-sdk-go/pull/356) - Added `omitempty` to ZIA `cloud_nss` attributes to prevent JSON malformed.
 
 # 3.5.3 (July 22, 2025)
 

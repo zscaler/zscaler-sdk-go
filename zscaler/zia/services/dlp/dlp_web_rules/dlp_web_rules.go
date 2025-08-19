@@ -90,6 +90,9 @@ type WebDLPRules struct {
 	// The DLP server, using ICAP, to which the transaction content is forwarded.
 	IcapServer *common.IDCustom `json:"icapServer,omitempty"`
 
+	// The admin that modified the DLP policy rule last.
+	Receiver *Receiver `json:"receiver,omitempty"`
+
 	// The Name-ID pairs of locations to which the DLP policy rule must be applied.
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
 
@@ -152,11 +155,21 @@ type WebDLPRules struct {
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
 
+	// Specifies one or more content locations from the available values as a match criteria for the rule to target specific sections of a file or transaction.
+	DlpContentLocationsScopes []string `json:"dlpContentLocationsScopes,omitempty"`
+
 	InspectHttpGetEnabled bool `json:"inspectHttpGetEnabled,omitempty"`
 }
 
 type SubRule struct {
 	ID int `json:"id,omitempty"`
+}
+
+type Receiver struct {
+	ID     int                       `json:"id,omitempty"`
+	Name   string                    `json:"name,omitempty"`
+	Type   string                    `json:"type,omitempty"`
+	Tenant []common.IDNameExtensions `json:"tenant,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*WebDLPRules, error) {

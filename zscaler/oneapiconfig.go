@@ -288,8 +288,9 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
 	isZPARequest := strings.Contains(endpoint, "/zpa")
 	isZCCRequest := strings.Contains(endpoint, "/zcc")
+	isZIdentityRequest := strings.Contains(endpoint, "/admin/api/v1")
 
-	// Build the full URL for Sandbox, ZPA, ZCC, or OAuth2-based requests
+	// Build the full URL for Sandbox, ZPA, ZCC, ZIdentity, or OAuth2-based requests
 	fullURL := ""
 	baseUrl := ""
 
@@ -301,6 +302,19 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 	if isSandboxRequest {
 		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
 		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token
+	} else if isZIdentityRequest {
+		// For zidentity endpoints, construct URL using vanity domain directly
+		// Format: https://{vanity_domain}-admin.zslogin{cloud}.net/admin/api/v1/...
+		vanityDomain := c.oauth2Credentials.Zscaler.Client.VanityDomain
+		cloud := c.oauth2Credentials.Zscaler.Client.Cloud
+
+		var zidentityBaseURL string
+		if cloud == "" || strings.EqualFold(cloud, "PRODUCTION") {
+			zidentityBaseURL = fmt.Sprintf("https://%s-admin.zslogin.net", vanityDomain)
+		} else {
+			zidentityBaseURL = fmt.Sprintf("https://%s-admin.zslogin%s.net", vanityDomain, strings.ToLower(cloud))
+		}
+		fullURL = fmt.Sprintf("%s%s", zidentityBaseURL, endpoint)
 	} else if isZPARequest {
 		// Only append customerId to query parameters if it's not already in the URL path
 		if !strings.Contains(endpoint, fmt.Sprintf("/customers/%s", c.oauth2Credentials.Zscaler.Client.CustomerID)) && c.oauth2Credentials.Zscaler.Client.CustomerID != "" {

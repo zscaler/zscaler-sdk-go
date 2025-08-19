@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/browser_isolation"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
@@ -134,8 +133,15 @@ type URLFilteringRule struct {
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   browser_isolation.CBIProfile `json:"cbiProfile"`
-	CBIProfileID int                          `json:"cbiProfileId"`
+	CBIProfile   *CBIProfile `json:"cbiProfile"`
+	CBIProfileID int         `json:"cbiProfileId"`
+}
+
+type CBIProfile struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	URL        string `json:"url"`
+	ProfileSeq int    `json:"profileSeq"`
 }
 
 type URLAdvancedPolicySettings struct {
@@ -201,14 +207,20 @@ type URLAdvancedPolicySettings struct {
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
-	var urlFilteringPolicies URLFilteringRule
-	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
+	var urlFilteringPolicies []URLFilteringRule
+	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
-	return &urlFilteringPolicies, nil
+	for _, urlFilteringPolicy := range urlFilteringPolicies {
+		if urlFilteringPolicy.ID == ruleID {
+			service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicy.ID)
+			return &urlFilteringPolicy, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no url filtering rule found with id: %d", ruleID)
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {

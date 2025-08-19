@@ -31,6 +31,7 @@ help:
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zidentity      Run only zidentity integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             			Run only unit tests$(COLOR_NONE)"
 
 
@@ -76,6 +77,10 @@ sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
 	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
 
+sweep\:zidentity:
+	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
+	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zidentity/sweep -v -sweep=true
+
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
 	@make test:integration:zcc
@@ -112,6 +117,12 @@ test\:integration\:zia:
 	go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zscaler/zia/... ./zscaler/zia/activation_cli/... -parallel 10 -timeout 60m
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
+
+test\:integration\:zidentity:
+	@echo "$(COLOR_ZSCALER)Running zidentity integration tests...$(COLOR_NONE)"
+	go test -v -failfast -race -cover -coverprofile=zidentitycoverage.out -covermode=atomic ./zscaler/zidentity/... -parallel 10 -timeout 60m
+	go tool cover -html=zidentitycoverage.out -o zidentitycoverage.html
+	@go tool cover -func zidentitycoverage.out | grep total:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
