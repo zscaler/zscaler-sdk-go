@@ -52,7 +52,7 @@ type NSSFeed struct {
 	NssLogType                  string                    `json:"nssLogType,omitempty"`
 	NssFeedType                 string                    `json:"nssFeedType,omitempty"`
 	FeedOutputFormat            string                    `json:"feedOutputFormat"`
-	UserObfuscation             string                    `json:"userObfuscation"`
+	UserObfuscation             string                    `json:"userObfuscation,omitempty"`
 	TimeZone                    string                    `json:"timeZone,omitempty"`
 	CustomEscapedCharacter      []string                  `json:"customEscapedCharacter,omitempty"`
 	EpsRateLimit                int                       `json:"epsRateLimit,omitempty"`

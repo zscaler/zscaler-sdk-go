@@ -357,8 +357,15 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		// Extract token from context if available
 		if token, ok := ctx.Value(ContextAccessToken).(string); ok && token != "" {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+			if c.oauth2Credentials.Debug {
+				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from context: Bearer %s...", token[:min(len(token), 20)])
+			}
 		} else {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+			if c.oauth2Credentials.Debug {
+				token := c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken
+				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from AuthToken: Bearer %s...", token[:min(len(token), 20)])
+			}
 		}
 	}
 
@@ -394,6 +401,9 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	}
 
 	var resp *http.Response
+	sessionNotValidRetryCount := 0
+	maxSessionNotValidRetries := int(c.oauth2Credentials.Zscaler.Client.RateLimit.MaxSessionNotValidRetries)
+
 	for retry := 1; ; retry++ { // Infinite loop for retries if MaxRetries=0
 		// Check MaxRetries if non-zero
 		if c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries > 0 && retry > int(c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries) {
@@ -421,10 +431,46 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			bodyCopy, readErr := io.ReadAll(resp.Body)
 			if readErr == nil && strings.Contains(string(bodyCopy), "SESSION_NOT_VALID") {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
-				c.oauth2Credentials.Logger.Printf("[WARN] SESSION_NOT_VALID detected, refreshing token and retrying...")
-				if err := c.authenticate(); err != nil {
+
+				sessionNotValidRetryCount++
+				if sessionNotValidRetryCount > maxSessionNotValidRetries {
+					return nil, resp, req, fmt.Errorf("max SESSION_NOT_VALID retries exceeded (%d), possible authentication issue", maxSessionNotValidRetries)
+				}
+
+				c.oauth2Credentials.Logger.Printf("[WARN] SESSION_NOT_VALID detected (attempt %d, session retry %d/%d), refreshing token and retrying...", retry, sessionNotValidRetryCount, maxSessionNotValidRetries)
+
+				// Enhanced debugging for SESSION_NOT_VALID analysis
+				if c.oauth2Credentials.Debug {
+					tok := c.oauth2Credentials.Zscaler.Client.AuthToken
+					c.oauth2Credentials.Logger.Printf("[DEBUG] SESSION_NOT_VALID analysis:")
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token exists: %v", tok != nil)
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token expiry: %s", tok.Expiry.Format(time.RFC3339))
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Current time: %s", time.Now().Format(time.RFC3339))
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Time until expiry: %.2f seconds", time.Until(tok.Expiry).Seconds())
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request URL: %s", req.URL.String())
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request method: %s", req.Method)
+					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
+					if req.Header.Get("Authorization") != "" {
+						authHeader := req.Header.Get("Authorization")
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
+					}
+				}
+
+				// Force token refresh regardless of client-side validation
+				// SESSION_NOT_VALID means the server considers the token invalid
+				c.Lock() // Prevent concurrent token refresh
+				authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
+				if err != nil {
+					c.Unlock()
 					return nil, resp, req, fmt.Errorf("token refresh failed after SESSION_NOT_VALID: %w", err)
 				}
+				c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
+				c.Unlock()
+				c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
+
+				// Add a small delay before retrying to avoid overwhelming the server
+				time.Sleep(time.Second * 2)
+
 				req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
 				if err != nil {
 					return nil, nil, nil, err
@@ -433,6 +479,12 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			}
 			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
 		}
+
+		// Reset session retry counter on successful requests or other errors
+		if resp.StatusCode != http.StatusUnauthorized {
+			sessionNotValidRetryCount = 0
+		}
+
 		// Handle rate-limiting (429 or 503)
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
@@ -542,4 +594,12 @@ func containsInt(codes []int, code int) bool {
 		}
 	}
 	return false
+}
+
+// min returns the smaller of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

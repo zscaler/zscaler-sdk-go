@@ -162,6 +162,18 @@ func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, custo
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
+func GetAllCustomURLCategories(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
+	var all []URLCategory
+	queryParams := url.Values{}
+	queryParams.Set("customOnly", "true")
+
+	err := service.Client.Read(ctx, fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &all)
+	if err != nil {
+		return nil, err
+	}
+	return all, nil
+}
+
 func CreateURLCategories(ctx context.Context, service *zscaler.Service, category *URLCategory) (*URLCategory, error) {
 	resp, err := service.Client.Create(ctx, urlCategoriesEndpoint, *category)
 	if err != nil {
@@ -222,9 +234,26 @@ func GetURLLookup(ctx context.Context, service *zscaler.Service, urls []string) 
 	return lookupResults, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
+func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool) ([]URLCategory, error) {
 	var urlCategories []URLCategory
-	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint, &urlCategories)
+
+	// Build the endpoint with optional query parameters
+	endpoint := urlCategoriesEndpoint
+	queryParams := url.Values{}
+
+	if customOnly {
+		queryParams.Set("customOnly", "true")
+	}
+	if includeOnlyUrlKeywordCounts {
+		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
+	}
+
+	// Append query parameters to endpoint if any exist
+	if len(queryParams) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &urlCategories)
 	return urlCategories, err
 }
 

@@ -109,10 +109,11 @@ type Configuration struct {
 			} `yaml:"proxy"`
 			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
-				MaxRetries              int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				RetryWaitMin            time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
-				RetryWaitMax            time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
-				RetryRemainingThreshold int32         `yaml:"remainingThreshold" envconfig:"ZSCALER_CLIENT_REMAINING_THRESHOLD"`
+				MaxRetries                int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin              time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax              time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				RetryRemainingThreshold   int32         `yaml:"remainingThreshold" envconfig:"ZSCALER_CLIENT_REMAINING_THRESHOLD"`
+				MaxSessionNotValidRetries int32         `yaml:"maxSessionNotValidRetries" envconfig:"ZSCALER_CLIENT_MAX_SESSION_NOT_VALID_RETRIES"`
 			} `yaml:"rateLimit"`
 		} `yaml:"client"`
 		Testing struct {
@@ -139,6 +140,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.Zscaler.Client.RateLimit.MaxRetries = MaxNumOfRetries
 	cfg.Zscaler.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	cfg.Zscaler.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
+	cfg.Zscaler.Client.RateLimit.MaxSessionNotValidRetries = 3 // Default to 3 consecutive SESSION_NOT_VALID retries
 
 	cfg.Zscaler.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
 
@@ -612,6 +614,12 @@ func WithRateLimitRemainingThreshold(threshold int32) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RateLimit.RetryRemainingThreshold = threshold
 		setHttpClients(c)
+	}
+}
+
+func WithRateLimitMaxSessionNotValidRetries(maxRetries int32) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.RateLimit.MaxSessionNotValidRetries = maxRetries
 	}
 }
 
