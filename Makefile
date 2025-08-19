@@ -118,6 +118,12 @@ test\:integration\:zia:
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 
+test\:integration\:zidentity:
+	@echo "$(COLOR_ZSCALER)Running zidentity integration tests...$(COLOR_NONE)"
+	go test -v -failfast -race -cover -coverprofile=zidentitycoverage.out -covermode=atomic ./zscaler/zidentity/... -parallel 10 -timeout 60m
+	go tool cover -html=zidentitycoverage.out -o zidentitycoverage.html
+	@go tool cover -func zidentitycoverage.out | grep total:
+
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit -test.v
