@@ -97,6 +97,10 @@
     - Added `GET /multimatchUnsupportedReferences` Get the unsupported feature references for multimatch for domains
     - Added `GET /bulkUpdateMultiMatch` Update multimatch feature in multiple applications.
 
+### New ZIA Cloud-to-Cloud - Receiver for Web DLP Rule
+
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added attribute `receiver` to support Cloud-to-Cloud - Receiver for Web DLP Rule configuration.
+
 ### Bug Fixes
 [PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) - Fixed ZIA `urlfilteringpolicies` `GET` function to return the complete payload.
 
