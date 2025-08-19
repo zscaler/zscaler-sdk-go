@@ -1,6 +1,6 @@
 # Changelog
 
-# 3.6.0 (August 16, 2025)
+# 3.6.0 (August 18, 2025)
 
 ## Notes
 - Golang: **v1.23**
@@ -96,6 +96,9 @@
 [PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) Added the following new ZPA API Endpoints:
     - Added `GET /multimatchUnsupportedReferences` Get the unsupported feature references for multimatch for domains
     - Added `GET /bulkUpdateMultiMatch` Update multimatch feature in multiple applications.
+
+### Bug Fixes
+[PR #363](https://github.com/zscaler/zscaler-sdk-go/pull/363) - Fixed ZIA `urlfilteringpolicies` `GET` function to return the complete payload.
 
 # 3.5.4 (July 23, 2025)
 

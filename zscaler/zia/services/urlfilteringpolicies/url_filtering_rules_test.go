@@ -73,7 +73,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		Protocols:      []string{"HTTPS_RULE", "HTTP_RULE"},
 		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
 		UserAgentTypes: []string{"OPERA", "FIREFOX", "MSIE", "MSEDGE", "CHROME", "SAFARI", "MSCHREDGE"},
-		CBIProfile: browser_isolation.CBIProfile{
+		CBIProfile: &CBIProfile{
 			ID:   cbiProfileList[0].ID,
 			Name: cbiProfileList[0].Name,
 			URL:  cbiProfileList[0].URL,
