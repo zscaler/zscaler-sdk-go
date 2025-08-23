@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.6.1 (August 22, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #364](https://github.com/zscaler/zscaler-sdk-go/pull/364) - Fixed `cbiProfile` within the `zia` `urlfilteringpolicies`, update and create functions
+
 # 3.6.0 (August 18, 2025)
 
 ## Notes

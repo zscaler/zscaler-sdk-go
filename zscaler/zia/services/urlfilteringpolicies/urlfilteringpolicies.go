@@ -255,7 +255,9 @@ func Create(ctx context.Context, service *zscaler.Service, ruleID *URLFilteringR
 func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
 	service.Client.GetLogger().Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
-	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
+
+	// Check if CBIProfile is nil or has empty ID, or if CBIProfileID is 0
+	if rule.CBIProfile == nil || rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
 		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
 		var urlFilteringPolicies []URLFilteringRule
 		err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
