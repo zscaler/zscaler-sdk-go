@@ -166,10 +166,10 @@ type SubRule struct {
 }
 
 type Receiver struct {
-	ID     int                       `json:"id,omitempty"`
-	Name   string                    `json:"name,omitempty"`
-	Type   string                    `json:"type,omitempty"`
-	Tenant []common.IDNameExtensions `json:"tenant,omitempty"`
+	ID     int                      `json:"id,omitempty"`
+	Name   string                   `json:"name,omitempty"`
+	Type   string                   `json:"type,omitempty"`
+	Tenant *common.IDNameExtensions `json:"tenant,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*WebDLPRules, error) {
