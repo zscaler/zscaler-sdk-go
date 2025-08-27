@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.6.3``
+``Last updated: v3.6.4``
 
 ---
+
+# 3.6.4 (August 26, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #367](https://github.com/zscaler/zscaler-sdk-go/pull/367) - Added attribute `deviceGroups` to ZIA Forwarding Control Rules.
 
 # 3.6.3 (August 26, 2025)
 
