@@ -1,4 +1,4 @@
-package c2cincidentreceiver
+package c2c_incident_receiver
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type C2CIncidentReceiver struct {
 	Status                   []string                 `json:"status,omitempty"`
 	ModifiedTime             int                      `json:"modifiedTime,omitempty"`
 	LastTenantValidationTime int                      `json:"lastTenantValidationTime,omitempty"`
-	LastValidationMsg        LastValidationMsg        `json:"lastValidationMsg,omitempty"`
+	LastValidationMsg        *LastValidationMsg       `json:"lastValidationMsg,omitempty"`
 	LastModifiedBy           *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
 	OnboardableEntity        *OnboardableEntity       `json:"onboardableEntity,omitempty"`
 }
@@ -28,6 +28,13 @@ type C2CIncidentReceiver struct {
 type LastValidationMsg struct {
 	ErrorMsg  string `json:"errorMsg,omitempty"`
 	ErrorCode string `json:"errorCode,omitempty"`
+}
+
+type SmirBucketConfig struct {
+	ConfigName         string `json:"configName,omitempty"`
+	MetadataBucketName string `json:"metadataBucketName,omitempty"`
+	DataBucketName     string `json:"dataBucketName,omitempty"`
+	ID                 int    `json:"id,omitempty"`
 }
 
 type OnboardableEntity struct {
@@ -42,42 +49,42 @@ type OnboardableEntity struct {
 }
 
 type TenantAuthorizationInfo struct {
-	AccessToken          string                    `json:"accessToken,omitempty"`
-	BotToken             string                    `json:"botToken,omitempty"`
-	RedirectUrl          string                    `json:"redirectUrl,omitempty"`
-	Type                 string                    `json:"type,omitempty"`
-	Env                  string                    `json:"env,omitempty"`
-	TempAuthCode         string                    `json:"tempAuthCode,omitempty"`
-	Subdomain            string                    `json:"subdomain,omitempty"`
-	Apicp                string                    `json:"apicp,omitempty"`
-	ClientID             string                    `json:"clientId,omitempty"`
-	ClientSecret         string                    `json:"clientSecret,omitempty"`
-	SecretToken          string                    `json:"secretToken,omitempty"`
-	UserName             string                    `json:"userName,omitempty"`
-	UserPwd              string                    `json:"userPwd,omitempty"`
-	InstanceUrl          string                    `json:"instanceUrl,omitempty"`
-	RoleArn              string                    `json:"roleArn,omitempty"`
-	QuarantineBucketName string                    `json:"quarantineBucketName,omitempty"`
-	CloudTrailBucketName string                    `json:"cloudTrailBucketName,omitempty"`
-	BotID                string                    `json:"botId,omitempty"`
-	OrgApiKey            string                    `json:"orgApiKey,omitempty"`
-	ExternalID           string                    `json:"externalId,omitempty"`
-	EnterpriseID         string                    `json:"enterpriseId,omitempty"`
-	CredJson             string                    `json:"credJson,omitempty"`
-	Role                 string                    `json:"role,omitempty"`
-	OrganizationID       string                    `json:"organizationId,omitempty"`
-	WorkspaceName        string                    `json:"workspaceName,omitempty"`
-	WorkspaceID          string                    `json:"workspaceId,omitempty"`
-	QtnChannelUrl        string                    `json:"qtnChannelUrl,omitempty"`
-	FeaturesSupported    []string                  `json:"featuresSupported,omitempty"`
-	MalQtnLibName        string                    `json:"malQtnLibName,omitempty"`
-	DlpQtnLibName        string                    `json:"dlpQtnLibName,omitempty"`
-	Credentials          string                    `json:"credentials,omitempty"`
-	TokenEndpoint        string                    `json:"tokenEndpoint,omitempty"`
-	RestApiEndpoint      string                    `json:"restApiEndpoint,omitempty"`
-	SmirBucketConfig     []common.IDNameExtensions `json:"smirBucketConfig,omitempty"`
-	QtnInfo              []interface{}             `json:"qtnInfo,omitempty"`
-	QtnInfoCleared       bool                      `json:"qtnInfoCleared,omitempty"`
+	AccessToken          string             `json:"accessToken,omitempty"`
+	BotToken             string             `json:"botToken,omitempty"`
+	RedirectUrl          string             `json:"redirectUrl,omitempty"`
+	Type                 string             `json:"type,omitempty"`
+	Env                  string             `json:"env,omitempty"`
+	TempAuthCode         string             `json:"tempAuthCode,omitempty"`
+	Subdomain            string             `json:"subdomain,omitempty"`
+	Apicp                string             `json:"apicp,omitempty"`
+	ClientID             string             `json:"clientId,omitempty"`
+	ClientSecret         string             `json:"clientSecret,omitempty"`
+	SecretToken          string             `json:"secretToken,omitempty"`
+	UserName             string             `json:"userName,omitempty"`
+	UserPwd              string             `json:"userPwd,omitempty"`
+	InstanceUrl          string             `json:"instanceUrl,omitempty"`
+	RoleArn              string             `json:"roleArn,omitempty"`
+	QuarantineBucketName string             `json:"quarantineBucketName,omitempty"`
+	CloudTrailBucketName string             `json:"cloudTrailBucketName,omitempty"`
+	BotID                string             `json:"botId,omitempty"`
+	OrgApiKey            string             `json:"orgApiKey,omitempty"`
+	ExternalID           string             `json:"externalId,omitempty"`
+	EnterpriseID         string             `json:"enterpriseId,omitempty"`
+	CredJson             string             `json:"credJson,omitempty"`
+	Role                 string             `json:"role,omitempty"`
+	OrganizationID       string             `json:"organizationId,omitempty"`
+	WorkspaceName        string             `json:"workspaceName,omitempty"`
+	WorkspaceID          string             `json:"workspaceId,omitempty"`
+	QtnChannelUrl        string             `json:"qtnChannelUrl,omitempty"`
+	FeaturesSupported    []string           `json:"featuresSupported,omitempty"`
+	MalQtnLibName        string             `json:"malQtnLibName,omitempty"`
+	DlpQtnLibName        string             `json:"dlpQtnLibName,omitempty"`
+	Credentials          string             `json:"credentials,omitempty"`
+	TokenEndpoint        string             `json:"tokenEndpoint,omitempty"`
+	RestApiEndpoint      string             `json:"restApiEndpoint,omitempty"`
+	SmirBucketConfig     []SmirBucketConfig `json:"smirBucketConfig,omitempty"`
+	QtnInfo              []interface{}      `json:"qtnInfo,omitempty"`
+	QtnInfoCleared       bool               `json:"qtnInfoCleared,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, receiverID int) (*C2CIncidentReceiver, error) {

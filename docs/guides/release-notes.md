@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.6.2``
+``Last updated: v3.6.3``
 
 ---
+
+# 3.6.3 (August 26, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #367](https://github.com/zscaler/zscaler-sdk-go/pull/367) - Fixed ZIA `c2c_incident_receiver` `onboardableEntity` nested attribute.
+[PR #367](https://github.com/zscaler/zscaler-sdk-go/pull/367) - Added support to `receiver` attribute within ZIA `casb_dlp_rules` resource.
 
 # 3.6.2 (August 26, 2025)
 

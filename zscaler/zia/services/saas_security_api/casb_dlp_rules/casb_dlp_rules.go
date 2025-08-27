@@ -68,6 +68,14 @@ type CasbDLPRules struct {
 	RedactionProfile              *common.IDCustom          `json:"redactionProfile,omitempty"`
 	CasbEmailLabel                *common.IDCustom          `json:"casbEmailLabel,omitempty"`
 	CasbTombstoneTemplate         *common.IDCustom          `json:"casbTombstoneTemplate,omitempty"`
+	Receiver                      *Receiver                 `json:"receiver,omitempty"`
+}
+
+type Receiver struct {
+	ID     int                      `json:"id,omitempty"`
+	Name   string                   `json:"name,omitempty"`
+	Type   string                   `json:"type,omitempty"`
+	Tenant *common.IDNameExtensions `json:"tenant,omitempty"`
 }
 
 func GetByRuleID(ctx context.Context, service *zscaler.Service, ruleType string, ruleID int) (*CasbDLPRules, error) {
