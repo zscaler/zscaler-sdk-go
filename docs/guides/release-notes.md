@@ -13,9 +13,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.6.1``
+``Last updated: v3.6.2``
 
 ---
+
+# 3.6.2 (August 26, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+[PR #366](https://github.com/zscaler/zscaler-sdk-go/pull/366) - Fixed ZIA `c2c_incident_receiver` `onboardableEntity` nested attribute.
 
 # 3.6.1 (August 22, 2025)
 
