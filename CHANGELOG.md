@@ -6,8 +6,8 @@
 - Golang: **v1.23**
 
 ### Bug Fixes
-[PR #366](https://github.com/zscaler/zscaler-sdk-go/pull/366) - Fixed ZIA `c2c_incident_receiver` `onboardableEntity` nested attribute.
-[PR #366](https://github.com/zscaler/zscaler-sdk-go/pull/366) - Added support to `receiver` attribute within ZIA `casb_dlp_rules` resource.
+[PR #367](https://github.com/zscaler/zscaler-sdk-go/pull/367) - Fixed ZIA `c2c_incident_receiver` `onboardableEntity` nested attribute.
+[PR #367](https://github.com/zscaler/zscaler-sdk-go/pull/367) - Added support to `receiver` attribute within ZIA `casb_dlp_rules` resource.
 
 # 3.6.2 (August 26, 2025)
 
