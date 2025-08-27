@@ -22,7 +22,7 @@ type C2CIncidentReceiver struct {
 	LastTenantValidationTime int                      `json:"lastTenantValidationTime,omitempty"`
 	LastValidationMsg        LastValidationMsg        `json:"lastValidationMsg,omitempty"`
 	LastModifiedBy           *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
-	OnboardableEntity        *common.IDNameExtensions `json:"onboardableEntity,omitempty"`
+	OnboardableEntity        *OnboardableEntity       `json:"onboardableEntity,omitempty"`
 }
 
 type LastValidationMsg struct {
@@ -38,7 +38,7 @@ type OnboardableEntity struct {
 	Application             string                   `json:"application,omitempty"`
 	LastValidationMsg       LastValidationMsg        `json:"lastValidationMsg,omitempty"`
 	TenantAuthorizationInfo TenantAuthorizationInfo  `json:"tenantAuthorizationInfo,omitempty"`
-	ZscalerAppTenantId      *common.IDNameExtensions `json:"zscalerAppTenantId,omitempty"`
+	ZscalerAppTenantID      *common.IDNameExtensions `json:"zscalerAppTenantId,omitempty"`
 }
 
 type TenantAuthorizationInfo struct {
@@ -50,7 +50,7 @@ type TenantAuthorizationInfo struct {
 	TempAuthCode         string                    `json:"tempAuthCode,omitempty"`
 	Subdomain            string                    `json:"subdomain,omitempty"`
 	Apicp                string                    `json:"apicp,omitempty"`
-	ClientId             string                    `json:"clientId,omitempty"`
+	ClientID             string                    `json:"clientId,omitempty"`
 	ClientSecret         string                    `json:"clientSecret,omitempty"`
 	SecretToken          string                    `json:"secretToken,omitempty"`
 	UserName             string                    `json:"userName,omitempty"`
@@ -59,15 +59,15 @@ type TenantAuthorizationInfo struct {
 	RoleArn              string                    `json:"roleArn,omitempty"`
 	QuarantineBucketName string                    `json:"quarantineBucketName,omitempty"`
 	CloudTrailBucketName string                    `json:"cloudTrailBucketName,omitempty"`
-	BotId                string                    `json:"botId,omitempty"`
+	BotID                string                    `json:"botId,omitempty"`
 	OrgApiKey            string                    `json:"orgApiKey,omitempty"`
-	ExternalId           string                    `json:"externalId,omitempty"`
-	EnterpriseId         string                    `json:"enterpriseId,omitempty"`
+	ExternalID           string                    `json:"externalId,omitempty"`
+	EnterpriseID         string                    `json:"enterpriseId,omitempty"`
 	CredJson             string                    `json:"credJson,omitempty"`
 	Role                 string                    `json:"role,omitempty"`
-	OrganizationId       string                    `json:"organizationId,omitempty"`
+	OrganizationID       string                    `json:"organizationId,omitempty"`
 	WorkspaceName        string                    `json:"workspaceName,omitempty"`
-	WorkspaceId          string                    `json:"workspaceId,omitempty"`
+	WorkspaceID          string                    `json:"workspaceId,omitempty"`
 	QtnChannelUrl        string                    `json:"qtnChannelUrl,omitempty"`
 	FeaturesSupported    []string                  `json:"featuresSupported,omitempty"`
 	MalQtnLibName        string                    `json:"malQtnLibName,omitempty"`
