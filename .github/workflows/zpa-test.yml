@@ -24,11 +24,11 @@ jobs:
       matrix:
         goVersion: ["1.24"]
         environment:
-          - ZPA_BETA_TENANT01
+          - ZIDENTITY_BETA
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 

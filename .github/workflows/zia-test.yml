@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   zia-zsbeta-tests:
-    environment: ZIA_ZSBETA
+    environment: ZIDENTITY_BETA
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
