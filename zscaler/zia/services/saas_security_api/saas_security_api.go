@@ -105,6 +105,20 @@ type CasbTenants struct {
 	ZscalerAppTenantID       *common.IDName `json:"zscalerAppTenantId,omitempty"`
 }
 
+type CasbTenantScanInfo struct {
+	TenantName      string   `json:"tenantName,omitempty"`
+	TenantID        int      `json:"tenantId,omitempty"`
+	SaasApplication string   `json:"saasApplication,omitempty"`
+	ScanInfo        ScanInfo `json:"scanInfo,omitempty"`
+	ScanAction      int      `json:"scanAction,omitempty"`
+}
+
+type ScanInfo struct {
+	CurScanStartTime int `json:"cur_scan_start_time,omitempty"`
+	PrevScanEndTime  int `json:"prev_scan_end_time,omitempty"`
+	ScanResetNum     int `json:"scan_reset_num,omitempty"`
+}
+
 func GetDomainProfiles(ctx context.Context, service *zscaler.Service) ([]DomainProfiles, error) {
 	var profiles []DomainProfiles
 	err := common.ReadAllPages(ctx, service.Client, domainProfilesEndpoint, &profiles)
@@ -155,4 +169,10 @@ func GetCasbTenantLite(ctx context.Context, service *zscaler.Service, queryParam
 
 	err := common.ReadAllPages(ctx, service.Client, endpoint, &tenants)
 	return tenants, err
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CasbTenantScanInfo, error) {
+	var scanInfos []CasbTenantScanInfo
+	err := common.ReadAllPages(ctx, service.Client, casbTenantEndpoint+"/scanInfo", &scanInfos)
+	return scanInfos, err
 }

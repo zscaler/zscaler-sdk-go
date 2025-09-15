@@ -1,6 +1,8 @@
 module github.com/zscaler/zscaler-sdk-go/v3
 
-go 1.23.1
+go 1.24.0
+
+toolchain go1.24.7
 
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
@@ -13,9 +15,9 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/zscaler/zscaler-sdk-go/v2 v2.732.0
-	golang.org/x/text v0.28.0
+	golang.org/x/text v0.29.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	dlpDictionariesEndpoint          = "/zia/api/v1/dlpDictionaries"
-	dlpPredefinedIdentifiersEndpoint = "/zia/api/v1/predefinedIdentifiers"
+	dlpDictionariesEndpoint = "/zia/api/v1/dlpDictionaries"
 )
 
 type DlpDictionary struct {
@@ -128,7 +127,7 @@ type EDMMatchDetails struct {
 	SchemaID int `json:"schemaId,omitempty"`
 
 	// The EDM template's primary field.
-	PrimaryField int `json:"primaryField,omitempty"`
+	PrimaryFields []int `json:"primaryFields,omitempty"`
 
 	// The EDM template's secondary fields.
 	SecondaryFields []int `json:"secondaryFields,omitempty"`
@@ -169,24 +168,6 @@ func GetByName(ctx context.Context, service *zscaler.Service, dictionaryName str
 	}
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
-
-// func GetPredefinedIdentifiers(ctx context.Context, service *zscaler.Service, dictionaryName string) ([]string, error) {
-// 	// Use the GetByName function to retrieve the dictionary by name
-// 	dictionary, err := GetByName(ctx,service, dictionaryName)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error retrieving dictionary by name: %v", err)
-// 	}
-
-// 	// If dictionary is found, get the predefined identifiers using the dictionary ID
-// 	predefinedIdentifiersEndpoint := fmt.Sprintf(dlpDictionariesEndpoint+"/%d/predefinedIdentifiers", dictionary.ID)
-// 	var predefinedIdentifiers []string
-// 	err = service.Client.Read(ctx, predefinedIdentifiersEndpoint, &predefinedIdentifiers)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error retrieving predefined identifiers: %v", err)
-// 	}
-
-// 	return predefinedIdentifiers, nil
-// }
 
 func GetPredefinedIdentifiers(ctx context.Context, service *zscaler.Service, dictionaryName string) ([]string, int, error) {
 	dictionary, err := GetByName(ctx, service, dictionaryName)

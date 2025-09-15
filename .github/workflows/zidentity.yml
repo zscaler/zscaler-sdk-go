@@ -24,15 +24,15 @@ permissions:
 
 jobs:
   zidentity-zsbeta-tests:
-    environment: ZIA_ZSBETA
+    environment: ZIDENTITY_BETA
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.22"]
+        goVersion: ["1.24"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -63,7 +63,7 @@ jobs:
         run: go mod download
 
       - name: Run tests with retry on Ubuntu
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: 3
           timeout_minutes: 20 # Adjust as needed
