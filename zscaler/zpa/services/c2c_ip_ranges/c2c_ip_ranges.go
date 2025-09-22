@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
@@ -45,6 +47,20 @@ func Get(ctx context.Context, service *zscaler.Service, ipRangeID string) (*IPRa
 		return nil, nil, err
 	}
 	return v, resp, nil
+}
+
+func GetByName(ctx context.Context, service *zscaler.Service, portalName string) (*IPRanges, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + ipRangesEndpoint
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[IPRanges](ctx, service.Client, relativeURL, common.Filter{Search: portalName, MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, app := range list {
+		if strings.EqualFold(app.Name, portalName) {
+			return &app, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no user portal named '%s' was found", portalName)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, ipRange *IPRanges) (*IPRanges, *http.Response, error) {

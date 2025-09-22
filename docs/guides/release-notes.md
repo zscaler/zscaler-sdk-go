@@ -13,9 +13,28 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.7.0``
+``Last updated: v3.7.1``
 
 ---
+
+# 3.7.1 (September 22, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
+[PR #373](https://github.com/zscaler/zscaler-sdk-go/pull/373) - Enhanced session management for ZIA Legacy client to handle 5-minute idle timeout with proactive session validation and refresh capabilities
+Please refer to the [Developer Guide](https://help.zscaler.com/zia/getting-started-zia-api#CreateSession) for more details.
+
+[PR #373](https://github.com/zscaler/zscaler-sdk-go/pull/373) - Enhanced session timeout validation and error handling
+- Added centralized session invalidation error detection for "SESSION_NOT_VALID" and "Session already invalidated" messages
+- Fixed race condition in OAuth2 token renewal ticker with proper mutex locking
+- Improved session management with enhanced debugging and automatic token refresh on 401 errors
+
+### Enhancements
+
+[PR #373](https://github.com/zscaler/zscaler-sdk-go/pull/373) - Included function `GetByName` in the ZPA package `c2c_ip_ranges` to allow search by name.
 
 # 3.7.0 (September 15, 2025)
 

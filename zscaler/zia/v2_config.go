@@ -21,8 +21,8 @@ import (
 const (
 	maxIdleConnections    int = 40
 	requestTimeout        int = 60
-	JSessionIDTimeout         = 30 // minutes.
-	jSessionTimeoutOffset     = 5 * time.Minute
+	JSessionIDTimeout         = 5               // minutes - updated per API provider requirements
+	jSessionTimeoutOffset     = 1 * time.Minute // reduced to 1 minute for 5-minute timeout
 	contentTypeJSON           = "application/json"
 	cookieName                = "JSESSIONID"
 	MaxNumOfRetries           = 100

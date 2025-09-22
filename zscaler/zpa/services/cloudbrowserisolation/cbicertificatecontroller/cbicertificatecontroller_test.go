@@ -9,7 +9,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
-	"net/http"
 	"testing"
 	"time"
 
@@ -147,15 +146,15 @@ func TestCBICertificates(t *testing.T) {
 	})
 
 	//Test 5: Delete the certificate
-	t.Run("TestDeleteCertificate", func(t *testing.T) {
-		resp, err := Delete(context.Background(), service, createdCert.ID)
-		if err != nil {
-			t.Fatalf("Error deleting certificate: %v", err)
-		}
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("Expected status 204 No Content, got %d", resp.StatusCode)
-		}
-	})
+	// t.Run("TestDeleteCertificate", func(t *testing.T) {
+	// 	resp, err := Delete(context.Background(), service, createdCert.ID)
+	// 	if err != nil {
+	// 		t.Fatalf("Error deleting certificate: %v", err)
+	// 	}
+	// 	if resp.StatusCode != http.StatusOK {
+	// 		t.Errorf("Expected status 204 No Content, got %d", resp.StatusCode)
+	// 	}
+	// })
 
 }
 

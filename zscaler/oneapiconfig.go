@@ -72,7 +72,8 @@ func (c *Client) startTokenRenewalTicker() {
 			for {
 				select {
 				case <-ticker.C:
-					// Refresh the token
+					// Refresh the token with proper locking to prevent race conditions
+					c.Lock()
 					authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
 					if err != nil {
 						c.oauth2Credentials.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
@@ -83,6 +84,7 @@ func (c *Client) startTokenRenewalTicker() {
 						renewalInterval = time.Until(authToken.Expiry) - (time.Minute * 1)
 						ticker.Reset(renewalInterval)
 					}
+					c.Unlock()
 				case <-c.stopTicker:
 					ticker.Stop()
 					return
@@ -426,56 +428,59 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, err
 		}
 
-		// ✅ Check for SESSION_NOT_VALID in 401 body
+		// ✅ Check for session invalidation errors in 401 responses
 		if resp.StatusCode == http.StatusUnauthorized {
 			bodyCopy, readErr := io.ReadAll(resp.Body)
-			if readErr == nil && strings.Contains(string(bodyCopy), "SESSION_NOT_VALID") {
+			if readErr == nil {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
 
-				sessionNotValidRetryCount++
-				if sessionNotValidRetryCount > maxSessionNotValidRetries {
-					return nil, resp, req, fmt.Errorf("max SESSION_NOT_VALID retries exceeded (%d), possible authentication issue", maxSessionNotValidRetries)
-				}
-
-				c.oauth2Credentials.Logger.Printf("[WARN] SESSION_NOT_VALID detected (attempt %d, session retry %d/%d), refreshing token and retrying...", retry, sessionNotValidRetryCount, maxSessionNotValidRetries)
-
-				// Enhanced debugging for SESSION_NOT_VALID analysis
-				if c.oauth2Credentials.Debug {
-					tok := c.oauth2Credentials.Zscaler.Client.AuthToken
-					c.oauth2Credentials.Logger.Printf("[DEBUG] SESSION_NOT_VALID analysis:")
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token exists: %v", tok != nil)
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token expiry: %s", tok.Expiry.Format(time.RFC3339))
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Current time: %s", time.Now().Format(time.RFC3339))
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Time until expiry: %.2f seconds", time.Until(tok.Expiry).Seconds())
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request URL: %s", req.URL.String())
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request method: %s", req.Method)
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
-					if req.Header.Get("Authorization") != "" {
-						authHeader := req.Header.Get("Authorization")
-						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
+				// Use centralized error checking logic
+				if errorx.IsSessionInvalidError(resp) {
+					sessionNotValidRetryCount++
+					if sessionNotValidRetryCount > maxSessionNotValidRetries {
+						return nil, resp, req, fmt.Errorf("max SESSION_NOT_VALID retries exceeded (%d), possible authentication issue", maxSessionNotValidRetries)
 					}
-				}
 
-				// Force token refresh regardless of client-side validation
-				// SESSION_NOT_VALID means the server considers the token invalid
-				c.Lock() // Prevent concurrent token refresh
-				authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
-				if err != nil {
+					c.oauth2Credentials.Logger.Printf("[WARN] Session invalidation detected (attempt %d, session retry %d/%d), refreshing token and retrying...", retry, sessionNotValidRetryCount, maxSessionNotValidRetries)
+
+					// Enhanced debugging for session invalidation analysis
+					if c.oauth2Credentials.Debug {
+						tok := c.oauth2Credentials.Zscaler.Client.AuthToken
+						c.oauth2Credentials.Logger.Printf("[DEBUG] Session invalidation analysis:")
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token exists: %v", tok != nil)
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token expiry: %s", tok.Expiry.Format(time.RFC3339))
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Current time: %s", time.Now().Format(time.RFC3339))
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Time until expiry: %.2f seconds", time.Until(tok.Expiry).Seconds())
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request URL: %s", req.URL.String())
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request method: %s", req.Method)
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
+						if req.Header.Get("Authorization") != "" {
+							authHeader := req.Header.Get("Authorization")
+							c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
+						}
+					}
+
+					// Force token refresh regardless of client-side validation
+					// Session invalidation means the server considers the token invalid
+					c.Lock() // Prevent concurrent token refresh
+					authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
+					if err != nil {
+						c.Unlock()
+						return nil, resp, req, fmt.Errorf("token refresh failed after session invalidation: %w", err)
+					}
+					c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
 					c.Unlock()
-					return nil, resp, req, fmt.Errorf("token refresh failed after SESSION_NOT_VALID: %w", err)
-				}
-				c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
-				c.Unlock()
-				c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
+					c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
 
-				// Add a small delay before retrying to avoid overwhelming the server
-				time.Sleep(time.Second * 2)
+					// Add a small delay before retrying to avoid overwhelming the server
+					time.Sleep(time.Second * 2)
 
-				req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
-				if err != nil {
-					return nil, nil, nil, err
+					req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
+					continue
 				}
-				continue
 			}
 			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
 		}
