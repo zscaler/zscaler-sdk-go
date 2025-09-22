@@ -146,3 +146,33 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 	}
 	return false
 }
+
+// IsSessionInvalidError checks if the response indicates a session invalidation error
+// that requires token refresh. Only checks for known error messages returned by the API.
+func IsSessionInvalidError(res *http.Response) bool {
+	if res.StatusCode != http.StatusUnauthorized {
+		return false
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	// Rewind the response body for potential reuse
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	// Only check for error messages we know for certain are returned by the API
+	knownSessionInvalidMessages := []string{
+		"SESSION_NOT_VALID",
+		"getAttribute: Session already invalidated",
+	}
+
+	for _, msg := range knownSessionInvalidMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	return false
+}

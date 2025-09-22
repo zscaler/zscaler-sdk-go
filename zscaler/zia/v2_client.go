@@ -229,8 +229,8 @@ func (c *Client) refreshSession() error {
 	c.session = session
 	c.sessionRefreshed = time.Now()
 	if c.session.PasswordExpiryTime == -1 {
-		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 30 minutes")
-		c.sessionTimeout = 30 * time.Minute
+		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 5 minutes")
+		c.sessionTimeout = 5 * time.Minute
 	} else {
 		//c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime: %v seconds", c.session.PasswordExpiryTime)
 		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
@@ -286,7 +286,24 @@ func (c *Client) checkSession() error {
 			}
 		}
 	} else {
-		c.Logger.Printf("[INFO] Session is valid, no refresh needed.")
+		// Session exists and hasn't expired based on time, but validate with server
+		// Only validate if we're close to expiry (within 1 minute) to avoid unnecessary requests
+		if now.After(c.sessionRefreshed.Add(c.sessionTimeout - jSessionTimeoutOffset)) {
+			c.Logger.Printf("[INFO] Session approaching expiry, validating with server...")
+			valid, err := c.validateSession(context.Background())
+			if err != nil {
+				c.Logger.Printf("[WARN] Failed to validate session, refreshing anyway: %v", err)
+				// If validation fails, refresh the session
+				return c.refreshSession()
+			}
+			if !valid {
+				c.Logger.Printf("[INFO] Server reports session invalid, refreshing...")
+				return c.refreshSession()
+			}
+			c.Logger.Printf("[INFO] Session validated with server, still valid.")
+		} else {
+			c.Logger.Printf("[INFO] Session is valid, no refresh needed.")
+		}
 	}
 
 	// Ensure the JSESSIONID is set in the HTTP client cookies
@@ -486,6 +503,34 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
+// validateSession checks if the current session is still valid by making a GET request to /authenticatedSession
+func (c *Client) validateSession(ctx context.Context) (bool, error) {
+	if c.session == nil || c.session.JSessionID == "" {
+		return false, nil
+	}
+
+	// Make a GET request to /authenticatedSession to check if session is still valid
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/%s%s", c.URL, ziaAPIVersion, ziaAPIAuthURL), nil)
+	if err != nil {
+		return false, err
+	}
+
+	// Set the JSESSIONID cookie
+	req.Header.Set("Cookie", fmt.Sprintf("JSESSIONID=%s", c.session.JSessionID))
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	// Session is valid if we get a 200 response
+	return resp.StatusCode == http.StatusOK, nil
+}
+
 func (c *Client) Logout(ctx context.Context) error {
 	_, err := c.Request(ctx, ziaAPIAuthURL, "DELETE", nil, "application/json")
 	if err != nil {
@@ -525,8 +570,21 @@ func (c *Client) Close() {
 	c.Lock()
 	defer c.Unlock()
 
+	// Cancel the session ticker context
 	if c.cancelFunc != nil {
 		c.cancelFunc()
+	}
+
+	// Explicitly logout to invalidate the session on the server
+	if c.session != nil && c.session.JSessionID != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := c.Logout(ctx); err != nil {
+			c.Logger.Printf("[WARN] Failed to logout during client close: %v", err)
+		} else {
+			c.Logger.Printf("[INFO] Successfully logged out during client close")
+		}
 	}
 }
 
@@ -568,18 +626,22 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-	// Fallback check for SESSION_NOT_VALID
-	if resp.StatusCode == http.StatusUnauthorized || strings.Contains(string(body), "SESSION_NOT_VALID") {
-		// Refresh session and retry
-		err := c.refreshSession()
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("JSessionID", c.session.JSessionID)
-		resp, err = c.HTTPClient.Do(req)
-		logger.LogResponse(c.Logger, resp, start, reqID)
-		if err != nil {
-			return resp, err
+	// Check for session invalidation errors
+	if resp.StatusCode == http.StatusUnauthorized {
+		// Use centralized error checking logic
+		if errorx.IsSessionInvalidError(resp) {
+			c.Logger.Printf("[WARN] Session invalidation detected, refreshing session and retrying...")
+			// Refresh session and retry
+			err := c.refreshSession()
+			if err != nil {
+				return nil, err
+			}
+			req.Header.Set("JSessionID", c.session.JSessionID)
+			resp, err = c.HTTPClient.Do(req)
+			logger.LogResponse(c.Logger, resp, start, reqID)
+			if err != nil {
+				return resp, err
+			}
 		}
 	}
 

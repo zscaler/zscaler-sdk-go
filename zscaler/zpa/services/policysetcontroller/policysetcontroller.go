@@ -12,6 +12,7 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
@@ -39,47 +40,49 @@ type PolicySet struct {
 }
 
 type PolicyRule struct {
-	ID                           string                                `json:"id,omitempty"`
-	Name                         string                                `json:"name,omitempty"`
-	Description                  string                                `json:"description,omitempty"`
-	Disabled                     string                                `json:"disabled,omitempty"`
-	Action                       string                                `json:"action,omitempty"`
-	ActionID                     string                                `json:"actionId,omitempty"`
-	PostActions                  map[string]interface{}                `json:"postActions,omitempty"`
-	BypassDefaultRule            bool                                  `json:"bypassDefaultRule"`
-	CreationTime                 string                                `json:"creationTime,omitempty"`
-	CustomMsg                    string                                `json:"customMsg,omitempty"`
-	DefaultRule                  bool                                  `json:"defaultRule,omitempty"`
-	DefaultRuleName              string                                `json:"defaultRuleName,omitempty"`
-	ExtranetEnabled              bool                                  `json:"extranetEnabled,omitempty"`
-	ModifiedBy                   string                                `json:"modifiedBy,omitempty"`
-	ModifiedTime                 string                                `json:"modifiedTime,omitempty"`
-	Operator                     string                                `json:"operator,omitempty"`
-	PolicySetID                  string                                `json:"policySetId"`
-	PolicyType                   string                                `json:"policyType,omitempty"`
-	Priority                     string                                `json:"priority,omitempty"`
-	ReauthDefaultRule            bool                                  `json:"reauthDefaultRule"`
-	ReauthIdleTimeout            string                                `json:"reauthIdleTimeout,omitempty"`
-	ReauthTimeout                string                                `json:"reauthTimeout,omitempty"`
-	RuleOrder                    string                                `json:"ruleOrder"`
-	LSSDefaultRule               bool                                  `json:"lssDefaultRule"`
-	ZpnCbiProfileID              string                                `json:"zpnCbiProfileId,omitempty"`
-	ZpnIsolationProfileID        string                                `json:"zpnIsolationProfileId,omitempty"`
-	ZpnInspectionProfileID       string                                `json:"zpnInspectionProfileId,omitempty"`
-	ZpnInspectionProfileName     string                                `json:"zpnInspectionProfileName,omitempty"`
-	MicroTenantID                string                                `json:"microtenantId,omitempty"`
-	MicroTenantName              string                                `json:"microtenantName,omitempty"`
-	ReadOnly                     bool                                  `json:"readOnly,omitempty"`
-	RestrictionType              string                                `json:"restrictionType,omitempty"`
-	ZscalerManaged               bool                                  `json:"zscalerManaged,omitempty"`
-	Conditions                   []Conditions                          `json:"conditions"`
-	AppServerGroups              []servergroup.ServerGroup             `json:"appServerGroups"`
-	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
-	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
-	Credential                   *Credential                           `json:"credential,omitempty"`
-	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
-	ExtranetDTO                  common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
-	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
+	ID                                      string                                `json:"id,omitempty"`
+	Name                                    string                                `json:"name,omitempty"`
+	Description                             string                                `json:"description,omitempty"`
+	Disabled                                string                                `json:"disabled,omitempty"`
+	Action                                  string                                `json:"action,omitempty"`
+	ActionID                                string                                `json:"actionId,omitempty"`
+	PostActions                             map[string]interface{}                `json:"postActions,omitempty"`
+	BypassDefaultRule                       bool                                  `json:"bypassDefaultRule"`
+	CreationTime                            string                                `json:"creationTime,omitempty"`
+	CustomMsg                               string                                `json:"customMsg,omitempty"`
+	DefaultRule                             bool                                  `json:"defaultRule,omitempty"`
+	DefaultRuleName                         string                                `json:"defaultRuleName,omitempty"`
+	ExtranetEnabled                         bool                                  `json:"extranetEnabled,omitempty"`
+	ModifiedBy                              string                                `json:"modifiedBy,omitempty"`
+	ModifiedTime                            string                                `json:"modifiedTime,omitempty"`
+	Operator                                string                                `json:"operator,omitempty"`
+	PolicySetID                             string                                `json:"policySetId"`
+	PolicyType                              string                                `json:"policyType,omitempty"`
+	Priority                                string                                `json:"priority,omitempty"`
+	ReauthDefaultRule                       bool                                  `json:"reauthDefaultRule"`
+	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
+	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
+	RuleOrder                               string                                `json:"ruleOrder"`
+	LSSDefaultRule                          bool                                  `json:"lssDefaultRule"`
+	ZpnCbiProfileID                         string                                `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID                   string                                `json:"zpnIsolationProfileId,omitempty"`
+	ZpnInspectionProfileID                  string                                `json:"zpnInspectionProfileId,omitempty"`
+	ZpnInspectionProfileName                string                                `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID                           string                                `json:"microtenantId,omitempty"`
+	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
+	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
+	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
+	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
+	Conditions                              []Conditions                          `json:"conditions"`
+	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
+	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
+	ServiceEdgeGroups                       []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
+	DesktopPolicyMappings                   []DesktopPolicyMappings               `json:"desktopPolicyMappings,omitempty"`
+	Credential                              *Credential                           `json:"credential,omitempty"`
+	PrivilegedCapabilities                  PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
+	ExtranetDTO                             common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
+	PrivilegedPortalCapabilities            PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
 }
 
 type Conditions struct {
@@ -127,6 +130,16 @@ type PrivilegedPortalCapabilities struct {
 
 type Count struct {
 	Count string `json:"count"`
+}
+
+type DesktopPolicyMappings struct {
+	AppSegments  []applicationsegment.ApplicationSegmentResource `json:"appSegments,omitempty"`
+	ID           string                                          `json:"id"`
+	CreationTime string                                          `json:"creationTime,omitempty"`
+	ModifiedBy   string                                          `json:"modifiedBy,omitempty"`
+	ModifiedTime string                                          `json:"modifiedTime,omitempty"`
+	ImageID      string                                          `json:"imageId,omitempty"`
+	ImageName    string                                          `json:"imageName,omitempty"`
 }
 
 func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {

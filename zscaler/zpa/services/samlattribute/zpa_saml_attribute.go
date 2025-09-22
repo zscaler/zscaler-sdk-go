@@ -30,7 +30,7 @@ type SamlAttribute struct {
 
 func Get(ctx context.Context, service *zscaler.Service, samlAttributeID string) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, samlAttributeID)
+	relativeURL := fmt.Sprintf("%s%s%s/%s", mgmtConfigV1, service.Client.GetCustomerID(), samlAttributeEndpoint, samlAttributeID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -40,10 +40,10 @@ func Get(ctx context.Context, service *zscaler.Service, samlAttributeID string) 
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, samlAttrName string) (*SamlAttribute, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + samlAttributeEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, "")
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfigV2, service.Client.GetCustomerID(), samlAttributeEndpoint)
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, samlAttrName)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, err
 	}
 	for _, samlAttribute := range list {
 		if samlAttribute.Name == samlAttrName {
@@ -82,10 +82,34 @@ func Delete(ctx context.Context, service *zscaler.Service, samlAttributeID strin
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]SamlAttribute, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + samlAttributeEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfigV2, service.Client.GetCustomerID(), samlAttributeEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	return list, resp, nil
+}
+
+// GetAllByIdp gets all SAML attributes for a specified IDP ID
+func GetAllByIdp(ctx context.Context, service *zscaler.Service, idpID string) ([]SamlAttribute, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s%s%s/idp/%s", mgmtConfigV2, service.Client.GetCustomerID(), samlAttributeEndpoint, idpID)
+	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](ctx, service.Client, relativeURL, "")
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+// GetByIdpAndAttributeID gets a specific SAML attribute by its ID within a specific IDP
+func GetByIdpAndAttributeID(ctx context.Context, service *zscaler.Service, idpID, attributeID string) (*SamlAttribute, *http.Response, error) {
+	list, resp, err := GetAllByIdp(ctx, service, idpID)
+	if err != nil {
+		return nil, resp, err
+	}
+	for _, samlAttribute := range list {
+		if samlAttribute.ID == attributeID {
+			return &samlAttribute, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no saml attribute with ID '%s' was found in IDP '%s'", attributeID, idpID)
 }

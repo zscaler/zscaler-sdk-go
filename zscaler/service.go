@@ -92,6 +92,9 @@ func newLegacyHelper(conf ...ConfigSetter) (*Service, error) {
 		return nil, err
 	}
 
+	// Set the LegacyClient from the configuration
+	service.LegacyClient = cfg.LegacyClient
+
 	return service, nil
 }
 

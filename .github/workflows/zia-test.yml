@@ -23,8 +23,8 @@ permissions:
 
 
 jobs:
-  zia-zsbeta-tests:
-    environment: ZIDENTITY_BETA
+  zia-zs3-tests:
+    environment: ZIDENTITY_PRODUCTION
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -78,10 +78,5 @@ jobs:
           ZIA_SDK_TEST_SWEEP: ${{ secrets.ZIA_SDK_TEST_SWEEP }}
           ZSCALER_SANDBOX_TOKEN: ${{ secrets.ZSCALER_SANDBOX_TOKEN }}
           ZSCALER_SANDBOX_CLOUD: ${{ secrets.ZSCALER_SANDBOX_CLOUD }}
+          ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
 
-      - name: Publish test coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.out 
-          fail_ci_if_error: true

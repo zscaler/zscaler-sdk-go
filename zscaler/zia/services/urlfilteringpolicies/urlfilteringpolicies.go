@@ -47,6 +47,9 @@ type URLFilteringRule struct {
 	// Request method for which the rule must be applied. If not set, rule is applied to all methods
 	RequestMethods []string `json:"requestMethods,omitempty"`
 
+	// Destination countries for which the rule is applicable. If not set, the rule is not restricted to specific destination countries.
+	SourceCountries []string `json:"sourceCountries,omitempty"`
+
 	// URL of end user notification page to be displayed when the rule is matched. Not applicable if either 'overrideUsers' or 'overrideGroups' is specified.
 	EndUserNotificationURL string `json:"endUserNotificationUrl,omitempty"`
 

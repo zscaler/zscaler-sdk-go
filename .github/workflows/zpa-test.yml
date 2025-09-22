@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  zpa-beta-tenants:
+  zpa-production-tenants:
     # needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
@@ -24,7 +24,7 @@ jobs:
       matrix:
         goVersion: ["1.24"]
         environment:
-          - ZIDENTITY_BETA
+          - ZIDENTITY_PRODUCTION
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
@@ -77,10 +77,3 @@ jobs:
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish test coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.out 
-          fail_ci_if_error: true
