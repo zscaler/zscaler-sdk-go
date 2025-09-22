@@ -2,7 +2,9 @@ package workloadgroups
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -92,6 +94,41 @@ func GetByName(ctx context.Context, service *zscaler.Service, workloadName strin
 		}
 	}
 	return nil, fmt.Errorf("no workload group found with name: %s", workloadName)
+}
+
+func Create(ctx context.Context, service *zscaler.Service, groups *WorkloadGroup) (*WorkloadGroup, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, workloadGroupsEndpoint, *groups)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	createdWorkloadGroup, ok := resp.(*WorkloadGroup)
+	if !ok {
+		return nil, nil, errors.New("object returned from api was not a workload group pointer")
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG]returning new workload group from create: %d", createdWorkloadGroup.ID)
+	return createdWorkloadGroup, nil, nil
+}
+
+func Update(ctx context.Context, service *zscaler.Service, workloadGroupID int, workloadGroup *WorkloadGroup) (*WorkloadGroup, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadGroupID), *workloadGroup)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedWorkloadGroup, _ := resp.(*WorkloadGroup)
+
+	service.Client.GetLogger().Printf("[DEBUG]returning updates workload group from update: %d", updatedWorkloadGroup.ID)
+	return updatedWorkloadGroup, nil, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service, workloadGroupID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadGroupID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]WorkloadGroup, error) {

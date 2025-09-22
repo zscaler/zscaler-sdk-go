@@ -24,6 +24,13 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Bug Fixes
 
+# 3.7.1 (September 22, 2025)
+
+## Notes
+- Golang: **v1.23**
+
+### Bug Fixes
+
 [PR #373](https://github.com/zscaler/zscaler-sdk-go/pull/373) - Enhanced session management for ZIA Legacy client to handle 5-minute idle timeout with proactive session validation and refresh capabilities
 Please refer to the [Developer Guide](https://help.zscaler.com/zia/getting-started-zia-api#CreateSession) for more details.
 
