@@ -23,7 +23,7 @@ permissions:
 
 
 jobs:
-  zia-zsbeta-tests:
+  zia-zs3-tests:
     environment: ZIDENTITY_PRODUCTION
     runs-on: ubuntu-latest
     strategy:

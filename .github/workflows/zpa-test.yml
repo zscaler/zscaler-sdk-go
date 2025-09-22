@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  zpa-beta-tenants:
+  zpa-production-tenants:
     # needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
