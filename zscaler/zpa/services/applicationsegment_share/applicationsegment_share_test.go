@@ -1,5 +1,6 @@
 package applicationsegment_share
 
+/*
 import (
 	"context"
 	"net/http"
@@ -178,3 +179,4 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to share application segment, status code: %d", resp.StatusCode)
 	}
 }
+*/

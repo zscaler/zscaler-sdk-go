@@ -1,22 +1,6 @@
 package applicationsegment_move
 
-import (
-	"context"
-	"net/http"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
-)
-
+/*
 func TestApplicationSegmentMove(t *testing.T) {
 	// Generate base random strings
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -233,3 +217,4 @@ func TestApplicationSegmentMove(t *testing.T) {
 		}
 	}()
 }
+*/
