@@ -35,10 +35,10 @@ type ForwardingRules struct {
 	Type string `json:"type,omitempty"`
 
 	// The order of execution for the forwarding rule order
-	Order int `json:"order"`
+	Order int `json:"order,omitempty"`
 
 	// Admin rank assigned to the forwarding rule
-	Rank int `json:"rank"`
+	Rank int `json:"rank,omitempty"`
 
 	// TThe forwarding method used in the rule, indicating whether the traffic is sent to ZIA, ZPA, directly to the destination (DIRECT), or dropped (DROP).
 	// Supported Values: "INVALID", "DIRECT", "PROXYCHAIN", "ZIA", "ZPA", "ECZPA", "ECSELF", "DROP", "ENATDEDIP", "GEOIP"
@@ -87,43 +87,43 @@ type ForwardingRules struct {
 	ZPABrokerRule bool `json:"zpaBrokerRule,omitempty"`
 
 	// This field is applicable for devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
-	DeviceGroups []common.CommonIDNameExternalID `json:"deviceGroups"`
+	// DeviceGroups []common.IDNameExtensions `json:"deviceGroups"`
 
-	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
-	Devices []common.CommonIDNameExternalID `json:"devices"`
+	// // Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
+	// Devices []common.IDNameExtensions `json:"devices"`
 
 	// Name-ID pairs of the locations to which the forwarding rule applies. If not set, the rule is applied to all locations.
-	Locations []common.CommonIDNameExternalID `json:"locations,omitempty"`
+	Locations []common.IDNameExtensions `json:"locations,omitempty"`
 
 	// Name-ID pairs of the location groups to which the forwarding rule applies
-	LocationsGroups []common.CommonIDNameExternalID `json:"locationGroups,omitempty"`
+	LocationsGroups []common.IDNameExtensions `json:"locationGroups,omitempty"`
 
 	// Name-ID pairs of the Zscaler Cloud Connector groups to which the forwarding rule applies
-	ECGroups []common.CommonIDNameExternalID `json:"ecGroups,omitempty"`
+	ECGroups []common.IDNameExtensions `json:"ecGroups,omitempty"`
 
 	// Name-ID pairs of the departments to which the forwarding rule applies. If not set, the rule applies to all departments.
-	Departments []common.CommonIDNameExternalID `json:"departments,omitempty"`
+	Departments []common.IDNameExtensions `json:"departments,omitempty"`
 
 	// Name-ID pairs of the user groups to which the forwarding rule applies. If not set, the rule applies to all groups.
-	Groups []common.CommonIDNameExternalID `json:"groups,omitempty"`
+	Groups []common.IDNameExtensions `json:"groups,omitempty"`
 
 	// Name-ID pairs of the users to which the forwarding rule applies. If not set, user criteria is ignored during policy enforcement.
-	Users []common.CommonIDNameExternalID `json:"users,omitempty"`
+	Users []common.IDNameExtensions `json:"users,omitempty"`
 
 	// Admin user that last modified the rule. This field is not applicable for POST or PUT request.
-	LastModifiedBy *common.CommonIDNameExternalID `json:"lastModifiedBy,omitempty"`
+	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
 
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	// Note: For organizations that have enabled IPv6, the srcIpv6Groups field lists the IPv6 source address groups for which the rule is applicable.
-	SrcIpGroups []common.CommonIDNameExternalID `json:"srcIpGroups,omitempty"`
+	SrcIpGroups []common.IDNameExtensions `json:"srcIpGroups,omitempty"`
 
 	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
 	// Note: For organizations that have enabled IPv6, the srcIpv6Groups field lists the IPv6 source address groups for which the rule is applicable.
-	SrcIpv6Groups []common.CommonIDNameExternalID `json:"srcIpv6Groups,omitempty"`
+	SrcIpv6Groups []common.IDNameExtensions `json:"srcIpv6Groups,omitempty"`
 
 	// User-defined destination IP address groups to which the rule is applied.
 	// If not set, the rule is not restricted to a specific destination IP address group.
-	DestIpGroups []common.CommonIDNameExternalID `json:"destIpGroups,omitempty"`
+	DestIpGroups []common.IDNameExtensions `json:"destIpGroups,omitempty"`
 
 	// Destination IPv6 address groups for which the rule is applicable.
 	// If not set, the rule is not restricted to a specific source IPv6 address group.
@@ -131,39 +131,34 @@ type ForwardingRules struct {
 
 	// User-defined network services to which the rule applies. If not set, the rule is not restricted to a specific network service.
 	// Note: When the forwarding method is Proxy Chaining, only TCP-based network services are considered for policy match .
-	NwServices []common.CommonIDNameExternalID `json:"nwServices,omitempty"`
+	NwServices []common.IDNameExtensions `json:"nwServices,omitempty"`
 
 	// User-defined network service group to which the rule applies.
 	// If not set, the rule is not restricted to a specific network service group.
-	NwServiceGroups []common.CommonIDNameExternalID `json:"nwServiceGroups,omitempty"`
+	NwServiceGroups []common.IDNameExtensions `json:"nwServiceGroups,omitempty"`
 
 	// Labels that are applicable to the rule.
-	Labels []common.CommonIDNameExternalID `json:"labels,omitempty"`
+	Labels []common.IDNameExtensions `json:"labels,omitempty"`
 
 	// User-defined network service application groups to which the rule applied.
 	// If not set, the rule is not restricted to a specific network service application group.
-	NwApplicationGroups []common.CommonIDNameExternalID `json:"nwApplicationGroups,omitempty"`
+	NwApplicationGroups []common.IDNameExtensions `json:"nwApplicationGroups,omitempty"`
 
-	AppServiceGroups []common.CommonIDNameExternalID `json:"appServiceGroups,omitempty"`
+	AppServiceGroups []common.IDNameExtensions `json:"appServiceGroups,omitempty"`
+
+	// The list of preconfigured workload groups to which the policy must be applied.
+	SrcWorkloadGroups []common.IDNameExtensions `json:"srcWorkloadGroups,omitempty"`
 
 	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
 	ProxyGateway *common.CommonIDName `json:"proxyGateway,omitempty"`
 
-	// The ZPA Server Group for which this rule is applicable.
-	// Only the Server Groups that are associated with the selected Application Segments are allowed.
-	// This field is applicable only for the ZPA forwarding method.
-	ZPAGateway *common.CommonIDName `json:"zpaGateway,omitempty"`
-
-	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
-	ZPAAppSegments []common.CommonZPAIDNameID `json:"zpaAppSegments"`
-
 	// List of ZPA Application Segments for which this rule is applicable.
 	// This field is applicable only for the ECZPA forwarding method (used for Zscaler Cloud Connector).
-	ZPAApplicationSegments []ZPAApplicationSegments `json:"zpaApplicationSegments,omitempty"`
+	ZPAApplicationSegments []common.ZPAApplicationSegments `json:"zpaApplicationSegments,omitempty"`
 
 	// List of ZPA Application Segment Groups for which this rule is applicable.
 	// This field is applicable only for the ECZPA forwarding method (used for Zscaler Cloud Connector).
-	ZPAApplicationSegmentGroups []ZPAApplicationSegmentGroups `json:"zpaApplicationSegmentGroups,omitempty"`
+	ZPAApplicationSegmentGroups []common.ZPAApplicationSegmentGroups `json:"zpaApplicationSegmentGroups,omitempty"`
 }
 
 type ZPAApplicationSegments struct {

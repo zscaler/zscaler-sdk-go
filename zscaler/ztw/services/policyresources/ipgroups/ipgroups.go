@@ -33,6 +33,10 @@ type IPGroups struct {
 
 	// If set to true, the destination IP address group is non-editable. This field is applicable only to predefined IP address groups, which cannot be modified.
 	IsNonEditable bool `json:"isNonEditable,omitempty"`
+
+	ExtranetIPPool bool `json:"extranetIpPool,omitempty"`
+
+	IsPredefined bool `json:"isPredefined,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPGroups, error) {
@@ -60,30 +64,30 @@ func GetByName(ctx context.Context, service *zscaler.Service, ipGroupsName strin
 	return nil, fmt.Errorf("no ip group found with name: %s", ipGroupsName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPGroups) (*IPGroups, error) {
+func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPGroups) (*IPGroups, *http.Response, error) {
 	resp, err := service.Client.CreateResource(ctx, ipGroupsEndpoint, *ipGroupID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	createdIPGroups, ok := resp.(*IPGroups)
 	if !ok {
-		return nil, errors.New("object returned from api was not an ip group pointer")
+		return nil, nil, errors.New("object returned from api was not an ip group pointer")
 	}
 
 	service.Client.GetLogger().Printf("[DEBUG]returning ip group from create: %d", createdIPGroups.ID)
-	return createdIPGroups, nil
+	return createdIPGroups, nil, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPGroups) (*IPGroups, error) {
+func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPGroups) (*IPGroups, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPutResource(ctx, fmt.Sprintf("%s/%d", ipGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	updatedIPGroups, _ := resp.(*IPGroups)
 
 	service.Client.GetLogger().Printf("[DEBUG]returning ip group from update: %d", updatedIPGroups.ID)
-	return updatedIPGroups, nil
+	return updatedIPGroups, nil, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ipGroupID int) (*http.Response, error) {

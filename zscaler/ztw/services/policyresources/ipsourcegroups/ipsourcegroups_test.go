@@ -61,7 +61,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource creation
 	var createdResource *IPSourceGroups
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(context.Background(), service, &group)
+		createdResource, _, err = Create(context.Background(), service, &group)
 		return err
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	retrievedResource.IPAddresses = group.IPAddresses
 
 	err = retryOnConflict(func() error {
-		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -231,7 +231,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, 0, &IPSourceGroups{})
+	_, _, err = Update(context.Background(), service, 0, &IPSourceGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

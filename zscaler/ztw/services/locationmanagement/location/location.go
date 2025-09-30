@@ -65,7 +65,7 @@ type Locations struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// IP ports that are associated with the location
-	Ports []string `json:"ports,omitempty"`
+	Ports []int `json:"ports,omitempty"`
 
 	// Enforce Authentication. Required when ports are enabled, IP Surrogate is enabled, or Kerberos Authentication is enabled.
 	AuthRequired bool `json:"authRequired"`

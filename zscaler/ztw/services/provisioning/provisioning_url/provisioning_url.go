@@ -1,6 +1,20 @@
 package provisioning_url
 
-import "github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/common"
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/locationtemplate"
+)
+
+const (
+	provisioningUrlEndpoint = "/ztw/api/v1/provUrl"
+)
 
 type ProvisioningURL struct {
 	ID             int                       `json:"id,omitempty"`
@@ -8,59 +22,27 @@ type ProvisioningURL struct {
 	Desc           string                    `json:"desc,omitempty"`
 	ProvUrl        string                    `json:"provUrl,omitempty"`
 	ProvUrlType    string                    `json:"provUrlType,omitempty"`
-	ProvUrlData    ProvUrlData               `json:"provUrlData,omitempty"`
-	UsedInEcGroups []common.IDNameExtensions `json:"usedInEcGroups,omitempty"`
-	Status         string                    `json:"status,omitempty"`
-	LastModUid     *common.IDNameExtensions  `json:"lastModUid,omitempty"`
 	LastModTime    int                       `json:"lastModTime,omitempty"`
+	Status         string                    `json:"status,omitempty"`
+	ProvUrlData    ProvUrlData               `json:"provUrlData,omitempty"`
+	LastModUid     *common.IDNameExtensions  `json:"lastModUid,omitempty"`
+	UsedInEcGroups []common.IDNameExtensions `json:"usedInEcGroups,omitempty"`
 }
 
 type ProvUrlData struct {
-	ZsCloudDomain      string                         `json:"zsCloudDomain,omitempty"`
-	OrgID              int                            `json:"orgId,omitempty"`
-	ConfigServer       string                         `json:"configServer,omitempty"`
-	RegistrationServer string                         `json:"registrationServer,omitempty"`
-	ApiServer          string                         `json:"apiServer,omitempty"`
-	PacServer          string                         `json:"pacServer,omitempty"`
-	LocationTemplate   LocationTemplate               `json:"locationTemplate,omitempty"`
-	CloudProvider      *common.CommonIDNameExternalID `json:"cloudProvider,omitempty"`
-	CloudProviderType  string                         `json:"cloudProviderType,omitempty"`
-	FormFactor         string                         `json:"formFactor,omitempty"`
-	HyperVisors        string                         `json:"hyperVisors,omitempty"`
-	Location           *common.CommonIDNameExternalID `json:"location,omitempty"`
-	BcGroup            BcGroup                        `json:"bcGroup,omitempty"`
-}
-
-type LocationTemplate struct {
-	ID          int                            `json:"id,omitempty"`
-	Name        string                         `json:"name,omitempty"`
-	Desc        string                         `json:"desc,omitempty"`
-	Template    Template                       `json:"template,omitempty"`
-	Editable    bool                           `json:"editable,omitempty"`
-	LastModUid  *common.CommonIDNameExternalID `json:"lastModUid,omitempty"`
-	LastModTime int                            `json:"lastModTime,omitempty"`
-}
-
-type Template struct {
-	TemplatePrefix                      string                         `json:"templatePrefix,omitempty"`
-	XffForwardEnabled                   bool                           `json:"xffForwardEnabled,omitempty"`
-	AuthRequired                        bool                           `json:"authRequired,omitempty"`
-	CautionEnabled                      bool                           `json:"cautionEnabled,omitempty"`
-	AupEnabled                          bool                           `json:"aupEnabled,omitempty"`
-	AupTimeoutInDays                    int                            `json:"aupTimeoutInDays,omitempty"`
-	OfwEnabled                          bool                           `json:"ofwEnabled,omitempty"`
-	IpsControl                          bool                           `json:"ipsControl,omitempty"`
-	EnforceBandwidthControl             bool                           `json:"enforceBandwidthControl,omitempty"`
-	UpBandwidth                         int                            `json:"upBandwidth,omitempty"`
-	DnBandwidth                         int                            `json:"dnBandwidth,omitempty"`
-	DisplayTimeUnit                     string                         `json:"displayTimeUnit,omitempty"`
-	IdleTimeInMinutes                   int                            `json:"idleTimeInMinutes,omitempty"`
-	SurrogateIpEnforcedForKnownBrowsers bool                           `json:"surrogateIPEnforcedForKnownBrowsers,omitempty"`
-	SurrogateRefreshTimeUnit            string                         `json:"surrogateRefreshTimeUnit,omitempty"`
-	SurrogateRefreshTimeInMinutes       int                            `json:"surrogateRefreshTimeInMinutes,omitempty"`
-	Surrogate                           bool                           `json:"surrogateIP,omitempty"`
-	Editable                            bool                           `json:"editable,omitempty"`
-	LastModUid                          *common.CommonIDNameExternalID `json:"lastModUid,omitempty"`
+	ZsCloudDomain      string                            `json:"zsCloudDomain,omitempty"`
+	OrgID              int                               `json:"orgId,omitempty"`
+	ConfigServer       string                            `json:"configServer,omitempty"`
+	RegistrationServer string                            `json:"registrationServer,omitempty"`
+	ApiServer          string                            `json:"apiServer,omitempty"`
+	PacServer          string                            `json:"pacServer,omitempty"`
+	CloudProviderType  string                            `json:"cloudProviderType,omitempty"`
+	FormFactor         string                            `json:"formFactor,omitempty"`
+	HyperVisors        string                            `json:"hyperVisors,omitempty"`
+	BcGroup            BcGroup                           `json:"bcGroup,omitempty"`
+	LocationTemplate   locationtemplate.LocationTemplate `json:"locationTemplate,omitempty"`
+	CloudProvider      *common.CommonIDNameExternalID    `json:"cloudProvider,omitempty"`
+	Location           *common.CommonIDNameExternalID    `json:"location,omitempty"`
 }
 
 type BcGroup struct {
@@ -68,15 +50,15 @@ type BcGroup struct {
 	Name                  string                         `json:"name,omitempty"`
 	Desc                  string                         `json:"desc,omitempty"`
 	DeployType            string                         `json:"deployType,omitempty"`
-	Status                []string                       `json:"status,omitempty"`
 	Platform              string                         `json:"platform,omitempty"`
 	AwsAvailabilityZone   string                         `json:"awsAvailabilityZone,omitempty"`
 	AzureAvailabilityZone string                         `json:"azureAvailabilityZone,omitempty"`
-	Location              *common.CommonIDNameExternalID `json:"location,omitempty"`
 	MaxEcCount            int                            `json:"maxEcCount,omitempty"`
-	ProvTemplate          *common.CommonIDNameExternalID `json:"provTemplate,omitempty"`
 	TunnelMode            string                         `json:"tunnelMode,omitempty"`
+	Status                []string                       `json:"status,omitempty"`
 	EcVMs                 []EcVM                         `json:"ecVMs,omitempty"`
+	ProvTemplate          *common.CommonIDNameExternalID `json:"provTemplate,omitempty"`
+	Location              *common.CommonIDNameExternalID `json:"location,omitempty"`
 }
 
 type EcVM struct {
@@ -128,4 +110,70 @@ type EcInstance struct {
 type ServiceIps struct {
 	IpStart string `json:"ipStart,omitempty"`
 	IpEnd   string `json:"ipEnd,omitempty"`
+}
+
+func Get(ctx context.Context, service *zscaler.Service, provUrlID int) (*ProvisioningURL, error) {
+	var provURLs ProvisioningURL
+	err := service.Client.ReadResource(ctx, fmt.Sprintf("%s/%d", provisioningUrlEndpoint, provUrlID), &provURLs)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG]Returning provisioning URL from Get: %d", provURLs.ID)
+	return &provURLs, nil
+}
+
+func GetByName(ctx context.Context, service *zscaler.Service, provUrlName string) (*ProvisioningURL, error) {
+	var provURLs []ProvisioningURL
+	err := common.ReadAllPages(ctx, service.Client, provisioningUrlEndpoint, &provURLs)
+	if err != nil {
+		return nil, err
+	}
+	for _, provURL := range provURLs {
+		if strings.EqualFold(provURL.Name, provUrlName) {
+			return &provURL, nil
+		}
+	}
+	return nil, fmt.Errorf("no provisioning URL found with name: %s", provUrlName)
+}
+
+func Create(ctx context.Context, service *zscaler.Service, ProvURL *ProvisioningURL) (*ProvisioningURL, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, provisioningUrlEndpoint, *ProvURL)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	createdProvisioningURL, ok := resp.(*ProvisioningURL)
+	if !ok {
+		return nil, nil, errors.New("object returned from api was not a provisioning URL pointer")
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG]returning new provisioning URL from create: %d", createdProvisioningURL.ID)
+	return createdProvisioningURL, nil, nil
+}
+
+func Update(ctx context.Context, service *zscaler.Service, provisioningUrlID int, provisioningUrl *ProvisioningURL) (*ProvisioningURL, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", provisioningUrlEndpoint, provisioningUrlID), *provisioningUrl)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedProvisioningURL, _ := resp.(*ProvisioningURL)
+
+	service.Client.GetLogger().Printf("[DEBUG]returning updates provisioning URL from update: %d", updatedProvisioningURL.ID)
+	return updatedProvisioningURL, nil, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service, provisioningUrlID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", provisioningUrlEndpoint, provisioningUrlID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service) ([]ProvisioningURL, error) {
+	var provURLs []ProvisioningURL
+	err := common.ReadAllPages(ctx, service.Client, provisioningUrlEndpoint, &provURLs)
+	return provURLs, err
 }

@@ -1,4 +1,4 @@
-package forwardinggateways
+package forwarding_gateways
 
 import (
 	"context"
@@ -36,10 +36,10 @@ type ECGateway struct {
 	ManualSecondary string `json:"manualSecondary,omitempty"`
 
 	// Not applicable to Cloud & Branch Connector.
-	SubCloudPrimary *common.CommonIDNameExternalID `json:"subcloudPrimary,omitempty"`
+	SubCloudPrimary *common.CommonIDName `json:"subcloudPrimary,omitempty"`
 
 	// Not applicable to Cloud & Branch Connector.
-	SubCloudSecondary *common.CommonIDNameExternalID `json:"subcloudSecondary,omitempty"`
+	SubCloudSecondary *common.CommonIDName `json:"subcloudSecondary,omitempty"`
 
 	// Type of the primary proxy, such as automatic proxy (AUTO), manual proxy (DC) that forwards traffic through selected data centers
 	// or override (MANUAL_OVERRIDE) that forwards traffic through a specified IP address or domain.
@@ -51,22 +51,25 @@ type ECGateway struct {
 	// Supported Values: "NONE", "AUTO", "MANUAL_OVERRIDE", "SUBCLOUD", "VZEN", "PZEN", "DC"
 	SecondaryType string `json:"secondaryType,omitempty"`
 
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	Type string `json:"type,omitempty"`
+
 	// Information about the admin user that last modified the ZPA gateway
-	LastModifiedBy *common.CommonIDNameExternalID `json:"lastModifiedBy,omitempty"`
+	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
 
 	// Timestamp when the ZPA gateway was last modified
 	LastModifiedTime int `json:"lastModifiedTime,omitempty"`
 }
 
-func Get(ctx context.Context, service *zscaler.Service, ecGroupID int) (*ECGateway, error) {
+func Get(ctx context.Context, service *zscaler.Service, ecGroupID int) (*ECGateway, *http.Response, error) {
 	var ecGW ECGateway
 	err := service.Client.ReadResource(ctx, fmt.Sprintf("%s/%d", forwardGatewayEndpoint, ecGroupID), &ecGW)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	log.Printf("Returning forwarding gateway from Get: %d", ecGW.ID)
-	return &ecGW, nil
+	return &ecGW, nil, nil
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, ecGWName string) (*ECGateway, error) {
@@ -84,29 +87,29 @@ func GetByName(ctx context.Context, service *zscaler.Service, ecGWName string) (
 	return nil, fmt.Errorf("no forwarding gateway found with name: %s", ecGWName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, rules *ECGateway) (*ECGateway, error) {
+func Create(ctx context.Context, service *zscaler.Service, rules *ECGateway) (*ECGateway, *http.Response, error) {
 	resp, err := service.Client.CreateResource(ctx, forwardGatewayEndpoint, *rules)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	createdRules, ok := resp.(*ECGateway)
 	if !ok {
-		return nil, errors.New("object returned from api was not a forwarding gateway pointer")
+		return nil, nil, errors.New("object returned from api was not a forwarding gateway pointer")
 	}
 
 	service.Client.GetLogger().Printf("[DEBUG]returning forwarding gateway from create: %d", createdRules.ID)
-	return createdRules, nil
+	return createdRules, nil, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *ECGateway) (*ECGateway, error) {
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *ECGateway) (*ECGateway, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPutResource(ctx, fmt.Sprintf("%s/%d", forwardGatewayEndpoint, ruleID), *rules)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	updatedGateways, _ := resp.(*ECGateway)
 	service.Client.GetLogger().Printf("[DEBUG]returning forwarding gateway from update: %d", updatedGateways.ID)
-	return updatedGateways, nil
+	return updatedGateways, nil, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ecGroupID int) (*http.Response, error) {
