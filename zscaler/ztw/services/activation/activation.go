@@ -31,7 +31,7 @@ func GetActivationStatus(ctx context.Context, service *zscaler.Service) (*ECAdmi
 }
 
 func UpdateActivationStatus(ctx context.Context, service *zscaler.Service, activation ECAdminActivation) (*ECAdminActivation, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, ecAdminActivateEndpoint, activation)
+	resp, err := service.Client.UpdateWithPutResource(ctx, ecAdminActivateEndpoint, activation)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func UpdateActivationStatus(ctx context.Context, service *zscaler.Service, activ
 }
 
 func ForceActivationStatus(ctx context.Context, service *zscaler.Service, forceActivation ECAdminActivation) (*ECAdminActivation, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, ecAdminForceActivateEndpoint, forceActivation)
+	resp, err := service.Client.UpdateWithPutResource(ctx, ecAdminForceActivateEndpoint, forceActivation)
 	if err != nil {
 		return nil, err
 	}

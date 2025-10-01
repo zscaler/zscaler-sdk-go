@@ -36,10 +36,10 @@ type ECGateway struct {
 	ManualSecondary string `json:"manualSecondary,omitempty"`
 
 	// Not applicable to Cloud & Branch Connector.
-	SubCloudPrimary *common.CommonIDName `json:"subcloudPrimary,omitempty"`
+	SubCloudPrimary *common.CommonIDNameExternalID `json:"subcloudPrimary,omitempty"`
 
 	// Not applicable to Cloud & Branch Connector.
-	SubCloudSecondary *common.CommonIDName `json:"subcloudSecondary,omitempty"`
+	SubCloudSecondary *common.CommonIDNameExternalID `json:"subcloudSecondary,omitempty"`
 
 	// Type of the primary proxy, such as automatic proxy (AUTO), manual proxy (DC) that forwards traffic through selected data centers
 	// or override (MANUAL_OVERRIDE) that forwards traffic through a specified IP address or domain.

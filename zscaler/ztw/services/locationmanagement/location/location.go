@@ -26,6 +26,9 @@ type Locations struct {
 	// Parent Location ID. If this ID does not exist or is 0, it is implied that it is a parent location. Otherwise, it is a sub-location whose parent has this ID. x-applicableTo: SUB
 	ParentID int `json:"parentId,omitempty"`
 
+	// Enable to specify the maximum bandwidth limits for download (Mbps) and upload (Mbps).
+	EnforceBandwidthControl int `json:"enforceBandwidthControl,omitempty"`
+
 	// Upload bandwidth in kbps. The value 0 implies no Bandwidth Control enforcement
 	UpBandwidth int `json:"upBandwidth,omitempty"`
 
@@ -177,7 +180,7 @@ type Locations struct {
 	DynamiclocationGroups []common.CommonIDNameExternalID `json:"dynamiclocationGroups,omitempty"`
 
 	// AWS/Azure subcription ID associated with this location.
-	PublicCloudAccountId []common.CommonIDNameExternalID `json:"publicCloudAccountId,omitempty"`
+	PublicCloudAccountID []common.CommonIDNameExternalID `json:"publicCloudAccountId,omitempty"`
 
 	// AWS/Azure subcription ID associated with this location.
 	VPCInfo VPCInfo `json:"vpcInfo,omitempty"`

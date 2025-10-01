@@ -33,36 +33,6 @@ type EcGroup struct {
 	ECVMs                 []common.ECVMs                 `json:"ecVMs,omitempty"`
 }
 
-type ManagementNw struct {
-	ID             int    `json:"id,omitempty"`
-	IPStart        string `json:"ipStart,omitempty"`
-	IPEnd          string `json:"ipEnd,omitempty"`
-	Netmask        string `json:"netmask,omitempty"`
-	DefaultGateway string `json:"defaultGateway,omitempty"`
-	NWType         string `json:"nwType,omitempty"`
-	DNS            *DNS   `json:"dns,omitempty"`
-}
-
-type DNS struct {
-	ID      int      `json:"id,omitempty"`
-	IPs     []string `json:"ips,omitempty"`
-	DNSType string   `json:"dnsType,omitempty"`
-}
-
-type ECInstances struct {
-	ServiceNw      *ManagementNw `json:"serviceNw,omitempty"`
-	VirtualNw      *ManagementNw `json:"virtualNw,omitempty"`
-	ECInstanceType string        `json:"ecInstanceType,omitempty"`
-	OutGwIp        string        `json:"outGwIp,omitempty"`
-	NatIP          string        `json:"natIp,omitempty"`
-	DNSIp          string        `json:"dnsIp,omitempty"`
-}
-
-type LBIPAddr struct {
-	IPStart string `json:"ipStart,omitempty"`
-	IPEnd   string `json:"ipEnd,omitempty"`
-}
-
 func Get(ctx context.Context, service *zscaler.Service, ecGroupID int) (*EcGroup, error) {
 	var ecGroup EcGroup
 	err := service.Client.ReadResource(ctx, fmt.Sprintf("%s/%d", ecGroupEndpoint, ecGroupID), &ecGroup)
