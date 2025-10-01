@@ -92,6 +92,12 @@ type LocationTemplateDetails struct {
 
 	// Refresh Time for re-validation of Surrogacy. The surrogate refresh time (in minutes) to re-validate the IP surrogates
 	SurrogateIP bool `json:"surrogateIP,omitempty"`
+
+	// Whether Cloud & Branch Connector location template is editable
+	Editable bool `json:"editable"`
+
+	// User ID of last time Cloud & Branch Connector location template was modified
+	LastModUid *common.CommonIDNameExternalID `json:"lastModUid,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, locTemplateID int) (*LocationTemplate, error) {

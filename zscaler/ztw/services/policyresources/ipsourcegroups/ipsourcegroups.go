@@ -60,30 +60,30 @@ func GetByName(ctx context.Context, service *zscaler.Service, ipSourceGroupsName
 	return nil, fmt.Errorf("no ip source group found with name: %s", ipSourceGroupsName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPSourceGroups) (*IPSourceGroups, error) {
+func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPSourceGroups) (*IPSourceGroups, *http.Response, error) {
 	resp, err := service.Client.CreateResource(ctx, ipSourceGroupsEndpoint, *ipGroupID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	createdIPSourceGroups, ok := resp.(*IPSourceGroups)
 	if !ok {
-		return nil, errors.New("object returned from api was not an ip source group pointer")
+		return nil, nil, errors.New("object returned from api was not an ip source group pointer")
 	}
 
 	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
-	return createdIPSourceGroups, nil
+	return createdIPSourceGroups, nil, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPSourceGroups) (*IPSourceGroups, error) {
+func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPSourceGroups) (*IPSourceGroups, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPutResource(ctx, fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	updatedIPSourceGroups, _ := resp.(*IPSourceGroups)
 
 	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
-	return updatedIPSourceGroups, nil
+	return updatedIPSourceGroups, nil, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ipGroupID int) (*http.Response, error) {

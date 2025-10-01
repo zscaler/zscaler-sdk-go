@@ -1,9 +1,19 @@
 # Changelog
 
+# 3.7.2 (September 30, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+[PR #375](https://github.com/zscaler/zscaler-sdk-go/pull/375) - Implemented fixes and enhancements to ZTW API endpoint packages.
+
+
 # 3.7.1 (September 22, 2025)
 
 ## Notes
-- Golang: **v1.23**
+- Golang: **v1.24**
 
 ### Bug Fixes
 

@@ -13,21 +13,24 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.7.1``
+``Last updated: v3.7.2``
 
 ---
 
-# 3.7.1 (September 22, 2025)
+# 3.7.2 (September 30, 2025)
 
 ## Notes
-- Golang: **v1.23**
+- Golang: **v1.24**
 
 ### Bug Fixes
 
+[PR #375](https://github.com/zscaler/zscaler-sdk-go/pull/375) - Implemented fixes and enhancements to ZTW API endpoint packages.
+
+
 # 3.7.1 (September 22, 2025)
 
 ## Notes
-- Golang: **v1.23**
+- Golang: **v1.24**
 
 ### Bug Fixes
 
@@ -42,6 +45,7 @@ Please refer to the [Developer Guide](https://help.zscaler.com/zia/getting-start
 ### Enhancements
 
 [PR #373](https://github.com/zscaler/zscaler-sdk-go/pull/373) - Included function `GetByName` in the ZPA package `c2c_ip_ranges` to allow search by name.
+
 
 # 3.7.0 (September 15, 2025)
 
