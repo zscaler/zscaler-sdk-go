@@ -1,5 +1,37 @@
 # Changelog
 
+# 3.7.3 (October 3, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### ZTW Log and Control Forwarding
+
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZTW API Endpoints:
+    - Added `GET /ecRules/self` Retrieves the list of Log and Control forwarding rules.
+    - Added `GET /ecRules/self/{ruleId}` Retrieves a Log and Control forwarding rule configuration based on the specified ID.
+    - Added `POST /ecRules/self` Create a Log and Control forwarding rule.
+    - Added `PUT /ecRules/self/{ruleId}` Updates Log and Control forwarding rule.
+    - Added `DELETE ecRules/self/{ruleId}` Deletes Log and Control forwarding rule.
+
+### ZTW DNS Control Forwarding Rule
+
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZTW API Endpoints:
+    - Added `GET /ecRules/ecDns` Retrieves the list of DNS forwarding rules.
+    - Added `GET /ecRules/ecDns/{ruleId}` Retrieves a DNS forwarding rule configuration based on the specified ID.
+    - Added `POST /ecRules/ecDns` Create a DNS forwarding rule.
+    - Added `PUT /ecRules/ecDns/{ruleId}` Updates DNS forwarding rule.
+    - Added `DELETE ecRules/ecDns/{ruleId}` Deletes DNS forwarding rule.
+
+### ZTW DNS Gateway
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZIA API Endpoints:
+    - Added `GET /dnsGateways` Retrieves a list of DNS Gateways.
+    - Added `GET /dnsGateways/lite` Retrieves a list of DNS Gateways
+    - Added `GET /dnsGateways/{gatewayId}` Retrieves the DNS Gateway based on the specified ID
+    - Added `POST /dnsGateways` Adds a new DNS Gateway.
+    - Added `PUT /dnsGateways/{gatewayId}` Updates the DNS Gateway based on the specified ID
+    - Added `DELETE /dnsGateways/{gatewayId}` Deletes a DNS Gateway based on the specified ID
+
 # 3.7.2 (September 30, 2025)
 
 ## Notes

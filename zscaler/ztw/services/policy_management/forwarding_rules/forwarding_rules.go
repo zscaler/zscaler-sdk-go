@@ -1,4 +1,4 @@
-package forwardingrules
+package forwarding_rules
 
 import (
 	"context"
@@ -43,6 +43,8 @@ type ForwardingRules struct {
 	// TThe forwarding method used in the rule, indicating whether the traffic is sent to ZIA, ZPA, directly to the destination (DIRECT), or dropped (DROP).
 	// Supported Values: "INVALID", "DIRECT", "PROXYCHAIN", "ZIA", "ZPA", "ECZPA", "ECSELF", "DROP", "ENATDEDIP", "GEOIP"
 	ForwardMethod string `json:"forwardMethod,omitempty"`
+
+	DefaultRule bool `json:"defaultRule,omitempty"`
 
 	// This parameter was deprecated and is no longer configurable.
 	// Supported Values: "SMRULEF_ZPA_BROKERS_RULE", "SMRULEF_APPC_DYNAMIC_SRC_IPGROUP", "SMRULEF_EXCL_SRC_IP", "BALANCED_RULE", "BESTLINK_RULE"
