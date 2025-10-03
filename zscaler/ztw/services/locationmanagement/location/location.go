@@ -27,7 +27,7 @@ type Locations struct {
 	ParentID int `json:"parentId,omitempty"`
 
 	// Enable to specify the maximum bandwidth limits for download (Mbps) and upload (Mbps).
-	EnforceBandwidthControl int `json:"enforceBandwidthControl,omitempty"`
+	EnforceBandwidthControl bool `json:"enforceBandwidthControl,omitempty"`
 
 	// Upload bandwidth in kbps. The value 0 implies no Bandwidth Control enforcement
 	UpBandwidth int `json:"upBandwidth,omitempty"`

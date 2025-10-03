@@ -74,6 +74,9 @@ type ECDNSRules struct {
 	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
 	DNSGateway *common.CommonIDName `json:"dnsGateway,omitempty"`
 
+	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
+	ZPAIPGroup *common.CommonIDName `json:"zpaIpGroup,omitempty"`
+
 	// Timestamp when the rule was last modified. This field is not applicable for POST or PUT request.
 	LastModifiedTime int `json:"lastModifiedTime,omitempty"`
 

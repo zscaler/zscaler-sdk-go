@@ -54,6 +54,9 @@ type ECTrafficLogRules struct {
 
 	// Admin user that last modified the rule. This field is not applicable for POST or PUT request.
 	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
+
+	// Name-ID pairs of the Zscaler Cloud Connector groups to which the forwarding rule applies
+	ECGroups []common.IDNameExtensions `json:"ecGroups,omitempty"`
 }
 
 type TrafficLogRulesCountQuery struct {
