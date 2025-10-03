@@ -104,7 +104,6 @@ func TestAdvancedThreatSettings(t *testing.T) {
 		updatedSettings.AnonymizerBlocked = true
 		updatedSettings.AnonymizerCapture = false
 		updatedSettings.CookieStealingBlocked = true
-		updatedSettings.CookieStealingPCAPEnabled = false
 		updatedSettings.PotentialMaliciousRequestsBlocked = true
 		updatedSettings.PotentialMaliciousRequestsCapture = false
 		updatedSettings.BlockedCountries = []string{
