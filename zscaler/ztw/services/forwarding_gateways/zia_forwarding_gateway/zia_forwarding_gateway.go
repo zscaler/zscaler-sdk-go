@@ -1,4 +1,4 @@
-package forwarding_gateways
+package zia_forwarding_gateway
 
 import (
 	"context"
@@ -53,6 +53,24 @@ type ECGateway struct {
 
 	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
 	Type string `json:"type,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	FailureBehavior string `json:"failureBehavior,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	DNSGatewayType string `json:"dnsGatewayType,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	PrimaryIP string `json:"primaryIp,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	SecondaryIP string `json:"secondaryIp,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	ECDNSGatewayOptionsPrimary string `json:"ecDnsGatewayOptionsPrimary,omitempty"`
+
+	// Type of the gateway. Supported types are ZIA and ECSELF (Log and Control gateway).
+	ECDNSGatewayOptionsSecondary string `json:"ecDnsGatewayOptionsSecondary,omitempty"`
 
 	// Information about the admin user that last modified the ZPA gateway
 	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
