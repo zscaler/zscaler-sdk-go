@@ -90,20 +90,15 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 						if resp.Request != nil {
 							endpoint = resp.Request.URL.Path // Extract endpoint from the request URL
 						}
-						// Correctly call getRetryAfter without the `resp` argument
+						// Call getRetryAfter with endpoint for ZCC's endpoint-specific retry logic
 						retryAfter := getRetryAfter(endpoint, l)
 						if retryAfter > 0 {
 							return retryAfter
 						}
 					}
-					if resp.Request != nil {
-						wait, d := rateLimiter.Wait(resp.Request.Method)
-						if wait {
-							return d
-						}
-						return 0
-					}
 				}
+				// Use exponential backoff for all retries
+				// API's own rate limiting handles rate limits
 				mult := math.Pow(2, float64(attemptNum)) * float64(min)
 				sleep := time.Duration(mult)
 				if float64(sleep) != mult || sleep > max {

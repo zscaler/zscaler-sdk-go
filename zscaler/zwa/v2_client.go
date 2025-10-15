@@ -90,17 +90,10 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 					return retryAfter
 				}
 			}
-
-			if resp.Request != nil {
-				wait, delay := rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					return delay
-				}
-				return 0
-			}
 		}
 
-		// Default exponential backoff
+		// Use exponential backoff for all retries
+		// API's own rate limiting (429 + Retry-After) handles rate limits
 		multiplier := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(multiplier)
 		if float64(sleep) != multiplier || sleep > max {

@@ -34,7 +34,7 @@ func TestZTWBackoffLogic(t *testing.T) {
 			attemptNum:  1,
 			minWait:     2 * time.Second,
 			maxWait:     10 * time.Second,
-			expected:    6 * time.Second,
+			expected:    5 * time.Second, // ZTW doesn't add padding
 			description: "Should honor Retry-After header",
 		},
 		{
@@ -155,7 +155,7 @@ func TestZTWHeaderCaseInsensitive(t *testing.T) {
 		resp.Header.Set(headerName, "5")
 
 		result := getRetryAfter(resp, l)
-		require.Equal(t, 6*time.Second, result, "Header %q should work", headerName)
+		require.Equal(t, 5*time.Second, result, "Header %q should work (ZTW doesn't add padding)", headerName)
 	}
 
 	t.Log("ZTW Retry-After header case-insensitivity confirmed ✓")
