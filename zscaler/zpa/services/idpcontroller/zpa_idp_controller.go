@@ -75,7 +75,7 @@ func Get(ctx context.Context, service *zscaler.Service, IdpID string) (*IdpContr
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, idpName string) (*IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfigV2, service.Client.GetCustomerID(), idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -89,7 +89,7 @@ func GetByName(ctx context.Context, service *zscaler.Service, idpName string) (*
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfigV2, service.Client.GetCustomerID(), idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

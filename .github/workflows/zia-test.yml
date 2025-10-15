@@ -62,6 +62,10 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Run unit tests
+        run: make test:unit:zia
+        continue-on-error: false
+
       - name: Run tests with retry on Ubuntu
         uses: nick-fields/retry@v3
         with:

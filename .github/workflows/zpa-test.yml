@@ -58,6 +58,10 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Run unit tests
+        run: make test:unit:zpa
+        continue-on-error: false
+
       - name: Run tests with retry
         uses: nick-fields/retry@v3
         with:

@@ -28,8 +28,8 @@ const (
 	requestTimeout      int = 60
 	contentTypeJSON         = "application/json"
 	MaxNumOfRetries         = 100
-	RetryWaitMaxSeconds     = 20
-	RetryWaitMinSeconds     = 10
+	RetryWaitMaxSeconds     = 10
+	RetryWaitMinSeconds     = 2
 	loggerPrefix            = "oneapi-logger: "
 )
 
@@ -118,31 +118,25 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.RetryWaitMin = cfg.Zscaler.Client.RateLimit.RetryWaitMin
 	retryableClient.RetryWaitMax = cfg.Zscaler.Client.RateLimit.RetryWaitMax
 
-	if cfg.Zscaler.Client.RateLimit.MaxRetries == 0 {
-		// Set RetryMax to a very large number to simulate indefinite retries within the timeout duration.
-		retryableClient.RetryMax = math.MaxInt32
-	} else {
-		retryableClient.RetryMax = int(cfg.Zscaler.Client.RateLimit.MaxRetries)
-	}
+	// Set RetryMax to 0 to disable retryablehttp retries - ExecuteRequest handles application-level retries
+	// This prevents double-retry logic that was causing performance issues
+	retryableClient.RetryMax = 0
 
 	// Configure backoff and retry policies
+	// Note: With RetryMax=0, this function is not called by retryablehttp.
+	// ExecuteRequest handles retries at the application level.
+	// This backoff is here for completeness if RetryMax is ever changed.
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
-				// retryAfter := getRetryAfter(resp, l)
 				retryAfter := getRetryAfter(resp, cfg)
 				if retryAfter > 0 {
 					return retryAfter
 				}
 			}
-			if resp.Request != nil {
-				wait, d := rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					return d
-				}
-				return 0
-			}
 		}
+		// Use exponential backoff for all retries
+		// Rate limiting is handled by API's 429 errors + ExecuteRequest logic
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -497,11 +491,30 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				time.Sleep(retryAfter)
 				continue
 			}
+			// If no Retry-After header, fall through to exponential backoff
 		}
 
 		// Handle success
 		if resp.StatusCode < 300 {
 			break
+		}
+
+		// Handle retryable errors with exponential backoff
+		if resp.StatusCode >= 500 {
+			// 5xx server errors are retryable
+			backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
+			maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
+			if backoffDelay > maxBackoff {
+				backoffDelay = maxBackoff
+			}
+			c.oauth2Credentials.Logger.Printf("[INFO] Server error (status %d), retry %d: waiting %v before retry", resp.StatusCode, retry, backoffDelay)
+			time.Sleep(backoffDelay)
+			continue
+		}
+
+		// Handle non-retryable client errors (4xx except 401, 429 which are handled above)
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("client error"))
 		}
 
 		// Handle other non-success status codes

@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	VERSION        = "3.5.0"
+	VERSION        = "3.7.5"
 	ZDX_API_KEY_ID = "ZDX_API_KEY_ID"
 	ZDX_API_SECRET = "ZDX_API_SECRET"
 )

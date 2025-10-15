@@ -40,7 +40,7 @@ const (
 )
 
 const (
-	VERSION           = "3.5.0"
+	VERSION           = "3.7.5"
 	ZCC_CLIENT_ID     = "ZCC_CLIENT_ID"
 	ZCC_CLIENT_SECRET = "ZCC_CLIENT_SECRET"
 	ZCC_CLOUD         = "ZCC_CLOUD"

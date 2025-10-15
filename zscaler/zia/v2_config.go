@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	VERSION      = "3.5.0"
+	VERSION      = "3.7.5"
 	ZIA_USERNAME = "ZIA_USERNAME"
 	ZIA_PASSWORD = "ZIA_PASSWORD"
 	ZIA_API_KEY  = "ZIA_API_KEY"
