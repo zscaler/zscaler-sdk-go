@@ -51,7 +51,7 @@ func Get(ctx context.Context, service *zscaler.Service, baCertificateID string) 
 }
 
 func GetIssuedByName(ctx context.Context, service *zscaler.Service, CertName string) (*BaCertificate, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](ctx, service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -84,7 +84,7 @@ func Delete(ctx context.Context, service *zscaler.Service, baCertificateID strin
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]BaCertificate, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

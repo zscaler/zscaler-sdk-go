@@ -40,7 +40,7 @@ func Get(ctx context.Context, service *zscaler.Service, networkID string) (*Trus
 }
 
 func GetByNetID(ctx context.Context, service *zscaler.Service, netID string) (*TrustedNetwork, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + trustedNetworkEndpoint)
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + trustedNetworkEndpoint
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

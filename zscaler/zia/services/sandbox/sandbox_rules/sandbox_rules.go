@@ -200,7 +200,7 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 // GetAll returns the all rules.
 func GetAll(ctx context.Context, service *zscaler.Service) ([]SandboxRules, error) {
 	var sandboxPolicies []SandboxRules
-	err := common.ReadAllPages(ctx, service.Client, sandboxEndpoint, &sandboxPolicies)
+	err := service.Client.Read(ctx, sandboxEndpoint, &sandboxPolicies)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	VERSION      = "3.5.0"
+	VERSION      = "3.7.5"
 	ZTW_USERNAME = "ZTW_USERNAME"
 	ZTW_PASSWORD = "ZTW_PASSWORD"
 	ZTW_API_KEY  = "ZTW_API_KEY"

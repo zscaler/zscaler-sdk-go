@@ -48,7 +48,7 @@ func Get(ctx context.Context, service *zscaler.Service, id string) (*PostureProf
 }
 
 func GetByPostureUDID(ctx context.Context, service *zscaler.Service, postureUDID string) (*PostureProfile, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + postureProfileEndpoint)
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + postureProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](ctx, service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

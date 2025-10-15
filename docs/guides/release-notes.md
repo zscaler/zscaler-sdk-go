@@ -13,9 +13,56 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.7.3``
+``Last updated: v3.7.5``
 
 ---
+
+# 3.7.5 (October 14, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+[PR #378](https://github.com/zscaler/zscaler-sdk-go/pull/378) - Removed mutex locks from ZPA policy GET operations to enable concurrent reads. The `GetPolicyRule` function in both `policysetcontroller` (v1) and `policysetcontrollerv2` now executes in parallel, significantly improving performance for large Terraform configurations. CREATE/UPDATE/DELETE operations remain properly serialized per API requirements.
+
+### Bug Fixes
+
+[PR #378](https://github.com/zscaler/zscaler-sdk-go/pull/378) - Fixed ZPA rate limiting backoff logic that was preventing exponential backoff from being calculated. The rate limiter was immediately returning fixed delays instead of allowing intelligent exponential backoff growth (2s → 4s → 8s → 10s max). This caused severe performance degradation (3-4x slower) for Terraform operations with large resource counts. The fix restores proper exponential backoff behavior while maintaining API rate limit handling via 429 status codes and Retry-After headers.
+
+[PR #378](https://github.com/zscaler/zscaler-sdk-go/pull/378) - Added missing exponential backoff to OneAPI client's `ExecuteRequest` retry loop. Server errors (5xx) now retry with intelligent exponential backoff instead of immediately failing or retrying without delay.
+
+# 3.7.4 (October 3, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### ZTW Log and Control Forwarding
+
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZTW API Endpoints:
+    - Added `GET /ecRules/self` Retrieves the list of Log and Control forwarding rules.
+    - Added `GET /ecRules/self/{ruleId}` Retrieves a Log and Control forwarding rule configuration based on the specified ID.
+    - Added `POST /ecRules/self` Create a Log and Control forwarding rule.
+    - Added `PUT /ecRules/self/{ruleId}` Updates Log and Control forwarding rule.
+    - Added `DELETE ecRules/self/{ruleId}` Deletes Log and Control forwarding rule.
+
+### ZTW DNS Control Forwarding Rule
+
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZTW API Endpoints:
+    - Added `GET /ecRules/ecDns` Retrieves the list of DNS forwarding rules.
+    - Added `GET /ecRules/ecDns/{ruleId}` Retrieves a DNS forwarding rule configuration based on the specified ID.
+    - Added `POST /ecRules/ecDns` Create a DNS forwarding rule.
+    - Added `PUT /ecRules/ecDns/{ruleId}` Updates DNS forwarding rule.
+    - Added `DELETE ecRules/ecDns/{ruleId}` Deletes DNS forwarding rule.
+
+### ZTW DNS Gateway
+[PR #376](https://github.com/zscaler/zscaler-sdk-go/pull/376) - Added the following new ZIA API Endpoints:
+    - Added `GET /dnsGateways` Retrieves a list of DNS Gateways.
+    - Added `GET /dnsGateways/lite` Retrieves a list of DNS Gateways
+    - Added `GET /dnsGateways/{gatewayId}` Retrieves the DNS Gateway based on the specified ID
+    - Added `POST /dnsGateways` Adds a new DNS Gateway.
+    - Added `PUT /dnsGateways/{gatewayId}` Updates the DNS Gateway based on the specified ID
+    - Added `DELETE /dnsGateways/{gatewayId}` Deletes a DNS Gateway based on the specified ID
 
 # 3.7.3 (October 3, 2025)
 

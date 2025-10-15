@@ -62,10 +62,14 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Run unit tests
+        run: make test:unit:zia
+        continue-on-error: false
+
       - name: Run tests with retry on Ubuntu
         uses: nick-fields/retry@v3
         with:
-          max_attempts: 3
+          max_attempts: 2
           timeout_minutes: 20 # Adjust as needed
           command: |
             make sweep:zia

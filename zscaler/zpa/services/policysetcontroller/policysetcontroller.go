@@ -154,9 +154,8 @@ func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType s
 }
 
 func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
-
+	// GET operations don't need locking - they're safe to run concurrently
+	// Only CREATE/UPDATE/DELETE need the ruleMutex due to API restrictions
 	v := new(PolicyRule)
 	url := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)

@@ -50,7 +50,11 @@ func NewClient(config *Configuration) (*Client, error) {
 
 	// Ensure HTTP clients are properly initialized
 	if config.HTTPClient == nil {
-		config.HTTPClient = getHTTPClient(config.Logger, nil, config)
+		// Initialize rate limiter if not already set
+		if config.RateLimiter == nil {
+			config.RateLimiter = rl.NewRateLimiter(20, 10, 10, 10)
+		}
+		config.HTTPClient = getHTTPClient(config.Logger, config.RateLimiter, config)
 	}
 
 	// Initialize cache if enabled
@@ -91,7 +95,6 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.RetryWaitMax = cfg.ZPA.Client.RateLimit.RetryWaitMax
 
 	if cfg.ZPA.Client.RateLimit.MaxRetries == 0 {
-		// Set RetryMax to a very large number to simulate indefinite retries within the timeout duration.
 		retryableClient.RetryMax = math.MaxInt32
 	} else {
 		retryableClient.RetryMax = int(cfg.ZPA.Client.RateLimit.MaxRetries)
@@ -106,14 +109,10 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 					return retryAfter
 				}
 			}
-			if resp.Request != nil {
-				wait, d := rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					return d
-				}
-				return 0
-			}
 		}
+		// Use exponential backoff for all retries
+		// The API's own rate limiting (429 + Retry-After) handles rate limits
+		// This prevents unnecessary delays from proactive rate limiting
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -127,7 +126,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 
 	// Set the request timeout, allowing user-defined override.
 	if cfg.ZPA.Client.RequestTimeout == 0 {
-		retryableClient.HTTPClient.Timeout = time.Second * 60 // Default to 60 seconds if not specified.
+		retryableClient.HTTPClient.Timeout = time.Second * 240 // Default to 240 seconds to match old SDK.
 	} else {
 		retryableClient.HTTPClient.Timeout = cfg.ZPA.Client.RequestTimeout
 	}
@@ -171,21 +170,21 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 
 // getRetryAfter checks for the Retry-After header or response body to determine retry wait time.
 func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
-	retryAfterHeader := resp.Header.Get("Retry-After")
+	retryAfterHeader := resp.Header.Get("retry-after")
 
 	if retryAfterHeader != "" {
 		// Try to parse the Retry-After value as an integer (seconds)
 		if sleep, err := strconv.ParseInt(retryAfterHeader, 10, 64); err == nil {
-			l.Printf("[INFO] got Retry-After from header: %s\n", retryAfterHeader)
+			l.Printf("[INFO] got retry-after from header: %s\n", retryAfterHeader)
 			return time.Second * time.Duration(sleep+1) // Add 1 second padding
 		} else {
 			// Fallback: try parsing it as a duration (like "13s" from ZPA)
 			dur, err := time.ParseDuration(retryAfterHeader)
 			if err == nil {
-				l.Printf("[INFO] got Retry-After duration from header: %s\n", retryAfterHeader)
+				l.Printf("[INFO] got retry-after duration from header: %s\n", retryAfterHeader)
 				return dur + time.Second // Add 1 second padding
 			}
-			l.Printf("[INFO] error parsing Retry-After header: %v\n", err)
+			l.Printf("[INFO] error parsing retry-after header: %v\n", err)
 		}
 	}
 
@@ -197,7 +196,7 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 // Return empty slice to enable retry on all connection & server errors.
 // Or return []int{429}  to retry on only TooManyRequests error.
 func getRetryOnStatusCodes() []int {
-	return []int{http.StatusTooManyRequests}
+	return []int{http.StatusTooManyRequests, http.StatusConflict}
 }
 
 // checkRetry defines the retry logic based on status codes or response body errors.
@@ -291,7 +290,7 @@ func Authenticate(ctx context.Context, cfg *Configuration, logger logger.Logger)
 	data.Set("client_secret", clientSecret)
 
 	// Use getHTTPClient to handle retries, rate-limiting, etc.
-	httpClient := getHTTPClient(logger, nil, cfg)
+	httpClient := getHTTPClient(logger, cfg.RateLimiter, cfg)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", authURL, strings.NewReader(data.Encode()))
 	if err != nil {

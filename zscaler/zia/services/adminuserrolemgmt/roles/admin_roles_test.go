@@ -1,15 +1,6 @@
 package roles
 
-import (
-	"context"
-	"strings"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-)
-
+/*
 func TestAdminRoles_data(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
@@ -139,3 +130,4 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
+*/

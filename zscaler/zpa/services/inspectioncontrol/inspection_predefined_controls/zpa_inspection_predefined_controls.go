@@ -66,7 +66,7 @@ func Get(ctx context.Context, service *zscaler.Service, controlID string) (*Pred
 
 func GetAll(ctx context.Context, service *zscaler.Service, version string) ([]PredefinedControls, error) {
 	v := []ControlGroupItem{}
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + predControlsEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.GetCustomerID(), predControlsEndpoint)
 	_, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, struct {
 		Version string `url:"version"`
 	}{Version: version}, nil, &v)

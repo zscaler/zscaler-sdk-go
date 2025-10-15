@@ -32,7 +32,13 @@ help:
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zidentity      Run only zidentity integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:unit             			Run only unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit             			Run all unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zpa         			Run ZPA unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zia         			Run ZIA unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:ztw         			Run ZTW unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zdx         			Run ZDX unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zcc         			Run ZCC unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zwa         			Run ZWA unit tests$(COLOR_NONE)"
 
 
 default: build
@@ -125,28 +131,43 @@ test\:integration\:zidentity:
 	@go tool cover -func zidentitycoverage.out | grep total:
 
 test\:unit:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit -test.v
-
-test\:unit\zcc:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zcc -test.v
-
-test\:unit\ztw:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/ztw -test.v
-
-test\:unit\zdx:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zdx -test.v
-
-test\:unit\:zia:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zia -test.v
+	@echo "$(COLOR_OK)Running all unit tests...$(COLOR_NONE)"
+	@go test -failfast -race ./tests/unit/... -test.v
+	@make test:unit:zpa
+	@make test:unit:zia
+	@make test:unit:ztw
+	@make test:unit:zdx
+	@make test:unit:zcc
+	@make test:unit:zwa
+	@make test:unit:oneapi
 
 test\:unit\:zpa:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -failfast -race ./tests/unit/zpa -test.v
+	@echo "$(COLOR_OK)Running ZPA unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/zpa -run "Test" -timeout 10s
+
+test\:unit\:zia:
+	@echo "$(COLOR_OK)Running ZIA unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/zia -run "Test" -timeout 10s
+
+test\:unit\:ztw:
+	@echo "$(COLOR_OK)Running ZTW unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/ztw -run "Test" -timeout 10s
+
+test\:unit\:zdx:
+	@echo "$(COLOR_OK)Running ZDX unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/zdx -run "Test" -timeout 10s
+
+test\:unit\:zcc:
+	@echo "$(COLOR_OK)Running ZCC unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/zcc -run "Test" -timeout 10s
+
+test\:unit\:zwa:
+	@echo "$(COLOR_OK)Running ZWA unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler/zwa -run "Test" -timeout 10s
+
+test\:unit\:oneapi:
+	@echo "$(COLOR_OK)Running OneAPI unit tests...$(COLOR_NONE)"
+	@go test -v ./zscaler -run "Test" -timeout 10s
 
 test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
