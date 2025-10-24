@@ -12,15 +12,15 @@ import (
 )
 
 func TestPostureProfiles(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(context.Background(), service)
@@ -78,15 +78,15 @@ func TestPostureProfiles(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -114,15 +114,15 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Assuming a profile with the name "CrowdStrike_ZPA_ZTA_40" exists
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -183,15 +183,15 @@ func TestPostureProfileNamesWithSpaces(t *testing.T) {
 */
 
 func TestPostureProfileByPostureUDID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Use GetByName to fetch a known Posture Profile
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -216,15 +216,15 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

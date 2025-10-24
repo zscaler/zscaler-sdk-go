@@ -9,15 +9,15 @@ import (
 )
 
 func TestTrustedNetworks(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Test to retrieve all networks
 	networks, _, err := GetAll(context.Background(), service)
@@ -75,15 +75,15 @@ func TestTrustedNetworks(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	networks, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -179,15 +179,15 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 */
 func TestTrustedNetworksByNetID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Fetch the list of all Trusted Networks
 	networks, _, err := GetAll(context.Background(), service)
@@ -218,15 +218,15 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

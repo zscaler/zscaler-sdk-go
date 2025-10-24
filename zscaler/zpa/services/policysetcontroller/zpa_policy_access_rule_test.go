@@ -15,11 +15,15 @@ import (
 
 func TestPolicyAccessRule(t *testing.T) {
 	policyType := "ACCESS_POLICY"
-	service, err := tests.NewOneAPIClient()
+	// service, err := tests.NewOneAPIClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
+
+	service, err := tests.NewZPAClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)

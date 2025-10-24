@@ -10,15 +10,15 @@ import (
 )
 
 func getTestIdpId(t *testing.T) string {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
@@ -48,15 +48,15 @@ func getTestIdpId(t *testing.T) string {
 }
 
 func TestSCIMAttributeHeader(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	testIdpId := getTestIdpId(t)
 
 	// Test GetAllByIdpId function
@@ -84,15 +84,15 @@ func TestSCIMAttributeHeader(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	testIdpId := getTestIdpId(t)
 
@@ -121,15 +121,15 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSCIMAttributeHeaderName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	testIdpId := getTestIdpId(t)
 	_, _, err = GetByName(context.Background(), service, "NonExistentName", testIdpId)
@@ -139,15 +139,15 @@ func TestNonExistentSCIMAttributeHeaderName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	testIdpId := getTestIdpId(t)
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -166,15 +166,15 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSCIMAttributeHeaderByID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	testIdpId := getTestIdpId(t)
 
 	attributes, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -202,15 +202,15 @@ func TestGetSCIMAttributeHeaderByID(t *testing.T) {
 }
 
 func TestSCIMAttributeHeaderGetValues(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	testIdpId := getTestIdpId(t)
 
 	// Retrieve all attributes for the IdP
@@ -240,15 +240,15 @@ func TestSCIMAttributeHeaderGetValues(t *testing.T) {
 }
 
 func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	testIdpId := getTestIdpId(t)
 	attributes, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
@@ -289,15 +289,15 @@ func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
 
 /*
 func TestResponseHeadersAndFormat(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	testIdpId := getTestIdpId(t)
 	_, resp, err :=  GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {

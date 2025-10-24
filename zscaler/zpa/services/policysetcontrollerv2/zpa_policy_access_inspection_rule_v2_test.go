@@ -16,15 +16,15 @@ import (
 func TestAccessInspectionPolicyInspectV2(t *testing.T) {
 	policyType := "INSPECTION_POLICY"
 	inspectionProfileID := "BD_SA_Profile1"
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {

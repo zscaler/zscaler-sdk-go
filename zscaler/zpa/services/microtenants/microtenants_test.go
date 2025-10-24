@@ -14,32 +14,32 @@ func TestMicrotenants(t *testing.T) {
 	domains := []string{
 		"216196257331281920.zpa-customer.com",
 		"securitygeek.io",
-		// "144124980601290752.zpa-customer.com",
-		// "public-api-sdk-testing.com",
-		// "144124981675032576.zpa-customer.com",
-		// "public-api-sdk-testing1.com",
-		// "bd-hashicorp.com",
-		// "bd-redhat.com",
-		// "216199618143191040.zpa-customer.com",
-		// "securitygeek.io",
-		// "72058304855015424.zpa-customer.com",
-		// "securitygeekio.ca",
-		// "72057604775346176.zpa-customer.com",
-		// "72059901509107712.zpa-customer.com",
-		// "72059899361624064.zpa-customer.com",
+		"144124980601290752.zpa-customer.com",
+		"public-api-sdk-testing.com",
+		"144124981675032576.zpa-customer.com",
+		"public-api-sdk-testing1.com",
+		"bd-hashicorp.com",
+		"bd-redhat.com",
+		"216199618143191040.zpa-customer.com",
+		"securitygeek.io",
+		"72058304855015424.zpa-customer.com",
+		"securitygeekio.ca",
+		"72057604775346176.zpa-customer.com",
+		"72059901509107712.zpa-customer.com",
+		"72059899361624064.zpa-customer.com",
 	}
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	var createdResource *MicroTenant
 
@@ -163,15 +163,15 @@ func TestMicrotenants(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	_, _, err = Get(context.Background(), service, "non-existent-id")
 	if err == nil {
@@ -180,15 +180,15 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	_, err = Delete(context.Background(), service, "non-existent-id")
 	if err == nil {
@@ -197,15 +197,15 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	_, err = Update(context.Background(), service, "non-existent-id", &MicroTenant{})
 	if err == nil {
@@ -214,15 +214,15 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	_, _, err = GetByName(context.Background(), service, "non-existent-name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")

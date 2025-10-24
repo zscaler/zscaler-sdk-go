@@ -4,15 +4,15 @@ package emergencyaccess
 func TestEmergencyAccessIntegration(t *testing.T) {
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	// Create new resource
 	createdResource, _, err := Create(context.Background(), service, &EmergencyAccess{
 		ActivatedOn:       "1",

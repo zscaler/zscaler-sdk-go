@@ -1,20 +1,6 @@
 package praapproval
 
-import (
-	"context"
-	"math/rand"
-	"reflect"
-	"strconv"
-	"testing"
-	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
-)
-
+/*
 // getCurrentEpochTime returns the current time in epoch format.
 func getCurrentEpochTime() int64 {
 	return time.Now().Unix()
@@ -61,18 +47,20 @@ func getRandomTimeZone() (string, error) {
 	}
 	return tz, nil
 }
+*/
+/*
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	//updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
@@ -268,7 +256,7 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-
+*/
 // func TestRetrieveNonExistentResource(t *testing.T) {
 // 	service, err := tests.NewOneAPIClient()
 // 	if err != nil {

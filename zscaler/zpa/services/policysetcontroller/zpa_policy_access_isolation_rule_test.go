@@ -16,15 +16,15 @@ import (
 func TestAccessIsolationPolicyIsolate(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
 	isolationProfileID := "BD_SA_Profile1"
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
@@ -156,15 +156,15 @@ func TestAccessIsolationPolicyIsolate(t *testing.T) {
 
 func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {

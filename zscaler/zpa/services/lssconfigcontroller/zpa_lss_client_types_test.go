@@ -10,15 +10,15 @@ import (
 )
 
 func TestGetAllClientTypes(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	clientTypes, _, err := GetClientTypes(context.Background(), service)
 	if err != nil {
@@ -47,15 +47,15 @@ func TestGetAllClientTypes(t *testing.T) {
 }
 
 func TestClientTypesStatusCodeCheck(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Fetch the client types and the HTTP response
 	_, httpResponse, err := GetClientTypes(context.Background(), service)
@@ -70,15 +70,15 @@ func TestClientTypesStatusCodeCheck(t *testing.T) {
 }
 
 func TestClientTypesErrorResponse(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Fetch the client types and the HTTP response
 	clientTypes, httpResponse, err := GetClientTypes(context.Background(), service)

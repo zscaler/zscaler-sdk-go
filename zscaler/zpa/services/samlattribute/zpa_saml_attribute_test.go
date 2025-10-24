@@ -8,15 +8,15 @@ import (
 )
 
 func TestSAMLAttribute(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -41,15 +41,15 @@ func TestSAMLAttribute(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -74,15 +74,15 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSAMLAttributeName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	_, _, err = GetByName(context.Background(), service, "NonExistentName")
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SAML attribute by name, got none")
@@ -90,15 +90,15 @@ func TestNonExistentSAMLAttributeName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
@@ -111,15 +111,15 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSAMLAttributeByID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
@@ -144,15 +144,15 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 }
 
 func TestAllFieldsOfSAMLAttribute(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	attributes, _, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
@@ -191,15 +191,15 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 
 /*
 func TestResponseHeadersAndFormat(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	_, resp, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)

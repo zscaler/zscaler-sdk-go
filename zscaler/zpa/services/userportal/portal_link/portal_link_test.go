@@ -10,18 +10,18 @@ import (
 )
 
 func TestUserPortalLink(t *testing.T) {
-	name := "server1.example.com"
-	updateName := "server1.example.com"
+	name := "portal01.bd-hashicorp.com"
+	updateName := "portal01.bd-hashicorp.com"
 
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	userPortal, _, err := portal_controller.Create(context.Background(), service, portal_controller.UserPortalController{
 		Name:                    name,
 		Description:             name,
@@ -30,12 +30,11 @@ func TestUserPortalLink(t *testing.T) {
 		UserNotificationEnabled: true,
 		ManagedByZS:             true,
 		ExtLabel:                "portal01",
-		ExtDomainName:           "-securitygeek-io.b.zscalerportal.net",
-		ExtDomain:               "securitygeek.io",
+		ExtDomain:               "bd-hashicorp.com",
 	})
 	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error creating app connector group for testing server group: %v", err)
+		t.Errorf("Error creating user portal link: %v", err)
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
@@ -45,7 +44,7 @@ func TestUserPortalLink(t *testing.T) {
 		} else {
 			_, err := portal_controller.Delete(context.Background(), service, userPortal.ID)
 			if err != nil {
-				t.Errorf("Error deleting app connector group: %v", err)
+				t.Errorf("Error deleting user portal link: %v", err)
 			}
 		}
 	}()
@@ -55,8 +54,8 @@ func TestUserPortalLink(t *testing.T) {
 		Name:        name,
 		Description: name,
 		Enabled:     true,
-		Link:        "server1.example.com",
-		Protocol:    "https://",
+		Link:        "portal01.bd-hashicorp.com",
+		Protocol:    "http://",
 		UserPortals: []portal_controller.UserPortalController{
 			{
 				ID: userPortal.ID,
@@ -201,8 +200,8 @@ func TestUserPortalLink(t *testing.T) {
 // 	// 	t.Fatalf("Error creating client: %v", err)
 // 	// }
 
-// 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-// 	}
-// }
+//		_, _, err = GetByName(context.Background(), service, "non_existent_name")
+//		if err == nil {
+//			t.Error("Expected error retrieving resource by non-existent name, but got nil")
+//		}
+//	}

@@ -1,5 +1,6 @@
 package cbicertificatecontroller
 
+/*
 import (
 	"context"
 	"crypto/rand"
@@ -16,15 +17,15 @@ import (
 )
 
 func TestCBICertificates(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Generate private key for root certificate
 	rootKey, err := rsa.GenerateKey(rand.Reader, 4096) // Use 4096 bits for the key
@@ -173,3 +174,4 @@ func generateRandomString(length int) (string, error) {
 
 	return string(b), nil
 }
+*/

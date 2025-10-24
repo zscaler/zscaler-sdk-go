@@ -14,15 +14,15 @@ import (
 func TestAccessRedirectionPolicyV2(t *testing.T) {
 	policyType := "REDIRECTION_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// create service edge group for testing
 	svcEdgeGroup, _, err := serviceedgegroup.Create(context.Background(), service, serviceedgegroup.ServiceEdgeGroup{

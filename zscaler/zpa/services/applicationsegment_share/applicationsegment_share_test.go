@@ -23,15 +23,15 @@ func TestApplicationSegmentShare(t *testing.T) {
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	// Function to create microtenant with retries
 	createMicrotenantWithRetry := func(name, description string) (*microtenants.MicroTenant, error) {

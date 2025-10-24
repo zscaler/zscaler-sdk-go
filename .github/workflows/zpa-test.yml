@@ -8,7 +8,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 11 * * 1-5' # UTC
+    - cron: "0 11 * * 1-5" # UTC
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  zpa-production-tenants:
+  zpa-qa1-tenants:
     # needs: [zpa-beta-tenants]
     runs-on: ubuntu-latest
     strategy:
@@ -24,7 +24,7 @@ jobs:
       matrix:
         goVersion: ["1.24"]
         environment:
-          - ZIDENTITY_PRODUCTION
+          - ZPA_QA1
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
@@ -72,11 +72,10 @@ jobs:
             make test:integration:zpa
             make sweep:zpa
         env:
-          ZSCALER_CLIENT_ID: ${{ secrets.ZSCALER_CLIENT_ID }}
-          ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
-          ZSCALER_VANITY_DOMAIN: ${{ secrets.ZSCALER_VANITY_DOMAIN }}
-          ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
+          ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
           ZPA_SDK_TEST_SWEEP: ${{ secrets.ZPA_SDK_TEST_SWEEP }}
           OKTA_CLIENT_ORGURL: ${{ secrets.OKTA_CLIENT_ORGURL }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_CLIENT_TOKEN }}

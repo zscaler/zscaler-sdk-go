@@ -1,4 +1,4 @@
-package appservercontroller
+package aup
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
-func TestApplicationServer(t *testing.T) {
+func TestUserPortal(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	randomIP, _ := acctest.RandIpAddress("192.168.0.0/24")
+
 	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
@@ -23,11 +23,13 @@ func TestApplicationServer(t *testing.T) {
 	}
 
 	// Create new resource
-	createdResource, _, err := Create(context.Background(), service, ApplicationServer{
+	createdResource, _, err := Create(context.Background(), service, &UserPortalAup{
 		Name:        name,
 		Description: name,
+		Aup:         name,
 		Enabled:     true,
-		Address:     randomIP,
+		Email:       "support@acme.com",
+		PhoneNum:    "1234567890",
 	})
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
@@ -58,7 +60,7 @@ func TestApplicationServer(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = Update(context.Background(), service, createdResource.ID, updatedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
@@ -96,6 +98,7 @@ func TestApplicationServer(t *testing.T) {
 			t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 		}
 	})
+
 	t.Run("TestResourceRemoval", func(t *testing.T) {
 		_, err := Delete(context.Background(), service, createdResource.ID)
 		if err != nil {
@@ -149,7 +152,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, "non_existent_id", ApplicationServer{})
+	_, err = Update(context.Background(), service, "non_existent_id", &UserPortalAup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

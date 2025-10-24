@@ -14,15 +14,15 @@ import (
 
 func TestAccessCapabilityPolicy(t *testing.T) {
 	policyType := "CAPABILITIES_POLICY"
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {

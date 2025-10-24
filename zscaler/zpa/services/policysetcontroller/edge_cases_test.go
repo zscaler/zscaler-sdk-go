@@ -14,15 +14,15 @@ func TestNonExistentResourceOperations(t *testing.T) {
 		"CLIENTLESS_SESSION_PROTECTION_POLICY", "REDIRECTION_POLICY", "SIEM_POLICY",
 	}
 
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
+	// service, err := tests.NewOneAPIClient()
 	// if err != nil {
 	// 	t.Fatalf("Error creating client: %v", err)
 	// }
+
+	service, err := tests.NewZPAClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	for _, policyType := range policyTypes {
 		t.Run(policyType, func(t *testing.T) {
