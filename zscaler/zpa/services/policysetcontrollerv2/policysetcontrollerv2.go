@@ -423,3 +423,37 @@ func GetAllByType(ctx context.Context, service *zscaler.Service, policyType stri
 	}
 	return list, resp, nil
 }
+
+func GetPolicyCount(ctx context.Context, service *zscaler.Service, policyType string) ([]PolicyRuleResource, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/rules/policyType/%s/count", policyType)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PolicyRuleResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+func GetPolicyByApplication(ctx context.Context, service *zscaler.Service, policyType string, applicationID string) ([]PolicyRuleResource, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/rules/policyType/%s/application/%s", policyType, applicationID)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PolicyRuleResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+func GetRiskScoreValues(ctx context.Context, service *zscaler.Service, excludeUnknown *bool) ([]string, *http.Response, error) {
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + "/riskScoreValues"
+
+	// Add excludeUnknown query parameter if provided
+	if excludeUnknown != nil {
+		relativeURL = fmt.Sprintf("%s?excludeUnknown=%t", relativeURL, *excludeUnknown)
+	}
+
+	var result []string
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, &result)
+	if err != nil {
+		return nil, nil, err
+	}
+	return result, resp, nil
+}

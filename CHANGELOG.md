@@ -1,5 +1,146 @@
 # Changelog
 
+# 3.8.0 (October xx, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### New ZPA Endpoint - Application Server Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /server/summary` Get all the configured application servers Name and IDs
+
+### New ZPA Endpoint - Application Segment Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /application/{applicationId}/mappings` Get the application segment mapping details
+    - Added `DELETE /application/{applicationId}/deleteAppByType` Delete a BA/Inspection and PRA Application
+    - Added `POST /application/{applicationId}/validate` Validate conflicting wildcard domain names. Expect the applicationID to be populated in the case of update
+    - Added `GET /application/configured/count` Returns the count of configured application Segment for the provided customer between the date range passed in request body.
+    - Added `GET /application/count/currentAndMaxLimit` get current Applications count of domains and maxLimit configured for a given customer
+
+### New ZPA Endpoint - App Connector Group
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /appConnectorGroup/summary` Get all the configured App Connector Group id and name.
+
+### New ZPA Endpoint - Branch Connector Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /branchConnector` Get all BranchConnectors configured for a given customer.
+
+### New ZPA Endpoint - Branch Connector Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /branchConnectorGroup/summary` Get all branch connector group id and names configured for a given customer.
+    - Added `GET /branchConnectorGroup` Get all configured Branch Connector Groups.
+
+### New ZPA Endpoint - Browser Protection Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /activeBrowserProtectionProfile` Get the active browser protection profile details for the specified customer.
+    - Added `GET /browserProtectionProfile` Gets all configured browser protection profiles for the specified customer.
+    - Added `PUT /browserProtectionProfile/setActive/{browserProtectionProfileId}` Updates a specified browser protection profile as active for the specified customer.
+
+### New ZPA Endpoint - Customer Config Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /config/isZiaCloudConfigAvailable` Check if zia cloud config for a given customer is available.
+    - Added `GET /config/ziaCloudConfig` Get zia cloud service config for a given customer.
+    - Added `POST /config/ziaCloudConfig` Add or update zia cloud service config for a given customer.
+    - Added `GET /sessionTerminationOnReauth` Get session termination on reauth for a given customer.
+    - Added `PUT /sessionTerminationOnReauth` Add /update boolean value for session termination on reauth.
+
+### New ZPA Endpoint - Customer DR Tool Version Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /customerDRToolVersion` Fetch latest the Customer Support DR Tool Versions sorted by latest filter
+
+### New ZPA Endpoint - Customer Version Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /versionProfiles/{versionProfileId}` Update Version Profile for customer
+
+### New ZPA Endpoint - Cloud Connector Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /cloudConnectorGroup/summary` Get all edge connector group id and names configured for a given customer
+
+### New ZPA Endpoint - Extranet Resource Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /extranetResource/partner` Get all extranet resources
+
+### New ZPA Endpoint - Machine Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /machineGroup/summary` Get all Machine Group Id and Names configured for a given customer
+
+### New ZPA Endpoint - Managed Browser Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /managedBrowserProfile/search` Gets all the managed browser profiles for a customer
+
+### New ZPA Endpoint - Provisioning Key Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /associationType/{associationType}/zcomponent/{zcomponentId}/provisioningKey` get provisioningKey details by zcomponentId for associationType.
+
+### New ZPA Endpoint - OAuth User Code Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `POST /{associationType}/usercodes` Verifies the provided list of user codes for a given component provisioning.
+    - Added `POST /{associationType}/usercodes/status` Adds a new Provisioning Key for the specified customer.
+
+### New ZPA Endpoint - Policy-Set Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /riskScoreValues` Gets values of risk scores for the specified customer.
+    - Added `GET /policySet/rules/policyType/{policyType}/count` For a customer, get count of policy rules for a given policy type. Providing only endtime would give cumulative count till the endTime.Providing both startTime and endtime would give count between that time period.Not Providing startTime and endtime would give overall count.
+    - Added `GET /policySet/rules/policyType/{policyType/application/{applicationId}` Gets paginated policy rules for the specified policy type by application id
+
+### New ZPA Endpoint - Server Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /serverGroup/summary` Get all Server Group id and names configured for a given customer
+
+### New ZPA Endpoint - Step up Auth Level Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /stepupauthlevel/summary` Get a step up auth levels.
+
+### New ZPA Endpoint - Step up Auth Level Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /userportal/aup/{id}` Get user portal aup
+    - Added `PUT /userportal/aup/{id}` Update user portal aup
+    - Added `DELETE /userportal/aup/{id}` Delete user portal aup
+    - Added `GET /userportal/aup` Get all AUPs configured for a given customer
+    - Added `POST /userportal/aup` Add a new aup for a given customer.
+
+### New ZPA Endpoint - ZPN Location Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /location/extranetResource/{zpnErId}`
+    - Added `PUT /location/summary` Get all Location id and names configured for a given customer.
+
+### New ZPA Endpoint - ZPN Location Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /locationGroup/extranetResource/{zpnErId}`
+
+### New ZPA Endpoint - Workload Tag Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /workloadTagGroup/summary`
+
+### Enhancements
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `ipdestinationgroups` parameter `override` of type bool. This parameter indicates whether the IPs must be overridden. When set to false, the IPs are appended; else the existing IPs are overridden. The default value is true.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `dlp_web_rules` attribute `fileTypeCategories`. This attribute supports the list of file types to which the rule applies. This attribute has replaced the attribute `fileTypes`. Zscaler recommends updating your configurations to use the `fileTypeCategories` attribute in place of `fileTypes`. Both attributes are still supported, but cannot be used concurrently.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `urlfilteringpolicies` attribute `safeSearchApps` of type list of string.
+
+  
 # 3.7.5 (October 14, 2025)
 
 ## Notes

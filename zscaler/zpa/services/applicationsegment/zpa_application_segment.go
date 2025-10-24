@@ -3,7 +3,10 @@ package applicationsegment
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -118,6 +121,24 @@ type BulkUpdateMultiMatchPayload struct {
 	MatchStyle     string `json:"matchStyle"`
 }
 
+type ApplicationCountResponse struct {
+	AppsConfigured               string `json:"appsConfigured"`
+	ConfiguredDateInEpochSeconds string `json:"configuredDateInEpochSeconds"`
+}
+
+// ApplicationCurrentMaxLimitResponse represents the response from GetCurrentAndMaxLimit
+type ApplicationCurrentMaxLimitResponse struct {
+	CurrentAppsCount string `json:"currentAppsCount"`
+	MaxAppsLimit     string `json:"maxAppsLimit"`
+}
+
+// ApplicationValidationError represents the validation error response
+type ApplicationValidationError struct {
+	Params []string `json:"params"`
+	ID     string   `json:"id"`
+	Reason string   `json:"reason"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentEndpoint, applicationID)
@@ -212,4 +233,109 @@ func UpdatebulkUpdateMultiMatch(ctx context.Context, service *zscaler.Service, p
 	}
 
 	return resp, err
+}
+
+// Need to review as the API is returning 400 error
+func GetApplicationSummary(ctx context.Context, service *zscaler.Service) ([]common.CommonSummary, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.CommonSummary](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+// ApplicationCountResponse represents the response from GetApplicationCount
+func GetApplicationCount(ctx context.Context, service *zscaler.Service) ([]ApplicationCountResponse, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/configured/count"
+
+	var result []ApplicationCountResponse
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, &result)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return result, resp, nil
+}
+
+func GetCurrentAndMaxLimit(ctx context.Context, service *zscaler.Service) (*ApplicationCurrentMaxLimitResponse, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/count/currentAndMaxLimit"
+
+	var result ApplicationCurrentMaxLimitResponse
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, &result)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &result, resp, nil
+}
+
+type ApplicationMappings struct {
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+
+func GetApplicationMappings(ctx context.Context, service *zscaler.Service, applicationID string) ([]ApplicationMappings, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/" + applicationID + "/mappings"
+
+	var result []ApplicationMappings
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, &result)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return result, resp, nil
+}
+
+func GetApplicationExport(ctx context.Context, service *zscaler.Service, search string, single bool, outputPath string) (*http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/export"
+
+	// Build query parameters
+	query := url.Values{}
+	if search != "" {
+		query.Set("search", search)
+	}
+	query.Set("single", fmt.Sprintf("%t", single))
+
+	constructedURL := relativeURL
+	if len(query) > 0 {
+		constructedURL += "?" + query.Encode()
+	}
+
+	// For CSV downloads, we need to handle the raw response body
+	resp, err := service.Client.NewRequestDo(ctx, "GET", constructedURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Create the output file
+	file, err := os.Create(outputPath)
+	if err != nil {
+		return resp, fmt.Errorf("failed to create output file: %w", err)
+	}
+	defer file.Close()
+
+	// Copy the response body to the file
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return resp, fmt.Errorf("failed to write CSV content to file: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[INFO] CSV file saved to: %s", outputPath)
+	return resp, nil
+}
+
+func ApplicationValidation(ctx context.Context, service *zscaler.Service, appSegment ApplicationSegmentResource) (*ApplicationValidationError, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/validate"
+
+	// For validation, we expect either success (200) or validation error (400)
+	var validationError ApplicationValidationError
+	resp, err := service.Client.NewRequestDo(ctx, "POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegment, &validationError)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	// If we get here, there was a validation error
+	return &validationError, resp, nil
 }

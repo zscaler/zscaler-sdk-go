@@ -192,11 +192,24 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 }
 
 func setHttpClients(cfg *Configuration) {
-	// ZIA-specific rate limits:
-	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
-	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
+	// ZIA-specific rate limits with hourly tracking:
+	// Per-second: GET: 2/sec, POST/PUT: 1/sec, DELETE: 1/sec
+	// Hourly: GET: 1000/hr, POST/PUT: 1000/hr (combined), DELETE: 400/hr
+	// Using conservative limits to stay well below API thresholds
+	// Per-second: 20 requests per 10s (2/sec) for GET, 10 per 10s (1/sec) for POST/PUT/DELETE
+	// Hourly: 950/hr for GET (buffer of 50), 950/hr for POST/PUT (buffer of 50), 380/hr for DELETE (buffer of 20)
+	ziaRateLimiter := rl.NewRateLimiterWithHourly(
+		20, 10, // GET: 20 per 10 seconds, POST/PUT/DELETE: 10 per 10 seconds
+		10, 61, // GET frequency: 10 seconds, DELETE frequency: 61 seconds (+1 buffer)
+		950, 950, 380, // Hourly: GET: 950, POST/PUT: 950, DELETE: 380 (with safety buffers)
+	)
 
-	ztwRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZTW based on official limits and +1 sec buffer
+	// ZTW uses same limits as ZIA
+	ztwRateLimiter := rl.NewRateLimiterWithHourly(
+		20, 10,
+		10, 61,
+		950, 950, 380,
+	)
 
 	// ZPA-specific rate limits:
 	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
@@ -204,7 +217,7 @@ func setHttpClients(cfg *Configuration) {
 	// ZCC-specific rate limits:
 	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
-	// ZCC-specific rate limits:
+	// ZDX-specific rate limits:
 	zdxRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
 	// Default case for unknown or unhandled services

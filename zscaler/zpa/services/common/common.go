@@ -135,14 +135,9 @@ type LocationDTO struct {
 }
 
 type LocationGroupDTO struct {
-	ID           string        `json:"id,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	ZiaLocations []ZiaLocation `json:"ziaLocations,omitempty"`
-}
-
-type ZiaLocation struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	ID           string          `json:"id,omitempty"`
+	Name         string          `json:"name,omitempty"`
+	ZiaLocations []CommonSummary `json:"ziaLocations,omitempty"`
 }
 
 type ZPNERID struct {
@@ -155,6 +150,12 @@ type ZPNERID struct {
 	ZIAErName       string `json:"ziaErName,omitempty"`
 	ZIAModifiedTime string `json:"ziaModifiedTime,omitempty"`
 	ZIAOrgID        string `json:"ziaOrgId,omitempty"`
+}
+
+type CommonSummary struct {
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"

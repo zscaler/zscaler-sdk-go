@@ -25,8 +25,9 @@ type IDExtensions struct {
 }
 
 type IDName struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	ID     int    `json:"id,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Parent string `json:"parent,omitempty"`
 }
 
 type IDNameExternalID struct {

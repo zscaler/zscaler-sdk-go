@@ -1,4 +1,4 @@
-package cloudconnectorgroup
+package cloud_connector_group
 
 import (
 	"context"
@@ -77,6 +77,15 @@ func GetByName(ctx context.Context, service *zscaler.Service, cloudConnectorGrou
 func GetAll(ctx context.Context, service *zscaler.Service) ([]CloudConnectorGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](ctx, service.Client, relativeURL, "")
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+func GetCloudConnectorGroupSummary(ctx context.Context, service *zscaler.Service) ([]CloudConnectorGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[CloudConnectorGroup](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

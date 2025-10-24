@@ -168,3 +168,23 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]AppConnectorGroup,
 	}
 	return list, resp, nil
 }
+
+func GetAppconnectorGroupSummary(ctx context.Context, service *zscaler.Service) ([]common.CommonSummary, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appConnectorGroupEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.CommonSummary](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}
+
+func GetAppConnectorGroupSG(ctx context.Context, service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
+	v := new(AppConnectorGroup)
+	relativeURL := fmt.Sprintf("%s/%s/sg", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return v, resp, nil
+}
