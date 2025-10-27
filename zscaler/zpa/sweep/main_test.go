@@ -71,10 +71,15 @@ func TestMain(m *testing.M) {
 // sweep the resources before running integration tests
 func sweep() error {
 	log.Println("[INFO] Sweeping ZPA test resources")
-	service, err := tests.NewOneAPIClient() // This returns a *zscaler.Service
+	// service, err := tests.NewOneAPIClient() // This returns a *zscaler.Service
+	// if err != nil {
+	// 	log.Printf("[ERROR] Failed to instantiate OneAPI client: %v", err)
+	// 	return err
+	// }
+
+	service, err := tests.NewZPAClient()
 	if err != nil {
-		log.Printf("[ERROR] Failed to instantiate OneAPI client: %v", err)
-		return err
+		log.Printf("Error creating client: %v", err)
 	}
 
 	client := service.Client // Extract the *zscaler.Client from the Service
