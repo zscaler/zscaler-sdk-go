@@ -16,17 +16,26 @@ const (
 )
 
 type ManagedBrowserProfile struct {
-	BrowserType          string                 `json:"browserType,omitempty"`
-	CreationTime         string                 `json:"creationTime,omitempty"`
-	CustomerID           string                 `json:"customerId,omitempty"`
-	Description          string                 `json:"description,omitempty"`
-	ID                   string                 `json:"id,omitempty"`
-	ModifiedBy           string                 `json:"modifiedBy,omitempty"`
-	ModifiedTime         string                 `json:"modifiedTime,omitempty"`
-	Name                 string                 `json:"name,omitempty"`
-	MicrotenantID        string                 `json:"microtenantId,omitempty"`
-	MicrotenantName      string                 `json:"microtenantName,omitempty"`
-	ChromePostureProfile map[string]interface{} `json:"chromePostureProfile,omitempty"`
+	BrowserType          string               `json:"browserType,omitempty"`
+	CreationTime         string               `json:"creationTime,omitempty"`
+	CustomerID           string               `json:"customerId,omitempty"`
+	Description          string               `json:"description,omitempty"`
+	ID                   string               `json:"id,omitempty"`
+	ModifiedBy           string               `json:"modifiedBy,omitempty"`
+	ModifiedTime         string               `json:"modifiedTime,omitempty"`
+	Name                 string               `json:"name,omitempty"`
+	MicrotenantID        string               `json:"microtenantId,omitempty"`
+	MicrotenantName      string               `json:"microtenantName,omitempty"`
+	ChromePostureProfile ChromePostureProfile `json:"chromePostureProfile,omitempty"`
+}
+
+type ChromePostureProfile struct {
+	ID               string `json:"id,omitempty"`
+	BrowserType      string `json:"browserType,omitempty"`
+	CrowdStrikeAgent bool   `json:"crowdStrikeAgent,omitempty"`
+	CreationTime     string `json:"creationTime,omitempty"`
+	ModifiedBy       string `json:"modifiedBy,omitempty"`
+	ModifiedTime     string `json:"modifiedTime,omitempty"`
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]ManagedBrowserProfile, *http.Response, error) {

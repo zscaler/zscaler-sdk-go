@@ -77,6 +77,34 @@ func (c *Client) ReadResource(ctx context.Context, endpoint string, o interface{
 	return nil
 }
 
+// ReadTextResource reads a resource that returns plain text instead of JSON
+func (c *Client) ReadTextResource(ctx context.Context, endpoint string, o interface{}) error {
+	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ZtwClient == nil {
+			return errLegacyClientNotSet
+		}
+		return c.oauth2Credentials.LegacyClient.ZtwClient.Read(ctx, removeOneApiEndpointPrefix(endpoint), o)
+	}
+
+	resp, _, _, err := c.ExecuteRequest(ctx, "GET", endpoint, nil, nil, contentTypeJSON)
+	if err != nil {
+		return err
+	}
+
+	// Handle string pointer - convert response to string and assign to the pointer
+	if strPtr, ok := o.(*string); ok {
+		*strPtr = strings.TrimSpace(string(resp))
+		return nil
+	}
+
+	// Fallback to JSON unmarshaling for other types
+	err = json.Unmarshal(resp, o)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // UpdateWithPut sends an update (PUT request) with the given object.
 func (c *Client) UpdateWithPutResource(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if c.oauth2Credentials.UseLegacyClient {

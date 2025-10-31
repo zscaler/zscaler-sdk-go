@@ -64,7 +64,7 @@ type AppSegmentPRA struct {
 	PRAApps                   []PRAApps                 `json:"praApps"`
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
-	ZPNERID                   common.ZPNERID            `json:"zpnErId"`
+	ZPNERID                   *common.ZPNERID           `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {

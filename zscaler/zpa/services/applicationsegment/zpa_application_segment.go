@@ -11,7 +11,6 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentbrowseraccess"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 )
@@ -22,57 +21,57 @@ const (
 )
 
 type ApplicationSegmentResource struct {
-	ID                        string                                           `json:"id,omitempty"`
-	DomainNames               []string                                         `json:"domainNames,omitempty"`
-	Name                      string                                           `json:"name,omitempty"`
-	Description               string                                           `json:"description,omitempty"`
-	Enabled                   bool                                             `json:"enabled"`
-	ExtranetEnabled           bool                                             `json:"extranetEnabled"`
-	APIProtectionEnabled      bool                                             `json:"apiProtectionEnabled"`
-	AutoAppProtectEnabled     bool                                             `json:"autoAppProtectEnabled"`
-	ADPEnabled                bool                                             `json:"adpEnabled"`
-	PassiveHealthEnabled      bool                                             `json:"passiveHealthEnabled"`
-	DoubleEncrypt             bool                                             `json:"doubleEncrypt"`
-	ConfigSpace               string                                           `json:"configSpace,omitempty"`
-	Applications              string                                           `json:"applications,omitempty"`
-	BypassType                string                                           `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                                             `json:"bypassOnReauth,omitempty"`
-	HealthCheckType           string                                           `json:"healthCheckType,omitempty"`
-	IsCnameEnabled            bool                                             `json:"isCnameEnabled"`
-	IpAnchored                bool                                             `json:"ipAnchored"`
-	FQDNDnsCheck              bool                                             `json:"fqdnDnsCheck"`
-	HealthReporting           string                                           `json:"healthReporting,omitempty"`
-	SelectConnectorCloseToApp bool                                             `json:"selectConnectorCloseToApp"`
-	IcmpAccessType            string                                           `json:"icmpAccessType,omitempty"`
-	AppRecommendationId       string                                           `json:"appRecommendationId,omitempty"`
-	SegmentGroupID            string                                           `json:"segmentGroupId"`
-	SegmentGroupName          string                                           `json:"segmentGroupName,omitempty"`
-	CreationTime              string                                           `json:"creationTime,omitempty"`
-	ModifiedBy                string                                           `json:"modifiedBy,omitempty"`
-	ModifiedTime              string                                           `json:"modifiedTime,omitempty"`
-	TCPKeepAlive              string                                           `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                                             `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                                             `json:"useInDrMode"`
-	InspectTrafficWithZia     bool                                             `json:"inspectTrafficWithZia"`
-	WeightedLoadBalancing     bool                                             `json:"weightedLoadBalancing"`
-	MicroTenantID             string                                           `json:"microtenantId,omitempty"`
-	MicroTenantName           string                                           `json:"microtenantName,omitempty"`
-	MatchStyle                string                                           `json:"matchStyle,omitempty"`
-	ReadOnly                  bool                                             `json:"readOnly,omitempty"`
-	RestrictionType           string                                           `json:"restrictionType,omitempty"`
-	ZscalerManaged            bool                                             `json:"zscalerManaged,omitempty"`
-	TCPPortRanges             []string                                         `json:"tcpPortRanges"`
-	UDPPortRanges             []string                                         `json:"udpPortRanges"`
-	TCPAppPortRange           []common.NetworkPorts                            `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange           []common.NetworkPorts                            `json:"udpPortRange,omitempty"`
-	ServerGroups              []servergroup.ServerGroup                        `json:"serverGroups"`
-	DefaultIdleTimeout        string                                           `json:"defaultIdleTimeout,omitempty"`
-	DefaultMaxAge             string                                           `json:"defaultMaxAge,omitempty"`
-	CommonAppsDto             applicationsegmentpra.CommonAppsDto              `json:"commonAppsDto,omitempty"`
-	ClientlessApps            []applicationsegmentbrowseraccess.ClientlessApps `json:"clientlessApps,omitempty"`
-	ShareToMicrotenants       []string                                         `json:"shareToMicrotenants"`
-	SharedMicrotenantDetails  SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
-	ZPNERID                   common.ZPNERID                                   `json:"zpnErId"`
+	ID                        string                    `json:"id,omitempty"`
+	DomainNames               []string                  `json:"domainNames,omitempty"`
+	Name                      string                    `json:"name,omitempty"`
+	Description               string                    `json:"description,omitempty"`
+	Enabled                   bool                      `json:"enabled"`
+	ExtranetEnabled           bool                      `json:"extranetEnabled"`
+	APIProtectionEnabled      bool                      `json:"apiProtectionEnabled"`
+	AutoAppProtectEnabled     bool                      `json:"autoAppProtectEnabled"`
+	ADPEnabled                bool                      `json:"adpEnabled"`
+	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled"`
+	DoubleEncrypt             bool                      `json:"doubleEncrypt"`
+	ConfigSpace               string                    `json:"configSpace,omitempty"`
+	Applications              string                    `json:"applications,omitempty"`
+	BypassType                string                    `json:"bypassType,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                      `json:"isCnameEnabled"`
+	IpAnchored                bool                      `json:"ipAnchored"`
+	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	HealthReporting           string                    `json:"healthReporting,omitempty"`
+	SelectConnectorCloseToApp bool                      `json:"selectConnectorCloseToApp"`
+	IcmpAccessType            string                    `json:"icmpAccessType,omitempty"`
+	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
+	SegmentGroupID            string                    `json:"segmentGroupId"`
+	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
+	CreationTime              string                    `json:"creationTime,omitempty"`
+	ModifiedBy                string                    `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                    `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                    `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                      `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                      `json:"useInDrMode"`
+	InspectTrafficWithZia     bool                      `json:"inspectTrafficWithZia"`
+	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing"`
+	MicroTenantID             string                    `json:"microtenantId,omitempty"`
+	MicroTenantName           string                    `json:"microtenantName,omitempty"`
+	MatchStyle                string                    `json:"matchStyle,omitempty"`
+	ReadOnly                  bool                      `json:"readOnly,omitempty"`
+	RestrictionType           string                    `json:"restrictionType,omitempty"`
+	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	TCPPortRanges             []string                  `json:"tcpPortRanges"`
+	UDPPortRanges             []string                  `json:"udpPortRanges"`
+	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
+	ServerGroups              []servergroup.ServerGroup `json:"serverGroups"`
+	DefaultIdleTimeout        string                    `json:"defaultIdleTimeout,omitempty"`
+	DefaultMaxAge             string                    `json:"defaultMaxAge,omitempty"`
+	// CommonAppsDto             applicationsegmentpra.CommonAppsDto              `json:"commonAppsDto,omitempty"`
+	ClientlessApps           []applicationsegmentbrowseraccess.ClientlessApps `json:"clientlessApps,omitempty"`
+	ShareToMicrotenants      []string                                         `json:"shareToMicrotenants"`
+	SharedMicrotenantDetails SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
+	ZPNERID                  *common.ZPNERID                                  `json:"zpnErId"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -194,20 +193,29 @@ func Delete(ctx context.Context, service *zscaler.Service, appID string) (*http.
 	return resp, nil
 }
 
+// func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationSegmentResource, *http.Response, error) {
+// 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint
+// 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
+// 	result := []ApplicationSegmentResource{}
+// 	// filter apps
+// 	for _, item := range list {
+// 		if len(item.ClientlessApps) == 0 && (len(item.CommonAppsDto.AppsConfig) == 0 || !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
+// 			result = append(result, item)
+// 		}
+// 	}
+// 	return result, resp, nil
+// }
+
 func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
-	result := []ApplicationSegmentResource{}
-	// filter apps
-	for _, item := range list {
-		if len(item.ClientlessApps) == 0 && (len(item.CommonAppsDto.AppsConfig) == 0 || !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
-			result = append(result, item)
-		}
-	}
-	return result, resp, nil
+	return list, resp, nil
 }
 
 func GetMultiMatchUnsupportedReferences(ctx context.Context, service *zscaler.Service, domainNames MultiMatchUnsupportedReferencesPayload) ([]MultiMatchUnsupportedReferencesResponse, *http.Response, error) {

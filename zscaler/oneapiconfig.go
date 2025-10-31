@@ -402,13 +402,24 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 }
 
 func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Response, *http.Request, error) {
-	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+	// Buffer the request body so we can retry with SESSION_NOT_VALID errors
+	var requestBodyBytes []byte
+	if body != nil {
+		var err error
+		requestBodyBytes, err = io.ReadAll(body)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to read request body: %w", err)
+		}
+	}
+
+	req, err := c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
-	startTime := time.Now()
+	overallStartTime := time.Now()
+	totalWaitTime := time.Duration(0) // Track time spent waiting for rate limits
 
 	// Create cache key using the actual request
 	key := cache.CreateCacheKey(req)
@@ -439,10 +450,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, fmt.Errorf("max retries exceeded")
 		}
 
-		// Check RequestTimeout
-		elapsedTime := time.Since(startTime)
+		// Check RequestTimeout - exclude rate limiting wait times from the calculation
+		// This ensures that rate limiting delays don't count against the request timeout
+		elapsedTime := time.Since(overallStartTime) - totalWaitTime
 		if c.oauth2Credentials.Zscaler.Client.RequestTimeout > 0 && elapsedTime >= c.oauth2Credentials.Zscaler.Client.RequestTimeout {
-			return nil, resp, nil, fmt.Errorf("request timeout exceeded")
+			c.oauth2Credentials.Logger.Printf("[ERROR] Request timeout exceeded: elapsed=%v, waited=%v, total=%v, timeout=%v",
+				elapsedTime, totalWaitTime, time.Since(overallStartTime), c.oauth2Credentials.Zscaler.Client.RequestTimeout)
+			return nil, resp, nil, fmt.Errorf("request timeout exceeded after %v (excluding %v of rate limit waits)",
+				elapsedTime, totalWaitTime)
 		}
 
 		start := time.Now()
@@ -500,9 +515,12 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
 
 					// Add a small delay before retrying to avoid overwhelming the server
+					beforeWait := time.Now()
 					time.Sleep(time.Second * 2)
+					totalWaitTime += time.Since(beforeWait)
 
-					req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+					// Rebuild request with fresh body reader
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
 					if err != nil {
 						return nil, nil, nil, err
 					}
@@ -521,18 +539,10 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
-				// Check if retry delay would exceed remaining timeout
-				remainingTimeout := time.Until(startTime.Add(c.oauth2Credentials.Zscaler.Client.RequestTimeout))
-
-				// If Retry-After is very long (> 5 minutes) or exceeds remaining timeout, fail fast with clear message
+				// If Retry-After is very long (> 5 minutes), fail fast with clear message
 				if retryAfter > 5*time.Minute {
 					c.oauth2Credentials.Logger.Printf("[ERROR] Rate limit exceeded with very long Retry-After: %v. This typically indicates hourly rate limits have been reached.", retryAfter)
 					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v before retrying. This typically means hourly rate limits (GET: 1000/hr, POST/PUT: 1000/hr, DELETE: 400/hr) have been reached. Please wait before retrying", retryAfter)
-				}
-
-				if remainingTimeout > 0 && retryAfter > remainingTimeout {
-					c.oauth2Credentials.Logger.Printf("[ERROR] Retry-After (%v) exceeds remaining request timeout (%v)", retryAfter, remainingTimeout)
-					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v but only %v remains before timeout. Consider increasing request timeout or waiting before retrying", retryAfter, remainingTimeout)
 				}
 
 				// Check if context is still valid before sleeping
@@ -541,7 +551,10 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					return nil, resp, nil, fmt.Errorf("context cancelled while waiting for rate limit: %w", ctx.Err())
 				default:
 					c.oauth2Credentials.Logger.Printf("[INFO] Rate limit hit, waiting %v before retry (attempt %d)", retryAfter, retry)
+					// Track this wait time so it doesn't count against request timeout
+					beforeWait := time.Now()
 					time.Sleep(retryAfter)
+					totalWaitTime += time.Since(beforeWait)
 					continue
 				}
 			}
@@ -553,6 +566,37 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			break
 		}
 
+		// Handle 409 Conflict errors (EDIT_LOCK_NOT_AVAILABLE) - these are retryable
+		if resp.StatusCode == http.StatusConflict {
+			bodyCopy, readErr := io.ReadAll(resp.Body)
+			if readErr == nil {
+				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
+				
+				// Check if this is an EDIT_LOCK_NOT_AVAILABLE error
+				if errorx.IsEditLockError(resp) {
+					backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
+					maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
+					if backoffDelay > maxBackoff {
+						backoffDelay = maxBackoff
+					}
+					c.oauth2Credentials.Logger.Printf("[WARN] Edit lock conflict detected (attempt %d), waiting %v before retry", retry, backoffDelay)
+					
+					// Track this wait time so it doesn't count against request timeout
+					beforeWait := time.Now()
+					time.Sleep(backoffDelay)
+					totalWaitTime += time.Since(beforeWait)
+					
+					// Rebuild request with fresh body reader
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
+					continue
+				}
+			}
+			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
+		}
+
 		// Handle retryable errors with exponential backoff
 		if resp.StatusCode >= 500 {
 			// 5xx server errors are retryable
@@ -562,11 +606,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				backoffDelay = maxBackoff
 			}
 			c.oauth2Credentials.Logger.Printf("[INFO] Server error (status %d), retry %d: waiting %v before retry", resp.StatusCode, retry, backoffDelay)
+			// Track this wait time so it doesn't count against request timeout
+			beforeWait := time.Now()
 			time.Sleep(backoffDelay)
+			totalWaitTime += time.Since(beforeWait)
 			continue
 		}
 
-		// Handle non-retryable client errors (4xx except 401, 429 which are handled above)
+		// Handle non-retryable client errors (4xx except 401, 409, 429 which are handled above)
 		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
 			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("client error"))
 		}
@@ -580,6 +627,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, resp, nil, err
+	}
+
+	// Log timing information if there were significant waits
+	totalElapsed := time.Since(overallStartTime)
+	actualRequestTime := totalElapsed - totalWaitTime
+	if totalWaitTime > 0 && c.oauth2Credentials.Debug {
+		c.oauth2Credentials.Logger.Printf("[DEBUG] Request completed: total=%v, waited=%v, actual=%v",
+			totalElapsed, totalWaitTime, actualRequestTime)
 	}
 
 	// Cache logic for successful GET requests

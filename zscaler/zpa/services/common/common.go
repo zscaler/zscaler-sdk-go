@@ -415,6 +415,15 @@ func sanitizeSearchQuery(query string) string {
 		return query
 	}
 
+	// Check for email addresses or email-like patterns (contains @)
+	// Preserve @ and other characters that are safe in URLs
+	if strings.Contains(query, "@") {
+		// Replace multiple spaces with a single space
+		reSpace := regexp.MustCompile(`\s+`)
+		query = reSpace.ReplaceAllString(query, " ")
+		return query
+	}
+
 	// Original behavior for backward compatibility
 	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
 	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)

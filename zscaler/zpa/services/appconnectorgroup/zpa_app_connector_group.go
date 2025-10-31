@@ -53,6 +53,7 @@ type AppConnectorGroup struct {
 	RestrictionType               string                                `json:"restrictionType,omitempty"`
 	ZscalerManaged                bool                                  `json:"zscalerManaged,omitempty"`
 	DCHostingInfo                 string                                `json:"dcHostingInfo,omitempty"`
+	NameWithoutTrim               string                                `json:"nameWithoutTrim,omitempty"`
 	AppServerGroup                []AppServerGroup                      `json:"serverGroups,omitempty"`
 	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
 	NPAssistantGroup              NPAssistantGroup                      `json:"npAssistantGroup,omitempty"`

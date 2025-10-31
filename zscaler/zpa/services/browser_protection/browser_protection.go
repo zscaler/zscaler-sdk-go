@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
@@ -91,6 +92,20 @@ func GetBrowserProtectionProfile(ctx context.Context, service *zscaler.Service) 
 		return nil, nil, err
 	}
 	return list, resp, nil
+}
+
+func GetBrowserProtectionProfileByName(ctx context.Context, service *zscaler.Service, profileName string) (*BrowserProtection, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + "/browserProtectionProfile"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BrowserProtection](ctx, service.Client, relativeURL, common.Filter{Search: profileName, MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, app := range list {
+		if strings.EqualFold(app.Name, profileName) {
+			return &app, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no browser protection profile named '%s' was found", profileName)
 }
 
 func UpdateBrowserProtectionProfile(ctx context.Context, service *zscaler.Service, profileID string) (*http.Response, error) {

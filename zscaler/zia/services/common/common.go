@@ -11,7 +11,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 )
 
-const pageSize = 1000
+const pageSize = 5000 // Maximum page size supported by ZIA API
 
 type IDNameExtensions struct {
 	ID         int                    `json:"id,omitempty"`

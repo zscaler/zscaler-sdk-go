@@ -37,6 +37,7 @@ type ServerGroup struct {
 	AppConnectorGroups []appconnectorgroup.AppConnectorGroup   `json:"appConnectorGroups"`
 	Servers            []appservercontroller.ApplicationServer `json:"servers"`
 	Applications       []Applications                          `json:"applications"`
+	ExtranetDTO        common.ExtranetDTO                      `json:"extranetDTO,omitempty"`
 }
 
 type Applications struct {

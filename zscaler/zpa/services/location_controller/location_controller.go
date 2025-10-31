@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
@@ -15,14 +16,13 @@ const (
 	locationGroupEndpoint = "/locationGroup"
 )
 
-func GetLocationExtranetResource(ctx context.Context, service *zscaler.Service, zpnErID string) (*common.CommonSummary, *http.Response, error) {
-	v := new(common.CommonSummary)
+func GetLocationExtranetResource(ctx context.Context, service *zscaler.Service, zpnErID string) ([]common.CommonSummary, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+locationEndpoint+"/extranetResource", zpnErID)
-	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{}, nil, v)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.CommonSummary](ctx, service.Client, relativeURL, common.Filter{})
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	return list, resp, nil
 }
 
 func GetLocationSummary(ctx context.Context, service *zscaler.Service) ([]common.CommonSummary, *http.Response, error) {
@@ -34,12 +34,25 @@ func GetLocationSummary(ctx context.Context, service *zscaler.Service) ([]common
 	return list, resp, nil
 }
 
-func GetLocationGroupExtranetResource(ctx context.Context, service *zscaler.Service, zpnErID string) (*common.LocationGroupDTO, *http.Response, error) {
-	v := new(common.LocationGroupDTO)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+locationGroupEndpoint+"/extranetResource", zpnErID)
-	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{}, nil, v)
+func GetLocationSummaryByName(ctx context.Context, service *zscaler.Service, locationName string) (*common.CommonSummary, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + locationEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.CommonSummary](ctx, service.Client, relativeURL, common.Filter{})
 	if err != nil {
 		return nil, nil, err
 	}
-	return v, resp, nil
+	for _, app := range list {
+		if strings.EqualFold(app.Name, locationName) {
+			return &app, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no location named '%s' was found", locationName)
+}
+
+func GetLocationGroupExtranetResource(ctx context.Context, service *zscaler.Service, zpnErID string) ([]common.LocationGroupDTO, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+locationGroupEndpoint+"/extranetResource", zpnErID)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.LocationGroupDTO](ctx, service.Client, relativeURL, common.Filter{})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
 }
