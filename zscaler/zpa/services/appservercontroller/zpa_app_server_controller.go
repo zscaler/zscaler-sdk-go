@@ -89,3 +89,12 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationServer,
 	}
 	return list, resp, nil
 }
+
+func GetServerSummary(ctx context.Context, service *zscaler.Service) ([]common.CommonSummary, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appServerControllerEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[common.CommonSummary](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}

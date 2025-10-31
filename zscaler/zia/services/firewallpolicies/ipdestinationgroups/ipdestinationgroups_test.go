@@ -90,7 +90,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource, nil)
 		return err
 	})
 	if err != nil {

@@ -84,3 +84,12 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]CustomerVersionPro
 	}
 	return list, resp, nil
 }
+
+func Update(ctx context.Context, service *zscaler.Service, profileID string, versionProfile *CustomerVersionProfile) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+customerVersionProfileEndpoint, profileID)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{}, versionProfile, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}

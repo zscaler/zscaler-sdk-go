@@ -52,7 +52,7 @@ func TestNetworkServiceGroups(t *testing.T) {
 		return
 	}
 
-	nwSvcList, err := networkservices.GetAllNetworkServices(context.Background(), service)
+	nwSvcList, err := networkservices.GetAllNetworkServices(context.Background(), service, nil, nil)
 	if err != nil {
 		t.Errorf("Error getting network services: %v", err)
 		return

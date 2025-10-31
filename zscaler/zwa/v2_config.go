@@ -309,7 +309,7 @@ func setHttpClients(cfg *Configuration) {
 	// Configure the HTTP client with rate limiting
 	httpClient := &http.Client{
 		Transport: &rl.RateLimitTransport{
-			Limiter:         globalLimiter,
+			GlobalLimiter:   globalLimiter,
 			WaitFunc:        globalLimiter.Wait, // Pass the method reference of the limiter
 			Logger:          log,
 			AdditionalDelay: 5 * time.Second,

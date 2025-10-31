@@ -207,6 +207,10 @@ type URLAdvancedPolicySettings struct {
 
 	// A Boolean value indicating if the predefined CIPA Compliance Rule is enabled or not.
 	EnableCIPACompliance bool `json:"enableCIPACompliance,omitempty"`
+
+	//  list of applications for which the SafeSearch enforcement applies. You cannot modify this field when the enforceSafeSearch field is disabled.
+	// Supported Values: "ANY", "DAILYMOTION", "BING", "GOOGLE", "YAHOO", "AOL", "FLICKR", "YOUTUBE","DUCKDUCKGO"
+	SafeSearchApps []string `json:"safeSearchApps,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {

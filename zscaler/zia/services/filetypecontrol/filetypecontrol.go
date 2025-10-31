@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	fileTypeControlEndpoint = "/zia/api/v1/fileTypeRules"
+	fileTypeControlEndpoint    = "/zia/api/v1/fileTypeRules"
+	fileTypeCategoriesEndPoint = "/zia/api/v1/fileTypeCategories"
+	customFilefileType         = "/zia/api/v1/fileTypeCategories"
 )
 
 type FileTypeRules struct {
@@ -186,5 +188,11 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 func GetAll(ctx context.Context, service *zscaler.Service) ([]FileTypeRules, error) {
 	var fileTypeRules []FileTypeRules
 	err := common.ReadAllPages(ctx, service.Client, fileTypeControlEndpoint, &fileTypeRules)
+	return fileTypeRules, err
+}
+
+func GetFileTypeCategories(ctx context.Context, service *zscaler.Service) ([]FileTypeRules, error) {
+	var fileTypeRules []FileTypeRules
+	err := common.ReadAllPages(ctx, service.Client, fileTypeCategoriesEndPoint, &fileTypeRules)
 	return fileTypeRules, err
 }

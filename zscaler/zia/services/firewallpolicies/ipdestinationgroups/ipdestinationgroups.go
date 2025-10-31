@@ -81,8 +81,14 @@ func Create(ctx context.Context, service *zscaler.Service, ipGroupID *IPDestinat
 	return createdIPDestinationGroups, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
+func Update(ctx context.Context, service *zscaler.Service, ipGroupID int, ipGroup *IPDestinationGroups, override *bool) (*IPDestinationGroups, *http.Response, error) {
+	// Build the URL with optional override query parameter
+	url := fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID)
+	if override != nil {
+		url = fmt.Sprintf("%s?override=%t", url, *override)
+	}
+
+	resp, err := service.Client.UpdateWithPut(ctx, url, *ipGroup)
 	if err != nil {
 		return nil, nil, err
 	}

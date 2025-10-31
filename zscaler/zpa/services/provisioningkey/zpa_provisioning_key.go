@@ -147,6 +147,21 @@ func GetAllByAssociationType(ctx context.Context, service *zscaler.Service, asso
 	return list, nil
 }
 
+func GetAllByZComponentID(ctx context.Context, service *zscaler.Service, associationType, zcomponentID string) ([]ProvisioningKey, error) {
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/zcomponent/%s/provisioningKey", associationType, zcomponentID)
+
+	var result []ProvisioningKey
+	_, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range result {
+		result[i].AssociationType = associationType
+	}
+	return result, nil
+}
+
 func GetAll(ctx context.Context, service *zscaler.Service) (list []ProvisioningKey, err error) {
 	for _, associationType := range ProvisioningKeyAssociationTypes {
 		items, _ := GetAllByAssociationType(ctx, service, associationType)

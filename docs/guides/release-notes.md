@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.7.5``
+``Last updated: v3.7.6``
 
 ---
+
+# 3.7.6 (October 17, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `ipdestinationgroups` parameter `override` of type bool. This parameter indicates whether the IPs must be overridden. When set to false, the IPs are appended; else the existing IPs are overridden. The default value is true.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `dlp_web_rules` attribute `fileTypeCategories`. This attribute supports the list of file types to which the rule applies. This attribute has replaced the attribute `fileTypes`. Zscaler recommends updating your configurations to use the `fileTypeCategories` attribute in place of `fileTypes`. Both attributes are still supported, but cannot be used concurrently.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `urlfilteringpolicies` attribute `safeSearchApps` of type list of string.
 
 # 3.7.5 (October 14, 2025)
 

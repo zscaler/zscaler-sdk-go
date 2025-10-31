@@ -93,21 +93,21 @@ func TestExecuteRequestExponentialBackoff(t *testing.T) {
 				name:        "Integer format (standard case)",
 				headerValue: "5",
 				headerCase:  "Retry-After",
-				expected:    6 * time.Second, // 5 + 1 padding
+				expected:    5 * time.Second, // Trust API's value exactly (no buffer for >= 1s)
 				description: "Should parse integer seconds",
 			},
 			{
 				name:        "Integer format (lowercase - ZPA API format)",
 				headerValue: "5",
 				headerCase:  "retry-after",
-				expected:    6 * time.Second,
+				expected:    5 * time.Second, // Trust API's value exactly
 				description: "Should parse lowercase header",
 			},
 			{
 				name:        "Duration format",
 				headerValue: "10s",
 				headerCase:  "Retry-After",
-				expected:    11 * time.Second, // 10 + 1 padding
+				expected:    10 * time.Second, // Trust API's value exactly (no buffer for >= 1s)
 				description: "Should parse duration format",
 			},
 		}

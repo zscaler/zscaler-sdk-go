@@ -141,6 +141,9 @@ type WebDLPRules struct {
 	// The list of preconfigured workload groups to which the policy must be applied.
 	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
 
+	// The list of file types to which the rule applies
+	FileTypeCategories []common.IDName `json:"fileTypeCategories,omitempty"`
+
 	// Indicates the severity selected for the DLP rule violation
 	Severity string `json:"severity,omitempty"`
 

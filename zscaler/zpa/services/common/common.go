@@ -135,14 +135,9 @@ type LocationDTO struct {
 }
 
 type LocationGroupDTO struct {
-	ID           string        `json:"id,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	ZiaLocations []ZiaLocation `json:"ziaLocations,omitempty"`
-}
-
-type ZiaLocation struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	ID           string          `json:"id,omitempty"`
+	Name         string          `json:"name,omitempty"`
+	ZiaLocations []CommonSummary `json:"ziaLocations,omitempty"`
 }
 
 type ZPNERID struct {
@@ -155,6 +150,12 @@ type ZPNERID struct {
 	ZIAErName       string `json:"ziaErName,omitempty"`
 	ZIAModifiedTime string `json:"ziaModifiedTime,omitempty"`
 	ZIAOrgID        string `json:"ziaOrgId,omitempty"`
+}
+
+type CommonSummary struct {
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
@@ -408,6 +409,15 @@ func sanitizeSearchQuery(query string) string {
 	// For queries that appear to be complex (contain commas, dashes between words, etc.)
 	// we'll preserve these characters and let URL encoding handle them
 	if strings.Contains(query, ",") || (strings.Contains(query, "-") && strings.Contains(query, " ")) {
+		// Replace multiple spaces with a single space
+		reSpace := regexp.MustCompile(`\s+`)
+		query = reSpace.ReplaceAllString(query, " ")
+		return query
+	}
+
+	// Check for email addresses or email-like patterns (contains @)
+	// Preserve @ and other characters that are safe in URLs
+	if strings.Contains(query, "@") {
 		// Replace multiple spaces with a single space
 		reSpace := regexp.MustCompile(`\s+`)
 		query = reSpace.ReplaceAllString(query, " ")

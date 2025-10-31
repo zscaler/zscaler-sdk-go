@@ -11,6 +11,11 @@ import (
 
 const pageSize = 1000
 
+type IDName struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type IDNameExtensions struct {
 	ID         int                    `json:"id,omitempty"`
 	Name       string                 `json:"name,omitempty"`
@@ -144,6 +149,32 @@ type ECInstances struct {
 type CommonIPs struct {
 	IPStart string `json:"ipStart,omitempty"`
 	IPEnd   string `json:"ipEnd,omitempty"`
+}
+
+type RegionStatus struct {
+	// The unique ID of the region.
+	ID int `json:"id,omitempty"`
+
+	// The name of the region.
+	Name string `json:"name,omitempty"`
+
+	// The cloud type. The default and mandatory value is AWS. Supported Values: "AWS", "AZURE", "GCP"
+	CloudType string `json:"cloudType,omitempty"`
+
+	// Indicates the operational status of the region.
+	Status bool `json:"status,omitempty"`
+}
+
+type SupportedRegions struct {
+
+	// The unique ID of the supported region.
+	ID int `json:"id,omitempty"`
+
+	// The name of the supported region.
+	Name string `json:"name,omitempty"`
+
+	// The cloud type. The default and mandatory value is AWS. Supported Values: "AWS", "AZURE", "GCP"
+	CloudType string `json:"cloudType,omitempty"`
 }
 
 // GetPageSize returns the page size.

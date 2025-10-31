@@ -77,3 +77,12 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]MachineGroup, *htt
 	}
 	return list, resp, nil
 }
+
+func GetMachineGroupSummary(ctx context.Context, service *zscaler.Service) ([]MachineGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + machineGroupEndpoint + "/summary"
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[MachineGroup](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	return list, resp, nil
+}

@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	mgmtConfig              = "/zpa/mgmtconfig/v1/admin/customers/"
-	applicationTypeEndpoint = "/application/getAppsByType"
+	mgmtConfig          = "/zpa/mgmtconfig/v1/admin/customers/"
+	applicationEndpoint = "/application"
 )
 
 type AppSegmentBaseAppDto struct {
@@ -41,7 +41,7 @@ func GetByApplicationType(ctx context.Context, service *zscaler.Service, appName
 		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'INSPECT', 'SECURE_REMOTE_ACCESS'", applicationType)
 	}
 
-	relativeURL := mgmtConfig + service.Client.GetCustomerID() + applicationTypeEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + applicationEndpoint + "/getAppsByType"
 
 	// Construct the URL with expandAll and applicationType parameters
 	query := url.Values{}
@@ -68,4 +68,32 @@ func GetByApplicationType(ctx context.Context, service *zscaler.Service, appName
 	}
 
 	return list, resp, nil
+}
+
+func DeleteByApplicationType(ctx context.Context, service *zscaler.Service, applicationID, applicationType string) (*http.Response, error) {
+	validApplicationTypes := map[string]bool{
+		"BROWSER_ACCESS":       true,
+		"INSPECT":              true,
+		"SECURE_REMOTE_ACCESS": true,
+	}
+
+	if !validApplicationTypes[applicationType] {
+		return nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'INSPECT', 'SECURE_REMOTE_ACCESS'", applicationType)
+	}
+
+	// Construct the URL with applicationID and applicationType parameter
+	relativeURL := fmt.Sprintf("%s%s%s/%s/deleteAppByType", mgmtConfig, service.Client.GetCustomerID(), applicationEndpoint, applicationID)
+	query := url.Values{}
+	query.Set("applicationType", applicationType)
+
+	constructedURL := relativeURL + "?" + query.Encode()
+	log.Printf("Constructed DELETE URL: %s\n", constructedURL)
+
+	// Execute DELETE request
+	resp, err := service.Client.NewRequestDo(ctx, "DELETE", constructedURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
