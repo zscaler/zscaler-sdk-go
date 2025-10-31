@@ -180,7 +180,7 @@ type Locations struct {
 	DynamiclocationGroups []common.CommonIDNameExternalID `json:"dynamiclocationGroups,omitempty"`
 
 	// AWS/Azure subcription ID associated with this location.
-	PublicCloudAccountID []common.CommonIDNameExternalID `json:"publicCloudAccountId,omitempty"`
+	PublicCloudAccountID *common.CommonIDName `json:"publicCloudAccountId,omitempty"`
 
 	// AWS/Azure subcription ID associated with this location.
 	VPCInfo VPCInfo `json:"vpcInfo,omitempty"`
