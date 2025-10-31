@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -45,12 +46,42 @@ func Get(ctx context.Context, service *zscaler.Service, serviceID int) (*Network
 	return &networkServices, nil
 }
 
-func GetByName(ctx context.Context, service *zscaler.Service, networkServiceName string) (*NetworkServices, error) {
+func GetByName(ctx context.Context, service *zscaler.Service, networkServiceName string, protocol, locale *string) (*NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
+
+	// Build the endpoint with optional query parameters
+	endpoint := networkServicesEndpoint
+	queryParams := url.Values{}
+
+	if protocol != nil && *protocol != "" {
+		queryParams.Set("protocol", *protocol)
+	}
+	if locale != nil && *locale != "" {
+		queryParams.Set("locale", *locale)
+	}
+
+	// Append query parameters to endpoint if any exist
+	if len(queryParams) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &networkServices)
 	if err != nil {
 		return nil, err
 	}
+
+	// If name is empty and protocol or locale is provided, return the first matching service
+	if networkServiceName == "" {
+		if protocol != nil || locale != nil {
+			if len(networkServices) > 0 {
+				return &networkServices[0], nil
+			}
+			return nil, fmt.Errorf("no network services found with the provided filters (protocol: %v, locale: %v)", protocol, locale)
+		}
+		return nil, fmt.Errorf("name parameter is required when protocol and locale are not provided")
+	}
+
+	// Search for a service matching the name
 	for _, networkService := range networkServices {
 		if strings.EqualFold(networkService.Name, networkServiceName) {
 			return &networkService, nil
@@ -94,8 +125,25 @@ func Delete(ctx context.Context, service *zscaler.Service, serviceID int) (*http
 	return nil, nil
 }
 
-func GetAllNetworkServices(ctx context.Context, service *zscaler.Service) ([]NetworkServices, error) {
+func GetAllNetworkServices(ctx context.Context, service *zscaler.Service, protocol, locale *string) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
+
+	// Build the endpoint with optional query parameters
+	endpoint := networkServicesEndpoint
+	queryParams := url.Values{}
+
+	if protocol != nil && *protocol != "" {
+		queryParams.Set("protocol", *protocol)
+	}
+	if locale != nil && *locale != "" {
+		queryParams.Set("locale", *locale)
+	}
+
+	// Append query parameters to endpoint if any exist
+	if len(queryParams) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &networkServices)
 	return networkServices, err
 }

@@ -109,7 +109,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = GetByName(context.Background(), service, updateName)
+	retrievedResource, err = GetByName(context.Background(), service, updateName, nil, nil)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -120,7 +120,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := GetAllNetworkServices(context.Background(), service)
+	resources, err := GetAllNetworkServices(context.Background(), service, nil, nil)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -198,7 +198,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, err = GetByName(context.Background(), service, "non_existent_name")
+	_, err = GetByName(context.Background(), service, "non_existent_name", nil, nil)
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

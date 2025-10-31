@@ -388,7 +388,7 @@ func sweepNetworkServiceGroups(client *zscaler.Client) error {
 
 func sweepNetworkServices(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := networkservices.GetAllNetworkServices(context.Background(), service)
+	resources, err := networkservices.GetAllNetworkServices(context.Background(), service, nil, nil)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network services: %v", err)
 		return err
