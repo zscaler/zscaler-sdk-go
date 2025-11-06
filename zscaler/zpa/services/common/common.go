@@ -221,7 +221,8 @@ func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 		List       []T         `json:"list"`
 	}
 
-	// Build pagination struct with search filter format conversion for ZPA
+	// Build pagination struct with search filter (already converted to filter format)
+	// The encoding (%20 vs +) is handled in zparequests.go based on endpoint type
 	pagination := Pagination{
 		MicroTenantID: filters.MicroTenantID,
 		PageSize:      pageSize,
@@ -229,7 +230,6 @@ func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 		SortBy:        filters.SortBy,
 		SortOrder:     filters.SortOrder,
 	}
-	// Include search parameter (already converted to filter format in GetAllPagesGenericWithCustomFilters)
 	if filters.Search != "" {
 		pagination.Search2 = filters.Search
 	}
@@ -489,12 +489,16 @@ func convertZPASearchToFilter(search string) string {
 	}
 
 	// Simple search string - convert to name+EQ+<value> format for exact name matching
-	// First sanitize the value part
-	sanitizedValue := sanitizeSearchQuery(search)
+	// For ZPA filter format, preserve multiple consecutive spaces (don't collapse them)
+	// Only trim leading/trailing spaces, but preserve internal spacing
+	sanitizedValue := strings.TrimSpace(search)
+	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
+	// But preserve multiple consecutive spaces
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
+	sanitizedValue = re.ReplaceAllString(sanitizedValue, "")
 	// Convert to filter format: name+EQ+<value>
 	// Note: The + symbols in +EQ+ will be URL-encoded as %2B when the query is built
-	// Spaces in the value will be encoded as + by url.Values.Encode(), which will be
-	// fixed to %20 in zparequests.go for ZPA endpoints to match API expectations
+	// Spaces in the value will be encoded as + by url.Values.Encode(), which works for the API
 	filterFormat := fmt.Sprintf("name+EQ+%s", sanitizedValue)
 	return filterFormat
 }

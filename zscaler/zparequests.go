@@ -51,12 +51,25 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	if len(parts) > 1 {
 		query = parts[1]
 	}
+	
+	// Parse query string to work with parameters
 	q, err := url.ParseQuery(query)
 	if err != nil {
 		return nil, err
 	}
+	
+	// Inject microtenant ID if needed
 	q = common.InjectMicrotentantID(body, q, client.oauth2Credentials.Zscaler.Client.MicrotenantID)
-	query = q.Encode()
+	
+	// For ZPA endpoints, use custom encoding that preserves %20 for spaces
+	// Standard url.Values.Encode() uses + for spaces, but ZPA API requires %20
+	isZPAEndpoint := strings.Contains(endpoint, "/zpa/") || strings.Contains(endpoint, "/mgmtconfig/")
+	if isZPAEndpoint {
+		query = encodeQueryWithSpacesAsPercent20(q)
+	} else {
+		query = q.Encode()
+	}
+	
 	endpoint = path
 	if query != "" {
 		endpoint += "?" + query
@@ -90,6 +103,41 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	unescapeHTML(v)
 
 	return resp, nil
+}
+
+// encodeQueryWithSpacesAsPercent20 encodes url.Values similar to url.Values.Encode()
+// but uses %20 for spaces instead of + to match ZPA API requirements
+func encodeQueryWithSpacesAsPercent20(v url.Values) string {
+	if v == nil {
+		return ""
+	}
+	var buf strings.Builder
+	keys := make([]string, 0, len(v))
+	for k := range v {
+		keys = append(keys, k)
+	}
+	// Sort keys for consistent output
+	for i := 0; i < len(keys); i++ {
+		for j := i + 1; j < len(keys); j++ {
+			if keys[i] > keys[j] {
+				keys[i], keys[j] = keys[j], keys[i]
+			}
+		}
+	}
+	for _, k := range keys {
+		vs := v[k]
+		keyEscaped := url.QueryEscape(k)
+		for _, v := range vs {
+			if buf.Len() > 0 {
+				buf.WriteByte('&')
+			}
+			buf.WriteString(keyEscaped)
+			buf.WriteByte('=')
+			// Use QueryEscape which encodes spaces as %20
+			buf.WriteString(url.QueryEscape(v))
+		}
+	}
+	return buf.String()
 }
 
 func (c *Client) GetCustomerID() string {
