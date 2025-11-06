@@ -13,9 +13,28 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.1``
+``Last updated: v3.8.3``
 
 ---
+
+# 3.8.3 (November 6, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #381](https://github.com/zscaler/zscaler-sdk-go/pull/381) - Fixed SCIM and SAML attribute endpoints to use plain search strings instead of filter format, and improved URL encoding for ZPA endpoints to use `%20` for spaces instead of `+` to match API requirements 
+
+# 3.8.2 (November 5, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #380](https://github.com/zscaler/zscaler-sdk-go/pull/380) - Fixed ZPA search functionality to automatically convert simple search strings to API filter format (`name+EQ+<value>`) to prevent `filtering.input.invalid.operand` errors when searching for resources with multi-word names
+
 
 # 3.8.1 (November 5, 2025)
 
