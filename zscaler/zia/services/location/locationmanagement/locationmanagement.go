@@ -59,6 +59,18 @@ type Locations struct {
 	// IP ports that are associated with the location
 	Ports []int `json:"ports,omitempty"`
 
+	// Indicates whether defining scopes is allowed for this sublocation. Sublocation scopes are available only for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScopeEnabled bool `json:"subLocScopeEnabled,omitempty"`
+
+	// Defines a scope for the sublocation from the available types to segregate workload traffic from a single sublocation to apply different Cloud Connector and ZIA security policies. This field is only available for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScope string `json:"subLocScope,omitempty"`
+
+	// Specifies values for the selected sublocation scope type
+	SubLocScopeValues []string `json:"subLocScopeValues,omitempty"`
+
+	// Specifies values for the selected sublocation scope type
+	SubLocAccIDs []string `json:"subLocAccIds,omitempty"`
+
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
 
@@ -79,6 +91,7 @@ type Locations struct {
 
 	IOTEnforcePolicySet bool `json:"iotEnforcePolicySet"`
 
+	// If set to true, the surrogateIPEnforcedForKnownBrowsers option is enabled for all authentication methods including cookie-based, Kerberos, Basic, and Digest authentication to leverage the existing IP address-to-user mapping (acquired from surrogate IP) to authenticate users and prevent further authentication challenges for traffic originating from that source IP address.
 	CookiesAndProxy bool `json:"cookiesAndProxy"`
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
