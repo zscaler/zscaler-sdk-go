@@ -260,15 +260,15 @@ func getAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, rela
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
 func GetAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
-	// Convert search query to filter format for ZPA endpoints
+	// Convert search query to filter format for ZPA endpoints (except SCIM endpoints)
 	// Don't pre-encode here - let the query parameter encoding handle it
-	if isZPAEndpoint(relativeURL) {
+	if isZPAEndpoint(relativeURL) && !isSCIMEndpoint(relativeURL) {
 		searchQuery = convertZPASearchToFilter(searchQuery)
 	} else {
-		// For non-ZPA endpoints, sanitize the query
+		// For non-ZPA endpoints or SCIM endpoints, sanitize the query
 		searchQuery = sanitizeSearchQuery(searchQuery)
 	}
-	
+
 	totalPages, result, resp, err := getAllPagesGeneric[T](ctx, client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
 	if err != nil {
 		return nil, resp, err
@@ -319,9 +319,10 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 
 	// Ensure Search term is sanitized correctly (prevent double encoding)
 	// For ZPA, convert simple search strings to filter format (name+EQ+<value>)
+	// Exception: SCIM endpoints use plain search strings
 	if filters.Search != "" {
-		// Check if this is a ZPA endpoint
-		if isZPAEndpoint(relativeURL) {
+		// Check if this is a ZPA endpoint (but not SCIM)
+		if isZPAEndpoint(relativeURL) && !isSCIMEndpoint(relativeURL) {
 			filters.Search = convertZPASearchToFilter(filters.Search)
 		} else {
 			filters.Search = sanitizeSearchQuery(filters.Search)
@@ -354,15 +355,15 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 				}
 			}
 		}
-		
+
 		// Only try partial search if we have multiple words in the value
 		if strings.Count(searchValue, " ") > 0 {
 			tokens := strings.Split(searchValue, " ")
 			if len(tokens) >= 2 {
 				// Use only the first two words for partial search
 				partialValue := strings.Join(tokens[:2], " ")
-				// Reconstruct filter format if needed
-				if isZPAEndpoint(relativeURL) && (strings.Contains(filters.Search, "+EQ+") || strings.Contains(filters.Search, "%2BEQ%2B")) {
+				// Reconstruct filter format if needed (but not for SCIM endpoints)
+				if isZPAEndpoint(relativeURL) && !isSCIMEndpoint(relativeURL) && (strings.Contains(filters.Search, "+EQ+") || strings.Contains(filters.Search, "%2BEQ%2B")) {
 					filters.Search = convertZPASearchToFilter(partialValue)
 				} else {
 					filters.Search = partialValue
@@ -453,9 +454,16 @@ func isZPAEndpoint(url string) bool {
 	return strings.Contains(url, "/zpa/") || strings.Contains(url, "/mgmtconfig/")
 }
 
+// isSCIMEndpoint checks if the given URL is a SCIM endpoint
+// SCIM endpoints use plain search strings, not the name+EQ+value filter format
+func isSCIMEndpoint(url string) bool {
+	return strings.Contains(url, "/scimgroup") || strings.Contains(url, "/scimattributeheader")
+}
+
 // convertZPASearchToFilter converts a simple search string to ZPA filter format
 // If the search string already contains filter operators, it returns it as-is
 // Otherwise, it converts to name+EQ+<value> format for exact name matching
+// Note: SCIM endpoints should not use this function as they expect plain search strings
 func convertZPASearchToFilter(search string) string {
 	// Trim whitespace
 	search = strings.TrimSpace(search)
@@ -504,41 +512,7 @@ func convertZPASearchToFilter(search string) string {
 }
 
 func sanitizeSearchQuery(query string) string {
-	// First, trim spaces
-	query = strings.TrimSpace(query)
-
-	// If the query is already URL encoded (contains %), return as-is
-	if strings.Contains(query, "%") {
-		return query
-	}
-
-	// For queries that appear to be complex (contain commas, dashes between words, etc.)
-	// we'll preserve these characters and let URL encoding handle them
-	if strings.Contains(query, ",") || (strings.Contains(query, "-") && strings.Contains(query, " ")) {
-		// Replace multiple spaces with a single space
-		reSpace := regexp.MustCompile(`\s+`)
-		query = reSpace.ReplaceAllString(query, " ")
-		return query
-	}
-
-	// Check for email addresses or email-like patterns (contains @)
-	// Preserve @ and other characters that are safe in URLs
-	if strings.Contains(query, "@") {
-		// Replace multiple spaces with a single space
-		reSpace := regexp.MustCompile(`\s+`)
-		query = reSpace.ReplaceAllString(query, " ")
-		return query
-	}
-
-	// Original behavior for backward compatibility
-	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
-	query = re.ReplaceAllString(query, "")
-
-	// Replace multiple spaces with a single space
-	reSpace := regexp.MustCompile(`\s+`)
-	query = reSpace.ReplaceAllString(query, " ")
-
+	// Just trim and return - let URL encoding handle special characters
 	return strings.TrimSpace(query)
 }
 

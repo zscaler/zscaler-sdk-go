@@ -1,6 +1,15 @@
 # Changelog
 
-# 3.8.1 (November 5, 2025)
+# 3.8.3 (November 6, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #381](https://github.com/zscaler/zscaler-sdk-go/pull/381) - Fixed SCIM and SAML attribute endpoints to use plain search strings instead of filter format, and improved URL encoding for ZPA endpoints to use `%20` for spaces instead of `+` to match API requirements 
+
+# 3.8.2 (November 5, 2025)
 
 ## Notes
 - Golang: **v1.24**
