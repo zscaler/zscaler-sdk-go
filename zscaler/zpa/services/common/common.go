@@ -221,14 +221,20 @@ func getAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 		List       []T         `json:"list"`
 	}
 
-	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, Pagination{
-		Search2:       filters.Search,
+	// Build pagination struct with search filter (already converted to filter format)
+	// The encoding (%20 vs +) is handled in zparequests.go based on endpoint type
+	pagination := Pagination{
 		MicroTenantID: filters.MicroTenantID,
 		PageSize:      pageSize,
 		Page:          page,
 		SortBy:        filters.SortBy,
 		SortOrder:     filters.SortOrder,
-	}, nil, &paged)
+	}
+	if filters.Search != "" {
+		pagination.Search2 = filters.Search
+	}
+
+	resp, err := client.NewRequestDo(ctx, "GET", relativeURL, pagination, nil, &paged)
 
 	if err != nil {
 		return 0, nil, resp, err
@@ -254,7 +260,15 @@ func getAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, rela
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
 func GetAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
-	searchQuery = url.QueryEscape(searchQuery)
+	// Convert search query to filter format for ZPA endpoints
+	// Don't pre-encode here - let the query parameter encoding handle it
+	if isZPAEndpoint(relativeURL) {
+		searchQuery = convertZPASearchToFilter(searchQuery)
+	} else {
+		// For non-ZPA endpoints, sanitize the query
+		searchQuery = sanitizeSearchQuery(searchQuery)
+	}
+	
 	totalPages, result, resp, err := getAllPagesGeneric[T](ctx, client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
 	if err != nil {
 		return nil, resp, err
@@ -304,20 +318,57 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 	}
 
 	// Ensure Search term is sanitized correctly (prevent double encoding)
+	// For ZPA, convert simple search strings to filter format (name+EQ+<value>)
 	if filters.Search != "" {
-		filters.Search = sanitizeSearchQuery(filters.Search)
+		// Check if this is a ZPA endpoint
+		if isZPAEndpoint(relativeURL) {
+			filters.Search = convertZPASearchToFilter(filters.Search)
+		} else {
+			filters.Search = sanitizeSearchQuery(filters.Search)
+		}
 	}
 
 	// Attempt full search first.
 	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
 	// If the full search fails and the query contains multiple words, try a partial search.
 	if err != nil && strings.Count(filters.Search, " ") > 0 {
-		tokens := strings.Split(filters.Search, " ")
-		if len(tokens) >= 2 {
-			// For example, use only the first two words.
-			partialSearch := strings.Join(tokens[:2], " ")
-			filters.Search = partialSearch
-			totalPages, result, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
+		// Extract the value part if search is in filter format (e.g., name+EQ+value or name%2BEQ%2Bvalue)
+		searchValue := filters.Search
+		if isZPAEndpoint(relativeURL) {
+			// Check for unencoded filter format (name+EQ+value)
+			if strings.Contains(filters.Search, "+EQ+") {
+				parts := strings.SplitN(filters.Search, "+EQ+", 2)
+				if len(parts) == 2 {
+					searchValue = parts[1]
+				}
+			} else if strings.Contains(filters.Search, "%2BEQ%2B") {
+				// Check for URL-encoded filter format (name%2BEQ%2Bvalue)
+				parts := strings.SplitN(filters.Search, "%2BEQ%2B", 2)
+				if len(parts) == 2 {
+					// URL decode the value part
+					if decoded, err := url.QueryUnescape(parts[1]); err == nil {
+						searchValue = decoded
+					} else {
+						searchValue = parts[1]
+					}
+				}
+			}
+		}
+		
+		// Only try partial search if we have multiple words in the value
+		if strings.Count(searchValue, " ") > 0 {
+			tokens := strings.Split(searchValue, " ")
+			if len(tokens) >= 2 {
+				// Use only the first two words for partial search
+				partialValue := strings.Join(tokens[:2], " ")
+				// Reconstruct filter format if needed
+				if isZPAEndpoint(relativeURL) && (strings.Contains(filters.Search, "+EQ+") || strings.Contains(filters.Search, "%2BEQ%2B")) {
+					filters.Search = convertZPASearchToFilter(partialValue)
+				} else {
+					filters.Search = partialValue
+				}
+				totalPages, result, resp, err = getAllPagesGenericWithCustomFilters[T](ctx, client, relativeURL, 1, DefaultPageSize, filters)
+			}
 		}
 	}
 	if err != nil {
@@ -395,6 +446,61 @@ func GetAllPagesScimGenericWithSearch[T any](
 
 	// Return all resources if no specific item was found
 	return allResources, lastResp, nil
+}
+
+// isZPAEndpoint checks if the given URL is a ZPA endpoint
+func isZPAEndpoint(url string) bool {
+	return strings.Contains(url, "/zpa/") || strings.Contains(url, "/mgmtconfig/")
+}
+
+// convertZPASearchToFilter converts a simple search string to ZPA filter format
+// If the search string already contains filter operators, it returns it as-is
+// Otherwise, it converts to name+EQ+<value> format for exact name matching
+func convertZPASearchToFilter(search string) string {
+	// Trim whitespace
+	search = strings.TrimSpace(search)
+	if search == "" {
+		return search
+	}
+
+	// Remove any existing quotes
+	if strings.HasPrefix(search, `"`) && strings.HasSuffix(search, `"`) {
+		search = search[1 : len(search)-1]
+		search = strings.TrimSpace(search)
+	}
+
+	// Check if the search string already contains filter operators
+	// Common ZPA filter operators: EQ, NE, GT, LT, GE, LE, CONTAINS, STARTSWITH, ENDSWITH
+	// These can appear as +EQ+, +NE+, etc. or URL-encoded as %2BEQ%2B, etc.
+	filterOperators := []string{
+		"+EQ+", "+NE+", "+GT+", "+LT+", "+GE+", "+LE+",
+		"+CONTAINS+", "+STARTSWITH+", "+ENDSWITH+",
+		"%2BEQ%2B", "%2BNE%2B", "%2BGT%2B", "%2BLT%2B", "%2BGE%2B", "%2BLE%2B",
+		"%2BCONTAINS%2B", "%2BSTARTSWITH%2B", "%2BENDSWITH%2B",
+	}
+
+	// Check if search already contains any filter operator pattern
+	searchUpper := strings.ToUpper(search)
+	for _, op := range filterOperators {
+		if strings.Contains(searchUpper, strings.ToUpper(op)) {
+			// Already in filter format - return as-is (don't sanitize, just trim)
+			return strings.TrimSpace(search)
+		}
+	}
+
+	// Simple search string - convert to name+EQ+<value> format for exact name matching
+	// For ZPA filter format, preserve multiple consecutive spaces (don't collapse them)
+	// Only trim leading/trailing spaces, but preserve internal spacing
+	sanitizedValue := strings.TrimSpace(search)
+	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
+	// But preserve multiple consecutive spaces
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
+	sanitizedValue = re.ReplaceAllString(sanitizedValue, "")
+	// Convert to filter format: name+EQ+<value>
+	// Note: The + symbols in +EQ+ will be URL-encoded as %2B when the query is built
+	// Spaces in the value will be encoded as + by url.Values.Encode(), which works for the API
+	filterFormat := fmt.Sprintf("name+EQ+%s", sanitizedValue)
+	return filterFormat
 }
 
 func sanitizeSearchQuery(query string) string {

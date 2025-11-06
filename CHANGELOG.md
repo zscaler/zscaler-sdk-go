@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.1 (November 5, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #380](https://github.com/zscaler/zscaler-sdk-go/pull/380) - Fixed ZPA search functionality to automatically convert simple search strings to API filter format (`name+EQ+<value>`) to prevent `filtering.input.invalid.operand` errors when searching for resources with multi-word names
+
 # 3.8.0 (October 31, 2025)
 
 ## Notes
@@ -266,7 +275,6 @@
 ### Bug Fixes
 
 [PR #375](https://github.com/zscaler/zscaler-sdk-go/pull/375) - Implemented fixes and enhancements to ZTW API endpoint packages.
-
 
 # 3.7.1 (September 22, 2025)
 

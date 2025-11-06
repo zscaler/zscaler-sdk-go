@@ -13,9 +13,196 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.7.6``
+``Last updated: v3.8.1``
 
 ---
+
+# 3.8.1 (November 5, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #380](https://github.com/zscaler/zscaler-sdk-go/pull/380) - Fixed ZPA search functionality to automatically convert simple search strings to API filter format (`name+EQ+<value>`) to prevent `filtering.input.invalid.operand` errors when searching for resources with multi-word names
+
+# 3.8.0 (October 31, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### New ZPA Endpoint - Application Server Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /server/summary` Get all the configured application servers Name and IDs
+
+### New ZPA Endpoint - Application Segment Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /application/{applicationId}/mappings` Get the application segment mapping details
+    - Added `DELETE /application/{applicationId}/deleteAppByType` Delete a BA/Inspection and PRA Application
+    - Added `POST /application/{applicationId}/validate` Validate conflicting wildcard domain names. Expect the applicationID to be populated in the case of update
+    - Added `GET /application/configured/count` Returns the count of configured application Segment for the provided customer between the date range passed in request body.
+    - Added `GET /application/count/currentAndMaxLimit` get current Applications count of domains and maxLimit configured for a given customer
+
+### New ZPA Endpoint - App Connector Group
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /appConnectorGroup/summary` Get all the configured App Connector Group id and name.
+
+### New ZPA Endpoint - Branch Connector Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /branchConnector` Get all BranchConnectors configured for a given customer.
+
+### New ZPA Endpoint - Branch Connector Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /branchConnectorGroup/summary` Get all branch connector group id and names configured for a given customer.
+    - Added `GET /branchConnectorGroup` Get all configured Branch Connector Groups.
+
+### New ZPA Endpoint - Browser Protection Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /activeBrowserProtectionProfile` Get the active browser protection profile details for the specified customer.
+    - Added `GET /browserProtectionProfile` Gets all configured browser protection profiles for the specified customer.
+    - Added `PUT /browserProtectionProfile/setActive/{browserProtectionProfileId}` Updates a specified browser protection profile as active for the specified customer.
+
+### New ZPA Endpoint - Customer Config Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /config/isZiaCloudConfigAvailable` Check if zia cloud config for a given customer is available.
+    - Added `GET /config/ziaCloudConfig` Get zia cloud service config for a given customer.
+    - Added `POST /config/ziaCloudConfig` Add or update zia cloud service config for a given customer.
+    - Added `GET /sessionTerminationOnReauth` Get session termination on reauth for a given customer.
+    - Added `PUT /sessionTerminationOnReauth` Add /update boolean value for session termination on reauth.
+
+### New ZPA Endpoint - Customer DR Tool Version Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /customerDRToolVersion` Fetch latest the Customer Support DR Tool Versions sorted by latest filter
+
+### New ZPA Endpoint - Customer Version Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /versionProfiles/{versionProfileId}` Update Version Profile for customer
+
+### New ZPA Endpoint - Cloud Connector Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /cloudConnectorGroup/summary` Get all edge connector group id and names configured for a given customer
+
+### New ZPA Endpoint - Extranet Resource Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /extranetResource/partner` Get all extranet resources
+
+### New ZPA Endpoint - Machine Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /machineGroup/summary` Get all Machine Group Id and Names configured for a given customer
+
+### New ZPA Endpoint - Managed Browser Profile Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /managedBrowserProfile/search` Gets all the managed browser profiles for a customer
+
+### New ZPA Endpoint - Provisioning Key Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /associationType/{associationType}/zcomponent/{zcomponentId}/provisioningKey` get provisioningKey details by zcomponentId for associationType.
+
+### New ZPA Endpoint - OAuth User Code Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `POST /{associationType}/usercodes` Verifies the provided list of user codes for a given component provisioning.
+    - Added `POST /{associationType}/usercodes/status` Adds a new Provisioning Key for the specified customer.
+
+### New ZPA Endpoint - Policy-Set Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /riskScoreValues` Gets values of risk scores for the specified customer.
+    - Added `GET /policySet/rules/policyType/{policyType}/count` For a customer, get count of policy rules for a given policy type. Providing only endtime would give cumulative count till the endTime.Providing both startTime and endtime would give count between that time period.Not Providing startTime and endtime would give overall count.
+    - Added `GET /policySet/rules/policyType/{policyType/application/{applicationId}` Gets paginated policy rules for the specified policy type by application id
+
+### New ZPA Endpoint - Server Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /serverGroup/summary` Get all Server Group id and names configured for a given customer
+
+### New ZPA Endpoint - Step up Auth Level Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /stepupauthlevel/summary` Get a step up auth levels.
+
+### New ZPA Endpoint - Step up Auth Level Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /userportal/aup/{id}` Get user portal aup
+    - Added `PUT /userportal/aup/{id}` Update user portal aup
+    - Added `DELETE /userportal/aup/{id}` Delete user portal aup
+    - Added `GET /userportal/aup` Get all AUPs configured for a given customer
+    - Added `POST /userportal/aup` Add a new aup for a given customer.
+
+### New ZPA Endpoint - ZPN Location Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /location/extranetResource/{zpnErId}`
+    - Added `PUT /location/summary` Get all Location id and names configured for a given customer.
+
+### New ZPA Endpoint - ZPN Location Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /locationGroup/extranetResource/{zpnErId}`
+
+### New ZPA Endpoint - Workload Tag Group Controller
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /workloadTagGroup/summary`
+
+### New ZTW Endpoint - Partner Integrations - Public Account Info
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /publicCloudInfo` - Retrieves the list of AWS accounts with metadata
+    - Added `POST /publicCloudInfo` - Creates a new AWS account with the provided account and region details.
+    - Added `GET /publicCloudInfo/cloudFormationTemplate` - Retrieves the CloudFormation template URL.
+    - Added `GET /publicCloudInfo/count` - Retrieves the total number of AWS accounts.
+    - Added `POST /publicCloudInfo/generateExternalId` - Creates an external ID for an AWS account.
+    - Added `GET /publicCloudInfo/lite` - Retrieves basic information about the AWS cloud accounts
+    - Added `GET /publicCloudInfo/supportedRegions` - Retrieves a list of AWS regions supported for workload discovery settings (WDS).
+    - Added `GET /publicCloudInfo/{id}` - Retrieves the existing AWS account details based on the provided ID.
+    - Added `PUT /publicCloudInfo/{id}` - Updates the existing AWS account details based on the provided ID.
+    - Added `DELETE /publicCloudInfo/{id}` - Removes a specific AWS account based on the provided ID.
+    - Added `DELETE /publicCloudInfo/{id}/changeState` - Enables or disables a specific AWS account in all regions based on the provided ID.
+
+### New ZTW Endpoint - Partner Integrations - Workload Discovery Service
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /discoveryService/workloadDiscoverySettings` - Retrieves the workload discovery service settings.
+    - Added `PUT /discoveryService/{id}/permissions` - Verifies the specified AWS account permissions using the discovery role and external ID.
+
+### New ZTW Endpoint - Partner Integrations - Account Groups
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added the following new ZPA Endpoints
+    - Added `GET /accountGroups` - Retrieves the details of AWS account groups with metadata.
+    - Added `POST /accountGroups` - Creates an AWS account group. You can create a maximum of 128 groups in each organization. 
+    - Added `GET /accountGroups/count` - Retrieves the total number of AWS account groups.
+    - Added `GET /accountGroups/lite` - Retrieves the ID and name of all the AWS account groups.
+    - Added `PUT /accountGroups/{id}` - Updates the existing AWS account group details based on the provided ID.
+    - Added `DELETE /accountGroups/{id}` - Removes a specific AWS account group based on the provided ID.
+
+### Enhancements
+
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `ipdestinationgroups` parameter `override` of type bool. This parameter indicates whether the IPs must be overridden. When set to false, the IPs are appended; else the existing IPs are overridden. The default value is true.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `dlp_web_rules` attribute `fileTypeCategories`. This attribute supports the list of file types to which the rule applies. This attribute has replaced the attribute `fileTypes`. Zscaler recommends updating your configurations to use the `fileTypeCategories` attribute in place of `fileTypes`. Both attributes are still supported, but cannot be used concurrently.
+[PR #379](https://github.com/zscaler/zscaler-sdk-go/pull/379) - Added support to new ZIA `urlfilteringpolicies` attribute `safeSearchApps` of type list of string.
+
+### Enhanced Error Handling and Retry Logic
+
+- **Added automatic retry for 409 EDIT_LOCK_NOT_AVAILABLE errors**: The SDK now automatically detects and retries 409 Conflict responses when encountering edit lock errors (`EDIT_LOCK_NOT_AVAILABLE`, `Resource Access Blocked`, `Failed during enter Org barrier`). Retries use exponential backoff with configurable `RetryWaitMin` and `RetryWaitMax` settings.
+- Improved session invalidation handling: Enhanced `SESSION_NOT_VALID` error detection and token refresh logic. The SDK now properly handles both "SESSION_NOT_VALID" and "getAttribute: Session already invalidated" error messages for automatic token renewal and retry.
+- Optimized request timeout calculation: Request timeouts now exclude time spent waiting for rate limits, token refreshes, and server backoff delays. This ensures that rate limiting and authentication delays do not count against the overall request timeout, preventing premature failures in long-running operations.
+- Fixed request body buffering: The SDK now properly buffers request bodies to enable retry scenarios, including session invalidation and edit lock conflicts, without losing request data.
 
 # 3.7.6 (October 17, 2025)
 
