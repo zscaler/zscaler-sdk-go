@@ -1,11 +1,20 @@
 # Changelog
 
+# 3.8.5 (November 12, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #384](https://github.com/zscaler/zscaler-sdk-go/pull/384) - Added new ZPA `service_edge_group` attributes `exclusiveForBusinessContinuity`, `city` and `nameWithoutTrim`
+
 # 3.8.4 (November 11, 2025)
 
 ## Notes
 - Golang: **v1.24**
 
-### Bug Fixes
+### Enhancements
 
 - [PR #383](https://github.com/zscaler/zscaler-sdk-go/pull/383) - Added automatic `x-partner-id` header injection for all API requests when `partnerId` is provided in the configuration. The header is automatically included in all requests across OneAPI and Legacy clients (ZIA, ZPA, ZTW, ZCC, ZDX, ZWA) when `partnerId` is specified via config dictionary or `ZSCALER_PARTNER_ID` environment variable.
 
