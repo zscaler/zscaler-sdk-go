@@ -82,6 +82,7 @@ type Configuration struct {
 			ZWAAPIKeyID  string     `yaml:"key_id" envconfig:"ZWA_API_KEY_ID"`
 			ZWAAPISecret string     `yaml:"key_secret" envconfig:"ZWA_API_SECRET"`
 			ZWACloud     string     `yaml:"cloud" envconfig:"ZWA_CLOUD"`
+			PartnerID    string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken    *AuthToken `yaml:"authToken"`
 			AccessToken  *AuthToken `yaml:"accessToken"`
 			Proxy        struct {
@@ -207,6 +208,12 @@ func WithZWAAPISecret(apiSecret string) ConfigSetter {
 func WithZWACloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZWA.Client.ZWACloud = cloud
+	}
+}
+
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZWA.Client.PartnerID = partnerID
 	}
 }
 

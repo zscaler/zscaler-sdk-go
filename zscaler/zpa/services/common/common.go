@@ -515,16 +515,3 @@ func sanitizeSearchQuery(query string) string {
 	// Just trim and return - let URL encoding handle special characters
 	return strings.TrimSpace(query)
 }
-
-// func sanitizeSearchQuery(query string) string {
-// 	// Remove special characters except spaces, alphanumeric characters, dashes, underscores, slashes, and dots
-// 	re := regexp.MustCompile(`[^a-zA-Z0-9\s_/\-\.]`)
-// 	query = re.ReplaceAllString(query, "")
-
-// 	// Replace multiple spaces with a single space
-// 	reSpace := regexp.MustCompile(`\s+`)
-// 	query = reSpace.ReplaceAllString(query, " ")
-
-// 	// Trim spaces (but do NOT encode again)
-// 	return strings.TrimSpace(query)
-// }

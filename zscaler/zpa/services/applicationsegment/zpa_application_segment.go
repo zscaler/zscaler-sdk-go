@@ -193,22 +193,6 @@ func Delete(ctx context.Context, service *zscaler.Service, appID string) (*http.
 	return resp, nil
 }
 
-// func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationSegmentResource, *http.Response, error) {
-// 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint
-// 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-// 	result := []ApplicationSegmentResource{}
-// 	// filter apps
-// 	for _, item := range list {
-// 		if len(item.ClientlessApps) == 0 && (len(item.CommonAppsDto.AppsConfig) == 0 || !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
-// 			result = append(result, item)
-// 		}
-// 	}
-// 	return result, resp, nil
-// }
-
 func GetAll(ctx context.Context, service *zscaler.Service) ([]ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
@@ -283,6 +267,19 @@ type ApplicationMappings struct {
 	Type string `json:"type,omitempty"`
 }
 
+type WeightedLoadBalancerConfig struct {
+	ApplicationID                string                            `json:"applicationId"`
+	ApplicationToServerGroupMaps []ApplicationToServerGroupMapping `json:"applicationToServerGroupMappings"`
+	WeightedLoadBalancing        bool                              `json:"weightedLoadBalancing"`
+}
+
+type ApplicationToServerGroupMapping struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Passive bool   `json:"passive"`
+	Weight  string `json:"weight"`
+}
+
 func GetApplicationMappings(ctx context.Context, service *zscaler.Service, applicationID string) ([]ApplicationMappings, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentEndpoint + "/" + applicationID + "/mappings"
 
@@ -346,4 +343,27 @@ func ApplicationValidation(ctx context.Context, service *zscaler.Service, appSeg
 
 	// If we get here, there was a validation error
 	return &validationError, resp, nil
+}
+
+func GetWeightedLoadBalancerConfig(ctx context.Context, service *zscaler.Service, applicationID string) (*WeightedLoadBalancerConfig, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s/weightedLbConfig", mgmtConfig+service.Client.GetCustomerID()+appSegmentEndpoint, applicationID)
+
+	result := new(WeightedLoadBalancerConfig)
+	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, result)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return result, resp, nil
+}
+
+func UpdateWeightedLoadBalancerConfig(ctx context.Context, service *zscaler.Service, applicationID string, payload WeightedLoadBalancerConfig) (*WeightedLoadBalancerConfig, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s/weightedLbConfig", mgmtConfig+service.Client.GetCustomerID()+appSegmentEndpoint, applicationID)
+
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, payload, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return nil, resp, nil
 }

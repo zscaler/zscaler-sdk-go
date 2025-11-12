@@ -82,6 +82,7 @@ type Configuration struct {
 			ZDXAPIKeyID  string     `yaml:"apiKey" envconfig:"ZDX_API_KEY_ID"`
 			ZDXAPISecret string     `yaml:"secretKey" envconfig:"ZDX_API_SECRET"`
 			ZDXCloud     string     `yaml:"cloud" envconfig:"ZDX_CLOUD"`
+			PartnerID    string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken    *AuthToken `yaml:"authToken"`
 			AccessToken  *AuthToken `yaml:"accessToken"`
 			Proxy        struct {
@@ -207,6 +208,12 @@ func WithZDXAPISecret(apiSecret string) ConfigSetter {
 func WithZDXCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZDX.Client.ZDXCloud = cloud
+	}
+}
+
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZDX.Client.PartnerID = partnerID
 	}
 }
 

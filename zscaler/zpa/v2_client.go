@@ -541,6 +541,11 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 		req.Header.Add("User-Agent", client.Config.UserAgent)
 	}
 
+	// Add x-partner-id header if partnerId is provided in config
+	if client.Config.ZPA.Client.PartnerID != "" {
+		req.Header.Set("x-partner-id", client.Config.ZPA.Client.PartnerID)
+	}
+
 	return req, nil
 }
 

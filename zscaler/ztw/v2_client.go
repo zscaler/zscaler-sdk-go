@@ -80,6 +80,7 @@ func NewClient(config *Configuration) (*Client, error) {
 		password:         config.ZTW.Client.ZTWPassword,
 		apiKey:           config.ZTW.Client.ZTWApiKey,
 		cloud:            config.ZTW.Client.ZTWCloud,
+		partnerID:        config.ZTW.Client.PartnerID,
 		HTTPClient:       httpClient,
 		URL:              baseURL,
 		Logger:           logger,
@@ -645,6 +646,11 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
+	}
+
+	// Add x-partner-id header if partnerId is provided in config
+	if c.partnerID != "" {
+		req.Header.Set("x-partner-id", c.partnerID)
 	}
 
 	err = c.checkSession()
