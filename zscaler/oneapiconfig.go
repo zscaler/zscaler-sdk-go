@@ -377,6 +377,11 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		req.Header.Add("User-Agent", c.oauth2Credentials.UserAgent)
 	}
 
+	// Add x-partner-id header if partnerId is provided in config
+	if c.oauth2Credentials.Zscaler.Client.PartnerID != "" {
+		req.Header.Set("x-partner-id", c.oauth2Credentials.Zscaler.Client.PartnerID)
+	}
+
 	// For non-sandbox requests, handle OAuth2 authentication
 	if !isSandboxRequest {
 		err = c.authenticate()

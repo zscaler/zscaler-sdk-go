@@ -83,6 +83,7 @@ func NewClient(config *Configuration) (*Client, error) {
 		URL:              baseURL,
 		Logger:           logger,
 		UserAgent:        config.UserAgent,
+		partnerID:        config.ZIA.Client.PartnerID,
 		cacheEnabled:     config.ZIA.Client.Cache.Enabled,
 		cacheTtl:         config.ZIA.Client.Cache.DefaultTtl,
 		cacheCleanwindow: config.ZIA.Client.Cache.DefaultTti,
@@ -516,6 +517,11 @@ func (c *Client) validateSession(ctx context.Context) (bool, error) {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 
+	// Add x-partner-id header if partnerId is provided in config
+	if c.partnerID != "" {
+		req.Header.Set("x-partner-id", c.partnerID)
+	}
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return false, err
@@ -674,6 +680,11 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent) // Use Set to avoid duplicates
+	}
+
+	// Add x-partner-id header if partnerId is provided in config
+	if c.partnerID != "" {
+		req.Header.Set("x-partner-id", c.partnerID)
 	}
 
 	// Include JSessionID directly in req.Header

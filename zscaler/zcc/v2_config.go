@@ -81,6 +81,7 @@ type Configuration struct {
 			ZCCClientID     string     `yaml:"apiKey" envconfig:"ZCC_CLIENT_ID"`
 			ZCCClientSecret string     `yaml:"secretKey" envconfig:"ZCC_CLIENT_SECRET"`
 			ZCCCloud        string     `yaml:"cloud" envconfig:"ZCC_CLOUD"`
+			PartnerID       string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken       *AuthToken `yaml:"authToken"`
 			AccessToken     *AuthToken `yaml:"accessToken"`
 			Proxy           struct {
@@ -198,6 +199,12 @@ func WithZCCClientSecret(clientSecret string) ConfigSetter {
 func WithZCCCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZCC.Client.ZCCCloud = cloud
+	}
+}
+
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZCC.Client.PartnerID = partnerID
 	}
 }
 

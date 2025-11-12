@@ -13,9 +13,22 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.3``
+``Last updated: v3.8.4``
 
 ---
+
+# 3.8.4 (November 11, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #383](https://github.com/zscaler/zscaler-sdk-go/pull/383) - Added automatic `x-partner-id` header injection for all API requests when `partnerId` is provided in the configuration. The header is automatically included in all requests across OneAPI and Legacy clients (ZIA, ZPA, ZTW, ZCC, ZDX, ZWA) when `partnerId` is specified via config dictionary or `ZSCALER_PARTNER_ID` environment variable.
+
+- [PR #383](https://github.com/zscaler/zscaler-sdk-go/pull/383)- Added the following ZPA Endpoints:
+    - Added `GET /weightedLbConfig` Get Weighted Load Balancer Config for AppSegment
+    - Added `PUT /weightedLbConfig` Update Weighted Load Balancer Config for AppSegment
 
 # 3.8.3 (November 6, 2025)
 

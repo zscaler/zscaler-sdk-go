@@ -59,6 +59,7 @@ type Client struct {
 	password         string
 	cloud            string
 	apiKey           string
+	partnerID        string
 	session          *Session
 	sessionRefreshed time.Time     // Also indicates last usage
 	sessionTimeout   time.Duration // in minutes
@@ -113,6 +114,7 @@ type Configuration struct {
 			ZTWPassword string `yaml:"password" envconfig:"ZTW_PASSWORD"`
 			ZTWApiKey   string `yaml:"apiKey" envconfig:"ZTW_API_KEY"`
 			ZTWCloud    string `yaml:"cloud" envconfig:"ZTW_CLOUD"`
+			PartnerID   string `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			Cache       struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZTW_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_TTL"`
@@ -220,6 +222,13 @@ func WithZtwAPIKey(apiKey string) ConfigSetter {
 func WithZtwCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZTW.Client.ZTWCloud = cloud
+	}
+}
+
+// WithPartnerID sets the PartnerID in the Config.
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZTW.Client.PartnerID = partnerID
 	}
 }
 

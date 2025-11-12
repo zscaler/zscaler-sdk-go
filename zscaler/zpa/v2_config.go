@@ -85,6 +85,7 @@ type Configuration struct {
 			ZPACustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
 			ZPACloud         string     `yaml:"cloud" envconfig:"ZPA_CLOUD"`
 			ZPAMicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
+			PartnerID        string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken        *AuthToken `yaml:"authToken"`
 			AccessToken      *AuthToken `yaml:"accessToken"`
 			Cache            struct {
@@ -251,6 +252,12 @@ func WithZPACustomerID(customerID string) ConfigSetter {
 func WithZPAMicrotenantID(microtenantID string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZPA.Client.ZPAMicrotenantID = microtenantID
+	}
+}
+
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZPA.Client.PartnerID = partnerID
 	}
 }
 

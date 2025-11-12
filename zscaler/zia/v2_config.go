@@ -61,6 +61,7 @@ type Client struct {
 	password         string
 	cloud            string
 	apiKey           string
+	partnerID        string
 	session          *Session
 	sessionRefreshed time.Time     // Also indicates last usage
 	sessionTimeout   time.Duration // in minutes
@@ -116,6 +117,7 @@ type Configuration struct {
 			ZIAPassword string `yaml:"password" envconfig:"ZIA_PASSWORD"`
 			ZIAApiKey   string `yaml:"apiKey" envconfig:"ZIA_API_KEY"`
 			ZIACloud    string `yaml:"cloud" envconfig:"ZIA_CLOUD"`
+			PartnerID   string `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			Cache       struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZIA_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTL"`
@@ -259,6 +261,13 @@ func WithZiaAPIKey(apiKey string) ConfigSetter {
 func WithZiaCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZIA.Client.ZIACloud = cloud
+	}
+}
+
+// WithPartnerID sets the PartnerID in the Config.
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZIA.Client.PartnerID = partnerID
 	}
 }
 
