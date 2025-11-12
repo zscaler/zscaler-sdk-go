@@ -398,10 +398,30 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
+	const pageSize = 1000
+
 	var locations []Locations
-	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
-	return locations, err
+	endpoint := locationsEndpoint
+	if !strings.Contains(endpoint, "?") {
+		endpoint += "?"
+	}
+
+	page := 1
+	for {
+		var pageItems []Locations
+		err := service.Client.Read(ctx, fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
+		if err != nil {
+			return nil, err
+		}
+
+		locations = append(locations, pageItems...)
+		if len(pageItems) < pageSize {
+			break
+		}
+		page++
+	}
+
+	return locations, nil
 }
 
 func GetAllSublocations(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
