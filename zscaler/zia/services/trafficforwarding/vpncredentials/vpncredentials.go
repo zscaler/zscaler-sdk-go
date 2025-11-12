@@ -174,7 +174,28 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]VPNCredentials, error) {
+	const pageSize = 1000
+
 	var vpnTypes []VPNCredentials
-	err := common.ReadAllPages(ctx, service.Client, vpnCredentialsEndpoint, &vpnTypes)
-	return vpnTypes, err
+	endpoint := vpnCredentialsEndpoint
+	if !strings.Contains(endpoint, "?") {
+		endpoint += "?"
+	}
+
+	page := 1
+	for {
+		var pageItems []VPNCredentials
+		err := service.Client.Read(ctx, fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
+		if err != nil {
+			return nil, err
+		}
+
+		vpnTypes = append(vpnTypes, pageItems...)
+		if len(pageItems) < pageSize {
+			break
+		}
+		page++
+	}
+
+	return vpnTypes, nil
 }

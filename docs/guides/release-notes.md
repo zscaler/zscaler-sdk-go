@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.4``
+``Last updated: v3.8.5``
 
 ---
+
+# 3.8.5 (November 12, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #385](https://github.com/zscaler/zscaler-sdk-go/pull/385) - Added new ZPA `service_edge_group` attributes `exclusiveForBusinessContinuity`, `city` and `nameWithoutTrim`
 
 # 3.8.4 (November 11, 2025)
 

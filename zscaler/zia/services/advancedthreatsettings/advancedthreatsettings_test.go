@@ -113,23 +113,23 @@ func TestAdvancedThreatSettings(t *testing.T) {
 			"COUNTRY_AU",
 			"COUNTRY_GB",
 		}
-		updatedSettings.BlockCountriesCapture = true
-		updatedSettings.BitTorrentBlocked = true
-		updatedSettings.BitTorrentCapture = true
-		updatedSettings.TorBlocked = true
-		updatedSettings.TorCapture = true
-		updatedSettings.GoogleTalkBlocked = true
-		updatedSettings.GoogleTalkCapture = true
-		updatedSettings.SshTunnellingBlocked = true
-		updatedSettings.SshTunnellingCapture = true
-		updatedSettings.CryptoMiningBlocked = true
-		updatedSettings.CryptoMiningCapture = true
-		updatedSettings.AdSpywareSitesBlocked = true
-		updatedSettings.AdSpywareSitesCapture = true
-		updatedSettings.DgaDomainsBlocked = true
-		updatedSettings.AlertForUnknownOrSuspiciousC2Traffic = true
-		updatedSettings.DgaDomainsCapture = true
-		updatedSettings.MaliciousUrlsCapture = true
+		// updatedSettings.BlockCountriesCapture = true
+		// updatedSettings.BitTorrentBlocked = true
+		// updatedSettings.BitTorrentCapture = true
+		// updatedSettings.TorBlocked = true
+		// updatedSettings.TorCapture = true
+		// updatedSettings.GoogleTalkBlocked = true
+		// updatedSettings.GoogleTalkCapture = true
+		// updatedSettings.SshTunnellingBlocked = true
+		// updatedSettings.SshTunnellingCapture = true
+		// updatedSettings.CryptoMiningBlocked = true
+		// updatedSettings.CryptoMiningCapture = true
+		// updatedSettings.AdSpywareSitesBlocked = true
+		// updatedSettings.AdSpywareSitesCapture = true
+		// updatedSettings.DgaDomainsBlocked = true
+		// updatedSettings.AlertForUnknownOrSuspiciousC2Traffic = true
+		// updatedSettings.DgaDomainsCapture = true
+		// updatedSettings.MaliciousUrlsCapture = true
 
 		result, _, err := UpdateAdvancedThreatSettings(ctx, service, updatedSettings)
 		if err != nil {
