@@ -16,7 +16,7 @@ func TestLocationLite_data(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	servers, err := GetAll(context.Background(), service)
+	servers, err := GetAll(context.Background(), service, nil)
 	if err != nil {
 		t.Errorf("Error getting locations: %v", err)
 		return
@@ -52,7 +52,7 @@ func TestGetById(t *testing.T) {
 	}
 
 	// Get all servers to find a valid ID
-	servers, err := GetAll(context.Background(), service)
+	servers, err := GetAll(context.Background(), service, nil)
 	if err != nil {
 		t.Fatalf("Error getting all location lites: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	locations, err := GetAll(context.Background(), service)
+	locations, err := GetAll(context.Background(), service, nil)
 	if err != nil {
 		t.Errorf("Error getting location lite: %v", err)
 		return

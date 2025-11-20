@@ -122,11 +122,15 @@ func GetLocationGroup(ctx context.Context, service *zscaler.Service, groupID int
 }
 
 func GetLocationGroupByName(ctx context.Context, service *zscaler.Service, locationGroupName string) (*LocationGroup, error) {
-	var locationGroups []LocationGroup
-	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
+	// Use GetAll with name filter to leverage API filtering
+	opts := &GetAllFilterOptions{
+		Name: &locationGroupName,
+	}
+	locationGroups, err := GetAll(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, locationGroup := range locationGroups {
 		if strings.EqualFold(locationGroup.Name, locationGroupName) {
 			return &locationGroup, nil
@@ -150,8 +154,108 @@ func GetGroupType(ctx context.Context, service *zscaler.Service, gType string) (
 	return nil, fmt.Errorf("no group type found with name: %s", gType)
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]LocationGroup, error) {
+// GetAllFilterOptions represents optional filter parameters for GetAll
+type GetAllFilterOptions struct {
+	// The version parameter is for Zscaler internal use only
+	Version *int
+	// The location group's name
+	Name *string
+	// The location group's type (i.e., Static or Dynamic)
+	GroupType *string
+	// Additional comments or information about the location group
+	Comments *string
+	// The unique identifier for a location within a location group
+	LocationID *int
+	// The admin that last modified the group
+	LastModUser *string
+	// Fetches locations associated with the group. Set to false to avoid fetching associated locations
+	FetchLocations *bool
+}
+
+// GetAll retrieves all location groups with optional filters.
+// The API supports a maximum page size of 1000.
+func GetAll(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) ([]LocationGroup, error) {
 	var locationGroups []LocationGroup
-	err := common.ReadAllPages(ctx, service.Client, locationGroupEndpoint, &locationGroups)
+	endpoint := locationGroupEndpoint
+
+	// Build query parameters
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.Version != nil {
+			queryParams.Add("version", fmt.Sprintf("%d", *opts.Version))
+		}
+		if opts.Name != nil {
+			queryParams.Add("name", *opts.Name)
+		}
+		if opts.GroupType != nil {
+			queryParams.Add("groupType", *opts.GroupType)
+		}
+		if opts.Comments != nil {
+			queryParams.Add("comments", *opts.Comments)
+		}
+		if opts.LocationID != nil {
+			queryParams.Add("locationId", fmt.Sprintf("%d", *opts.LocationID))
+		}
+		if opts.LastModUser != nil {
+			queryParams.Add("lastModUser", *opts.LastModUser)
+		}
+		if opts.FetchLocations != nil {
+			queryParams.Add("fetchLocations", fmt.Sprintf("%t", *opts.FetchLocations))
+		}
+	}
+
+	// Build base endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	// Use common.ReadAllPages with default page size 1000 (API maximum)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &locationGroups)
 	return locationGroups, err
+}
+
+// GetLocationGroupCount retrieves the count of location groups using optional filters.
+// The API returns a simple integer count.
+func GetLocationGroupCount(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) (int, error) {
+	var count int
+	endpoint := locationGroupEndpoint + "/count"
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.Version != nil {
+			queryParams.Add("version", fmt.Sprintf("%d", *opts.Version))
+		}
+		if opts.Name != nil {
+			queryParams.Add("name", *opts.Name)
+		}
+		if opts.GroupType != nil {
+			queryParams.Add("groupType", *opts.GroupType)
+		}
+		if opts.Comments != nil {
+			queryParams.Add("comments", *opts.Comments)
+		}
+		if opts.LocationID != nil {
+			queryParams.Add("locationId", fmt.Sprintf("%d", *opts.LocationID))
+		}
+		if opts.LastModUser != nil {
+			queryParams.Add("lastModUser", *opts.LastModUser)
+		}
+		if opts.FetchLocations != nil {
+			queryParams.Add("fetchLocations", fmt.Sprintf("%t", *opts.FetchLocations))
+		}
+	}
+
+	// Build endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	err := service.Client.Read(ctx, endpoint, &count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to retrieve location group count: %w", err)
+	}
+	return count, nil
 }

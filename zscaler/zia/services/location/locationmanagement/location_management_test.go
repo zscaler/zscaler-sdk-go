@@ -300,6 +300,26 @@ func TestLocationManagement(t *testing.T) {
 		t.Errorf("Expected sub-location ID '%d', but got '%d'", createdSubLocation.ID, locationOrSubLocation.ID)
 	}
 
+	// Test GetLocationSupportedCountries
+	// supportedCountries, err := GetLocationSupportedCountries(context.Background(), service)
+	// if err != nil {
+	// 	t.Fatalf("Error retrieving supported countries: %v", err)
+	// }
+	// if len(supportedCountries) == 0 {
+	// 	t.Fatal("Expected supported countries list to be non-empty, but got empty slice")
+	// }
+	// // Verify that the country used in the test location is in the supported countries list
+	// foundCountry := false
+	// for _, country := range supportedCountries {
+	// 	if country == "UNITED_KINGDOM" {
+	// 		foundCountry = true
+	// 		break
+	// 	}
+	// }
+	// if !foundCountry {
+	// 	t.Logf("Warning: Expected 'UNITED_KINGDOM' to be in supported countries list, but it wasn't found. Total supported countries: %d", len(supportedCountries))
+	// }
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
