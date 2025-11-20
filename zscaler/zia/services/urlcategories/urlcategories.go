@@ -234,29 +234,6 @@ func GetURLLookup(ctx context.Context, service *zscaler.Service, urls []string) 
 	return lookupResults, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool) ([]URLCategory, error) {
-	var urlCategories []URLCategory
-
-	// Build the endpoint with optional query parameters
-	endpoint := urlCategoriesEndpoint
-	queryParams := url.Values{}
-
-	if customOnly {
-		queryParams.Set("customOnly", "true")
-	}
-	if includeOnlyUrlKeywordCounts {
-		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
-	}
-
-	// Append query parameters to endpoint if any exist
-	if len(queryParams) > 0 {
-		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
-	}
-
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &urlCategories)
-	return urlCategories, err
-}
-
 func GetAllLite(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
@@ -295,4 +272,27 @@ func UpdateURLReview(ctx context.Context, service *zscaler.Service, reviews []UR
 
 	service.Client.GetLogger().Printf("[DEBUG] successfully updated URL review")
 	return nil
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool) ([]URLCategory, error) {
+	var urlCategories []URLCategory
+
+	// Build the endpoint with optional query parameters
+	endpoint := urlCategoriesEndpoint
+	queryParams := url.Values{}
+
+	if customOnly {
+		queryParams.Set("customOnly", "true")
+	}
+	if includeOnlyUrlKeywordCounts {
+		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
+	}
+
+	// Append query parameters to endpoint if any exist
+	if len(queryParams) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &urlCategories)
+	return urlCategories, err
 }
