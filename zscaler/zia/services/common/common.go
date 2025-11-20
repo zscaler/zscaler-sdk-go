@@ -11,7 +11,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
 )
 
-const pageSize = 5000 // Maximum page size supported by ZIA API
+const defaultPageSize = 1000 // Default page size for most ZIA APIs
 
 type IDNameExtensions struct {
 	ID         int                    `json:"id,omitempty"`
@@ -133,15 +133,21 @@ type CommonApplication struct {
 	AppCatModified      bool   `json:"appCatModified"`
 }
 
-// GetPageSize returns the page size.
+// GetPageSize returns the default page size.
 func GetPageSize() int {
-	return pageSize
+	return defaultPageSize
 }
 
-func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, list *[]T) error {
+func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, list *[]T, customPageSize ...int) error {
 	if list == nil {
 		return nil
 	}
+
+	pageSize := defaultPageSize
+	if len(customPageSize) > 0 && customPageSize[0] > 0 {
+		pageSize = customPageSize[0]
+	}
+
 	page := 1
 	if !strings.Contains(endpoint, "?") {
 		endpoint += "?"
@@ -162,9 +168,14 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 	return nil
 }
 
-func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T, customPageSize ...int) error {
 	if list == nil {
 		return nil
+	}
+
+	pageSize := defaultPageSize
+	if len(customPageSize) > 0 && customPageSize[0] > 0 {
+		pageSize = customPageSize[0]
 	}
 
 	// Parse the endpoint into a URL.

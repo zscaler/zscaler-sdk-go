@@ -13,9 +13,35 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.5``
+``Last updated: v3.8.6``
 
 ---
+
+# 3.8.6 (November 19, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #386](https://github.com/zscaler/zscaler-sdk-go/pull/386) - Added support to the following ZIA Endpoints:
+    - Added `GET /customFileTypes` Retrieves the list of custom file types. Custom file types can be configured as rule conditions in different ZIA policies.
+    - Added `POST /customFileTypes` Adds a new custom file type. 
+    - Added `PUT /customFileTypes` Updates information for a custom file type based on the specified ID
+    - Added `DELETE /customFileTypes/{id}` Deletes a custom file type based on the specified ID
+    - Added `GET /customFileTypes/count` Retrieves the count of custom file types available
+    - Added `GET /fileTypeCategories` Retrieves the list of all file types, including predefined and custom file types
+
+### New ZIA Endpoint - Traffic Capture Policy
+
+- [PR #386](https://github.com/zscaler/zscaler-sdk-go/pull/386) - Added the following new ZIA Endpoints
+    - Added `GET /trafficCaptureRules` Retrieves the list of Traffic Capture policy rules
+    - Added `GET /trafficCaptureRules/{ruleId}` Retrieves the Traffic Capture policy rule based on the specified rule ID
+    - Added `PUT /trafficCaptureRules/{ruleId}` Updates information for the Traffic Capture policy rule based on the specified rule ID
+    - Added `DELETE /trafficCaptureRules/{ruleId}` Deletes the Traffic Capture policy rule based on the specified rule ID
+    - Added `GET /trafficCaptureRules/count` Retrieves the rule count for Traffic Capture policy based on the specified search criteria
+    - Added `GET /trafficCaptureRules/order` Retrieves the rule order information for the Traffic Capture policy
+    - Added `GET /trafficCaptureRules/ruleLabels` Retrieves the list of rule labels associated with the Traffic Capture policy rules
 
 # 3.8.5 (November 12, 2025)
 

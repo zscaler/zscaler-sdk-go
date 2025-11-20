@@ -1,4 +1,4 @@
-package filteringrules
+package traffic_c
 
 import (
 	"context"
@@ -12,20 +12,20 @@ import (
 )
 
 const (
-	firewallRulesEndpoint = "/zia/api/v1/firewallFilteringRules"
+	trafficCaptureRulesEndpoint = "/zia/api/v1/trafficCaptureRules"
 )
 
-type FirewallFilteringRules struct {
-	// Unique identifier for the Firewall Filtering policy rule
+type TrafficCaptureRules struct {
+	// Unique identifier for the Traffic Capture policy rule
 	ID int `json:"id,omitempty"`
 
-	// Name of the Firewall Filtering policy rule
+	// Name of the Traffic Capture policy rule
 	Name string `json:"name,omitempty"`
 
-	// Rule order number of the Firewall Filtering policy rule
+	// Rule order number of the Traffic Capture policy rule
 	Order int `json:"order"`
 
-	// Admin rank of the Firewall Filtering policy rule
+	// Admin rank of the Traffic Capture policy rule
 	Rank int `json:"rank"`
 
 	// The admin’s access privilege to this rule based on the assigned role
@@ -34,10 +34,10 @@ type FirewallFilteringRules struct {
 	// A Boolean value that indicates whether full logging is enabled. A true value indicates that full logging is enabled, whereas a false value indicates that aggregate logging is enabled.
 	EnableFullLogging bool `json:"enableFullLogging"`
 
-	// The action the Firewall Filtering policy rule takes when packets match the rule
+	// The action the Traffic Capture policy rule takes when packets match the rule
 	Action string `json:"action,omitempty"`
 
-	// Determines whether the Firewall Filtering policy rule is enabled or disabled
+	// Determines whether the Traffic Capture policy rule is enabled or disabled
 	State string `json:"state,omitempty"`
 
 	// Additional information about the rule
@@ -97,9 +97,6 @@ type FirewallFilteringRules struct {
 	// User-defined network service application group on which the rule is applied. If not set, the rule is not restricted to a specific network service application group.
 	NwApplicationGroups []common.IDNameExtensions `json:"nwApplicationGroups,omitempty"`
 
-	// Application services on which this rule is applied
-	AppServices []common.IDNameExtensions `json:"appServices,omitempty"`
-
 	// Application service groups on which this rule is applied
 	AppServiceGroups []common.IDNameExtensions `json:"appServiceGroups,omitempty"`
 
@@ -127,28 +124,22 @@ type FirewallFilteringRules struct {
 
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
-
-	// The list of preconfigured workload groups to which the policy must be applied.
-	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
-
-	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
-	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
-func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallFilteringRules, error) {
-	var rule FirewallFilteringRules
-	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
+func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*TrafficCaptureRules, error) {
+	var rule TrafficCaptureRules
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", trafficCaptureRulesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG]Returning firewall rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning traffic capture rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
-func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*FirewallFilteringRules, error) {
-	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules)
+func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*TrafficCaptureRules, error) {
+	var rules []TrafficCaptureRules
+	err := common.ReadAllPages(ctx, service.Client, trafficCaptureRulesEndpoint, &rules)
 	if err != nil {
 		return nil, err
 	}
@@ -157,16 +148,16 @@ func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (
 			return &rule, nil
 		}
 	}
-	return nil, fmt.Errorf("no firewall rule found with name: %s", ruleName)
+	return nil, fmt.Errorf("no traffic capture rule found with name: %s", ruleName)
 }
 
-func Create(ctx context.Context, service *zscaler.Service, rule *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.Create(ctx, firewallRulesEndpoint, *rule)
+func Create(ctx context.Context, service *zscaler.Service, rule *TrafficCaptureRules) (*TrafficCaptureRules, error) {
+	resp, err := service.Client.Create(ctx, trafficCaptureRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
 
-	createdRules, ok := resp.(*FirewallFilteringRules)
+	createdRules, ok := resp.(*TrafficCaptureRules)
 	if !ok {
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
@@ -175,18 +166,18 @@ func Create(ctx context.Context, service *zscaler.Service, rule *FirewallFilteri
 	return createdRules, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), *rules)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *TrafficCaptureRules) (*TrafficCaptureRules, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", trafficCaptureRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
-	updatedRules, _ := resp.(*FirewallFilteringRules)
-	service.Client.GetLogger().Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
+	updatedRules, _ := resp.(*TrafficCaptureRules)
+	service.Client.GetLogger().Printf("[DEBUG]returning traffic capture rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID))
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", trafficCaptureRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +185,46 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]FirewallFilteringRules, error) {
-	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules, 5000)
+func GetAll(ctx context.Context, service *zscaler.Service) ([]TrafficCaptureRules, error) {
+	var rules []TrafficCaptureRules
+	err := common.ReadAllPages(ctx, service.Client, trafficCaptureRulesEndpoint, &rules)
 	return rules, err
 }
+
+/*
+// GetEcRDRCount retrieves the count of forwarding rules using optional filters
+func GetTrafficCaptureRuleCount(ctx context.Context, service *zscaler.Service, params *ForwardingRulesCountQuery) (*ForwardingRulesCountResponse, error) {
+	// Build query string
+	query := url.Values{}
+	if params != nil {
+		query.Set("predefinedRuleCount", strconv.FormatBool(params.PredefinedRuleCount))
+		if params.RuleName != "" {
+			query.Set("ruleName", params.RuleName)
+		}
+		if params.RuleOrder != "" {
+			query.Set("ruleOrder", params.RuleOrder)
+		}
+		if params.RuleDescription != "" {
+			query.Set("ruleDescription", params.RuleDescription)
+		}
+		if params.RuleForwardMethod != "" {
+			query.Set("ruleForwardMethod", params.RuleForwardMethod)
+		}
+		if params.Location != "" {
+			query.Set("location", params.Location)
+		}
+	}
+
+	endpoint := forwardingRulesEndpoint + "/count"
+	if len(query) > 0 {
+		endpoint += "?" + query.Encode()
+	}
+
+	var result ForwardingRulesCountResponse
+	err := service.Client.ReadResource(ctx, endpoint, &result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve forwarding rule count: %w", err)
+	}
+	return &result, nil
+}
+*/

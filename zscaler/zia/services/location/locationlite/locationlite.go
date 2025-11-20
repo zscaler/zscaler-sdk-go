@@ -15,7 +15,7 @@ const (
 )
 
 type LocationLite struct {
-	// Unique identifier for the location group
+	// Unique identifier for the location
 	ID int `json:"id"`
 
 	// Location name
@@ -24,7 +24,7 @@ type LocationLite struct {
 	// Parent Location ID. If this ID does not exist or is 0, it is implied that it is a parent location. Otherwise, it is a sub-location whose parent has this ID. x-applicableTo: SUB
 	ParentID int `json:"parentId,omitempty"`
 
-	// Indicates the location group was deleted
+	// Timezone of the location. If not specified, it defaults to GMT.
 	TZ string `json:"tz,omitempty"`
 
 	// Enable XFF Forwarding for a location. When set to true, traffic is passed to Zscaler Cloud via the X-Forwarded-For (XFF) header.
@@ -34,7 +34,7 @@ type LocationLite struct {
 	// Enable AUP. When set to true, AUP is enabled for the location. To learn more, see About End User Notifications
 	AUPEnabled bool `json:"aupEnabled"`
 
-	// Enable Caution. When set to true, a caution notifcation is enabled for the location
+	// Enable Caution. When set to true, a caution notification is enabled for the location
 	CautionEnabled bool `json:"cautionEnabled"`
 
 	// For First Time AUP Behavior, Block Internet Access. When set, all internet access (including non-HTTP traffic) is disabled until the user accepts the AUP.
@@ -63,19 +63,22 @@ type LocationLite struct {
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
 	// Enable Zscaler App SSL Setting. When set to true, the Zscaler App SSL Scan Setting takes effect, irrespective of the SSL policy that is configured for the location.
-	ZappSSLScanEnabled bool `json:"zappSSLScanEnabled"`
+	ZappSSLScanEnabled bool `json:"zappSslScanEnabled"`
 
 	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
 	IPv6Enabled bool `json:"ipv6Enabled,omitempty"`
 
-	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
-	ECLocation bool `json:"ecLocation,omitempty"`
+	// Indicates whether defining scopes is allowed for this sublocation. Sublocation scopes are available only for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScopeEnabled bool `json:"subLocScopeEnabled,omitempty"`
 
-	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
-	KerberosAuth bool `json:"kerberosAuth,omitempty"`
+	// Defines a scope for the sublocation from the available types to segregate workload traffic from a single sublocation to apply different Cloud Connector and ZIA security policies. This field is only available for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScope string `json:"subLocScope,omitempty"`
 
-	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
-	DigestAuthEnabled bool `json:"digestAuthEnabled,omitempty"`
+	// Specifies values for the selected sublocation scope type
+	SubLocScopeValues []string `json:"subLocScopeValues,omitempty"`
+
+	// Specifies values for the selected sublocation scope type
+	SubLocAccIDs []string `json:"subLocAccIds,omitempty"`
 }
 
 func GetLocationLiteID(ctx context.Context, service *zscaler.Service, locationID int) (*LocationLite, error) {
@@ -89,22 +92,71 @@ func GetLocationLiteID(ctx context.Context, service *zscaler.Service, locationID
 	return &locationLite, nil
 }
 
+// GetAllFilterOptions represents optional filter parameters for GetAll
+type GetAllFilterOptions struct {
+	// If set to true sub-locations are included in the response otherwise they are excluded
+	IncludeSubLocations *bool
+	// If set to true locations with sub locations are included in the response, otherwise only locations without sub-locations are included
+	IncludeParentLocations *bool
+	// This parameter was deprecated. Filter based on whether the Enable SSL Scanning setting is enabled or disabled for a location.
+	SslScanEnabled *bool
+	// The search string used to partially match against a location's name and port attributes.
+	Search *string
+	// If set to true, the city field (containing IoT-enabled location IDs, names, latitudes, and longitudes) and the iotDiscoveryEnabled filter are included in the response. Otherwise, they are not included.
+	EnableIOT *bool
+}
+
+// GetAll retrieves all location lite entries with optional filters.
+// The API supports a maximum page size of 1000.
+func GetAll(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) ([]LocationLite, error) {
+	var locations []LocationLite
+	endpoint := locationLiteEndpoint
+
+	// Build query parameters
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.IncludeSubLocations != nil {
+			queryParams.Add("includeSubLocations", fmt.Sprintf("%t", *opts.IncludeSubLocations))
+		}
+		if opts.IncludeParentLocations != nil {
+			queryParams.Add("includeParentLocations", fmt.Sprintf("%t", *opts.IncludeParentLocations))
+		}
+		if opts.SslScanEnabled != nil {
+			queryParams.Add("sslScanEnabled", fmt.Sprintf("%t", *opts.SslScanEnabled))
+		}
+		if opts.Search != nil {
+			queryParams.Add("search", *opts.Search)
+		}
+		if opts.EnableIOT != nil {
+			queryParams.Add("enableIOT", fmt.Sprintf("%t", *opts.EnableIOT))
+		}
+	}
+
+	// Build base endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	// Use common.ReadAllPages with default page size 1000 (API maximum)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &locations)
+	return locations, err
+}
+
 func GetLocationLiteByName(ctx context.Context, service *zscaler.Service, locationLiteName string) (*LocationLite, error) {
-	var locationsLite []LocationLite
-	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s?name=%s", locationLiteEndpoint, url.QueryEscape(locationLiteName)), &locationsLite)
+	// Use GetAll with search filter to leverage API filtering
+	opts := &GetAllFilterOptions{
+		Search: &locationLiteName,
+	}
+	locationsLite, err := GetAll(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, locationLite := range locationsLite {
 		if strings.EqualFold(locationLite.Name, locationLiteName) {
 			return &locationLite, nil
 		}
 	}
 	return nil, fmt.Errorf("no location found with name: %s", locationLiteName)
-}
-
-func GetAll(ctx context.Context, service *zscaler.Service) ([]LocationLite, error) {
-	var locations []LocationLite
-	err := common.ReadAllPages(ctx, service.Client, locationLiteEndpoint, &locations)
-	return locations, err
 }

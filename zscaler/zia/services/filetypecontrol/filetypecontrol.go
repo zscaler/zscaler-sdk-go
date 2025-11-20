@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -14,7 +15,7 @@ import (
 const (
 	fileTypeControlEndpoint    = "/zia/api/v1/fileTypeRules"
 	fileTypeCategoriesEndPoint = "/zia/api/v1/fileTypeCategories"
-	customFilefileType         = "/zia/api/v1/fileTypeCategories"
+	customFilefileType         = "/zia/api/v1/customFileTypes"
 )
 
 type FileTypeRules struct {
@@ -125,6 +126,34 @@ type FileTypeRules struct {
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
+type CustomFileTypes struct {
+	// System generated identifier for a file-type policy
+	ID int `json:"id,omitempty"`
+
+	// The name of the File Type rule
+	Name string `json:"name,omitempty"`
+
+	// Additional information about the custom file type, if any.
+	Description string `json:"description,omitempty"`
+
+	// Specifies the file type extension. The maximum extension length is 10 characters. Existing Zscaler extensions cannot be added to custom file types.
+	Extension string `json:"extension,omitempty"`
+
+	// File type ID. This ID is assigned and maintained for all file types including predefined and custom file types, and this value is different from the custom file type ID.
+	FileTypeId string `json:"fileTypeId,omitempty"`
+}
+
+type FileTypeCategory struct {
+	// File type ID
+	ID int `json:"id,omitempty"`
+
+	// The name of the File Type
+	Name string `json:"name,omitempty"`
+
+	// Parent category of the file type
+	Parent string `json:"parent,omitempty"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FileTypeRules, error) {
 	var fileTypes FileTypeRules
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", fileTypeControlEndpoint, ruleID), &fileTypes)
@@ -191,8 +220,46 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]FileTypeRules, err
 	return fileTypeRules, err
 }
 
-func GetFileTypeCategories(ctx context.Context, service *zscaler.Service) ([]FileTypeRules, error) {
-	var fileTypeRules []FileTypeRules
-	err := common.ReadAllPages(ctx, service.Client, fileTypeCategoriesEndPoint, &fileTypeRules)
+// GetFileTypeCategoriesFilterOptions represents optional filter parameters for GetFileTypeCategories
+type GetFileTypeCategoriesFilterOptions struct {
+	// Enum values to filter file types for specific policy categories.
+	// Valid values: "ZSCALERDLP", "EXTERNALDLP", "FILETYPECATEGORYFORFILETYPECONTROL"
+	Enums []string
+	// A Boolean value specifying whether custom file types must be excluded from the list or not
+	ExcludeCustomFileTypes *bool
+}
+
+// GetFileTypeCategories retrieves the list of all file types, including predefined and custom file types,
+// available for configuring rule conditions in different ZIA policies.
+func GetFileTypeCategories(ctx context.Context, service *zscaler.Service, opts *GetFileTypeCategoriesFilterOptions) ([]FileTypeCategory, error) {
+	var fileTypeCategory []FileTypeCategory
+	endpoint := fileTypeCategoriesEndPoint
+
+	// Build query parameters
+	queryParams := url.Values{}
+	if opts != nil {
+		if len(opts.Enums) > 0 {
+			for _, enum := range opts.Enums {
+				queryParams.Add("enums", enum)
+			}
+		}
+		if opts.ExcludeCustomFileTypes != nil {
+			queryParams.Add("excludeCustomFileTypes", fmt.Sprintf("%t", *opts.ExcludeCustomFileTypes))
+		}
+	}
+
+	// Build base endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &fileTypeCategory)
+	return fileTypeCategory, err
+}
+
+func GetCustomFileTypes(ctx context.Context, service *zscaler.Service) ([]CustomFileTypes, error) {
+	var fileTypeRules []CustomFileTypes
+	err := common.ReadAllPages(ctx, service.Client, customFilefileType, &fileTypeRules)
 	return fileTypeRules, err
 }

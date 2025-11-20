@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	locationsEndpoint   = "/zia/api/v1/locations"
-	subLocationEndpoint = "/sublocations"
-	maxBulkDeleteIDs    = 100
+	locationsEndpoint          = "/zia/api/v1/locations"
+	subLocationEndpoint        = "/sublocations"
+	supportedCountriesEndpoint = "/supportedCountries"
+	maxBulkDeleteIDs           = 100
 )
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
@@ -465,4 +466,18 @@ func GetLocationOrSublocationByName(ctx context.Context, service *zscaler.Servic
 		return location, nil
 	}
 	return GetSubLocationByName(context.Background(), service, name)
+}
+
+// GetLocationSupportedCountries retrieves the list of countries supported in location configuration.
+// The API returns a list of supported country values (enum).
+// Note: The response shows the current list of supported values. This list might vary if new entries
+// are added or existing values are modified, and the request always returns the latest information available.
+func GetLocationSupportedCountries(ctx context.Context, service *zscaler.Service) ([]string, error) {
+	var countries []string
+	endpoint := locationsEndpoint + supportedCountriesEndpoint
+	err := service.Client.Read(ctx, endpoint, &countries)
+	if err != nil {
+		return nil, err
+	}
+	return countries, nil
 }
