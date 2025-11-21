@@ -241,7 +241,7 @@ func sweepDLPDictionaries(client *zscaler.Client) error {
 
 func sweepFirewallFilteringRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := filteringrules.GetAll(context.Background(), service)
+	resources, err := filteringrules.GetAll(context.Background(), service, nil)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
 		return err
@@ -304,7 +304,7 @@ func sweepFirewallIPSRules(client *zscaler.Client) error {
 
 func sweepIPDestinationGroup(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := ipdestinationgroups.GetAll(context.Background(), service)
+	resources, err := ipdestinationgroups.GetAll(context.Background(), service, "")
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip destination group: %v", err)
 		return err
@@ -654,7 +654,7 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 
 func sweepURLCategories(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := urlcategories.GetAll(context.Background(), service, false, false)
+	resources, err := urlcategories.GetAll(context.Background(), service, false, false, "")
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
 		return err

@@ -138,7 +138,7 @@ func Get(ctx context.Context, service *zscaler.Service, categoryID string) (*URL
 	return &urlCategory, nil
 }
 
-func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
+func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool, categoryType string) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	queryParams := url.Values{}
 
@@ -147,6 +147,10 @@ func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, custo
 	}
 	if customOnly {
 		queryParams.Set("customOnly", "true")
+	}
+	// Add type parameter to filter by category type (ALL, URL_CATEGORY, TLD_CATEGORY)
+	if categoryType != "" {
+		queryParams.Set("type", categoryType)
 	}
 
 	err := service.Client.Read(ctx, fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
@@ -274,7 +278,7 @@ func UpdateURLReview(ctx context.Context, service *zscaler.Service, reviews []UR
 	return nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool) ([]URLCategory, error) {
+func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool, categoryType string) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 
 	// Build the endpoint with optional query parameters
@@ -287,12 +291,20 @@ func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOn
 	if includeOnlyUrlKeywordCounts {
 		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
 	}
+	// Add type parameter to filter by category type (ALL, URL_CATEGORY, TLD_CATEGORY)
+	// If categoryType is empty, no type filter is applied (returns predefined + custom URL_CATEGORY)
+	// If categoryType is "ALL", returns predefined + custom categories of all types
+	if categoryType != "" {
+		queryParams.Set("type", categoryType)
+	}
 
 	// Append query parameters to endpoint if any exist
 	if len(queryParams) > 0 {
 		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
 	}
 
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &urlCategories)
+	// Use service.Client.Read directly since the API doesn't support pagination
+	// The API returns all results in a single response
+	err := service.Client.Read(ctx, endpoint, &urlCategories)
 	return urlCategories, err
 }

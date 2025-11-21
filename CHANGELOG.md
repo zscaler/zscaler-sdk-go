@@ -1,5 +1,32 @@
 # Changelog
 
+# 3.8.7 (November 21, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added automatic `x-partner-id` header injection for all API requests when `partnerId` is provided in configuration across OneAPI and all legacy clients (ZIA, ZPA, ZTW, ZCC, ZDX, ZWA)
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `GetWeightedLoadBalancerConfig` and `UpdateWeightedLoadBalancerConfig` functions for ZPA application segments
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added optional filter parameters to ZIA location groups `GetAll` function and `GetLocationGroupCount` function
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `GetLocationSupportedCountries` function to retrieve list of supported countries for location configuration
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added optional filter parameters to ZIA location lite `GetAll` function and updated struct with sublocation scope fields
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `GetCustomFileTypeCount` function with optional query filter parameter
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added optional filter parameters to `GetFileTypeCategories` function (enums, excludeCustomFileTypes)
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `type` parameter to URL categories `GetAll` and `GetCustomURLCategories` to support filtering by category type (`ALL`, `URL_CATEGORY`, `TLD_CATEGORY`)
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added optional filter parameters to traffic capture `GetAll`, `GetByName`, and firewall filtering rules functions
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `GetTrafficCaptureRuleOrder`, `GetTrafficCaptureRuleLabels`, and `GetTrafficCaptureRuleCount` functions
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `GetFirewallFilteringRuleCount` function with support for all optional filter parameters
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Added `excludeType` parameter to IP destination groups `GetAll` function
+
+### Bug Fixes
+
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed ZIA location management and VPN credentials pagination to use 1000 max page size to prevent API errors
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Updated ZIA `common.ReadAllPages` default page size from 5000 to 1000 with support for custom page sizes
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed URL categories and IP destination groups to remove pagination since APIs don't support it
+- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed traffic capture package name from `traffic_c` to `traffic_capture`
+
 # 3.8.6 (November 19, 2025)
 
 ## Notes
@@ -55,7 +82,34 @@
 
 ### Bug Fixes
 
-- [PR #381](https://github.com/zscaler/zscaler-sdk-go/pull/381) - Fixed SCIM and SAML attribute endpoints to use plain search strings instead of filter format, and improved URL encoding for ZPA endpoints to use `%20` for spaces instead of `+` to match API requirements 
+- [PR #381](https://github.com/zscaler/zscaler-sdk-go/pull/381) - Fixed SCIM and SAML attribute endpoints to use plain search strings instead of filter format, and improved URL encoding for ZPA endpoints to use `%20` for spaces instead of `+` to match API requirements
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Fixed ZIA location management and VPN credentials pagination to use 1000 max page size instead of 5000 to prevent API errors
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Updated ZIA `common.ReadAllPages` default page size from 5000 to 1000 with support for custom page sizes via variadic parameter
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Fixed URL categories `GetAll` to use direct Read instead of pagination since the API doesn't support pagination
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Fixed IP destination groups to use direct Read instead of pagination since the API doesn't support pagination
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Fixed traffic capture package name from `traffic_c` to `traffic_capture`
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Fixed `GetTrafficCaptureRuleCount` to return `int` instead of struct to match API simple integer response
+
+### Enhancements
+
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added automatic `x-partner-id` header injection for all API requests when `partnerId` is provided in configuration across OneAPI and all legacy clients (ZIA, ZPA, ZTW, ZCC, ZDX, ZWA)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetWeightedLoadBalancerConfig` and `UpdateWeightedLoadBalancerConfig` functions for ZPA application segments
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added optional filter parameters to ZIA location groups `GetAll` function (version, name, groupType, comments, locationId, lastModUser, fetchLocations)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetLocationGroupCount` function with support for all optional filter parameters
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetLocationSupportedCountries` function to retrieve list of supported countries for location configuration
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added optional filter parameters to ZIA location lite `GetAll` function (includeSubLocations, includeParentLocations, sslScanEnabled, search, enableIOT)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Updated location lite struct to include sublocation scope fields (SubLocScopeEnabled, SubLocScope, SubLocScopeValues, SubLocAccIDs)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetCustomFileTypeCount` function with optional query filter parameter
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added optional filter parameters to `GetFileTypeCategories` function (enums, excludeCustomFileTypes)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `type` parameter to URL categories `GetAll` and `GetCustomURLCategories` functions to support filtering by category type (ALL, URL_CATEGORY, TLD_CATEGORY)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added optional filter parameters to traffic capture `GetAll` function (ruleName, ruleDescription, ruleLabelId, ruleOrder, ruleAction, location, department, group, user, deviceGroup, device, deviceTrustLevel)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetTrafficCaptureRuleOrder` function to retrieve rule order information including admin rank mappings
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetTrafficCaptureRuleLabels` function with optional search filters (searchByField, searchByValue)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetTrafficCaptureRuleCount` function with support for all optional filter parameters
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added optional filter parameters to firewall filtering rules `GetAll` function (ruleName, ruleLabel, ruleLabelId, ruleOrder, ruleDescription, ruleAction, location, department, group, user, device, deviceGroup, deviceTrustLevel, srcIps, destAddresses, srcIpGroups, destIpGroups, nwApplication, nwServices, destIpCategories)
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `GetFirewallFilteringRuleCount` function with support for all optional filter parameters
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Added `excludeType` parameter to IP destination groups `GetAll` function to filter by group type
+- [PR #387](https://github.com/zscaler/zscaler-sdk-go/pull/387) - Updated `GetByName` functions in traffic capture, firewall filtering rules, and IP destination groups to use `GetAll` with filters for better API efficiency 
 
 # 3.8.2 (November 5, 2025)
 

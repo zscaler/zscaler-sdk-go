@@ -120,7 +120,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(context.Background(), service)
+	resources, err := GetAll(context.Background(), service, "")
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}

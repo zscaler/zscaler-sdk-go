@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -135,6 +137,31 @@ type FirewallFilteringRules struct {
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
+// GetAllFilterOptions represents optional filter parameters for GetAll
+type GetAllFilterOptions struct {
+	PredefinedRuleCount bool
+	RuleName            string
+	RuleLabel           string
+	RuleLabelId         int
+	RuleOrder           string
+	RuleDescription     string
+	RuleAction          string
+	Location            string
+	Department          string
+	Group               string
+	User                string
+	Device              string
+	DeviceGroup         string
+	DeviceTrustLevel    string
+	SrcIps              string
+	DestAddresses       string
+	SrcIpGroups         string
+	DestIpGroups        string
+	NwApplication       string
+	NwServices          string
+	DestIpCategories    string
+}
+
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallFilteringRules, error) {
 	var rule FirewallFilteringRules
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
@@ -147,11 +174,15 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallFi
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*FirewallFilteringRules, error) {
-	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules)
+	// Use GetAll with RuleName filter to leverage API filtering and pagination
+	opts := &GetAllFilterOptions{
+		RuleName: ruleName,
+	}
+	rules, err := GetAll(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, rule := range rules {
 		if strings.EqualFold(rule.Name, ruleName) {
 			return &rule, nil
@@ -194,8 +225,168 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]FirewallFilteringRules, error) {
+// GetAll retrieves all firewall filtering rules with optional filters.
+// This endpoint supports a maximum page size of 5000.
+func GetAll(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) ([]FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
-	err := common.ReadAllPages(ctx, service.Client, firewallRulesEndpoint, &rules, 5000)
+	endpoint := firewallRulesEndpoint
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.RuleName != "" {
+			queryParams.Add("ruleName", opts.RuleName)
+		}
+		if opts.RuleLabel != "" {
+			queryParams.Add("ruleLabel", opts.RuleLabel)
+		}
+		if opts.RuleLabelId != 0 {
+			queryParams.Add("ruleLabelId", strconv.Itoa(opts.RuleLabelId))
+		}
+		if opts.RuleOrder != "" {
+			queryParams.Add("ruleOrder", opts.RuleOrder)
+		}
+		if opts.RuleDescription != "" {
+			queryParams.Add("ruleDescription", opts.RuleDescription)
+		}
+		if opts.RuleAction != "" {
+			queryParams.Add("ruleAction", opts.RuleAction)
+		}
+		if opts.Location != "" {
+			queryParams.Add("location", opts.Location)
+		}
+		if opts.Department != "" {
+			queryParams.Add("department", opts.Department)
+		}
+		if opts.Group != "" {
+			queryParams.Add("group", opts.Group)
+		}
+		if opts.User != "" {
+			queryParams.Add("user", opts.User)
+		}
+		if opts.Device != "" {
+			queryParams.Add("device", opts.Device)
+		}
+		if opts.DeviceGroup != "" {
+			queryParams.Add("deviceGroup", opts.DeviceGroup)
+		}
+		if opts.DeviceTrustLevel != "" {
+			queryParams.Add("deviceTrustLevel", opts.DeviceTrustLevel)
+		}
+		if opts.SrcIps != "" {
+			queryParams.Add("srcIps", opts.SrcIps)
+		}
+		if opts.DestAddresses != "" {
+			queryParams.Add("destAddresses", opts.DestAddresses)
+		}
+		if opts.SrcIpGroups != "" {
+			queryParams.Add("srcIpGroups", opts.SrcIpGroups)
+		}
+		if opts.DestIpGroups != "" {
+			queryParams.Add("destIpGroups", opts.DestIpGroups)
+		}
+		if opts.NwApplication != "" {
+			queryParams.Add("nwApplication", opts.NwApplication)
+		}
+		if opts.NwServices != "" {
+			queryParams.Add("nwServices", opts.NwServices)
+		}
+		if opts.DestIpCategories != "" {
+			queryParams.Add("destIpCategories", opts.DestIpCategories)
+		}
+	}
+
+	// Build endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	// Use pageSize=5000 as this endpoint supports it
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &rules, 5000)
 	return rules, err
+}
+
+// GetFirewallFilteringRuleCount retrieves the count of firewall filtering rules using optional filters.
+// The API returns a simple integer count.
+func GetFirewallFilteringRuleCount(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) (int, error) {
+	// Build query string
+	query := url.Values{}
+	if opts != nil {
+		query.Set("predefinedRuleCount", strconv.FormatBool(opts.PredefinedRuleCount))
+		if opts.RuleName != "" {
+			query.Set("ruleName", opts.RuleName)
+		}
+		if opts.RuleLabel != "" {
+			query.Set("ruleLabel", opts.RuleLabel)
+		}
+		if opts.RuleLabelId != 0 {
+			query.Set("ruleLabelId", strconv.Itoa(opts.RuleLabelId))
+		}
+		if opts.RuleOrder != "" {
+			query.Set("ruleOrder", opts.RuleOrder)
+		}
+		if opts.RuleDescription != "" {
+			query.Set("ruleDescription", opts.RuleDescription)
+		}
+		if opts.RuleAction != "" {
+			query.Set("ruleAction", opts.RuleAction)
+		}
+		if opts.Location != "" {
+			query.Set("location", opts.Location)
+		}
+		if opts.Department != "" {
+			query.Set("department", opts.Department)
+		}
+		if opts.Group != "" {
+			query.Set("group", opts.Group)
+		}
+		if opts.User != "" {
+			query.Set("user", opts.User)
+		}
+		if opts.Device != "" {
+			query.Set("device", opts.Device)
+		}
+		if opts.DeviceGroup != "" {
+			query.Set("deviceGroup", opts.DeviceGroup)
+		}
+		if opts.DeviceTrustLevel != "" {
+			query.Set("deviceTrustLevel", opts.DeviceTrustLevel)
+		}
+		if opts.SrcIps != "" {
+			query.Set("srcIps", opts.SrcIps)
+		}
+		if opts.DestAddresses != "" {
+			query.Set("destAddresses", opts.DestAddresses)
+		}
+		if opts.SrcIpGroups != "" {
+			query.Set("srcIpGroups", opts.SrcIpGroups)
+		}
+		if opts.DestIpGroups != "" {
+			query.Set("destIpGroups", opts.DestIpGroups)
+		}
+		if opts.NwApplication != "" {
+			query.Set("nwApplication", opts.NwApplication)
+		}
+		if opts.NwServices != "" {
+			query.Set("nwServices", opts.NwServices)
+		}
+		if opts.DestIpCategories != "" {
+			query.Set("destIpCategories", opts.DestIpCategories)
+		}
+	}
+
+	endpoint := firewallRulesEndpoint + "/count"
+	if len(query) > 0 {
+		endpoint += "?" + query.Encode()
+	}
+
+	var count int
+	err := service.Client.Read(ctx, endpoint, &count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to retrieve firewall filtering rule count: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Returning firewall filtering rule count: %d", count)
+	return count, nil
 }

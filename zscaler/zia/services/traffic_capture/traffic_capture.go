@@ -1,10 +1,12 @@
-package traffic_c
+package traffic_capture
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -126,6 +128,67 @@ type TrafficCaptureRules struct {
 	Devices []common.IDNameExtensions `json:"devices"`
 }
 
+type TrafficCaptureRulesCountResponse struct {
+	Count int `json:"count"`
+}
+
+type TrafficCaptureRulesCountQuery struct {
+	PredefinedRuleCount bool
+	RuleName            string
+	RuleDescription     string
+	ruleLabelId         int
+	RuleOrder           string
+	RuleAction          string
+	Location            string
+	Department          string
+	Group               string
+	User                string
+	DeviceGroup         string
+	Device              string
+	DeviceTrustLevel    string
+}
+
+// GetAllFilterOptions represents optional filter parameters for GetAll
+type GetAllFilterOptions struct {
+	RuleName         string
+	RuleDescription  string
+	RuleLabelId      int
+	RuleOrder        string
+	RuleAction       string
+	Location         string
+	Department       string
+	Group            string
+	User             string
+	DeviceGroup      string
+	Device           string
+	DeviceTrustLevel string
+}
+
+// RuleLabelInfo represents rule label information
+type RuleLabelInfo struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	OrgID int    `json:"orgId"`
+}
+
+// GetTrafficCaptureRuleLabelsFilterOptions represents optional filter parameters for GetTrafficCaptureRuleLabels
+type GetTrafficCaptureRuleLabelsFilterOptions struct {
+	SearchByField string // Search option based on specific rule fields
+	SearchByValue string // Search option based on specified values for rule fields
+}
+
+// RankOrderRange represents the start and end order range for a specific admin rank
+type RankOrderRange struct {
+	StartOrder int `json:"startOrder"`
+	EndOrder   int `json:"endOrder"`
+}
+
+// TrafficCaptureRuleOrderInfo represents the rule order information
+type TrafficCaptureRuleOrderInfo struct {
+	RuleOrderRange     map[string]RankOrderRange `json:"ruleOrderRange"`
+	MaxOrderConfigured int                       `json:"maxOrderConfigured"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*TrafficCaptureRules, error) {
 	var rule TrafficCaptureRules
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", trafficCaptureRulesEndpoint, ruleID), &rule)
@@ -138,11 +201,15 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*TrafficCap
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, ruleName string) (*TrafficCaptureRules, error) {
-	var rules []TrafficCaptureRules
-	err := common.ReadAllPages(ctx, service.Client, trafficCaptureRulesEndpoint, &rules)
+	// Use GetAll with RuleName filter to leverage API filtering and pagination
+	opts := &GetAllFilterOptions{
+		RuleName: ruleName,
+	}
+	rules, err := GetAll(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, rule := range rules {
 		if strings.EqualFold(rule.Name, ruleName) {
 			return &rule, nil
@@ -185,15 +252,65 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]TrafficCaptureRules, error) {
+// GetAll retrieves all traffic capture rules with optional filters.
+func GetAll(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) ([]TrafficCaptureRules, error) {
 	var rules []TrafficCaptureRules
-	err := common.ReadAllPages(ctx, service.Client, trafficCaptureRulesEndpoint, &rules)
+	endpoint := trafficCaptureRulesEndpoint
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.RuleName != "" {
+			queryParams.Add("ruleName", opts.RuleName)
+		}
+		if opts.RuleDescription != "" {
+			queryParams.Add("ruleDescription", opts.RuleDescription)
+		}
+		if opts.RuleLabelId != 0 {
+			queryParams.Add("ruleLabelId", strconv.Itoa(opts.RuleLabelId))
+		}
+		if opts.RuleOrder != "" {
+			queryParams.Add("ruleOrder", opts.RuleOrder)
+		}
+		if opts.RuleAction != "" {
+			queryParams.Add("ruleAction", opts.RuleAction)
+		}
+		if opts.Location != "" {
+			queryParams.Add("location", opts.Location)
+		}
+		if opts.Department != "" {
+			queryParams.Add("department", opts.Department)
+		}
+		if opts.Group != "" {
+			queryParams.Add("group", opts.Group)
+		}
+		if opts.User != "" {
+			queryParams.Add("user", opts.User)
+		}
+		if opts.DeviceGroup != "" {
+			queryParams.Add("deviceGroup", opts.DeviceGroup)
+		}
+		if opts.Device != "" {
+			queryParams.Add("device", opts.Device)
+		}
+		if opts.DeviceTrustLevel != "" {
+			queryParams.Add("deviceTrustLevel", opts.DeviceTrustLevel)
+		}
+	}
+
+	// Build endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &rules)
 	return rules, err
 }
 
-/*
-// GetEcRDRCount retrieves the count of forwarding rules using optional filters
-func GetTrafficCaptureRuleCount(ctx context.Context, service *zscaler.Service, params *ForwardingRulesCountQuery) (*ForwardingRulesCountResponse, error) {
+// GetTrafficCaptureRuleCount retrieves the count of traffic capture rules using optional filters.
+// The API returns a simple integer count.
+func GetTrafficCaptureRuleCount(ctx context.Context, service *zscaler.Service, params *TrafficCaptureRulesCountQuery) (int, error) {
 	// Build query string
 	query := url.Values{}
 	if params != nil {
@@ -207,24 +324,93 @@ func GetTrafficCaptureRuleCount(ctx context.Context, service *zscaler.Service, p
 		if params.RuleDescription != "" {
 			query.Set("ruleDescription", params.RuleDescription)
 		}
-		if params.RuleForwardMethod != "" {
-			query.Set("ruleForwardMethod", params.RuleForwardMethod)
+		if params.ruleLabelId != 0 {
+			query.Set("ruleLabelId", strconv.Itoa(params.ruleLabelId))
+		}
+		if params.RuleAction != "" {
+			query.Set("ruleAction", params.RuleAction)
+		}
+		if params.Department != "" {
+			query.Set("department", params.Department)
+		}
+		if params.Group != "" {
+			query.Set("group", params.Group)
+		}
+		if params.User != "" {
+			query.Set("user", params.User)
+		}
+		if params.DeviceGroup != "" {
+			query.Set("deviceGroup", params.DeviceGroup)
+		}
+		if params.Device != "" {
+			query.Set("device", params.Device)
+		}
+		if params.DeviceTrustLevel != "" {
+			query.Set("deviceTrustLevel", params.DeviceTrustLevel)
 		}
 		if params.Location != "" {
 			query.Set("location", params.Location)
 		}
 	}
 
-	endpoint := forwardingRulesEndpoint + "/count"
+	endpoint := trafficCaptureRulesEndpoint + "/count"
 	if len(query) > 0 {
 		endpoint += "?" + query.Encode()
 	}
 
-	var result ForwardingRulesCountResponse
-	err := service.Client.ReadResource(ctx, endpoint, &result)
+	var count int
+	err := service.Client.Read(ctx, endpoint, &count)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve forwarding rule count: %w", err)
+		return 0, fmt.Errorf("failed to retrieve traffic capture rule count: %w", err)
 	}
-	return &result, nil
+
+	service.Client.GetLogger().Printf("[DEBUG] Returning traffic capture rule count: %d", count)
+	return count, nil
 }
-*/
+
+// GetTrafficCaptureRuleOrder retrieves the rule order information for the Traffic Capture policy,
+// including the admin rank and rule order mappings and the maximum configured rule order.
+func GetTrafficCaptureRuleOrder(ctx context.Context, service *zscaler.Service) (*TrafficCaptureRuleOrderInfo, error) {
+	var orderInfo TrafficCaptureRuleOrderInfo
+	endpoint := trafficCaptureRulesEndpoint + "/order"
+
+	err := service.Client.Read(ctx, endpoint, &orderInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve traffic capture rule order: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Returning traffic capture rule order info: %+v", orderInfo)
+	return &orderInfo, nil
+}
+
+// GetTrafficCaptureRuleLabels retrieves the list of rule labels associated with the Traffic Capture policy rules.
+func GetTrafficCaptureRuleLabels(ctx context.Context, service *zscaler.Service, opts *GetTrafficCaptureRuleLabelsFilterOptions) ([]RuleLabelInfo, error) {
+	var ruleLabels []RuleLabelInfo
+	endpoint := trafficCaptureRulesEndpoint + "/ruleLabels"
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.SearchByField != "" {
+			queryParams.Add("searchByField", opts.SearchByField)
+		}
+		if opts.SearchByValue != "" {
+			queryParams.Add("searchByValue", opts.SearchByValue)
+		}
+	}
+
+	// Build endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	// Use common.ReadAllPages to handle pagination (page and pageSize added automatically)
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &ruleLabels)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve traffic capture rule labels: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Returning %d traffic capture rule labels", len(ruleLabels))
+	return ruleLabels, nil
+}
