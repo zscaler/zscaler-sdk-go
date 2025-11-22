@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -54,11 +56,16 @@ func GetDepartmentLite(ctx context.Context, service *zscaler.Service, department
 }
 
 func GetDepartmentsByName(ctx context.Context, service *zscaler.Service, departmentName string) (*Department, error) {
-	var departments []Department
-	err := common.ReadAllPages(ctx, service.Client, departmentEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &departments)
+	// Use GetAll with search parameter to leverage API filtering and pagination
+	opts := &GetAllFilterOptions{
+		Search: departmentName,
+	}
+	departments, err := GetAll(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, department := range departments {
 		if strings.EqualFold(department.Name, departmentName) {
 			return &department, nil
@@ -102,9 +109,43 @@ func Delete(ctx context.Context, service *zscaler.Service, departmentID int) (*h
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]Department, error) {
+// GetAllFilterOptions represents optional query parameters for GetAll
+type GetAllFilterOptions struct {
+	// Search string used to match against a department's name or comments attributes
+	Search string
+	// Limits the search to match only against the department name
+	LimitSearch bool
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service, opts *GetAllFilterOptions) ([]Department, error) {
 	var departments []Department
-	err := common.ReadAllPages(ctx, service.Client, departmentEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &departments)
+	endpoint := departmentEndpoint
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.Search != "" {
+			queryParams.Add("search", opts.Search)
+		}
+		if opts.LimitSearch {
+			queryParams.Add("limitSearch", strconv.FormatBool(opts.LimitSearch))
+		}
+	}
+
+	// Add sort parameters using service defaults (always use service.SortBy and service.SortOrder)
+	if string(service.SortBy) != "" {
+		queryParams.Add("sortBy", string(service.SortBy))
+	}
+	if string(service.SortOrder) != "" {
+		queryParams.Add("sortOrder", string(service.SortOrder))
+	}
+
+	// Build endpoint with query parameters
+	if len(queryParams) > 0 {
+		endpoint += "?" + queryParams.Encode()
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &departments)
 	return departments, err
 }
 

@@ -50,11 +50,12 @@ func Get(ctx context.Context, service *zscaler.Service, ruleLabelID int) (*RuleL
 }
 
 func GetRuleLabelByName(ctx context.Context, service *zscaler.Service, labelName string) (*RuleLabels, error) {
-	var ruleLabels []RuleLabels
-	err := common.ReadAllPages(ctx, service.Client, ruleLabelsEndpoint, &ruleLabels)
+	// Use GetAll to leverage the single API call and built-in pagination
+	ruleLabels, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
+	// Search for exact match (case-insensitive)
 	for _, ruleLabel := range ruleLabels {
 		if strings.EqualFold(ruleLabel.Name, labelName) {
 			return &ruleLabel, nil

@@ -33,9 +33,6 @@ type TrafficCaptureRules struct {
 	// The admin’s access privilege to this rule based on the assigned role
 	AccessControl string `json:"accessControl,omitempty"`
 
-	// A Boolean value that indicates whether full logging is enabled. A true value indicates that full logging is enabled, whereas a false value indicates that aggregate logging is enabled.
-	EnableFullLogging bool `json:"enableFullLogging"`
-
 	// The action the Traffic Capture policy rule takes when packets match the rule
 	Action string `json:"action,omitempty"`
 
@@ -77,6 +74,12 @@ type TrafficCaptureRules struct {
 
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined"`
+
+	// The maximum size of traffic to capture per connection
+	TxnSizeLimit string `json:"txnSizeLimit,omitempty"`
+
+	// The percentage of connections sampled for capturing each time the rule is triggered
+	TxnSampling string `json:"txnSampling,omitempty"`
 
 	// The locations to which the Firewall Filtering policy rule applies
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
@@ -126,6 +129,17 @@ type TrafficCaptureRules struct {
 
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
+
+	// The list of preconfigured workload groups to which the policy must be applied.
+	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
+
+	// Source IP address groups for which the rule is applicable. If not set, the rule is not restricted to a specific source IP address group.
+	// Note: For organizations that have enabled IPv6, the srcIpv6Groups field lists the IPv6 source address groups for which the rule is applicable.
+	SrcIpv6Groups []common.IDNameExtensions `json:"srcIpv6Groups,omitempty"`
+
+	// Destination IPv6 address groups for which the rule is applicable.
+	// If not set, the rule is not restricted to a specific source IPv6 address group.
+	DestIpv6Groups []common.IDNameExtensions `json:"destIpv6Groups,omitempty"`
 }
 
 type TrafficCaptureRulesCountResponse struct {

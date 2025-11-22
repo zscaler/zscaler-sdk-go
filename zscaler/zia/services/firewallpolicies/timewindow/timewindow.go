@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -22,12 +21,13 @@ type TimeWindow struct {
 }
 
 func GetTimeWindowByName(ctx context.Context, service *zscaler.Service, timeWindowName string) (*TimeWindow, error) {
-	var timeWindow []TimeWindow
-	err := common.ReadAllPages(ctx, service.Client, timeWindowEndpoint, &timeWindow)
+	// Use GetAll to leverage the single API call
+	timeWindows, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, err
 	}
-	for _, timeWindow := range timeWindow {
+	// Search for exact match (case-insensitive)
+	for _, timeWindow := range timeWindows {
 		if strings.EqualFold(timeWindow.Name, timeWindowName) {
 			return &timeWindow, nil
 		}
@@ -37,6 +37,7 @@ func GetTimeWindowByName(ctx context.Context, service *zscaler.Service, timeWind
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]TimeWindow, error) {
 	var timeWindow []TimeWindow
-	err := common.ReadAllPages(ctx, service.Client, timeWindowEndpoint, &timeWindow)
+	// This endpoint does not support pagination, so use service.Client.Read directly
+	err := service.Client.Read(ctx, timeWindowEndpoint, &timeWindow)
 	return timeWindow, err
 }
