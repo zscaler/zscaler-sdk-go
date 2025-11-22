@@ -33,11 +33,22 @@ const (
 	loggerPrefix            = "oneapi-logger: "
 )
 
+// inFlightRequest represents a request that's currently being processed
+type inFlightRequest struct {
+	wg     sync.WaitGroup
+	result []byte
+	resp   *http.Response
+	req    *http.Request
+	err    error
+	once   sync.Once
+}
+
 // Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
 	oauth2Credentials *Configuration
 	stopTicker        chan bool
+	inFlightRequests  sync.Map // Map[string]*inFlightRequest - tracks in-flight GET requests for deduplication
 }
 
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
@@ -428,21 +439,62 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 	// Create cache key using the actual request
 	key := cache.CreateCacheKey(req)
-	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
-		if method != http.MethodGet {
-			c.oauth2Credentials.CacheManager.Delete(key)
-			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
-		}
-		resp := c.oauth2Credentials.CacheManager.Get(key)
-		inCache := resp != nil
-		if inCache {
-			respData, err := io.ReadAll(resp.Body)
+
+	// For GET requests, check cache first and handle request deduplication
+	var ifr *inFlightRequest
+	if method == http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
+		// Check cache first
+		cachedResp := c.oauth2Credentials.CacheManager.Get(key)
+		if cachedResp != nil {
+			respData, err := io.ReadAll(cachedResp.Body)
 			if err == nil {
-				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+				cachedResp.Body = io.NopCloser(bytes.NewBuffer(respData))
 			}
 			c.oauth2Credentials.Logger.Printf("[INFO] served from cache, key:%s\n", key)
-			return respData, resp, req, nil
+			return respData, cachedResp, req, nil
 		}
+
+		// Check if there's an in-flight request for the same URL
+		if inFlight, exists := c.inFlightRequests.Load(key); exists {
+			if existingIfr, ok := inFlight.(*inFlightRequest); ok {
+				c.oauth2Credentials.Logger.Printf("[INFO] waiting for in-flight request to complete, key:%s\n", key)
+				existingIfr.wg.Wait() // Wait for the in-flight request to complete
+				// Once the request completes, check cache again
+				cachedResp := c.oauth2Credentials.CacheManager.Get(key)
+				if cachedResp != nil {
+					respData, err := io.ReadAll(cachedResp.Body)
+					if err == nil {
+						cachedResp.Body = io.NopCloser(bytes.NewBuffer(respData))
+					}
+					c.oauth2Credentials.Logger.Printf("[INFO] served from cache after waiting for in-flight request, key:%s\n", key)
+					return respData, cachedResp, req, nil
+				}
+				// If still not in cache, there was an error - check the in-flight request error
+				if existingIfr.err != nil {
+					return nil, existingIfr.resp, existingIfr.req, existingIfr.err
+				}
+				// If no error but not cached, something went wrong - proceed with normal request
+			}
+		}
+
+		// Create new in-flight request and mark it as in-flight
+		ifr = &inFlightRequest{}
+		ifr.wg.Add(1)
+		c.inFlightRequests.Store(key, ifr)
+
+		// Always clean up the in-flight request when done (success or error)
+		defer func() {
+			if ifr != nil {
+				ifr.once.Do(func() {
+					ifr.wg.Done()
+					c.inFlightRequests.Delete(key)
+				})
+			}
+		}()
+	} else if method != http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
+		// For non-GET requests, invalidate cache
+		c.oauth2Credentials.CacheManager.Delete(key)
+		c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 	}
 
 	var resp *http.Response
@@ -576,7 +628,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			bodyCopy, readErr := io.ReadAll(resp.Body)
 			if readErr == nil {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
-				
+
 				// Check if this is an EDIT_LOCK_NOT_AVAILABLE error
 				if errorx.IsEditLockError(resp) {
 					backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
@@ -585,12 +637,12 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 						backoffDelay = maxBackoff
 					}
 					c.oauth2Credentials.Logger.Printf("[WARN] Edit lock conflict detected (attempt %d), waiting %v before retry", retry, backoffDelay)
-					
+
 					// Track this wait time so it doesn't count against request timeout
 					beforeWait := time.Now()
 					time.Sleep(backoffDelay)
 					totalWaitTime += time.Since(beforeWait)
-					
+
 					// Rebuild request with fresh body reader
 					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
 					if err != nil {

@@ -126,7 +126,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	resources, err := GetAll(context.Background(), service, false, false)
+	resources, err := GetAll(context.Background(), service, false, false, "")
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestURLCategories(t *testing.T) {
 	}
 
 	// Test the GetIncludeOnlyUrlKeyWordCounts function with both parameters
-	keywordCountResource, err := GetCustomURLCategories(context.Background(), service, name, true, true)
+	keywordCountResource, err := GetCustomURLCategories(context.Background(), service, name, true, true, "")
 	if err != nil {
 		t.Errorf("Error retrieving URL category with includeOnlyUrlKeywordCounts and customOnly: %v", err)
 		return

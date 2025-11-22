@@ -178,23 +178,41 @@ func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint strin
 		pageSize = customPageSize[0]
 	}
 
-	// Parse the endpoint into a URL.
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return fmt.Errorf("could not parse endpoint URL: %w", err)
+	// Parse the endpoint to separate path and query string
+	var path string
+	var existingQuery url.Values
+
+	// Check if endpoint contains a query string
+	queryIdx := strings.Index(endpoint, "?")
+	if queryIdx == -1 {
+		// No query string, endpoint is just the path
+		path = endpoint
+		existingQuery = make(url.Values)
+	} else {
+		// Split path and query string
+		path = endpoint[:queryIdx]
+		queryStr := endpoint[queryIdx+1:]
+		var err error
+		existingQuery, err = url.ParseQuery(queryStr)
+		if err != nil {
+			return fmt.Errorf("could not parse query string: %w", err)
+		}
 	}
 
-	// Get the existing query parameters and add new ones.
-	q := u.Query()
-	q.Set("pageSize", fmt.Sprintf("%d", pageSize))
-	q.Set("page", fmt.Sprintf("%d", page))
+	// Add or update pagination parameters
+	existingQuery.Set("pageSize", fmt.Sprintf("%d", pageSize))
+	existingQuery.Set("page", fmt.Sprintf("%d", page))
 
-	// Set the URL's RawQuery to the encoded query parameters.
-	u.RawQuery = q.Encode()
+	// Construct the final endpoint with properly encoded query string
+	queryStr := existingQuery.Encode()
+	finalEndpoint := path
+	if queryStr != "" {
+		finalEndpoint = path + "?" + queryStr
+	}
 
-	// Convert the URL back to a string and read the page.
+	// Read the page
 	pageItems := []T{}
-	err = client.Read(ctx, u.String(), &pageItems)
+	err := client.Read(ctx, finalEndpoint, &pageItems)
 	if err != nil {
 		return err
 	}

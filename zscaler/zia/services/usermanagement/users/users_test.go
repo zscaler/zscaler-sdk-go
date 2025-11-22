@@ -65,7 +65,7 @@ func TestUserManagement(t *testing.T) {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
 
-	groups, err := groups.GetAllGroups(context.Background(), service)
+		groups, err := groups.GetAllGroups(context.Background(), service, nil)
 	if err != nil || len(departments) == 0 {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
@@ -145,7 +145,7 @@ func TestUserManagement(t *testing.T) {
 	}
 
 	// Step 10: Test retrieving all users (by ID)
-	allUsers, err := GetAllUsers(context.Background(), service)
+	allUsers, err := GetAllUsers(context.Background(), service, nil)
 	if err != nil {
 		t.Fatalf("Error retrieving all users: %v", err)
 	}

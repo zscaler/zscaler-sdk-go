@@ -144,7 +144,7 @@ func TestFirewallFilteringRule(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := GetAll(context.Background(), service)
+	allResources, err := GetAll(context.Background(), service, nil)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}

@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -53,8 +53,8 @@ func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPDesti
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, ipDestinationGroupsName string) (*IPDestinationGroups, error) {
-	var ipDestinationGroups []IPDestinationGroups
-	err := common.ReadAllPages(ctx, service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
+	// Use GetAll to leverage API and verify exact match
+	ipDestinationGroups, err := GetAll(ctx, service, "")
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +107,27 @@ func Delete(ctx context.Context, service *zscaler.Service, ipGroupID int) (*http
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]IPDestinationGroups, error) {
+// GetAll retrieves all IP destination groups with optional type filter.
+// The API doesn't support pagination and returns all results in a single response.
+// excludeType parameter filters based on the IP destination group's type.
+// Valid values: "DSTN_IP", "DSTN_FQDN", "DSTN_DOMAIN", "DSTN_OTHER", or "" (no filter)
+func GetAll(ctx context.Context, service *zscaler.Service, excludeType string) ([]IPDestinationGroups, error) {
 	var ipDestinationGroups []IPDestinationGroups
-	err := common.ReadAllPages(ctx, service.Client, ipDestinationGroupsEndpoint, &ipDestinationGroups)
+	endpoint := ipDestinationGroupsEndpoint
+
+	// Build query parameters
+	queryParams := url.Values{}
+	if excludeType != "" {
+		queryParams.Add("excludeType", excludeType)
+	}
+
+	// Build endpoint with query parameters
+	baseQuery := queryParams.Encode()
+	if baseQuery != "" {
+		endpoint += "?" + baseQuery
+	}
+
+	// Use service.Client.Read directly since the API doesn't support pagination
+	err := service.Client.Read(ctx, endpoint, &ipDestinationGroups)
 	return ipDestinationGroups, err
 }

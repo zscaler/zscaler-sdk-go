@@ -77,11 +77,16 @@ func Get(ctx context.Context, service *zscaler.Service, userID int) (*Users, err
 }
 
 func GetUserByName(ctx context.Context, service *zscaler.Service, userName string) (*Users, error) {
-	var users []Users
-	err := service.Client.Read(ctx, fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder))), &users)
+	// Use GetAllUsers with name parameter to leverage API filtering and pagination
+	opts := &GetAllUsersFilterOptions{
+		Name: userName,
+	}
+	users, err := GetAllUsers(ctx, service, opts)
 	if err != nil {
 		return nil, err
 	}
+
+	// API may do partial matching, so verify exact match (case-insensitive)
 	for _, user := range users {
 		if strings.EqualFold(user.Name, userName) {
 			return &user, nil
@@ -158,13 +163,50 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 	return service.Client.BulkDelete(ctx, usersEndpoint+"/bulkDelete", payload)
 }
 
-func GetAllUsers(ctx context.Context, service *zscaler.Service) ([]Users, error) {
+// GetAllUsersFilterOptions represents optional query parameters for GetAllUsers
+type GetAllUsersFilterOptions struct {
+	// Filters by user name (performs a partial match)
+	Name string
+	// Filters by department name (performs a 'starts with' match)
+	Dept string
+	// Filters by group name (performs a 'starts with' match)
+	Group string
+}
+
+func GetAllUsers(ctx context.Context, service *zscaler.Service, opts *GetAllUsersFilterOptions) ([]Users, error) {
 	var users []Users
-	err := common.ReadAllPages(ctx, service.Client, usersEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &users)
-	if err != nil {
-		return nil, err
+	endpoint := usersEndpoint
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.Name != "" {
+			queryParams.Add("name", opts.Name)
+		}
+		if opts.Dept != "" {
+			queryParams.Add("dept", opts.Dept)
+		}
+		if opts.Group != "" {
+			queryParams.Add("group", opts.Group)
+		}
 	}
-	return users, nil
+
+	// Add sort parameters using service defaults (always use service.SortBy and service.SortOrder)
+	if string(service.SortBy) != "" {
+		queryParams.Add("sortBy", string(service.SortBy))
+	}
+	if string(service.SortOrder) != "" {
+		queryParams.Add("sortOrder", string(service.SortOrder))
+	}
+
+	// Build endpoint with query parameters
+	if len(queryParams) > 0 {
+		endpoint += "?" + queryParams.Encode()
+	}
+
+	// Use pageSize=10000 as this endpoint supports up to 10,000 records per page
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &users, 10000)
+	return users, err
 }
 
 func GetAllAuditors(ctx context.Context, service *zscaler.Service) ([]Users, error) {

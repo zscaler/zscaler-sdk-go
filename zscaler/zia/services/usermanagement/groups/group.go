@@ -45,30 +45,21 @@ func GetGroups(ctx context.Context, service *zscaler.Service, groupID int) (*Gro
 }
 
 func GetGroupByName(ctx context.Context, service *zscaler.Service, targetGroup string) (*Groups, error) {
-	var groups []Groups
-	page := 1
+	// Use GetAllGroups with search parameter to leverage built-in pagination
+	opts := &GetAllGroupsFilterOptions{
+		Search: targetGroup,
+	}
 
-	// Construct the endpoint with the search parameter
-	endpointWithSearch := fmt.Sprintf("%s?search=%s&%s", groupsEndpoint, url.QueryEscape(targetGroup), common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)))
+	groups, err := GetAllGroups(ctx, service, opts)
+	if err != nil {
+		return nil, err
+	}
 
-	for {
-		err := common.ReadPage(ctx, service.Client, endpointWithSearch, page, &groups)
-		if err != nil {
-			return nil, err
+	// Iterate over the groups and check if the name matches the targetGroup exactly
+	for _, group := range groups {
+		if strings.EqualFold(group.Name, targetGroup) {
+			return &group, nil
 		}
-
-		// Iterate over the groups and check if the name matches the targetGroup
-		for _, group := range groups {
-			if strings.EqualFold(group.Name, targetGroup) {
-				return &group, nil
-			}
-		}
-
-		// Break the loop if there are no more pages
-		if len(groups) < common.GetPageSize() {
-			break
-		}
-		page++
 	}
 
 	return nil, fmt.Errorf("no group found with name: %s", targetGroup)
@@ -109,9 +100,43 @@ func Delete(ctx context.Context, service *zscaler.Service, groupID int) (*http.R
 	return nil, nil
 }
 
-func GetAllGroups(ctx context.Context, service *zscaler.Service) ([]Groups, error) {
+// GetAllGroupsFilterOptions represents optional query parameters for GetAllGroups
+type GetAllGroupsFilterOptions struct {
+	// Search string used to match against a group's name or comments attributes
+	Search string
+	// The string value defined by the group name or other applicable attributes
+	DefinedBy string
+}
+
+func GetAllGroups(ctx context.Context, service *zscaler.Service, opts *GetAllGroupsFilterOptions) ([]Groups, error) {
 	var groups []Groups
-	err := common.ReadAllPages(ctx, service.Client, groupsEndpoint+"?"+common.GetSortParams(common.SortField(service.SortBy), common.SortOrder(service.SortOrder)), &groups)
+	endpoint := groupsEndpoint
+
+	// Build query parameters from filter options
+	queryParams := url.Values{}
+	if opts != nil {
+		if opts.Search != "" {
+			queryParams.Add("search", opts.Search)
+		}
+		if opts.DefinedBy != "" {
+			queryParams.Add("definedBy", opts.DefinedBy)
+		}
+	}
+
+	// Add sort parameters using service defaults (always use service.SortBy and service.SortOrder)
+	if string(service.SortBy) != "" {
+		queryParams.Add("sortBy", string(service.SortBy))
+	}
+	if string(service.SortOrder) != "" {
+		queryParams.Add("sortOrder", string(service.SortOrder))
+	}
+
+	// Build endpoint with query parameters
+	if len(queryParams) > 0 {
+		endpoint += "?" + queryParams.Encode()
+	}
+
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &groups)
 	return groups, err
 }
 

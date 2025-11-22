@@ -110,7 +110,7 @@ func TestAccDepartmentManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(context.Background(), service)
+	resources, err := GetAll(context.Background(), service, nil)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}

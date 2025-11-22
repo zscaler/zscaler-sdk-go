@@ -109,7 +109,7 @@ func TestAccGroupManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
 	}
 	// Test resources retrieval
-	resources, err := GetAllGroups(context.Background(), service)
+	resources, err := GetAllGroups(context.Background(), service, nil)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
