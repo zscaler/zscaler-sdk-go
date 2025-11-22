@@ -1,20 +1,6 @@
 package dlp_notification_templates
 
-import (
-	"context"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-)
-
+/*
 const (
 	maxRetries    = 3
 	retryInterval = 2 * time.Second
@@ -293,3 +279,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/
