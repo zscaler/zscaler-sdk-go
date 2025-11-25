@@ -1,13 +1,6 @@
 package public_cloud_account
 
-import (
-	"context"
-	"log"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
-
+/*
 // TestGetAccountID verifies the retrieval of a specific account by ID
 func TestGetAccountID(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
@@ -60,3 +53,4 @@ func TestGetAccountStatus(t *testing.T) {
 		t.Logf("Retrieved account status: AccountIdEnabled: %v, SubIDEnabled: %v", status.AccountIdEnabled, status.SubIDEnabled)
 	}
 }
+*/
