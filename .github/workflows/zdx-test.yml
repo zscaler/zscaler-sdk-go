@@ -1,0 +1,81 @@
+name: ZDX Test
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 12 * * 1-5' # UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  zdx-tests:
+    environment: ZIDENTITY_PRODUCTION
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.24"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Clean existing Go modules
+        run: go clean -modcache
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: make test:unit:zdx
+        continue-on-error: false
+
+      - name: Run tests with retry
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 2
+          timeout_minutes: 20
+          command: |
+            make test:integration:zdx
+        env:
+          ZSCALER_CLIENT_ID: ${{ secrets.ZSCALER_CLIENT_ID }}
+          ZSCALER_CLIENT_SECRET: ${{ secrets.ZSCALER_CLIENT_SECRET }}
+          ZSCALER_VANITY_DOMAIN: ${{ secrets.ZSCALER_VANITY_DOMAIN }}
+          ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
+
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./zdxcoverage.out
+          flags: zdx
+          fail_ci_if_error: false
