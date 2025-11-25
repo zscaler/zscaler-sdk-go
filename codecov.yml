@@ -1,0 +1,77 @@
+# Codecov Configuration
+# https://docs.codecov.com/docs/codecov-yaml
+#
+# Codecov AI (Beta) - Requires GitHub App installation
+# Install: https://github.com/apps/codecov-ai
+# Commands available in PR comments:
+#   @codecov-ai-reviewer test   - Generate tests for uncovered code
+#   @codecov-ai-reviewer review - Review PR and provide suggestions
+
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...100"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: false
+        only_pulls: false
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        informational: false
+        only_pulls: false
+
+parsers:
+  go:
+    partials_as_hits: true
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+flags:
+  zia:
+    paths:
+      - zscaler/zia/
+    carryforward: true
+  zpa:
+    paths:
+      - zscaler/zpa/
+    carryforward: true
+  zdx:
+    paths:
+      - zscaler/zdx/
+    carryforward: true
+  zcc:
+    paths:
+      - zscaler/zcc/
+    carryforward: true
+  ztw:
+    paths:
+      - zscaler/ztw/
+    carryforward: true
+  zidentity:
+    paths:
+      - zscaler/zidentity/
+    carryforward: true
+
+ignore:
+  - "vendor/**/*"
+  - "**/*_test.go"
+  - "**/test/**/*"
+  - "tests/**/*"
+  - "local_test/**/*"
+  - "examples/**/*"
+

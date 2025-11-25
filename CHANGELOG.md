@@ -25,7 +25,6 @@
 - [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed ZIA location management and VPN credentials pagination to use 1000 max page size to prevent API errors
 - [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Updated ZIA `common.ReadAllPages` default page size from 5000 to 1000 with support for custom page sizes
 - [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed URL categories and IP destination groups to remove pagination since APIs don't support it
-- [PR #388](https://github.com/zscaler/zscaler-sdk-go/pull/388) - Fixed traffic capture package name from `traffic_c` to `traffic_capture`
 
 # 3.8.6 (November 19, 2025)
 
