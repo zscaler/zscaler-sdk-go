@@ -1,5 +1,11 @@
 # Codecov Configuration
 # https://docs.codecov.com/docs/codecov-yaml
+#
+# Codecov AI (Beta) - Requires GitHub App installation
+# Install: https://github.com/apps/codecov-ai
+# Commands available in PR comments:
+#   @codecov-ai-reviewer test   - Generate tests for uncovered code
+#   @codecov-ai-reviewer review - Review PR and provide suggestions
 
 codecov:
   require_ci_to_pass: true
