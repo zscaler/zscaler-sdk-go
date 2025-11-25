@@ -84,3 +84,11 @@ jobs:
           ZSCALER_SANDBOX_CLOUD: ${{ secrets.ZSCALER_SANDBOX_CLOUD }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
 
+      - name: Publish test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./ziacoverage.out
+          flags: zia
+          fail_ci_if_error: false
+
