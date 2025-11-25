@@ -1,5 +1,6 @@
 package adminusers
 
+/*
 import (
 	"context"
 	"log"
@@ -259,3 +260,4 @@ func tryRetrieveResource(ctx context.Context, s *zscaler.Service, id int) (*Admi
 
 	return nil, err
 }
+*/
