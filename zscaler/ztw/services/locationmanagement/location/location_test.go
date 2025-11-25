@@ -96,7 +96,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	}
 
 	// Assuming a group with the name "BD-MGR01" exists
-	knownName := "BD_CC01_US"
+	knownName := "AWS-CAN-ca-central-1-vpc-096108eb5d9e68d71"
 
 	// Case variations to test
 	variations := []string{
