@@ -38,11 +38,14 @@ type ProvUrlData struct {
 	PacServer          string                            `json:"pacServer,omitempty"`
 	CloudProviderType  string                            `json:"cloudProviderType,omitempty"`
 	FormFactor         string                            `json:"formFactor,omitempty"`
-	HyperVisors        string                            `json:"hyperVisors,omitempty"`
-	BcGroup            BcGroup                           `json:"bcGroup,omitempty"`
 	LocationTemplate   locationtemplate.LocationTemplate `json:"locationTemplate,omitempty"`
-	CloudProvider      *common.CommonIDNameExternalID    `json:"cloudProvider,omitempty"`
-	Location           *common.CommonIDNameExternalID    `json:"location,omitempty"`
+	AutoScaleDetails   AutoScaleDetails                  `json:"autoScaleDetails,omitempty"`
+	CellEdgeDeploy     bool                              `json:"cellEdgeDeploy,omitempty"`
+	ReleaseChannel     string                            `json:"releaseChannel,omitempty"`
+}
+
+type AutoScaleDetails struct {
+	AutoScale bool `json:"autoScale,omitempty"`
 }
 
 type BcGroup struct {
