@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.7``
+``Last updated: v3.8.8``
 
 ---
+
+# 3.8.8 (December 1, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #391](https://github.com/zscaler/zscaler-sdk-go/pull/391) - Fixed ZTW `provisioning_url` and `location_template` struct resources.
 
 # 3.8.7 (November 21, 2025)
 
