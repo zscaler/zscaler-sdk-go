@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
@@ -62,12 +61,15 @@ func getRandomTimeZone() (string, error) {
 	return tz, nil
 }
 func TestCredentialController(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	//updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-approval")
+	//updateName := tests.GetTestName("tests-approval")
+	client, err := tests.NewVCRTestClient(t, "praapproval", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

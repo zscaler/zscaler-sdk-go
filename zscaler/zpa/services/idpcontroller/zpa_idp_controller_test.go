@@ -8,15 +8,12 @@ import (
 )
 
 func TestIdPController(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "idpcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	providers, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -71,15 +68,12 @@ func TestIdPController(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "idpcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	providers, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -104,15 +98,13 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "idpcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")

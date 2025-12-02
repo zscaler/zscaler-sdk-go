@@ -14,10 +14,12 @@ func TestNonExistentResourceOperations(t *testing.T) {
 		"CLIENTLESS_SESSION_PROTECTION_POLICY", "REDIRECTION_POLICY", "SIEM_POLICY",
 	}
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

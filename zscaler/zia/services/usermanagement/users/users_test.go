@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -48,17 +47,19 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestUserManagement(t *testing.T) {
+	tests.ResetTestNameCounter()
 	// Step 1: Create a random user name and other test data
-	name := "tests-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlpha)
-	updateComments := "tests-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlpha)
-	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := tests.GetTestName("tests-users")
+	updateComments := tests.GetTestName("tests-users")
+	email := tests.GetTestName("tests-users")
 
 	// Step 2: Create the general ZIA client
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "users", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	departments, err := departments.GetAll(context.Background(), service)
 	if err != nil || len(departments) == 0 {

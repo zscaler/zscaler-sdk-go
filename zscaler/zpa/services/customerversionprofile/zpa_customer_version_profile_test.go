@@ -12,10 +12,12 @@ import (
 )
 
 func TestCustomerVersionProfile(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "customerversionprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -59,10 +61,12 @@ func TestCustomerVersionProfile(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "customerversionprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

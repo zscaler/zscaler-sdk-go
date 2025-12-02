@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -44,13 +43,16 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestFirewallFilteringRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-fwrule")
+	updateName := tests.GetTestName("tests-fwrule")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "filteringrules", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// workloadGroup := workloadgroups.New(client)
 	// groupList, err := workloadGroup.GetAll()
@@ -200,10 +202,13 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*FirewallFilteringRules, e
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "filteringrules", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Get(context.Background(), service, 0)
 	if err == nil {
@@ -212,10 +217,13 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "filteringrules", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
@@ -224,10 +232,13 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "filteringrules", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Update(context.Background(), service, 0, &FirewallFilteringRules{})
 	if err == nil {
@@ -236,10 +247,13 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "filteringrules", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

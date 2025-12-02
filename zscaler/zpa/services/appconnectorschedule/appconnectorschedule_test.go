@@ -3,10 +3,12 @@ package appconnectorschedule
 /*
 func TestAppConnectorSchedule(t *testing.T) {
 	ctx := context.Background()
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "appconnectorschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Retrieve CustomerID from environment variable
 	customerID := os.Getenv("ZPA_CUSTOMER_ID")
@@ -90,10 +92,12 @@ func TestAppConnectorSchedule(t *testing.T) {
 
 func TestUpdateScheduleWhenDisabled(t *testing.T) {
 	ctx := context.Background()
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "appconnectorschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	schedule, _, err := GetSchedule(ctx, service)
 	require.NoError(t, err, "Error getting schedule")
@@ -111,10 +115,12 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
 	ctx := context.Background()
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "appconnectorschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	schedule, _, err := GetSchedule(ctx, service)
 	require.NoError(t, err, "Error getting schedule")
@@ -142,10 +148,12 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 
 func TestCustomerIDValidation(t *testing.T) {
 	ctx := context.Background()
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "appconnectorschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	schedule := AssistantSchedule{
 		CustomerID:        "", // Intentionally left blank

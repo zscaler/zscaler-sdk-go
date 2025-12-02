@@ -2,22 +2,23 @@ package policysetcontroller
 
 /*
 import (
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 )
 
 func TestAccessCapabilityPolicy(t *testing.T) {
 	policyType := "CAPABILITIES_POLICY"
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -53,7 +54,7 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-cap")
 
 		accessPolicyRule := PolicyRule{
 			Name:        name,

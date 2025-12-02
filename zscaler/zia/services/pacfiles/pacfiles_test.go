@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zia/services"
 )
@@ -46,9 +45,10 @@ func retryOnConflict(operation func() error) error {
 // Integration test for PAC file operations
 // Integration test for PAC file operations
 func TestPacFiles(t *testing.T) {
+	tests.ResetTestNameCounter()
 	// Randomly generated names for testing
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "updated-tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := tests.GetTestName("tests-pacfil")
+	updateName := tests.GetTestName("tests-upd-pacfil")
 
 	// Initialize ZIA client
 	client, err := tests.NewZiaClient()

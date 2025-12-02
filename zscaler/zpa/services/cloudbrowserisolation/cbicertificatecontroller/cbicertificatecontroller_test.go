@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -16,10 +15,13 @@ import (
 )
 
 func TestCBICertificates(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "cbicertificatecontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -60,12 +62,8 @@ func TestCBICertificates(t *testing.T) {
 	// Encode the root certificate to PEM
 	rootCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: rootCertBytes})
 
-	// Generate a random name for the certificate name
-	randomName, err := generateRandomString(10)
-	if err != nil {
-		t.Fatalf("Failed to generate random string for certificate name: %v", err)
-	}
-	certName := fmt.Sprintf("test-rootCA %s", randomName)
+	// Use deterministic name for VCR compatibility
+	certName := tests.GetTestName("tests-rootca")
 
 	cbiCertificate := CBICertificate{
 		PEM:  string(rootCertPEM),
@@ -110,12 +108,8 @@ func TestCBICertificates(t *testing.T) {
 
 	// Test 3: Update the certificate name
 	t.Run("TestCertificateUpdate", func(t *testing.T) {
-		// Generate a new random name for updating the certificate
-		updatedName, err := generateRandomString(10)
-		if err != nil {
-			t.Fatalf("Failed to generate random string for updated certificate name: %v", err)
-		}
-		updatedCertName := fmt.Sprintf("updated-rootCA %s", updatedName)
+		// Use deterministic name for VCR compatibility
+		updatedCertName := tests.GetTestName("tests-uprootca")
 
 		// Update the certificate with the new name
 		cbiCertificate.Name = updatedCertName

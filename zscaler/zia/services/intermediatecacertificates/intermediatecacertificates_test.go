@@ -11,11 +11,13 @@ import (
 )
 
 func TestIntermediateCertificate_data(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "intermediatecacertificates", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Test 1: GetAll
 	certificates, err := GetAll(context.Background(), service)
@@ -69,11 +71,13 @@ func TestIntermediateCertificate_data(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "intermediatecacertificates", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Assuming a certificate with the name "Zscaler Intermediate CA Certificate" exists
 	knownName := "Zscaler Intermediate CA Certificate"

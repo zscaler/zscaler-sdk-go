@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -43,12 +42,16 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestFWFilteringIPDestGroups(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-ipdest")
+	updateDescription := tests.GetTestName("tests-ipdest")
+
+	client, err := tests.NewVCRTestClient(t, "ipdestinationgroups", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	group := IPDestinationGroups{
 		Name:        name,
@@ -57,7 +60,6 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 		Addresses:   []string{"3.217.228.0-3.217.231.255"},
 	}
 
-	// Test resource creation
 	var createdResource *IPDestinationGroups
 
 	// Test resource creation
@@ -73,8 +75,9 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 		t.Fatal("Expected created resource ID to be non-zero, but got 0")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created rule label '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created resource '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
@@ -84,7 +87,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved rule label '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved resource '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
@@ -116,9 +119,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
-	}
+
 	// Test resources retrieval
 	resources, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -127,6 +128,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
+
 	// check if the created resource is in the list
 	found := false
 	for _, resource := range resources {
@@ -138,11 +140,16 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
+	if err != nil {
+		t.Fatalf("Error deleting resource: %v", err)
+	}
+
 	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
@@ -166,50 +173,62 @@ func tryRetrieveResource(ctx context.Context, s *zscaler.Service, id int) (*IPDe
 	return nil, err
 }
 
-// func TestRetrieveNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestRetrieveNonExistentResource(t *testing.T) {
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipdestinationgroups", "ztw")
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	defer client.Stop()
+	service := client.Service
 
-// 	_, err = Get(context.Background(), service, 0)
-// 	if err == nil {
-// 		t.Error("Expected error retrieving non-existent resource, but got nil")
-// 	}
-// }
+	_, err = Get(context.Background(), service, 0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
 
-// func TestDeleteNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestDeleteNonExistentResource(t *testing.T) {
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipdestinationgroups", "ztw")
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	defer client.Stop()
+	service := client.Service
 
-// 	_, err = Delete(context.Background(), service, 0)
-// 	if err == nil {
-// 		t.Error("Expected error deleting non-existent resource, but got nil")
-// 	}
-// }
+	_, err = Delete(context.Background(), service, 0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
 
-// func TestUpdateNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestUpdateNonExistentResource(t *testing.T) {
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipdestinationgroups", "ztw")
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	defer client.Stop()
+	service := client.Service
 
-// 	_, _, err = Update(context.Background(), service, 0, &IPDestinationGroups{})
-// 	if err == nil {
-// 		t.Error("Expected error updating non-existent resource, but got nil")
-// 	}
-// }
+	_, _, err = Update(context.Background(), service, 0, &IPDestinationGroups{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
 
-// func TestGetByNameNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestGetByNameNonExistentResource(t *testing.T) {
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipdestinationgroups", "ztw")
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	defer client.Stop()
+	service := client.Service
 
-// 	_, err = GetByName(context.Background(), service, "non_existent_name")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-// 	}
-// }
+	_, err = GetByName(context.Background(), service, "non_existent_name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}

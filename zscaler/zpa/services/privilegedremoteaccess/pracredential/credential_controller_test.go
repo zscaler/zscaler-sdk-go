@@ -4,17 +4,18 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestCredentialController(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	name := tests.GetTestName("tests-pracred")
+	updateName := tests.GetTestName("tests-pracred")
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -124,10 +125,12 @@ func TestCredentialController(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -141,10 +144,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -158,10 +163,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -175,10 +182,12 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -194,13 +203,15 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 /*
 func TestPRACredentialMove(t *testing.T) {
 	// Generate base random strings
-	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	baseName := tests.GetTestName("tests-pracred")
+	baseDescription := tests.GetTestName("tests-pracred")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "pracredential", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

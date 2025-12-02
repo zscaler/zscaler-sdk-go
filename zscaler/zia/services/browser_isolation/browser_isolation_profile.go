@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -26,12 +25,19 @@ type CBIProfile struct {
 	DefaultProfile bool `json:"defaultProfile,omitempty"`
 }
 
-// Updated GetByName function
-func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*CBIProfile, error) {
+// GetAll retrieves all cloud browser isolation profiles.
+// Note: This endpoint does not support pagination.
+func GetAll(ctx context.Context, service *zscaler.Service) ([]CBIProfile, error) {
 	var cbiProfiles []CBIProfile
-	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
+	err := service.Client.Read(ctx, cbiProfileEndpoint, &cbiProfiles)
+	return cbiProfiles, checkNotSubscribedError(err)
+}
+
+// GetByName retrieves a cloud browser isolation profile by name.
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*CBIProfile, error) {
+	cbiProfiles, err := GetAll(ctx, service)
 	if err != nil {
-		return nil, checkNotSubscribedError(err)
+		return nil, err
 	}
 	for _, cbi := range cbiProfiles {
 		if strings.EqualFold(cbi.Name, profileName) {
@@ -39,13 +45,6 @@ func GetByName(ctx context.Context, service *zscaler.Service, profileName string
 		}
 	}
 	return nil, fmt.Errorf("no cloud browser isolation profile found with name: %s", profileName)
-}
-
-// Updated GetAll function
-func GetAll(ctx context.Context, service *zscaler.Service) ([]CBIProfile, error) {
-	var cbiProfiles []CBIProfile
-	err := common.ReadAllPages(ctx, service.Client, cbiProfileEndpoint, &cbiProfiles)
-	return cbiProfiles, checkNotSubscribedError(err)
 }
 
 type NotSubscribedError struct {

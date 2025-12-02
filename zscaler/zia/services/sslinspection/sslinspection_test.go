@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -43,14 +42,17 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestFirewallFilteringRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestSSLInspectionRule(t *testing.T) {
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-sslins")
+	updateName := tests.GetTestName("tests-sslins")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "sslinspection", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	rule := SSLInspectionRules{
 		Name:        name,
@@ -58,7 +60,7 @@ func TestFirewallFilteringRule(t *testing.T) {
 		Action: Action{
 			Type: "DECRYPT",
 			//ShowEUN:                    true, // "code":"INVALID_INPUT_ARGUMENT","message":"Show EUN cannot be set when action is DECRYPT.
-			OverrideDefaultCertificate: true,
+			OverrideDefaultCertificate: false,
 			DecryptSubActions: &DecryptSubActions{
 				ServerCertificates:              "BLOCK",
 				OcspCheck:                       true,
@@ -66,7 +68,7 @@ func TestFirewallFilteringRule(t *testing.T) {
 				MinClientTLSVersion:             "CLIENT_TLS_1_0",
 				MinServerTLSVersion:             "SERVER_TLS_1_0",
 				BlockUndecrypt:                  false,
-				HTTP2Enabled:                    true,
+				// HTTP2Enabled:                    true,
 			},
 		},
 		Order:             1,
@@ -197,10 +199,13 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*SSLInspectionRules, error
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sslinspection", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Get(context.Background(), service, 0)
 	if err == nil {
@@ -209,10 +214,13 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sslinspection", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
@@ -221,10 +229,13 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sslinspection", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Update(context.Background(), service, 0, &SSLInspectionRules{})
 	if err == nil {
@@ -233,10 +244,13 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sslinspection", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

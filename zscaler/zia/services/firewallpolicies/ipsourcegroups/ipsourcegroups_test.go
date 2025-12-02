@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -44,14 +43,18 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestFWFileringIPSourceGroups(t *testing.T) {
-	ipAddress1, _ := acctest.RandIpAddress("192.168.1.0/24")
-	ipAddress2, _ := acctest.RandIpAddress("192.168.2.0/24")
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	ipAddress1 := tests.GetTestIP("192.168.1.0/24")
+	ipAddress2 := tests.GetTestIP("192.168.2.0/24")
+	name := tests.GetTestName("tests-ipsrc")
+	updateName := tests.GetTestName("tests-ipsrc")
+
+	client, err := tests.NewVCRTestClient(t, "ipsourcegroups", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	group := IPSourceGroups{
 		Name:        name,
@@ -68,7 +71,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
-	log.Printf("Created resource with ID: %d", createdResource.ID) // Added log statement for the created resource
+	log.Printf("Created resource with ID: %d", createdResource.ID)
 
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
@@ -91,7 +94,6 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 
 	// Test resource update
 	retrievedResource.Name = updateName
-	// Ensure that the Addresses field (and others if needed) remains unchanged during the update
 	retrievedResource.IPAddresses = group.IPAddresses
 
 	err = retryOnConflict(func() error {
@@ -104,14 +106,11 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
-		return
 	}
 	if updatedResource == nil {
-		t.Error("Updated resource is nil")
-		return
+		t.Fatal("Updated resource is nil")
 	}
 
-	// Continue checking
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
@@ -122,12 +121,10 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	// Test resource retrieval by name
 	retrievedResource, err = GetByName(context.Background(), service, updateName)
 	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
-		return
+		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource == nil {
-		t.Error("Retrieved resource by name is nil")
-		return
+		t.Fatal("Retrieved resource by name is nil")
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -158,16 +155,15 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 	}
 
 	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
+	time.Sleep(5 * time.Second)
 
-	// Test resource removal
 	// Test resource removal
 	err = retryOnConflict(func() error {
 		_, getErr := Get(context.Background(), service, createdResource.ID)
 		if getErr != nil {
 			if strings.Contains(getErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
-				return nil // Resource already deleted, consider this a success
+				return nil
 			}
 			return fmt.Errorf("Error retrieving resource %d: %v", createdResource.ID, getErr)
 		}
@@ -175,7 +171,7 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 		if delErr != nil {
 			if strings.Contains(delErr.Error(), `"code":"RESOURCE_NOT_FOUND"`) {
 				log.Printf("Resource %d already deleted.", createdResource.ID)
-				return nil // Resource already deleted, consider this a success
+				return nil
 			}
 			return delErr
 		}
@@ -204,10 +200,13 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*IPSourceGroups, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipsourcegroups", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Get(context.Background(), service, 0)
 	if err == nil {
@@ -216,10 +215,13 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipsourcegroups", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
@@ -228,10 +230,13 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipsourcegroups", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Update(context.Background(), service, 0, &IPSourceGroups{})
 	if err == nil {
@@ -240,10 +245,13 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ipsourcegroups", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

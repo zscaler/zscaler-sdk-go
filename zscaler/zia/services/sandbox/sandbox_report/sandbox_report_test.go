@@ -10,11 +10,13 @@ import (
 )
 
 func TestGetRatingQuota(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sandbox_report", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	quotas, err := GetRatingQuota(context.Background(), service)
 	if err != nil {
@@ -27,11 +29,13 @@ func TestGetRatingQuota(t *testing.T) {
 }
 
 func TestGetReportMD5Hash(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "sandbox_report", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Replace with an actual MD5 hash of known malware. This is just an example.
 	md5Hashes := []string{"F69CA01D65E6C8F9E3540029E5F6AB92"}

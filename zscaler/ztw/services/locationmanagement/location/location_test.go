@@ -11,10 +11,13 @@ import (
 )
 
 func TestZConLocation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "location", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	locations, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -56,10 +59,13 @@ func TestZConLocation(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "location", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	locations, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -90,10 +96,13 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "location", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Assuming a group with the name "BD-MGR01" exists
 	knownName := "AWS-CAN-ca-central-1-vpc-096108eb5d9e68d71"

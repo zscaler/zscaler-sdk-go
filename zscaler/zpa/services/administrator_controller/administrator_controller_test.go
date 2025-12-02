@@ -2,7 +2,7 @@ package administrator_controller
 
 /*
 func TestAdministratorController(t *testing.T) {
-	username := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	username := tests.GetTestName("tests-admin")
 	updateDisplayName := "Updated ZPA Admin"
 
 	service, err := tests.NewZPAClient()
@@ -116,10 +116,12 @@ func TestAdministratorController(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "administrator_controller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -133,10 +135,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "administrator_controller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -150,10 +154,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "administrator_controller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -167,10 +173,12 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "administrator_controller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

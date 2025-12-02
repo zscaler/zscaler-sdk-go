@@ -9,10 +9,13 @@ import (
 )
 
 func TestCloudApplications(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "cloudapplications", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Define test parameters for Cloud Application Policy
 	appPolicyParams := map[string]interface{}{

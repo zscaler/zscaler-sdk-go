@@ -8,10 +8,12 @@ import (
 )
 
 func TestInspectionPredefinedControls(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "inspection_predefined_controls", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -51,10 +53,12 @@ func TestInspectionPredefinedControls(t *testing.T) {
 }
 
 func TestGetAllByGroup(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "inspection_predefined_controls", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

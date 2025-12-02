@@ -2,15 +2,16 @@ package vzen_clusters
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/vzen_nodes"
 )
 
 const (
@@ -44,29 +45,45 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestVZENClusters(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	tests.ResetTestNameCounter()
+	// VZEN cluster names must be alphanumeric only (no hyphens, underscores, or spaces)
+	name := fmt.Sprintf("VZENCluster%02d", tests.GetTestNameCounter())
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "vzen_clusters", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
+
+	// First, fetch available VZen nodes
+	availableNodes, err := vzen_nodes.GetAll(context.Background(), service)
+	if err != nil {
+		t.Fatalf("Error fetching VZen nodes: %v", err)
+	}
+
+	// Need at least 2 nodes to create a cluster
+	if len(availableNodes) < 2 {
+		t.Skip("Skipping test: Need at least 2 VZen nodes to create a cluster")
+	}
+
+	// Use the first two available nodes
+	var virtualZenNodes []common.IDNameExternalID
+	for i := 0; i < 2 && i < len(availableNodes); i++ {
+		virtualZenNodes = append(virtualZenNodes, common.IDNameExternalID{
+			ID: availableNodes[i].ID,
+		})
+	}
 
 	vzenCluster := VZENClusters{
-		Name:           name,
-		Status:         "ENABLED",
-		Type:           "VIP",
-		IpAddress:      "192.168.90.7",
-		SubnetMask:     "255.255.255.0",
-		DefaultGateway: "192.168.90.254",
-		IpSecEnabled:   false,
-		VirtualZenNodes: []common.IDNameExternalID{
-			{
-				ID: 6230,
-			},
-			{
-				ID: 6233,
-			},
-		},
+		Name:            name,
+		Status:          "ENABLED",
+		Type:            "VIP",
+		IpAddress:       "192.168.90.7",
+		SubnetMask:      "255.255.255.0",
+		DefaultGateway:  "192.168.90.254",
+		IpSecEnabled:    false,
+		VirtualZenNodes: virtualZenNodes,
 	}
 
 	var createdResource *VZENClusters
@@ -161,7 +178,6 @@ func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) 
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		// Use the passed context (ctx) instead of context.Background()
 		resource, err = Get(ctx, service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
@@ -174,10 +190,13 @@ func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) 
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "vzen_clusters", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Get(context.Background(), service, 0)
 	if err == nil {
@@ -186,10 +205,13 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "vzen_clusters", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
@@ -197,10 +219,13 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "vzen_clusters", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, _, err = Update(context.Background(), service, 0, &VZENClusters{})
 	if err == nil {
@@ -209,10 +234,13 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "vzen_clusters", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	_, err = GetClusterByName(context.Background(), service, "non_existent_name")
 	if err == nil {

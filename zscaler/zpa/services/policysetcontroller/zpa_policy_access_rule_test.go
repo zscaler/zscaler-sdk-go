@@ -2,11 +2,9 @@ package policysetcontroller
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/postureprofile"
@@ -14,11 +12,16 @@ import (
 )
 
 func TestPolicyAccessRule(t *testing.T) {
+	tests.ResetTestNameCounter()
+
 	policyType := "ACCESS_POLICY"
-	service, err := tests.NewOneAPIClient()
+
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
@@ -55,7 +58,7 @@ func TestPolicyAccessRule(t *testing.T) {
 
 	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-policy")
 
 		accessPolicyRule := PolicyRule{
 			Name:        name,

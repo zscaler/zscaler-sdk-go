@@ -2,11 +2,9 @@ package policysetcontroller
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
@@ -16,10 +14,12 @@ import (
 func TestAccessIsolationPolicyIsolate(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
 	isolationProfileID := "BD_SA_Profile1"
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -60,7 +60,7 @@ func TestAccessIsolationPolicyIsolate(t *testing.T) {
 
 	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-iso")
 
 		accessPolicyRule := PolicyRule{
 			Name:                  name,
@@ -156,10 +156,12 @@ func TestAccessIsolationPolicyIsolate(t *testing.T) {
 
 func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -192,7 +194,7 @@ func TestAccessIsolationPolicyBypassIsolate(t *testing.T) {
 
 	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-iso")
 
 		accessPolicyRule := PolicyRule{
 			Name:        name,

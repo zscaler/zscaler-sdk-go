@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -45,6 +44,7 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestMain(m *testing.M) {
+	tests.ResetTestNameCounter()
 	setup()
 	code := m.Run()
 	teardown()
@@ -91,13 +91,16 @@ func cleanResources() {
 }
 
 func TestZConLocationTemplate(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	description := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-locati")
+	description := tests.GetTestName("tests-locati")
+	updateName := tests.GetTestName("tests-locati")
+	client, err := tests.NewVCRTestClient(t, "locationtemplate", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	template := LocationTemplate{
 		Name:        name,

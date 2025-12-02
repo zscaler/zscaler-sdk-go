@@ -11,11 +11,13 @@ import (
 )
 
 func TestAdvancedThreatSettings(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "advancedthreatsettings", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 

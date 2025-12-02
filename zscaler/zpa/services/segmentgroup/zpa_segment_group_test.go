@@ -4,22 +4,30 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestSegmentGroup(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	// Reset name counter for VCR determinism
+	tests.ResetTestNameCounter()
+
+	// Try VCR client first, fall back to regular client
+	vcrClient, err := tests.NewVCRTestClient(t, "segmentgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer vcrClient.Stop()
+	service := vcrClient.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	// Use deterministic names in VCR mode, random otherwise
+	var name, updateName string
+	if tests.IsVCRMode() {
+		name = tests.GetTestName("tests-sg")
+		updateName = tests.GetTestName("tests-sg")
+	} else {
+		name = tests.GetTestName("tests-seggrp")
+		updateName = tests.GetTestName("tests-seggrp")
+	}
 
 	// Create new resource
 	createdResource, _, err := Create(context.Background(), service, &SegmentGroup{
@@ -103,15 +111,13 @@ func TestSegmentGroup(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	vcrClient, err := tests.NewVCRTestClient(t, "segmentgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer vcrClient.Stop()
+	service := vcrClient.Service
 
 	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
@@ -120,15 +126,13 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	vcrClient, err := tests.NewVCRTestClient(t, "segmentgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer vcrClient.Stop()
+	service := vcrClient.Service
 
 	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
@@ -137,15 +141,13 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	vcrClient, err := tests.NewVCRTestClient(t, "segmentgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer vcrClient.Stop()
+	service := vcrClient.Service
 
 	_, err = Update(context.Background(), service, "non_existent_id", &SegmentGroup{})
 	if err == nil {
@@ -154,15 +156,13 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	vcrClient, err := tests.NewVCRTestClient(t, "segmentgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer vcrClient.Stop()
+	service := vcrClient.Service
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

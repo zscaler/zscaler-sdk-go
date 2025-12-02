@@ -11,11 +11,14 @@ import (
 )
 
 func TestRemoteAssistance(t *testing.T) {
+	tests.ResetTestNameCounter()
 	// Create the client
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "remote_assistance", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 

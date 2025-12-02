@@ -14,6 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	tests.ResetTestNameCounter()
 	setup()
 	code := m.Run()
 	teardown()
@@ -69,11 +70,13 @@ func cleanResources() {
 }
 
 func TestUserAuthenticationSettings(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "user_authentication_settings", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Create 3 random exempted URLs
 	initialUrls, err := Get(context.Background(), service)

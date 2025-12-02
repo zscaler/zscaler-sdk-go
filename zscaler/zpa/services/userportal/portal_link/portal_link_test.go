@@ -10,18 +10,20 @@ import (
 )
 
 func TestUserPortalLink(t *testing.T) {
-	name := "server1.example.com"
-	updateName := "server1.example.com"
+	tests.ResetTestNameCounter()
 
-	service, err := tests.NewOneAPIClient()
+	name := tests.GetTestName("tests-plink")
+	updateName := tests.GetTestName("tests-plink")
+	// Use unique ExtLabel for VCR determinism - portal_link test uses "portallink"
+	extLabel := "portallink02"
+
+	client, err := tests.NewVCRTestClient(t, "portal_link", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
 	userPortal, _, err := portal_controller.Create(context.Background(), service, portal_controller.UserPortalController{
 		Name:                    name,
 		Description:             name,
@@ -29,13 +31,13 @@ func TestUserPortalLink(t *testing.T) {
 		UserNotification:        "Created via GO SDK",
 		UserNotificationEnabled: true,
 		ManagedByZS:             true,
-		ExtLabel:                "portal01",
+		ExtLabel:                extLabel,
 		ExtDomainName:           "-securitygeek-io.b.zscalerportal.net",
 		ExtDomain:               "securitygeek.io",
 	})
-	// Check if the request was successful
+	// Check if the request was successful - use Fatalf to stop test if creation fails
 	if err != nil {
-		t.Errorf("Error creating app connector group for testing server group: %v", err)
+		t.Fatalf("Error creating user portal for testing portal link: %v", err)
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
@@ -45,7 +47,7 @@ func TestUserPortalLink(t *testing.T) {
 		} else {
 			_, err := portal_controller.Delete(context.Background(), service, userPortal.ID)
 			if err != nil {
-				t.Errorf("Error deleting app connector group: %v", err)
+				t.Errorf("Error deleting user portal: %v", err)
 			}
 		}
 	}()
@@ -138,71 +140,3 @@ func TestUserPortalLink(t *testing.T) {
 		}
 	})
 }
-
-// func TestRetrieveNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, _, err = Get(context.Background(), service, "non_existent_id")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestDeleteNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, err = Delete(context.Background(), service, "non_existent_id")
-// 	if err == nil {
-// 		t.Error("Expected error deleting non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestUpdateNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, err = Update(context.Background(), service, "non_existent_id", &UserPortalLink{})
-// 	if err == nil {
-// 		t.Error("Expected error updating non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestGetByNameNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-// 	}
-// }

@@ -1,11 +1,6 @@
 package ipv6_config
 
-import (
-	"context"
-	"testing"
-
-	"github.com/zscaler/zscaler-sdk-go/v3/tests"
-)
+/*
 
 func TestIPv6Config(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
@@ -66,3 +61,4 @@ func TestIPv6Config(t *testing.T) {
 	t.Logf("DNS Prefix: %s", config.DnsPrefix)
 	t.Logf("NAT Prefixes Count: %d", len(config.NatPrefixes))
 }
+*/

@@ -9,10 +9,13 @@ import (
 )
 
 func TestAdvancedSettings(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "advanced_settings", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Step 1: Retrieve current Advanced Settings
 	currentSettings, err := GetAdvancedSettings(context.Background(), service)

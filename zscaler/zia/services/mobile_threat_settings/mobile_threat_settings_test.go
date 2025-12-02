@@ -9,11 +9,13 @@ import (
 )
 
 func TestMobileThreatSettings(t *testing.T) {
-	// Initialize the API client using the testing setup (not shown)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "mobile_threat_settings", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Retrieve current Mobile Threat Settings
 	currentSettings, err := GetMobileThreatSettings(context.Background(), service)

@@ -14,17 +14,19 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/browseraccess"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 )
 
 func TestCreateApplicationSegmentPRA(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := tests.GetTestName("tests-apptype")
+	segmentGroupName := tests.GetTestName("tests-apptype")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "applicationsegmentbytype", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -92,12 +94,14 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 }
 
 func TestAppSegmentInspectionInspection(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	name := tests.GetTestName("tests-apptype")
+	segmentGroupName := tests.GetTestName("tests-apptype")
+	client, err := tests.NewVCRTestClient(t, "applicationsegmentbytype", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
@@ -170,12 +174,14 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 }
 
 func TestBaApplicationSegment(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	name := tests.GetTestName("tests-apptype")
+	segmentGroupName := tests.GetTestName("tests-apptype")
+	client, err := tests.NewVCRTestClient(t, "applicationsegmentbytype", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,

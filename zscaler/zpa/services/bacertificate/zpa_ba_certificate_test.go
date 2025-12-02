@@ -18,10 +18,13 @@ import (
 )
 
 func TestBACertificates(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "bacertificate", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -34,11 +37,8 @@ func TestBACertificates(t *testing.T) {
 		t.Fatalf("Failed to generate private key: %v", err)
 	}
 
-	randomString, err := generateRandomString(10)
-	if err != nil {
-		t.Fatalf("Failed to generate random string for common name: %v", err)
-	}
-	commonName := fmt.Sprintf("tests-%s.bd-hashicorp.com", randomString)
+	// Use deterministic name for VCR compatibility
+	commonName := fmt.Sprintf("%s.bd-hashicorp.com", tests.GetTestName("tests-bacert"))
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{

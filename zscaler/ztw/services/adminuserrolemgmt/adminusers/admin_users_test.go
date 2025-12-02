@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/adminuserrolemgmt/adminroles"
@@ -75,6 +74,7 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestMain(m *testing.M) {
+	tests.ResetTestNameCounter()
 	setup()
 	code := m.Run()
 	teardown()
@@ -121,13 +121,16 @@ func cleanResources() {
 }
 
 func TestZCONUserManagement(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateComments := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-adminu")
+	updateComments := tests.GetTestName("tests-adminu")
+	email := tests.GetTestName("tests-adminu")
+	client, err := tests.NewVCRTestClient(t, "adminusers", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	roles, err := adminroles.GetAllAdminRoles(context.Background(), service)
 	if err != nil || len(roles) == 0 {
 		t.Fatalf("Error retrieving roles or no roles found: %v", err)

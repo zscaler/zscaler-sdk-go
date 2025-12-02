@@ -10,7 +10,8 @@ import (
 )
 
 func TestAdminRole(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "adminroles", "ztw")
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -20,6 +21,8 @@ func TestAdminRole(t *testing.T) {
 		t.Errorf("Error getting admin roles: %v", err)
 		return
 	}
+	defer client.Stop()
+	service := client.Service
 	if len(roles) == 0 {
 		t.Errorf("No admin roles found")
 		return
@@ -31,6 +34,8 @@ func TestAdminRole(t *testing.T) {
 		t.Errorf("Error getting admin roles by name: %v", err)
 		return
 	}
+	defer client.Stop()
+	service := client.Service
 	if ecgroup.Name != name {
 		t.Errorf("admin roles name does not match: expected %s, got %s", name, ecgroup.Name)
 		return
@@ -41,6 +46,8 @@ func TestAdminRole(t *testing.T) {
 		t.Errorf("Error getting admin roles by name: %v", err)
 		return
 	}
+	defer client.Stop()
+	service := client.Service
 	if adminRole.Name != name {
 		t.Errorf("admin roles name does not match: expected %s, got %s", name, adminRole.Name)
 		return

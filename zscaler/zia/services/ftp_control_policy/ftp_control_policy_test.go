@@ -9,10 +9,13 @@ import (
 )
 
 func TestFTPControlPolicy(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ftp_control_policy", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 

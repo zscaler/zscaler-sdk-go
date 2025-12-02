@@ -3,10 +3,13 @@ package public_cloud_account
 /*
 // TestGetAccountID verifies the retrieval of a specific account by ID
 func TestGetAccountID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "public_cloud_account", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Replace this with an actual account ID if known
 	testAccountID := 12345
@@ -25,10 +28,13 @@ func TestGetAccountID(t *testing.T) {
 
 // TestGetLite verifies that all public cloud accounts are retrieved correctly
 func TestGetLite(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "public_cloud_account", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	accounts, err := GetLite(context.Background(), service)
 	if err != nil {
@@ -42,10 +48,13 @@ func TestGetLite(t *testing.T) {
 
 // TestGetAccountStatus verifies the retrieval of the account status
 func TestGetAccountStatus(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "public_cloud_account", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	status, err := GetAccountStatus(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving account status: %v", err)

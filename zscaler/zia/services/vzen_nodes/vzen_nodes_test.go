@@ -2,12 +2,12 @@ package vzen_nodes
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -43,8 +43,10 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestVZENNodes(t *testing.T) {
-	name := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	ipAddress, _ := acctest.RandIpAddress("10.0.0.20/24")
+	tests.ResetTestNameCounter()
+	// Name must be alphanumeric with hyphens only (no underscores)
+	name := fmt.Sprintf("VZENNode%02d", tests.GetTestNameCounter())
+	ipAddress := "10.0.0.20"
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
@@ -52,7 +54,7 @@ func TestVZENNodes(t *testing.T) {
 	}
 
 	vzenNode := VZENNodes{
-		Name:                  "VZEN_GO_SDK" + name,
+		Name:                  name,
 		Status:                "ENABLED",
 		Type:                  "SMLB",
 		InProduction:          true,

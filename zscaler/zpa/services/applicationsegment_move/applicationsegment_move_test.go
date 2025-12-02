@@ -3,13 +3,15 @@ package applicationsegment_move
 /*
 func TestApplicationSegmentMove(t *testing.T) {
 	// Generate base random strings
-	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	baseName := tests.GetTestName("tests-move")
+	baseDescription := tests.GetTestName("tests-move")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "applicationsegment_move", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

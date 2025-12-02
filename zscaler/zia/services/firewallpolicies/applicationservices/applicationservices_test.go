@@ -11,10 +11,13 @@ import (
 )
 
 func TestApplicationServices_data(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "applicationservices", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	appServices, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting application services: %v", err)
@@ -45,10 +48,13 @@ func TestApplicationServices_data(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "applicationservices", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	appServices, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting application service : %v", err)
@@ -72,10 +78,13 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "applicationservices", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Assuming a service with the name "SKYPEFORBUSINESS" exists
 	knownName := "SKYPEFORBUSINESS"

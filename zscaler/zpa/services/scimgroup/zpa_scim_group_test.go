@@ -2,28 +2,16 @@ package scimgroup
 
 import (
 	"context"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 )
 
-func getTestIdpId(t *testing.T) string {
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
+func getTestIdpId(t *testing.T, service *zscaler.Service) string {
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
@@ -53,15 +41,13 @@ func getTestIdpId(t *testing.T) string {
 }
 
 func TestSCIMGroup(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
 	idpList, _, err := idpcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
@@ -112,17 +98,15 @@ func TestSCIMGroup(t *testing.T) {
 }
 
 func TestSCIMGroupGetByNameWithSort(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 
 	// Retrieve a list of SCIM groups
 	scimGroups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
@@ -138,10 +122,8 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 		t.Fatalf("Not enough SCIM groups available for testing. Required: 10, Found: %d", len(scimGroups))
 	}
 
-	// Randomly pick a group name from the first 5 groups
-	rand.Seed(time.Now().UnixNano())
-	randomIndex := rand.Intn(5) // Adjusted to ensure it picks within the available range
-	testScimName := scimGroups[randomIndex].Name
+	// Use first group (deterministic for VCR compatibility)
+	testScimName := scimGroups[0].Name
 
 	// Test with both DESC and ASC sort orders
 	for _, sortOrder := range []zscaler.SortOrder{zscaler.DESCSortOrder, zscaler.ASCSortOrder} {
@@ -165,17 +147,14 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
@@ -202,17 +181,14 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSCIMGroupName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 	_, _, err = GetByName(context.Background(), service, "NonExistentName", testIdpId)
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SCIM group by name, got none")
@@ -220,17 +196,14 @@ func TestNonExistentSCIMGroupName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting SCIM Groups: %v", err)
@@ -243,17 +216,14 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSCIMGroupByID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
 		t.Errorf("Error getting all SCIM Groups: %v", err)
@@ -280,17 +250,14 @@ func TestGetSCIMGroupByID(t *testing.T) {
 }
 
 func TestAllFieldsOfSCIMGroups(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "scimgroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
-	testIdpId := getTestIdpId(t)
+	testIdpId := getTestIdpId(t, service)
 
 	groups, _, err := GetAllByIdpId(context.Background(), service, testIdpId)
 	if err != nil {
@@ -326,23 +293,3 @@ func TestAllFieldsOfSCIMGroups(t *testing.T) {
 		t.Errorf("InternalID is empty")
 	}
 }
-
-// func TestResponseHeadersAndFormat(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-// 	testIdpId := getTestIdpId(t)
-// 	_, resp, err :=  GetAllByIdpId(context.Background(), service, testIdpId)
-// 	if err != nil {
-// 		t.Errorf("Error getting SCIM Groups: %v", err)
-// 		return
-// 	}
-// 	if resp.StatusCode != 200 {
-// 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
-// 	}
-// 	contentType := resp.Header.Get("Content-Type")
-// 	if !strings.HasPrefix(contentType, "application/json") {
-// 		t.Errorf("Expected content type to start with 'application/json', got %s", contentType)
-// 	}
-// }

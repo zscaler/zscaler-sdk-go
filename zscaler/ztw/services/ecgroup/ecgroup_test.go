@@ -8,10 +8,13 @@ import (
 )
 
 func TestECGroup(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "ecgroup", "ztw")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ecgroups, err := GetAll(context.Background(), service)
 	if err != nil {

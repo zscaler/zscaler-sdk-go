@@ -218,4 +218,24 @@ import: check-goimports
 check-goimports:
 	@which $(GOIMPORTS) > /dev/null || GO111MODULE=on go install golang.org/x/tools/cmd/goimports@latest
 
+# ==========================================
+# VCR Testing Commands
+# ==========================================
+
+test\:vcr\:record\:zpa:
+	@echo "$(COLOR_ZSCALER)Recording ZPA VCR cassettes...$(COLOR_NONE)"
+	MOCK_TESTS=false go test -tags=vcr -v ./zscaler/zpa/services/... -timeout 30m
+
+test\:vcr\:playback\:zpa:
+	@echo "$(COLOR_ZSCALER)Running ZPA VCR playback tests...$(COLOR_NONE)"
+	MOCK_TESTS=true go test -tags=vcr -v ./zscaler/zpa/services/... -timeout 10m
+
+test\:vcr\:record\:zia:
+	@echo "$(COLOR_ZSCALER)Recording ZIA VCR cassettes...$(COLOR_NONE)"
+	MOCK_TESTS=false go test -tags=vcr -v ./zscaler/zia/services/... -timeout 30m
+
+test\:vcr\:playback\:zia:
+	@echo "$(COLOR_ZSCALER)Running ZIA VCR playback tests...$(COLOR_NONE)"
+	MOCK_TESTS=true go test -tags=vcr -v ./zscaler/zia/services/... -timeout 10m
+
 .PHONY: fmt vendor fmt coverage test lint doc

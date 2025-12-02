@@ -2,10 +2,12 @@ package serviceedgeschedule
 
 /*
 func TestAppConnectorSchedule(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "serviceedgeschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -89,10 +91,12 @@ func TestAppConnectorSchedule(t *testing.T) {
 }
 
 func TestUpdateScheduleWhenDisabled(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "serviceedgeschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -113,10 +117,12 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 }
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "serviceedgeschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -147,10 +153,12 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 }
 
 func TestCustomerIDValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "serviceedgeschedule", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

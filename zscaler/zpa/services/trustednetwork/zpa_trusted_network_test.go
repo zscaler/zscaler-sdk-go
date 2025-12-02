@@ -9,15 +9,12 @@ import (
 )
 
 func TestTrustedNetworks(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "trustednetwork", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	// Test to retrieve all networks
 	networks, _, err := GetAll(context.Background(), service)
@@ -75,15 +72,12 @@ func TestTrustedNetworks(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "trustednetwork", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	networks, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -110,84 +104,13 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 }
 
-/*
-	func TestCaseSensitivityOfGetByName(t *testing.T) {
-		client, err := tests.NewOneAPIClient()
-		if err != nil {
-			t.Errorf("Error creating client: %v", err)
-			return
-		}
-
-		service := services.New(client)
-
-		// Assuming a network with the name "BD-TrustedNetwork01" exists
-		knownName := "BD-TrustedNetwork01"
-
-		// Case variations to test
-		variations := []string{
-			strings.ToUpper(knownName),
-			strings.ToLower(knownName),
-			cases.Title(language.English).String(knownName),
-		}
-
-		for _, variation := range variations {
-			t.Logf("Attempting to retrieve trusted network with name variation: %s", variation)
-			network, _, err := GetByName(context.Background(), service, variation)
-			if err != nil {
-				t.Errorf("Error getting trusted network with name variation '%s': %v", variation, err)
-				continue
-			}
-
-			// Check if the profile's actual name matches the known name
-			if common.RemoveCloudSuffix(network.Name) != knownName {
-				t.Errorf("Expected trusted network name to be '%s' for variation '%s', but got '%s'", knownName, variation, network.Name)
-			}
-		}
-	}
-
-	func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
-		service, err := tests.NewOneAPIClient()
-		if err != nil {
-			t.Fatalf("Error creating client: %v", err)
-		}
-
-		// service, err := tests.NewZPAClient()
-		// if err != nil {
-		// 	t.Fatalf("Error creating client: %v", err)
-		// }
-
-		// Assuming that there are networks with the following name variations
-		variations := []string{
-			"BD Trusted Network 01", "BD  TrustedNetwork  01", "BD   TrustedNetwork   01",
-			"BD    TrustedNetwork01", "BD  TrustedNetwork 01", "BD  Trusted Network   01",
-			"BD   Trusted   Network 01",
-		}
-
-		for _, variation := range variations {
-			t.Logf("Attempting to retrieve network with name: %s", variation)
-			network, _, err := GetByName(context.Background(), service, variation)
-			if err != nil {
-				t.Errorf("Error getting trusted network with name '%s': %v", variation, err)
-				continue
-			}
-
-			// Verify if the network's actual name matches the expected variation
-			if common.RemoveCloudSuffix(network.Name) != variation {
-				t.Errorf("Expected trusted network name to be '%s' but got '%s'", variation, network.Name)
-			}
-		}
-	}
-*/
 func TestTrustedNetworksByNetID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "trustednetwork", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	// Fetch the list of all Trusted Networks
 	networks, _, err := GetAll(context.Background(), service)
@@ -218,15 +141,12 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "trustednetwork", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

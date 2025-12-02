@@ -9,6 +9,7 @@ import (
 )
 
 func TestZConProvisioningAPIKey(t *testing.T) {
+	tests.ResetTestNameCounter()
 	client, err := tests.NewZConClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)

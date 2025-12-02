@@ -6,23 +6,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 )
 
 func TestServerGroup(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	// Reset name counter for deterministic VCR
+	tests.ResetTestNameCounter()
+
+	name := tests.GetTestName("tests-sg")
+	updateName := tests.GetTestName("tests-sg")
+
+	client, err := tests.NewVCRTestClient(t, "servergroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	appConnGroup, _, err := appconnectorgroup.Create(context.Background(), service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
@@ -125,25 +125,6 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 
-	// Test resources retrieval
-	// resources, _, err := GetAll(context.Background(), service)
-	// if err != nil {
-	// 	t.Errorf("Error retrieving resources: %v", err)
-	// }
-	// if len(resources) == 0 {
-	// 	t.Error("Expected retrieved resources to be non-empty, but got empty slice")
-	// }
-	// // check if the created resource is in the list
-	// found := false
-	// for _, resource := range resources {
-	// 	if resource.ID == createdResource.ID {
-	// 		found = true
-	// 		break
-	// 	}
-	// }
-	// if !found {
-	// 	t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
-	// }
 	// Test resource removal
 	_, err = Delete(context.Background(), service, createdResource.ID)
 	if err != nil {
@@ -155,7 +136,6 @@ func TestServerGroup(t *testing.T) {
 	retrievedAfterDelete, _, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
-		// Note: This is a basic check.
 		if strings.Contains(err.Error(), "resource.not.found") {
 			t.Logf("Resource with ID %s has been deleted as expected.", createdResource.ID)
 		} else {
@@ -171,15 +151,12 @@ func TestServerGroup(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "servergroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, _, err = Get(context.Background(), service, "non_existent_id")
 	if err == nil {
@@ -188,15 +165,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "servergroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Delete(context.Background(), service, "non_existent_id")
 	if err == nil {
@@ -205,15 +179,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "servergroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, err = Update(context.Background(), service, "non_existent_id", &ServerGroup{})
 	if err == nil {
@@ -222,15 +193,12 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "servergroup", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

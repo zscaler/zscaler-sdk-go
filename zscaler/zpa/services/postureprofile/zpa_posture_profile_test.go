@@ -12,15 +12,12 @@ import (
 )
 
 func TestPostureProfiles(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "postureprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(context.Background(), service)
@@ -78,15 +75,12 @@ func TestPostureProfiles(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "postureprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	profiles, _, err := GetAll(context.Background(), service)
 	if err != nil {
@@ -114,15 +108,12 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "postureprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	// Assuming a profile with the name "CrowdStrike_ZPA_ZTA_40" exists
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -149,49 +140,13 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	}
 }
 
-/*
-func TestPostureProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
-	}
-
-	service := services.New(client)
-
-	// Assuming that there are profiles with the following name variations
-	variations := []string{
-		"CrowdStrike ZPA ZTA 40", "CrowdStrike  ZPAZTA  40", "CrowdStrike   ZPAZTA   40",
-		"CrowdStrike    ZPAZTA40", "CrowdStrike  ZPAZTA 40", "CrowdStrike  ZPA ZTA   40",
-		"CrowdStrike   ZPA   ZTA 40",
-	}
-
-	for _, variation := range variations {
-		t.Logf("Attempting to retrieve profile with name: %s", variation)
-		profile, _, err := GetByName(context.Background(), service, variation)
-		if err != nil {
-			t.Errorf("Error getting posture profile with name '%s': %v", variation, err)
-			continue
-		}
-
-		// Verify if the profile's actual name matches the expected variation
-		if common.RemoveCloudSuffix(profile.Name) != variation {
-			t.Errorf("Expected posture profile name to be '%s' but got '%s'", variation, profile.Name)
-		}
-	}
-}
-*/
-
 func TestPostureProfileByPostureUDID(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "postureprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	// Use GetByName to fetch a known Posture Profile
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -216,15 +171,12 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "postureprofile", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	defer client.Stop()
+	service := client.Service
 
 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {

@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/vcr"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
@@ -97,6 +99,150 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 	}
 
 	return client, nil
+}
+
+// ============================================================================
+// VCR Testing Support
+// ============================================================================
+
+// VCRTestClient wraps a client with optional VCR recorder
+type VCRTestClient struct {
+	Service    *zscaler.Service
+	vcrClient  *vcr.VCRClient
+	isVCRMode  bool
+}
+
+// Stop stops the VCR recorder if in VCR mode
+func (c *VCRTestClient) Stop() {
+	if c.vcrClient != nil {
+		c.vcrClient.Stop()
+	}
+}
+
+// IsVCRMode returns true if MOCK_TESTS is set (either recording or playback)
+func IsVCRMode() bool {
+	mockTests := os.Getenv("MOCK_TESTS")
+	return mockTests == "true" || mockTests == "false"
+}
+
+// IsVCRPlayback returns true if in VCR playback mode (MOCK_TESTS=true)
+func IsVCRPlayback() bool {
+	return os.Getenv("MOCK_TESTS") == "true"
+}
+
+// IsVCRRecording returns true if in VCR recording mode (MOCK_TESTS=false)
+func IsVCRRecording() bool {
+	return os.Getenv("MOCK_TESTS") == "false"
+}
+
+// NewVCRTestClient creates a client that supports both VCR and real API modes
+// - MOCK_TESTS=true: VCR playback mode (uses recorded cassettes)
+// - MOCK_TESTS=false: VCR recording mode (records to cassettes)
+// - MOCK_TESTS not set: Real API mode (no VCR)
+func NewVCRTestClient(t *testing.T, cassetteName string, service string) (*VCRTestClient, error) {
+	mockTests := os.Getenv("MOCK_TESTS")
+	
+	// If MOCK_TESTS is not set, use regular client (no VCR)
+	if mockTests == "" {
+		client, err := NewOneAPIClient()
+		if err != nil {
+			return nil, err
+		}
+		return &VCRTestClient{
+			Service:   client,
+			isVCRMode: false,
+		}, nil
+	}
+	
+	// Use VCR client
+	vcrClient, err := vcr.NewVCRClient(t, cassetteName, service)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &VCRTestClient{
+		Service:   vcrClient.Service,
+		vcrClient: vcrClient,
+		isVCRMode: true,
+	}, nil
+}
+
+// Name generation for tests
+var (
+	testNameCounter int
+	testNameMutex   sync.Mutex
+)
+
+// ResetTestNameCounter resets the deterministic name counter
+// Call this at the beginning of each test when using VCR
+func ResetTestNameCounter() {
+	testNameMutex.Lock()
+	defer testNameMutex.Unlock()
+	testNameCounter = 0
+}
+
+// GetTestNameCounter returns the next counter value (for names that can't have separators)
+func GetTestNameCounter() int {
+	testNameMutex.Lock()
+	defer testNameMutex.Unlock()
+	testNameCounter++
+	return testNameCounter
+}
+
+// GetTestName returns a name for test resources.
+// - VCR mode: deterministic counter-based names for cassette consistency
+// - Non-VCR mode: random suffix to avoid duplicates between runs
+// Format: prefix-suffix (e.g., tests-sslins-0001 or tests-sslins-abcdefghij)
+func GetTestName(prefix string) string {
+	testNameMutex.Lock()
+	defer testNameMutex.Unlock()
+	testNameCounter++
+	
+	if IsVCRMode() {
+		// VCR mode: deterministic names for consistent cassette matching
+		return fmt.Sprintf("%s-%04d", prefix, testNameCounter)
+	}
+	// Non-VCR mode: random suffix to avoid duplicates
+	return fmt.Sprintf("%s-%s", prefix, randomString(10))
+}
+
+func randomString(n int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyz"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// GetTestIP returns a deterministic IP address in VCR mode
+// In non-VCR mode, returns a random IP from the given CIDR
+func GetTestIP(cidr string) string {
+	if IsVCRMode() {
+		testNameMutex.Lock()
+		defer testNameMutex.Unlock()
+		testNameCounter++
+		// Generate a deterministic IP based on counter
+		return fmt.Sprintf("192.168.%d.%d", (testNameCounter/256)%256, testNameCounter%256)
+	}
+	// For non-VCR, use a simple random IP
+	return fmt.Sprintf("192.168.%d.%d", rand.Intn(256), rand.Intn(256))
+}
+
+// GetTestLatitude returns a deterministic latitude for VCR
+func GetTestLatitude() float64 {
+	if IsVCRMode() {
+		return 37.3382
+	}
+	return 37.0 + rand.Float64()*10
+}
+
+// GetTestLongitude returns a deterministic longitude for VCR
+func GetTestLongitude() float64 {
+	if IsVCRMode() {
+		return -121.8863
+	}
+	return -122.0 + rand.Float64()*10
 }
 
 // NewOneAPIClient instantiates a new OneAPI client for testing

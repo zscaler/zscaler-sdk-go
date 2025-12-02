@@ -11,7 +11,8 @@ import (
 )
 
 func TestZTWActivation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "activation", "ztw")
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}

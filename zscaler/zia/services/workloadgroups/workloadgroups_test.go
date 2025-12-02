@@ -11,6 +11,7 @@ import (
 )
 
 func TestWorkloadGroups(t *testing.T) {
+	tests.ResetTestNameCounter()
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -49,6 +50,7 @@ func TestWorkloadGroups(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
+	tests.ResetTestNameCounter()
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -78,6 +80,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
+	tests.ResetTestNameCounter()
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

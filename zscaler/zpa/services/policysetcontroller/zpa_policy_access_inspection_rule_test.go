@@ -2,11 +2,9 @@ package policysetcontroller
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_profile"
@@ -14,12 +12,15 @@ import (
 )
 
 func TestAccessInspectionPolicyInspect(t *testing.T) {
+	tests.ResetTestNameCounter()
 	policyType := "INSPECTION_POLICY"
 	inspectionProfileID := "BD_SA_Profile1"
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -60,7 +61,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-inspect")
 
 		accessPolicyRule := PolicyRule{
 			Name:                   name,
@@ -155,11 +156,14 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 }
 
 func TestAccessInspectionPolicyBypass(t *testing.T) {
+	tests.ResetTestNameCounter()
 	policyType := "INSPECTION_POLICY"
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "policysetcontroller", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {
@@ -193,7 +197,7 @@ func TestAccessInspectionPolicyBypass(t *testing.T) {
 
 	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
-		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
+		name := tests.GetTestName("tests-insp")
 
 		accessPolicyRule := PolicyRule{
 			Name:        name,

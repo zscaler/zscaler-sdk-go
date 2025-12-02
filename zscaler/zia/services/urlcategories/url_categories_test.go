@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -44,13 +43,15 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestURLCategories(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	name := tests.GetTestName("tests-urlcat")
+	updateDescription := tests.GetTestName("tests-urlcat")
+	client, err := tests.NewVCRTestClient(t, "urlcategories", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	urlCategories := URLCategory{
 		SuperCategory:     "USER_DEFINED",
@@ -189,11 +190,13 @@ func tryRetrieveResource(s *zscaler.Service, id string) (*URLCategory, error) {
 }
 
 func TestGetURLQuota(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "urlcategories", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Call the GetURLQuota function
 	quota, err := GetURLQuota(context.Background(), service)
@@ -216,11 +219,13 @@ func TestGetURLQuota(t *testing.T) {
 }
 
 func TestGetURLLookup(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "urlcategories", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 	urls := []string{"google.com"}
 	lookupResults, err := GetURLLookup(context.Background(), service, urls)
 	if err != nil {
@@ -248,11 +253,13 @@ func TestGetURLLookup(t *testing.T) {
 }
 
 func TestGetAllLite(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "urlcategories", "zia")
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Call the GetAllLite function
 	urlCategories, err := GetAllLite(context.Background(), service)
@@ -286,14 +293,15 @@ func TestGetAllLite(t *testing.T) {
 /*
 // Test for Domain Review Methods
 func TestURLCategoriesDomainReview(t *testing.T) {
+	tests.ResetTestNameCounter()
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 	service := services.New(client)
 
-	name1 := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	name2 := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name1 := tests.GetTestName("tests-urlcat")
+	name2 := tests.GetTestName("tests-urlcat")
 
 	// Define the URL categories
 	urlCategories1 := URLCategory{

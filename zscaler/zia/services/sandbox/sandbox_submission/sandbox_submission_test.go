@@ -2,10 +2,12 @@ package sandbox_submission
 
 /*
 func TestSandboxSubmission(t *testing.T) {
+	tests.ResetTestNameCounter()
 	runSandboxTest(t, true)
 }
 
 func TestSandboxDiscan(t *testing.T) {
+	tests.ResetTestNameCounter()
 	runSandboxTest(t, false)
 }
 

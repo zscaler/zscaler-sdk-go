@@ -9,11 +9,14 @@ import (
 )
 
 func TestOrganizationInformation(t *testing.T) {
+	tests.ResetTestNameCounter()
 	// Create the client
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "organization_details", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 

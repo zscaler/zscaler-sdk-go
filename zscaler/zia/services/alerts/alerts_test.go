@@ -9,18 +9,24 @@ import (
 )
 
 func TestAlertSubscriptions(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "alerts", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 	description := "Zscaler Subscription Alert"
 	updatedDescription := description + " - Updated"
 
+	// In VCR mode, emails are always redacted (both recording and playback)
+	email := "alert@securitygeek.io"
+
 	alert := &AlertSubscriptions{
 		Description:      description,
-		Email:            "alert@securitygeek.io",
+		Email:            email,
 		Pt0Severities:    []string{"CRITICAL", "MAJOR", "INFO", "MINOR", "DEBUG"},
 		SecureSeverities: []string{"CRITICAL", "MAJOR", "INFO", "MINOR", "DEBUG"},
 		ManageSeverities: []string{"CRITICAL", "MAJOR", "INFO", "MINOR", "DEBUG"},
@@ -37,7 +43,8 @@ func TestAlertSubscriptions(t *testing.T) {
 	if createdAlert.ID == 0 {
 		t.Fatal("Expected non-zero ID after creation")
 	}
-	assert.Equal(t, alert.Email, createdAlert.Email, "Email should match")
+	// Note: Email is redacted by VCR, so we just check it's not empty
+	assert.NotEmpty(t, createdAlert.Email, "Email should not be empty")
 	assert.Equal(t, alert.Description, createdAlert.Description, "Description should match")
 
 	// Step 2: Update alert subscription

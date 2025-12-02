@@ -3,7 +3,6 @@ package appconnectorcontroller
 /*
 import (
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -11,7 +10,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
@@ -69,14 +68,14 @@ func pullDockerImage(imageName string) error {
 }
 
 func generateContainerName(prefix string) string {
-	randStr := acctest.RandStringFromCharSet(6, acctest.CharSetAlpha)
+	randStr := tests.GetTestName("tests-appconn")
 	return prefix + "-" + randStr
 }
 
 func TestAppConnectorController(t *testing.T) {
 	// Generate names for resources
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := tests.GetTestName("tests-appconn")
+	appConnGroupName := tests.GetTestName("tests-appconn")
 	imageName := "zscaler/zpa-connector:latest.arm64"
 
 	// Ensure the Docker image is available

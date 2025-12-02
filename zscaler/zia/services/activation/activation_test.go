@@ -9,10 +9,13 @@ import (
 )
 
 func TestActivation(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "activation", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	t.Run("Test GetActivationStatus", func(t *testing.T) {
 		activationStatus, err := GetActivationStatus(service)

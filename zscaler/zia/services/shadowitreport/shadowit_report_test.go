@@ -8,10 +8,13 @@ import (
 )
 
 func TestGetAllCloudAppsLite(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "shadowitreport", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background() // Create a context
 
@@ -39,10 +42,13 @@ func TestGetAllCloudAppsLite(t *testing.T) {
 }
 
 func TestGetAllCustomTags(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "shadowitreport", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background() // Create a context
 

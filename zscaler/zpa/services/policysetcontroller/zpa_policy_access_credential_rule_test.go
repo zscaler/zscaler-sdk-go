@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredential"
@@ -14,9 +14,9 @@ import (
 
 func TestAccessCredentialPolicy(t *testing.T) {
 	policyType := "CREDENTIAL_POLICY"
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "updated_" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPassword := acctest.RandString(10)
+	name := tests.GetTestName("tests-cred")
+	updateName := "updated_" + tests.GetTestName("tests-cred")
+	rPassword := tests.GetTestName("tests-cred")
 	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)

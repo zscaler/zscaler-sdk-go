@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
@@ -20,13 +20,15 @@ import (
 
 func TestApplicationSegmentShare(t *testing.T) {
 	// Generate base random strings
-	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	baseName := tests.GetTestName("tests-share")
+	baseDescription := tests.GetTestName("tests-share")
 
-	service, err := tests.NewOneAPIClient()
+	client, err := tests.NewVCRTestClient(t, "applicationsegment_share", "zpa")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// service, err := tests.NewZPAClient()
 	// if err != nil {

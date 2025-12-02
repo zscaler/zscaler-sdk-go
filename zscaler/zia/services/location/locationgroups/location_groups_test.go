@@ -9,10 +9,13 @@ import (
 )
 
 func TestLocationGroups(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "locationgroups", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	// Test resources retrieval
 	resources, err := GetAll(context.Background(), service, nil)
@@ -51,10 +54,13 @@ func TestLocationGroups(t *testing.T) {
 }
 
 func TestLocationGroupCount(t *testing.T) {
-	service, err := tests.NewOneAPIClient()
+	tests.ResetTestNameCounter()
+	client, err := tests.NewVCRTestClient(t, "locationgroups", "zia")
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+	defer client.Stop()
+	service := client.Service
 
 	ctx := context.Background()
 
