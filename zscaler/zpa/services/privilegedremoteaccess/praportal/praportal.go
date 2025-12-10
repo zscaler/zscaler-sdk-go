@@ -90,6 +90,8 @@ type PRAPortal struct {
 	HideInfoTooltip bool `json:"hideInfoTooltip,omitempty"`
 
 	RestrictedEntity bool `json:"restrictedEntity,omitempty"`
+
+	ApprovalReviewers []string `json:"approvalReviewers,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, portalID string) (*PRAPortal, *http.Response, error) {
