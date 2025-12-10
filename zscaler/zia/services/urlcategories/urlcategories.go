@@ -193,8 +193,15 @@ func CreateURLCategories(ctx context.Context, service *zscaler.Service, category
 	return createdUrlCategory, nil
 }
 
-func UpdateURLCategories(ctx context.Context, service *zscaler.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
+func UpdateURLCategories(ctx context.Context, service *zscaler.Service, categoryID string, category *URLCategory, action string) (*URLCategory, *http.Response, error) {
+	endpoint := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID)
+
+	// Append action query parameter if provided
+	if action != "" {
+		endpoint = fmt.Sprintf("%s?action=%s", endpoint, url.QueryEscape(action))
+	}
+
+	resp, err := service.Client.UpdateWithPut(ctx, endpoint, *category)
 	if err != nil {
 		return nil, nil, err
 	}

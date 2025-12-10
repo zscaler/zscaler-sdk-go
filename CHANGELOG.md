@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.9 (December 9, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #393](https://github.com/zscaler/zscaler-sdk-go/pull/393) - Fixed `UpdateURLCategories` function in ZIA `url_category` package to include optional parameters `action` to support partial updates via `ADD_TO_LIST` and `REMOVE_FROM_LIST`.
+
 # 3.8.8 (December 1, 2025)
 
 ## Notes
