@@ -107,7 +107,7 @@ func TestURLCategories(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = UpdateURLCategories(context.Background(), service, createdResource.ID, retrievedResource)
+		_, _, err = UpdateURLCategories(context.Background(), service, createdResource.ID, retrievedResource, "")
 		return err
 	})
 	if err != nil {
