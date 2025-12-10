@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.9``
+``Last updated: v3.8.10``
 
 ---
+
+# 3.8.10 (December 10, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #394](https://github.com/zscaler/zscaler-sdk-go/pull/394) - Added new attribute `approvalReviewers` to ZPA `praportal` package.
 
 # 3.8.9 (December 9, 2025)
 
