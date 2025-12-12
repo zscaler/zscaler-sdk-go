@@ -102,6 +102,47 @@ func TestDevices_GetDeviceDetails_SDK(t *testing.T) {
 	assert.Equal(t, "laptop-001", result[0].MachineHostname)
 }
 
+func TestDevices_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getDevices"
+
+	// ReadAllPages expects a direct slice response from the API
+	server.On("GET", path, common.SuccessResponse([]devices.GetDevices{
+		{
+			AgentVersion:    "4.2.0.100",
+			MachineHostname: "laptop-001",
+			MacAddress:      "00:11:22:33:44:55",
+			OsVersion:       "Windows 10",
+			Owner:           "user@example.com",
+			State:           1,
+			Type:            1,
+			Udid:            "udid-001",
+		},
+		{
+			AgentVersion:    "4.2.0.101",
+			MachineHostname: "laptop-002",
+			MacAddress:      "00:11:22:33:44:66",
+			OsVersion:       "macOS 14.0",
+			Owner:           "user2@example.com",
+			State:           1,
+			Type:            2,
+			Udid:            "udid-002",
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devices.GetAll(context.Background(), service, "user@example.com", "WINDOWS")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "laptop-001", result[0].MachineHostname)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

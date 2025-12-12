@@ -128,6 +128,23 @@ func TestAdminUsers_GetSyncZpa_SDK(t *testing.T) {
 	require.NotNil(t, result)
 }
 
+func TestAdminUsers_GetAdminUserSyncInfo_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getAdminUsersSyncInfo"
+
+	// API returns empty JSON for this endpoint
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	err = admin_users.GetAdminUserSyncInfo(context.Background(), service)
+
+	require.NoError(t, err)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================
