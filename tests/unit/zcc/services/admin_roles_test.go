@@ -2,13 +2,85 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/admin_roles"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestAdminRoles_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// ZCC uses pagination with query params
+	path := "/zcc/papi/public/v1/getAdminRoles"
+
+	server.On("GET", path, common.SuccessResponse([]admin_roles.AdminRole{
+		{ID: "role-001", RoleName: "Super Administrator", AdminManagement: "FULL", IsEditable: false},
+		{ID: "role-002", RoleName: "Read Only Admin", AdminManagement: "NONE", IsEditable: true},
+		{ID: "role-003", RoleName: "Device Manager", AdminManagement: "NONE", DeviceOverview: "FULL", IsEditable: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := admin_roles.GetAdminRoles(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "Super Administrator", result[0].RoleName)
+	assert.False(t, result[0].IsEditable)
+}
+
+func TestAdminRoles_GetAll_Empty_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getAdminRoles"
+
+	server.On("GET", path, common.SuccessResponse([]admin_roles.AdminRole{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := admin_roles.GetAdminRoles(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 0)
+}
+
+func TestAdminRoles_GetAll_WithPageSize_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getAdminRoles"
+
+	server.On("GET", path, common.SuccessResponse([]admin_roles.AdminRole{
+		{ID: "role-001", RoleName: "Admin 1"},
+		{ID: "role-002", RoleName: "Admin 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	// Test with custom page size
+	result, err := admin_roles.GetAdminRoles(context.Background(), service, 50)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestAdminRoles_Structure(t *testing.T) {
 	t.Parallel()
@@ -122,4 +194,3 @@ func TestAdminRoles_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "FULL", roles[2].DeviceGroups)
 	})
 }
-
