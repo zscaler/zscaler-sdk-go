@@ -34,11 +34,12 @@ func TestProvisioningKey_Get_SDK(t *testing.T) {
 	assert.Equal(t, keyID, result.ID)
 }
 
-func TestProvisioningKey_GetAll_SDK(t *testing.T) {
+func TestProvisioningKey_GetAllByAssociationType_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/provisioningKey"
+	keyType := "CONNECTOR_GRP"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/associationType/" + keyType + "/provisioningKey"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []provisioningkey.ProvisioningKey{{ID: "key-001"}, {ID: "key-002"}},
@@ -48,8 +49,13 @@ func TestProvisioningKey_GetAll_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
 	require.NoError(t, err)
 
-	result, err := provisioningkey.GetAll(context.Background(), service)
+	result, err := provisioningkey.GetAllByAssociationType(context.Background(), service, keyType)
 
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+// Note: GetAll iterates through all ProvisioningKeyAssociationTypes
+// (CONNECTOR_GRP, SERVICE_EDGE_GRP, SITE_CONTROLLER_GRP, NP_ASSISTANT_GRP)
+// Testing GetAll would require mocking multiple paths.
+// For comprehensive GetAll testing, use integration tests.

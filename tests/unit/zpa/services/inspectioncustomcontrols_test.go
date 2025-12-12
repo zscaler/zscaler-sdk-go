@@ -18,9 +18,11 @@ func TestInspectionCustomControls_Get_SDK(t *testing.T) {
 	controlID := "ctrl-12345"
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom/" + controlID
 
+	// The Get function parses ControlRuleJson, so include a valid one
 	server.On("GET", path, common.SuccessResponse(inspection_custom_controls.InspectionCustomControl{
-		ID:   controlID,
-		Name: "Test Custom Control",
+		ID:              controlID,
+		Name:            "Test Custom Control",
+		ControlRuleJson: "[]", // Empty valid JSON array
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)

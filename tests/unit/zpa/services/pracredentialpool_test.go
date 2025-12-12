@@ -16,7 +16,8 @@ func TestPRACredentialPool_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	poolID := "pool-12345"
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/credentialPool/" + poolID
+	// Correct path: /zpa/waap-pra-config/v1/admin/customers/{customerId}/credential-pool/{id}
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool/" + poolID
 
 	server.On("GET", path, common.SuccessResponse(pracredentialpool.CredentialPool{
 		ID:   poolID,
@@ -37,7 +38,8 @@ func TestPRACredentialPool_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/credentialPool"
+	// Correct path: /zpa/waap-pra-config/v1/admin/customers/{customerId}/credential-pool
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []pracredentialpool.CredentialPool{{ID: "pool-001"}, {ID: "pool-002"}},

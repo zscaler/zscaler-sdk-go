@@ -15,9 +15,11 @@ func TestApplicationSegmentMove_Move_SDK(t *testing.T) {
 	defer server.Close()
 
 	appID := "app-123"
+	// Correct path: POST to /zpa/mgmtconfig/v1/admin/customers/{customerId}/application/{appId}/move
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID + "/move"
 
-	server.On("PUT", path, common.NoContentResponse())
+	// SDK uses POST, not PUT
+	server.On("POST", path, common.NoContentResponse())
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
 	require.NoError(t, err)

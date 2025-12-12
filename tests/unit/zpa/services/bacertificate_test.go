@@ -16,7 +16,8 @@ func TestBACertificate_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	certID := "cert-12345"
-	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/clientlessCertificate/" + certID
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/certificate/{id}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/certificate/" + certID
 
 	server.On("GET", path, common.SuccessResponse(bacertificate.BaCertificate{
 		ID:   certID,
@@ -37,7 +38,8 @@ func TestBACertificate_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/clientlessCertificate"
+	// Correct path: /zpa/mgmtconfig/v2/admin/customers/{customerId}/clientlessCertificate/issued
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/clientlessCertificate/issued"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []bacertificate.BaCertificate{{ID: "cert-001"}, {ID: "cert-002"}},

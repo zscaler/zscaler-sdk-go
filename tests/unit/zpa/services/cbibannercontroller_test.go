@@ -16,7 +16,8 @@ func TestCBIBannerController_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	bannerID := "banner-12345"
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banner/" + bannerID
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/banners/{id} (plural "banners")
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banners/" + bannerID
 
 	server.On("GET", path, common.SuccessResponse(cbibannercontroller.CBIBannerController{
 		ID:   bannerID,
@@ -37,8 +38,10 @@ func TestCBIBannerController_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banner"
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/banners (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banners"
 
+	// Note: GetAll returns a raw array, not paginated
 	server.On("GET", path, common.SuccessResponse([]cbibannercontroller.CBIBannerController{{ID: "banner-001"}, {ID: "banner-002"}}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)

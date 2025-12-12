@@ -16,7 +16,8 @@ func TestCBIProfileController_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	profileID := "profile-12345"
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile/" + profileID
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/profiles/{id} (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profiles/" + profileID
 
 	server.On("GET", path, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
 		ID:   profileID,
@@ -37,7 +38,8 @@ func TestCBIProfileController_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile"
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/profiles (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profiles"
 
 	server.On("GET", path, common.SuccessResponse([]cbiprofilecontroller.IsolationProfile{{ID: "profile-001"}, {ID: "profile-002"}}))
 

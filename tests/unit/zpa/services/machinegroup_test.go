@@ -17,6 +17,7 @@ func TestMachineGroup_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "mg-12345"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/machineGroup/{id}
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup/" + groupID
 
 	server.On("GET", path, common.SuccessResponse(machinegroup.MachineGroup{
@@ -43,7 +44,8 @@ func TestMachineGroup_GetByName_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupName := "Production Machine Group"
-	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/machineGroup (v1, not v2)
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list": []machinegroup.MachineGroup{
@@ -68,7 +70,8 @@ func TestMachineGroup_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/machineGroup (v1, not v2)
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list": []machinegroup.MachineGroup{
@@ -92,7 +95,8 @@ func TestMachineGroup_GetByName_NotFound_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/machineGroup (v1, not v2)
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []machinegroup.MachineGroup{},

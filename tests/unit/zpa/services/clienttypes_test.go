@@ -15,14 +15,16 @@ func TestClientTypes_GetAllClientTypes_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpnClientTypes"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/clientTypes
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/clientTypes"
 
-	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"zpnClientTypesMap": map[string]interface{}{
-			"zpn_client_type_ip_anchoring":      "IP Anchoring Client",
-			"zpn_client_type_edge_connector":    "Cloud Connector",
-			"zpn_client_type_browser_isolation": "Browser Isolation",
-		},
+	server.On("GET", path, common.SuccessResponse(clienttypes.ClientTypes{
+		ZPNClientTypeExplorer:      "zpn_client_type_exporter",
+		ZPNClientTypeMachineTunnel: "zpn_client_type_machine_tunnel",
+		ZPNClientTypeIPAnchoring:   "zpn_client_type_ip_anchoring",
+		ZPNClientTypeEdgeConnector: "zpn_client_type_edge_connector",
+		ZPNClientTypeZAPP:          "zpn_client_type_zapp",
+		ZPNClientTypeSlogger:       "zpn_client_type_slogger",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
@@ -31,5 +33,6 @@ func TestClientTypes_GetAllClientTypes_SDK(t *testing.T) {
 	result, _, err := clienttypes.GetAllClientTypes(context.Background(), service)
 
 	require.NoError(t, err)
-	assert.NotNil(t, result)
+	require.NotNil(t, result)
+	assert.NotEmpty(t, result.ZPNClientTypeExplorer)
 }

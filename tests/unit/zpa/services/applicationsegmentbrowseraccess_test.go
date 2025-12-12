@@ -39,8 +39,25 @@ func TestApplicationSegmentBrowserAccess_GetAll_SDK(t *testing.T) {
 
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
 
+	// GetAll filters results - only returns items where len(ClientlessApps) > 0
+	// So we need to include ClientlessApps in the mock data
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []applicationsegmentbrowseraccess.BrowserAccess{{ID: "ba-001"}, {ID: "ba-002"}},
+		"list": []applicationsegmentbrowseraccess.BrowserAccess{
+			{
+				ID:   "ba-001",
+				Name: "Browser Access 1",
+				ClientlessApps: []applicationsegmentbrowseraccess.ClientlessApps{
+					{ID: "clientless-1", Name: "Clientless App 1"},
+				},
+			},
+			{
+				ID:   "ba-002",
+				Name: "Browser Access 2",
+				ClientlessApps: []applicationsegmentbrowseraccess.ClientlessApps{
+					{ID: "clientless-2", Name: "Clientless App 2"},
+				},
+			},
+		},
 		"totalPages": 1,
 	}))
 

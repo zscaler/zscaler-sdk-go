@@ -39,8 +39,25 @@ func TestApplicationSegmentPRA_GetAll_SDK(t *testing.T) {
 
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
 
+	// GetAll filters results - only returns items where len(PRAApps) > 0
+	// So we need to include PRAApps in the mock data
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []applicationsegmentpra.AppSegmentPRA{{ID: "pra-001"}, {ID: "pra-002"}},
+		"list": []applicationsegmentpra.AppSegmentPRA{
+			{
+				ID:   "pra-001",
+				Name: "PRA App 1",
+				PRAApps: []applicationsegmentpra.PRAApps{
+					{ID: "praapp-1", Name: "PRA Sub App 1"},
+				},
+			},
+			{
+				ID:   "pra-002",
+				Name: "PRA App 2",
+				PRAApps: []applicationsegmentpra.PRAApps{
+					{ID: "praapp-2", Name: "PRA Sub App 2"},
+				},
+			},
+		},
 		"totalPages": 1,
 	}))
 

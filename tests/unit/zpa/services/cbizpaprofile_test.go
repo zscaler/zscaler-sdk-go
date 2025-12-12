@@ -16,11 +16,13 @@ func TestCBIZPAProfile_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	profileID := "zpa-profile-12345"
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofile/" + profileID
+	// Note: Get uses GetAll internally and finds by ID, so we mock GetAll
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/zpaprofiles (plural, no ID in path for GetAll)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofiles"
 
-	server.On("GET", path, common.SuccessResponse(cbizpaprofile.ZPAProfiles{
-		ID:   profileID,
-		Name: "Test ZPA Profile",
+	server.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{
+		{ID: profileID, Name: "Test ZPA Profile"},
+		{ID: "other-profile", Name: "Other Profile"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
@@ -37,7 +39,8 @@ func TestCBIZPAProfile_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofile"
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/zpaprofiles (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofiles"
 
 	server.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{{ID: "zpa-001"}, {ID: "zpa-002"}}))
 

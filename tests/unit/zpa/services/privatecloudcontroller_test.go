@@ -16,7 +16,8 @@ func TestPrivateCloudController_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	cloudID := "pc-12345"
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpcc/" + cloudID
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/privateCloudController/{id}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/" + cloudID
 
 	server.On("GET", path, common.SuccessResponse(private_cloud_controller.PrivateCloudController{
 		ID:   cloudID,
@@ -37,7 +38,8 @@ func TestPrivateCloudController_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpcc"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/privateCloudController
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []private_cloud_controller.PrivateCloudController{{ID: "pc-001"}, {ID: "pc-002"}},

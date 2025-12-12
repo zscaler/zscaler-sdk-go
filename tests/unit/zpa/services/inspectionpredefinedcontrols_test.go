@@ -37,11 +37,19 @@ func TestInspectionPredefinedControls_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
+	// GetAll returns []ControlGroupItem, not []PredefinedControls
+	// The path includes a version query parameter
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/predefined"
 
-	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []inspection_predefined_controls.PredefinedControls{{ID: "predefined-001"}, {ID: "predefined-002"}},
-		"totalPages": 1,
+	// Return ControlGroupItem array (the actual response structure)
+	server.On("GET", path, common.SuccessResponse([]inspection_predefined_controls.ControlGroupItem{
+		{
+			ControlGroup: "Protocol Issues",
+			PredefinedInspectionControls: []inspection_predefined_controls.PredefinedControls{
+				{ID: "predefined-001", Name: "Control 1"},
+				{ID: "predefined-002", Name: "Control 2"},
+			},
+		},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
@@ -50,5 +58,6 @@ func TestInspectionPredefinedControls_GetAll_SDK(t *testing.T) {
 	result, err := inspection_predefined_controls.GetAll(context.Background(), service, "OWASP_CRS/3.3.0")
 
 	require.NoError(t, err)
+	// GetAll flattens the ControlGroupItem into individual PredefinedControls
 	assert.Len(t, result, 2)
 }

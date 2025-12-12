@@ -16,10 +16,11 @@ func TestExtranetResource_GetPartner_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/extranetPartner"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/extranetResource/partner
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/extranetResource/partner"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []zpacommon.CommonSummary{{ID: "ext-001"}, {ID: "ext-002"}},
+		"list":       []zpacommon.CommonSummary{{ID: "partner-001", Name: "Partner 1"}, {ID: "partner-002", Name: "Partner 2"}},
 		"totalPages": 1,
 	}))
 

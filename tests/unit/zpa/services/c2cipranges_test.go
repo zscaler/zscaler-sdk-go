@@ -15,11 +15,13 @@ func TestC2CIPRanges_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/c2cIPRanges"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/v2/ipRanges
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/v2/ipRanges"
 
-	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []c2c_ip_ranges.IPRanges{{ID: "range-001"}, {ID: "range-002"}},
-		"totalPages": 1,
+	// GetAll returns []*IPRanges (slice of pointers) and expects a raw array (not paginated)
+	server.On("GET", path, common.SuccessResponse([]*c2c_ip_ranges.IPRanges{
+		{ID: "range-001", Name: "Range 1"},
+		{ID: "range-002", Name: "Range 2"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)

@@ -16,7 +16,8 @@ func TestCBICertificateController_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	certID := "cert-12345"
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificate/" + certID
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/certificates/{id} (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificates/" + certID
 
 	server.On("GET", path, common.SuccessResponse(cbicertificatecontroller.CBICertificate{
 		ID:   certID,
@@ -37,7 +38,8 @@ func TestCBICertificateController_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificate"
+	// Correct path: /zpa/cbiconfig/cbi/api/customers/{customerId}/certificates (plural)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificates"
 
 	server.On("GET", path, common.SuccessResponse([]cbicertificatecontroller.CBICertificate{{ID: "cert-001"}, {ID: "cert-002"}}))
 

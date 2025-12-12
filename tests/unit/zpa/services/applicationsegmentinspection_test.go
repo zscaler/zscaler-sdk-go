@@ -39,8 +39,25 @@ func TestApplicationSegmentInspection_GetAll_SDK(t *testing.T) {
 
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
 
+	// GetAll filters results - only returns items where len(InspectionAppDto) > 0
+	// So we need to include InspectionAppDto in the mock data
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
-		"list":       []applicationsegmentinspection.AppSegmentInspection{{ID: "insp-001"}, {ID: "insp-002"}},
+		"list": []applicationsegmentinspection.AppSegmentInspection{
+			{
+				ID:   "insp-001",
+				Name: "Inspection App 1",
+				InspectionAppDto: []applicationsegmentinspection.InspectionAppDto{
+					{ID: "dto-1", Name: "Inspection DTO 1"},
+				},
+			},
+			{
+				ID:   "insp-002",
+				Name: "Inspection App 2",
+				InspectionAppDto: []applicationsegmentinspection.InspectionAppDto{
+					{ID: "dto-2", Name: "Inspection DTO 2"},
+				},
+			},
+		},
 		"totalPages": 1,
 	}))
 

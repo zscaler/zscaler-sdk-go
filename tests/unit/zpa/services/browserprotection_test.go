@@ -15,7 +15,8 @@ func TestBrowserProtection_GetActive_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/browserProtection/active"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/activeBrowserProtectionProfile
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/activeBrowserProtectionProfile"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []browser_protection.BrowserProtection{{ID: "bp-001"}, {ID: "bp-002"}},
@@ -35,7 +36,8 @@ func TestBrowserProtection_GetProfile_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/browserProtection"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/browserProtectionProfile
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/browserProtectionProfile"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []browser_protection.BrowserProtection{{ID: "bp-001"}, {ID: "bp-002"}},
