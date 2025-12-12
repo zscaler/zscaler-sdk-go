@@ -2,11 +2,14 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/users"
 )
@@ -215,5 +218,146 @@ func TestUsers_ResponseParsing(t *testing.T) {
 		assert.NotEmpty(t, response.PrevLink)
 		assert.Len(t, response.Records, 2)
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestUsers_GetUser_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID
+
+	server.On("GET", path, testcommon.SuccessResponse(users.Users{
+		ID:           userID,
+		LoginName:    "john.doe@example.com",
+		DisplayName:  "John Doe",
+		FirstName:    "John",
+		LastName:     "Doe",
+		PrimaryEmail: "john.doe@example.com",
+		Status:       true,
+		Source:       "OKTA",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetUser(context.Background(), service, userID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, userID, result.ID)
+	assert.Equal(t, "john.doe@example.com", result.LoginName)
+	assert.Equal(t, "John Doe", result.DisplayName)
+}
+
+func TestUsers_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/users"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []users.Users{
+			{ID: "user-1", DisplayName: "User One", Status: true},
+			{ID: "user-2", DisplayName: "User Two", Status: true},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "User One", results[0].DisplayName)
+}
+
+func TestUsers_Create_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/users"
+
+	newUser := &users.Users{
+		LoginName:    "new.user@example.com",
+		DisplayName:  "New User",
+		FirstName:    "New",
+		LastName:     "User",
+		PrimaryEmail: "new.user@example.com",
+		Status:       true,
+	}
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &users.Users{
+		ID:           "user-new",
+		LoginName:    "new.user@example.com",
+		DisplayName:  "New User",
+		FirstName:    "New",
+		LastName:     "User",
+		PrimaryEmail: "new.user@example.com",
+		Status:       true,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Create(context.Background(), service, newUser)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "user-new", result.ID)
+	assert.Equal(t, "new.user@example.com", result.LoginName)
+}
+
+func TestUsers_Update_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID
+
+	updateUser := &users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+		FirstName:   "Updated",
+		LastName:    "User",
+	}
+
+	server.On("PUT", path, testcommon.SuccessResponse(&users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+		FirstName:   "Updated",
+		LastName:    "User",
+		Status:      true,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Update(context.Background(), service, userID, updateUser)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated User", result.DisplayName)
+}
+
+func TestUsers_Delete_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.Delete(context.Background(), service, userID)
+	require.NoError(t, err)
 }
 

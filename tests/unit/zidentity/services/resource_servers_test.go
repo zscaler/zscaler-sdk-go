@@ -2,11 +2,13 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	resourceservers "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/resource_servers"
 )
@@ -225,5 +227,62 @@ func TestResourceServers_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "service-b", server.ServiceScopes[1].Service.Name)
 		assert.Len(t, server.ServiceScopes[1].Scopes, 1)
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestResourceServers_Get_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	resourceID := "rs-12345"
+	path := "/admin/api/v1/resource-servers/" + resourceID
+
+	server.On("GET", path, testcommon.SuccessResponse(resourceservers.ResourceServers{
+		ID:          resourceID,
+		Name:        "ZPA API",
+		DisplayName: "Zscaler Private Access API",
+		Description: "API for managing ZPA resources",
+		PrimaryAud:  "https://api.zscaler.com",
+		DefaultApi:  true,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := resourceservers.Get(context.Background(), service, resourceID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, resourceID, result.ID)
+	assert.Equal(t, "ZPA API", result.Name)
+	assert.True(t, result.DefaultApi)
+}
+
+func TestResourceServers_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/resource-servers"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[resourceservers.ResourceServers]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []resourceservers.ResourceServers{
+			{ID: "rs-1", Name: "ZPA API", DefaultApi: true},
+			{ID: "rs-2", Name: "ZIA API", DefaultApi: false},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := resourceservers.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "ZPA API", results[0].Name)
 }
 

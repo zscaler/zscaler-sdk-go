@@ -4,9 +4,13 @@ package common
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"time"
 
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa"
+	zwaservices "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services"
 )
 
 // ===================================================================
@@ -93,4 +97,51 @@ func MustCreateTestService(server *TestServer, customerID string) *zscaler.Servi
 		panic("failed to create test service: " + err.Error())
 	}
 	return service
+}
+
+// ===================================================================
+// ZWA Test Service Factory
+// ===================================================================
+
+// CreateZWATestService creates a ZWA service configured to use the mock server
+func CreateZWATestService(ctx context.Context, server *TestServer) (*zwaservices.Service, error) {
+	// Parse the test server URL
+	baseURL, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create custom HTTP client with mock transport
+	httpClient := &http.Client{
+		Transport: &MockTransport{TestServerURL: server.URL},
+		Timeout:   30 * time.Second,
+	}
+
+	// Create a mock configuration with pre-populated auth token and logger
+	cfg := &zwa.Configuration{
+		HTTPClient:    httpClient,
+		BaseURL:       baseURL,
+		UserAgent:     "zscaler-sdk-go-test",
+		Context:       ctx,
+		Logger:        logger.GetDefaultLogger("zwa-test: "),
+		DefaultHeader: make(map[string]string),
+	}
+	cfg.ZWA.Client.AuthToken = &zwa.AuthToken{
+		AccessToken: "mock-zwa-token-12345",
+		TokenType:   "Bearer",
+		ExpiresIn:   3600,
+	}
+	cfg.ZWA.Client.ZWAAPIKeyID = "mock-key-id"
+	cfg.ZWA.Client.ZWAAPISecret = "mock-secret"
+	cfg.ZWA.Client.RequestTimeout = 30 * time.Second
+	cfg.ZWA.Client.RateLimit.MaxRetries = 1
+	cfg.ZWA.Client.RateLimit.RetryWaitMin = time.Second
+	cfg.ZWA.Client.RateLimit.RetryWaitMax = time.Second * 5
+
+	// Create the ZWA client directly without authentication
+	client := &zwa.Client{
+		Config: cfg,
+	}
+
+	return zwaservices.New(client), nil
 }

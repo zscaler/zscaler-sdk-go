@@ -2,11 +2,13 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/customeraudit"
 )
@@ -147,5 +149,61 @@ func TestCustomerAudit_ResponseParsing(t *testing.T) {
 		assert.Contains(t, log.NewRowJSON, "inspectAll")
 		assert.Equal(t, "Expanded SSL inspection scope, removed finance bypass", log.ChangeNote)
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestCustomerAudit_GetCustomerAudit_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	path := "/dlp/v1/customer/audit"
+
+	// Mock response for paginated audit logs
+	server.On("POST", path, testcommon.SuccessResponse(map[string]interface{}{
+		"logs": []customeraudit.AuditLog{
+			{
+				Action:    customeraudit.Action{Action: "CREATE"},
+				Module:    "DLP",
+				Resource:  "DLP Policy",
+				ChangedAt: "2024-01-15T10:30:00Z",
+				ChangedBy: "admin@company.com",
+			},
+			{
+				Action:    customeraudit.Action{Action: "UPDATE"},
+				Module:    "FIREWALL",
+				Resource:  "Firewall Rule",
+				ChangedAt: "2024-01-16T11:00:00Z",
+				ChangedBy: "security@company.com",
+			},
+		},
+		"cursor": common.Cursor{
+			TotalPages:        1,
+			CurrentPageNumber: 1,
+			CurrentPageSize:   100,
+			TotalElements:     2,
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	filters := common.CommonDLPIncidentFiltering{
+		TimeRange: common.TimeRange{
+			StartTime: "2024-01-01T00:00:00Z",
+			EndTime:   "2024-01-31T23:59:59Z",
+		},
+	}
+
+	results, cursor, err := customeraudit.GetCustomerAudit(context.Background(), service, filters, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	require.NotNil(t, cursor)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "CREATE", results[0].Action.Action)
+	assert.Equal(t, "DLP", results[0].Module)
 }
 

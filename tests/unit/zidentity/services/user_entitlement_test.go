@@ -2,11 +2,13 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/user_entitlement"
 )
@@ -241,5 +243,69 @@ func TestUserEntitlement_ResponseParsing(t *testing.T) {
 		assert.Contains(t, roleNames, "PolicyAdmin")
 		assert.Contains(t, roleNames, "Auditor")
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestUserEntitlement_GetAdminEntitlement_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID + "/admin-entitlements"
+
+	server.On("GET", path, testcommon.SuccessResponse([]user_entitlement.Entitlements{
+		{
+			Roles: []common.IDNameDisplayName{
+				{ID: "role-1", Name: "Admin", DisplayName: "Administrator"},
+			},
+			Scope: common.IDNameDisplayName{
+				ID:   "scope-global",
+				Name: "Global",
+			},
+			Service: user_entitlement.Service{
+				ID:          "svc-zpa",
+				ServiceName: "ZPA",
+				CloudName:   "zscaler",
+			},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := user_entitlement.GetAdminEntitlement(context.Background(), service, userID)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 1)
+	assert.Equal(t, "ZPA", results[0].Service.ServiceName)
+	assert.Equal(t, "Admin", results[0].Roles[0].Name)
+}
+
+func TestUserEntitlement_GetServiceEntitlement_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID + "/service-entitlements"
+
+	server.On("GET", path, testcommon.SuccessResponse([]user_entitlement.Service{
+		{ID: "svc-zpa", ServiceName: "ZPA", CloudName: "zscaler"},
+		{ID: "svc-zia", ServiceName: "ZIA", CloudName: "zscaler"},
+		{ID: "svc-zdx", ServiceName: "ZDX", CloudName: "zscaler"},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := user_entitlement.GetServiceEntitlement(context.Background(), service, userID)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 3)
+	assert.Equal(t, "ZPA", results[0].ServiceName)
+	assert.Equal(t, "ZIA", results[1].ServiceName)
+	assert.Equal(t, "ZDX", results[2].ServiceName)
 }
 

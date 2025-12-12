@@ -2,11 +2,14 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/groups"
 )
@@ -195,5 +198,139 @@ func TestGroups_ResponseParsing(t *testing.T) {
 		assert.NotEmpty(t, response.PrevLink)
 		assert.Len(t, response.Records, 2)
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestGroups_Get_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID
+
+	server.On("GET", path, testcommon.SuccessResponse(groups.Groups{
+		ID:                      groupID,
+		Name:                    "Engineering Team",
+		Description:             "Engineering department group",
+		Source:                  "OKTA",
+		AdminEntitlementEnabled: true,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.Get(context.Background(), service, groupID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
+	assert.Equal(t, "Engineering Team", result.Name)
+	assert.True(t, result.AdminEntitlementEnabled)
+}
+
+func TestGroups_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Administrators", Source: "LOCAL"},
+			{ID: "group-2", Name: "Developers", Source: "OKTA"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "Administrators", results[0].Name)
+}
+
+func TestGroups_Create_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	newGroup := &groups.Groups{
+		Name:        "New Group",
+		Description: "A new group for testing",
+	}
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &groups.Groups{
+		ID:          "group-new",
+		Name:        "New Group",
+		Description: "A new group for testing",
+		Source:      "LOCAL",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Create(context.Background(), service, newGroup)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "group-new", result.ID)
+	assert.Equal(t, "New Group", result.Name)
+}
+
+func TestGroups_Delete_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.Delete(context.Background(), service, groupID)
+	require.NoError(t, err)
+}
+
+func TestGroups_AddUserToGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	userID := "user-67890"
+	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.AddUserToGroup(context.Background(), service, groupID, userID)
+	require.NoError(t, err)
+}
+
+func TestGroups_DeleteUserFromGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	userID := "user-67890"
+	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.DeleteUserFromGroup(context.Background(), service, groupID, userID)
+	require.NoError(t, err)
 }
 

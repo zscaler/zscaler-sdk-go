@@ -2,11 +2,14 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
 )
@@ -286,5 +289,463 @@ func TestDLPIncidents_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "SERVICENOW", response.Tickets[1].TicketType)
 		assert.Equal(t, "CLOSED", response.Tickets[0].TicketInfo.State)
 	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+// mockZWAAuth adds the ZWA authentication endpoint mock to the server
+func mockZWAAuth(server *testcommon.TestServer) {
+	server.On("POST", "/v1/auth/api-key/token", testcommon.SuccessResponse(map[string]interface{}{
+		"token_type": "Bearer",
+		"token":      "mock-zwa-access-token",
+		"expires_in": 3600,
+	}))
+}
+
+func TestDLPIncidents_GetDLPIncident_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	// Mock authentication endpoint
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID
+
+	server.On("GET", path, testcommon.SuccessResponse(common.IncidentDetails{
+		InternalID: incidentID,
+		Status:     "OPEN",
+		Severity:   "HIGH",
+		Priority:   "P1",
+		UserInfo: common.UserInfo{
+			Name:  "John Doe",
+			Email: "john.doe@example.com",
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.GetDLPIncident(context.Background(), service, incidentID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, incidentID, result.InternalID)
+	assert.Equal(t, "OPEN", result.Status)
+	assert.Equal(t, "HIGH", result.Severity)
+}
+
+func TestDLPIncidents_CreateNotes_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := 12345
+	path := "/dlp/v1/incidents/notes/12345"
+
+	server.On("POST", path, testcommon.SuccessResponse(common.IncidentDetails{
+		InternalID: "inc-12345",
+		Status:     "IN_PROGRESS",
+		Notes: []common.Note{
+			{Body: "Investigation started"},
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.CreateNotes(context.Background(), service, incidentID, "Investigation started")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "IN_PROGRESS", result.Status)
+}
+
+func TestDLPIncidents_CreateNotes_EmptyNote(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.CreateNotes(context.Background(), service, 12345, "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "note is required")
+}
+
+func TestDLPIncidents_UpdateIncidentStatus_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID + "/close"
+
+	server.On("POST", path, testcommon.SuccessResponse(common.IncidentDetails{
+		InternalID: incidentID,
+		Status:     "CLOSED",
+		ClosedCode: "RESOLVED",
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.UpdateIncidentStatus(context.Background(), service, incidentID, "Resolved after investigation")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "CLOSED", result.Status)
+}
+
+func TestDLPIncidents_UpdateIncidentStatus_EmptyID(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.UpdateIncidentStatus(context.Background(), service, "", "close")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "DLP incident ID is required")
+}
+
+func TestDLPIncidents_AssignLabels_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID + "/labels"
+
+	server.On("POST", path, testcommon.SuccessResponse(common.IncidentDetails{
+		InternalID: incidentID,
+		Labels: []common.Label{
+			{Key: "priority", Value: "high"},
+			{Key: "team", Value: "security"},
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	labels := []common.Label{
+		{Key: "priority", Value: "high"},
+		{Key: "team", Value: "security"},
+	}
+
+	result, resp, err := dlp_incidents.AssignLabels(context.Background(), service, incidentID, labels)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Len(t, result.Labels, 2)
+}
+
+func TestDLPIncidents_AssignLabels_EmptyLabels(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.AssignLabels(context.Background(), service, "inc-12345", []common.Label{})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "labels are required")
+}
+
+func TestDLPIncidents_DeleteDLPIncident_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	resp, err := dlp_incidents.DeleteDLPIncident(context.Background(), service, incidentID)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
+func TestDLPIncidents_DeleteDLPIncident_EmptyID(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	resp, err := dlp_incidents.DeleteDLPIncident(context.Background(), service, "")
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "DLP incident ID is required")
+}
+
+func TestDLPIncidents_HistoryDLPIncident_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID + "/change-history"
+
+	server.On("GET", path, testcommon.SuccessResponse(dlp_incidents.IncidentHistoryResponse{
+		IncidentID: incidentID,
+		StartDate:  "2024-01-01T00:00:00Z",
+		EndDate:    "2024-01-31T23:59:59Z",
+		ChangeHistory: []dlp_incidents.ChangeHistory{
+			{
+				ChangeType:    "STATUS_CHANGE",
+				ChangedAt:     "2024-01-15T10:00:00Z",
+				ChangedByName: "admin@company.com",
+				ChangeData: dlp_incidents.ChangeData{
+					Before: "OPEN",
+					After:  "CLOSED",
+				},
+			},
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.HistoryDLPIncident(context.Background(), service, incidentID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, incidentID, result.IncidentID)
+	assert.Len(t, result.ChangeHistory, 1)
+}
+
+func TestDLPIncidents_GetDLPIncidentTriggers_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID + "/triggers"
+
+	server.On("GET", path, testcommon.SuccessResponse(dlp_incidents.DLPIncidentTriggerData{
+		"dictionary_match": "Credit Card Numbers",
+		"pattern_detected": "4111-****-****-1111",
+		"confidence_score": "95",
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.GetDLPIncidentTriggers(context.Background(), service, incidentID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "Credit Card Numbers", result["dictionary_match"])
+}
+
+func TestDLPIncidents_GetDLPIncidentEvidence_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/" + incidentID + "/evidence"
+
+	server.On("GET", path, testcommon.SuccessResponse(dlp_incidents.DLPIncidentEvidence{
+		FileName:       "confidential.xlsx",
+		FileType:       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		AdditionalInfo: "Contains SSN data",
+		EvidenceURL:    "https://evidence.example.com/abc123",
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.GetDLPIncidentEvidence(context.Background(), service, incidentID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "confidential.xlsx", result.FileName)
+}
+
+func TestDLPIncidents_AssignIncidentGroups_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := 12345
+	path := "/dlp/v1/incidents/12345/incident-groups/search"
+
+	server.On("POST", path, testcommon.SuccessResponse(dlp_incidents.IncidentGroupsResponse{
+		IncidentGroups: []dlp_incidents.IncidentGroup{
+			{ID: 1, Name: "PCI-DSS", Status: "ACTIVE"},
+			{ID: 2, Name: "HIPAA", Status: "ACTIVE"},
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.AssignIncidentGroups(context.Background(), service, incidentID, []int{1, 2})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Len(t, result.IncidentGroups, 2)
+}
+
+func TestDLPIncidents_AssignIncidentGroups_EmptyGroups(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	result, resp, err := dlp_incidents.AssignIncidentGroups(context.Background(), service, 12345, []int{})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "incident group IDs are required")
+}
+
+func TestDLPIncidents_FilterIncidentSearch_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	path := "/dlp/v1/incidents/search"
+
+	server.On("POST", path, testcommon.SuccessResponse(map[string]interface{}{
+		"logs": []common.IncidentDetails{
+			{InternalID: "inc-1", Status: "OPEN", Severity: "HIGH"},
+			{InternalID: "inc-2", Status: "CLOSED", Severity: "MEDIUM"},
+		},
+		"cursor": common.Cursor{
+			TotalPages:        1,
+			CurrentPageNumber: 1,
+			CurrentPageSize:   100,
+			TotalElements:     2,
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	filters := common.CommonDLPIncidentFiltering{
+		TimeRange: common.TimeRange{
+			StartTime: "2024-01-01T00:00:00Z",
+			EndTime:   "2024-01-31T23:59:59Z",
+		},
+	}
+
+	results, cursor, err := dlp_incidents.FilterIncidentSearch(context.Background(), service, filters, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	require.NotNil(t, cursor)
+	assert.Len(t, results, 2)
+}
+
+func TestDLPIncidents_GetIncidentTransactions_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	transactionID := "txn-12345"
+	path := "/dlp/v1/incidents/transactions/" + transactionID
+
+	server.On("GET", path, testcommon.SuccessResponse(map[string]interface{}{
+		"logs": []common.IncidentDetails{
+			{InternalID: "inc-1", TransactionID: transactionID, Status: "OPEN"},
+		},
+		"cursor": common.Cursor{
+			TotalPages:        1,
+			CurrentPageNumber: 1,
+			CurrentPageSize:   100,
+			TotalElements:     1,
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	results, cursor, err := dlp_incidents.GetIncidentTransactions(context.Background(), service, transactionID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	require.NotNil(t, cursor)
+	assert.Len(t, results, 1)
+}
+
+func TestDLPIncidents_GetIncidentTransactions_EmptyID(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	results, cursor, err := dlp_incidents.GetIncidentTransactions(context.Background(), service, "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+	assert.Nil(t, cursor)
+	assert.Contains(t, err.Error(), "transaction ID is required")
+}
+
+func TestDLPIncidents_GetDLPIncidentTickets_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+	mockZWAAuth(server)
+
+	incidentID := "inc-12345"
+	path := "/dlp/v1/incidents/tickets/" + incidentID
+
+	server.On("GET", path, testcommon.SuccessResponse(map[string]interface{}{
+		"logs": []dlp_incidents.Ticket{
+			{
+				TicketType:          "JIRA",
+				TicketingSystemName: "Company JIRA",
+				ProjectID:           "SEC",
+				TicketInfo: dlp_incidents.TicketInfo{
+					TicketID:  "SEC-123",
+					TicketURL: "https://jira.company.com/SEC-123",
+					State:     "OPEN",
+				},
+			},
+		},
+		"cursor": common.Cursor{
+			TotalPages:        1,
+			CurrentPageNumber: 1,
+			CurrentPageSize:   100,
+			TotalElements:     1,
+		},
+	}))
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	results, cursor, err := dlp_incidents.GetDLPIncidentTickets(context.Background(), service, incidentID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	require.NotNil(t, cursor)
+	assert.Len(t, results, 1)
+}
+
+func TestDLPIncidents_GetDLPIncidentTickets_EmptyID(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateZWATestService(context.Background(), server)
+	require.NoError(t, err)
+
+	results, cursor, err := dlp_incidents.GetDLPIncidentTickets(context.Background(), service, "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+	assert.Nil(t, cursor)
+	assert.Contains(t, err.Error(), "DLP incident ID is required")
 }
 
