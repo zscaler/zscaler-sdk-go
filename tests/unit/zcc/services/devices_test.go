@@ -2,32 +2,128 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDevices_GetDeviceCleanupInfo_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getDeviceCleanupInfo"
+
+	server.On("GET", path, common.SuccessResponse(devices.DeviceCleanupInfo{
+		ID:                    "cleanup-001",
+		Active:                "true",
+		AutoPurgeDays:         "30",
+		AutoRemovalDays:       "60",
+		CompanyID:             "company-123",
+		DeviceExceedLimit:     "100",
+		ForceRemoveType:       "1",
+		ForceRemoveTypeString: "IMMEDIATE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devices.GetDeviceCleanupInfo(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "cleanup-001", result.ID)
+	assert.Equal(t, "true", result.Active)
+	assert.Equal(t, "30", result.AutoPurgeDays)
+}
+
+func TestDevices_SetDeviceCleanupInfo_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/setDeviceCleanupInfo"
+
+	server.On("PUT", path, common.SuccessResponse(devices.DeviceCleanupInfo{
+		ID:              "cleanup-001",
+		Active:          "true",
+		AutoPurgeDays:   "45",
+		AutoRemovalDays: "90",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	cleanupInfo := &devices.DeviceCleanupInfo{
+		ID:              "cleanup-001",
+		Active:          "true",
+		AutoPurgeDays:   "45",
+		AutoRemovalDays: "90",
+	}
+
+	result, err := devices.SetDeviceCleanupInfo(context.Background(), service, cleanupInfo)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "45", result.AutoPurgeDays)
+}
+
+func TestDevices_GetDeviceDetails_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zcc/papi/public/v1/getDeviceDetails"
+
+	server.On("GET", path, common.SuccessResponse([]devices.DeviceDetails{
+		{
+			AgentVersion:    "4.2.0.100",
+			MachineHostname: "laptop-001",
+			MacAddress:      "00:11:22:33:44:55",
+			OSVersion:       "Windows 10",
+			State:           "ACTIVE",
+			Type:            "WINDOWS",
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devices.GetDeviceDetails(context.Background(), service, "user@example.com", "device-001")
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "laptop-001", result[0].MachineHostname)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDevices_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("GetDevices JSON marshaling", func(t *testing.T) {
 		device := devices.GetDevices{
-			AgentVersion:        "4.2.0.100",
-			CompanyName:         "Test Company",
-			MachineHostname:     "test-machine",
-			MacAddress:          "00:11:22:33:44:55",
-			OsVersion:           "Windows 10",
-			Owner:               "test.user@example.com",
-			User:                "test.user@example.com",
-			RegistrationState:   "REGISTERED",
-			State:               1,
-			Type:                1,
-			Udid:                "device-udid-123",
-			VpnState:            1,
-			ZappArch:            "x64",
+			AgentVersion:      "4.2.0.100",
+			CompanyName:       "Test Company",
+			MachineHostname:   "test-machine",
+			MacAddress:        "00:11:22:33:44:55",
+			OsVersion:         "Windows 10",
+			Owner:             "test.user@example.com",
+			User:              "test.user@example.com",
+			RegistrationState: "REGISTERED",
+			State:             1,
+			Type:              1,
+			Udid:              "device-udid-123",
+			VpnState:          1,
+			ZappArch:          "x64",
 		}
 
 		data, err := json.Marshal(device)
@@ -162,4 +258,3 @@ func TestDevices_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "ACTIVE", detailsList[0].State)
 	})
 }
-
