@@ -286,3 +286,30 @@ func TestResourceServers_GetAll_SDK(t *testing.T) {
 	assert.Equal(t, "ZPA API", results[0].Name)
 }
 
+func TestResourceServers_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/resource-servers"
+
+	// Mock first page with matching results
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[resourceservers.ResourceServers]{
+		ResultsTotal: 3,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []resourceservers.ResourceServers{
+			{ID: "rs-1", Name: "ZPA API", DefaultApi: true},
+			{ID: "rs-2", Name: "ZIA API", DefaultApi: false},
+			{ID: "rs-3", Name: "ZPA Private API", DefaultApi: false},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := resourceservers.GetByName(context.Background(), service, "ZPA")
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2) // Should match "ZPA API" and "ZPA Private API"
+}
+

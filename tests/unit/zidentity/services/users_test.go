@@ -361,3 +361,82 @@ func TestUsers_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestUsers_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/users"
+
+	// Mock first page with matching results
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
+		ResultsTotal: 3,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []users.Users{
+			{ID: "user-1", DisplayName: "John Doe", LoginName: "john.doe@example.com"},
+			{ID: "user-2", DisplayName: "Jane Doe", LoginName: "jane.doe@example.com"},
+			{ID: "user-3", DisplayName: "Bob Smith", LoginName: "bob.smith@example.com"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetByName(context.Background(), service, "Doe")
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2) // Should match "John Doe" and "Jane Doe"
+}
+
+func TestUsers_GetUsers_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID + "/users"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []interface{}{
+			map[string]interface{}{"id": "related-1", "displayName": "Related User 1"},
+			map[string]interface{}{"id": "related-2", "displayName": "Related User 2"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetUsers(context.Background(), service, userID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+}
+
+func TestUsers_GetGroupsByUser_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/admin/api/v1/users/" + userID + "/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []interface{}{
+			map[string]interface{}{"id": "group-1", "name": "Engineering"},
+			map[string]interface{}{"id": "group-2", "name": "Developers"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetGroupsByUser(context.Background(), service, userID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result.Records, 2)
+}
+

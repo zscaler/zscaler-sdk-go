@@ -334,3 +334,123 @@ func TestGroups_DeleteUserFromGroup_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestGroups_Update_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/admin/api/v1/groups/12345"
+
+	updateGroup := &groups.Groups{
+		Name:        "Updated Group Name",
+		Description: "Updated description",
+	}
+
+	server.On("PUT", path, testcommon.SuccessResponse(&groups.Groups{
+		ID:          "12345",
+		Name:        "Updated Group Name",
+		Description: "Updated description",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Update(context.Background(), service, groupID, updateGroup)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Group Name", result.Name)
+}
+
+func TestGroups_GetUsers_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []interface{}{
+			map[string]interface{}{"id": "user-1", "displayName": "User One"},
+			map[string]interface{}{"id": "user-2", "displayName": "User Two"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetUsers(context.Background(), service, groupID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+}
+
+func TestGroups_AddUserListToGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &groups.Groups{
+		ID:   groupID,
+		Name: "Test Group",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.AddUserListToGroup(context.Background(), service, groupID, []string{"user-1", "user-2", "user-3"})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestGroups_ReplaceUserListInGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("PUT", path, testcommon.SuccessResponse(&groups.Groups{
+		ID:   groupID,
+		Name: "Test Group",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.ReplaceUserListInGroup(context.Background(), service, groupID, []string{"user-1", "user-2"})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestGroups_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	// Mock first page with matching result
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 3,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering", Source: "OKTA"},
+			{ID: "group-2", Name: "Marketing", Source: "OKTA"},
+			{ID: "group-3", Name: "Engineering Team", Source: "LOCAL"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetByName(context.Background(), service, "Engineering")
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2) // Should match "Engineering" and "Engineering Team"
+}
+

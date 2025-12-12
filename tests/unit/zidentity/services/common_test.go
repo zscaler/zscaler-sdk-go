@@ -201,5 +201,44 @@ func TestCommon_ResponseParsing(t *testing.T) {
 		assert.Equal(t, 1000, common.DefaultPaginationOptions.MaxPageSize)
 		assert.False(t, common.DefaultPaginationOptions.UseCursor)
 	})
+
+	t.Run("PaginationQueryParams ToURLValues with all filters", func(t *testing.T) {
+		params := common.NewPaginationQueryParams(100)
+		params.WithOffset(50).
+			WithLoginName([]string{"user1", "user2"}).
+			WithLoginNameLike("john").
+			WithDisplayNameLike("John Doe").
+			WithPrimaryEmailLike("john@example.com").
+			WithDomainName([]string{"example.com"}).
+			WithIDPName([]string{"Okta"})
+
+		values := params.ToURLValues()
+
+		assert.Equal(t, "50", values.Get("offset"))
+		assert.Equal(t, "100", values.Get("limit"))
+		assert.Equal(t, "john", values.Get("loginname[like]"))
+		assert.Equal(t, "John Doe", values.Get("displayname[like]"))
+		assert.Equal(t, "john@example.com", values.Get("primaryemail[like]"))
+		assert.Contains(t, values["loginname"], "user1")
+		assert.Contains(t, values["domainname"], "example.com")
+		assert.Contains(t, values["idpname"], "Okta")
+	})
+
+	t.Run("BuildEndpointWithParams function", func(t *testing.T) {
+		params := common.NewPaginationQueryParams(100)
+		params.WithOffset(50).WithNameFilter("test")
+
+		endpoint := common.BuildEndpointWithParams("/admin/api/v1/users", &params)
+
+		assert.Contains(t, endpoint, "/admin/api/v1/users")
+		assert.Contains(t, endpoint, "offset=50")
+		assert.Contains(t, endpoint, "limit=100")
+		assert.Contains(t, endpoint, "name%5Blike%5D=test")
+	})
+
+	t.Run("BuildEndpointWithParams with nil params", func(t *testing.T) {
+		endpoint := common.BuildEndpointWithParams("/admin/api/v1/users", nil)
+		assert.Equal(t, "/admin/api/v1/users", endpoint)
+	})
 }
 
