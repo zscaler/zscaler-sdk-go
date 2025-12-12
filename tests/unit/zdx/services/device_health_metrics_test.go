@@ -1,15 +1,57 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device health metrics service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceHealthMetrics_GetHealthMetrics_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/health-metrics"
+
+	server.On("GET", path, common.SuccessResponse([]devices.HealthMetrics{
+		{
+			Category: "CPU",
+			Instances: []devices.Instances{
+				{Name: "cpu_usage", Metrics: []zdxcommon.Metric{{Metric: "cpu_percent", Unit: "%"}}},
+			},
+		},
+		{
+			Category: "Memory",
+			Instances: []devices.Instances{
+				{Name: "memory_usage", Metrics: []zdxcommon.Metric{{Metric: "mem_percent", Unit: "%"}}},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetHealthMetrics(context.Background(), service, 12345, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "CPU", result[0].Category)
+	assert.Equal(t, "Memory", result[1].Category)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceHealthMetrics_Structure(t *testing.T) {
 	t.Parallel()
@@ -20,11 +62,11 @@ func TestDeviceHealthMetrics_Structure(t *testing.T) {
 			Instances: []devices.Instances{
 				{
 					Name: "cpu_usage",
-					Metrics: []common.Metric{
+					Metrics: []zdxcommon.Metric{
 						{
 							Metric: "cpu_percent",
 							Unit:   "%",
-							DataPoints: []common.DataPoint{
+							DataPoints: []zdxcommon.DataPoint{
 								{TimeStamp: 1699900000, Value: 45.5},
 								{TimeStamp: 1699903600, Value: 52.3},
 							},
@@ -74,18 +116,18 @@ func TestDeviceHealthMetrics_Structure(t *testing.T) {
 	t.Run("Instances JSON marshaling", func(t *testing.T) {
 		instance := devices.Instances{
 			Name: "disk_io",
-			Metrics: []common.Metric{
+			Metrics: []zdxcommon.Metric{
 				{
 					Metric: "read_bytes",
 					Unit:   "MB/s",
-					DataPoints: []common.DataPoint{
+					DataPoints: []zdxcommon.DataPoint{
 						{TimeStamp: 1699900000, Value: 125.5},
 					},
 				},
 				{
 					Metric: "write_bytes",
 					Unit:   "MB/s",
-					DataPoints: []common.DataPoint{
+					DataPoints: []zdxcommon.DataPoint{
 						{TimeStamp: 1699900000, Value: 85.2},
 					},
 				},

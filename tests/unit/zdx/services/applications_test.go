@@ -1,14 +1,78 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX applications service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestApplications_GetAllApps_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/apps"
+
+	server.On("GET", path, common.SuccessResponse([]applications.Apps{
+		{ID: 1, Name: "Office 365", Score: 95.5, TotalUsers: 500},
+		{ID: 2, Name: "Salesforce", Score: 88.2, TotalUsers: 300},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := applications.GetAllApps(context.Background(), service, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "Office 365", result[0].Name)
+}
+
+func TestApplications_GetApp_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/apps/12345"
+
+	server.On("GET", path, common.SuccessResponse(applications.Apps{
+		ID:         12345,
+		Name:       "Microsoft Teams",
+		Score:      91.5,
+		TotalUsers: 800,
+		MostImpactedRegion: &applications.MostImpactedRegion{
+			ID:   "US-CA",
+			City: "San Francisco",
+		},
+		Stats: &applications.Stats{
+			ActiveUsers: 750,
+			NumGood:     600,
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := applications.GetApp(context.Background(), service, "12345", zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 12345, result.ID)
+	assert.Equal(t, "Microsoft Teams", result.Name)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestApplications_Structure(t *testing.T) {
 	t.Parallel()

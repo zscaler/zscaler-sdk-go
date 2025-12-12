@@ -1,14 +1,52 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device top process service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceTopProcess_GetDeviceTopProcesses_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/deeptraces/trace-001/top-processes"
+
+	server.On("GET", path, common.SuccessResponse([]devices.DeviceTopProcesses{
+		{
+			TimeStamp: 1699900000,
+			TopProcesses: []devices.TopProcesses{
+				{Category: "CPU", Processes: []devices.Processes{{ID: 1, Name: "chrome.exe"}}},
+				{Category: "Memory", Processes: []devices.Processes{{ID: 2, Name: "teams.exe"}}},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetDeviceTopProcesses(context.Background(), service, 12345, "trace-001", zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, 1699900000, result[0].TimeStamp)
+	assert.Len(t, result[0].TopProcesses, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceTopProcess_Structure(t *testing.T) {
 	t.Parallel()

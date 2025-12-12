@@ -1,23 +1,75 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX application score metrics service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestApplicationScoreMetrics_GetAppScores_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/apps/12345/score"
+
+	server.On("GET", path, common.SuccessResponse([]zdxcommon.Metric{
+		{Metric: "zdx_score", Unit: "score", DataPoints: []zdxcommon.DataPoint{{TimeStamp: 1699900000, Value: 85.5}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := applications.GetAppScores(context.Background(), service, 12345, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "zdx_score", result[0].Metric)
+}
+
+func TestApplicationScoreMetrics_GetAppMetrics_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/apps/12345/metrics"
+
+	server.On("GET", path, common.SuccessResponse([]zdxcommon.Metric{
+		{Metric: "page_fetch_time", Unit: "ms", DataPoints: []zdxcommon.DataPoint{{TimeStamp: 1699900000, Value: 250.5}}},
+		{Metric: "dns_time", Unit: "ms", DataPoints: []zdxcommon.DataPoint{{TimeStamp: 1699900000, Value: 25.0}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := applications.GetAppMetrics(context.Background(), service, 12345, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "page_fetch_time", result[0].Metric)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestApplicationScoreMetrics_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Metric JSON marshaling", func(t *testing.T) {
-		metric := common.Metric{
+		metric := zdxcommon.Metric{
 			Metric: "zdx_score",
 			Unit:   "score",
-			DataPoints: []common.DataPoint{
+			DataPoints: []zdxcommon.DataPoint{
 				{TimeStamp: 1699900000, Value: 85.5},
 				{TimeStamp: 1699903600, Value: 88.2},
 				{TimeStamp: 1699907200, Value: 91.0},
@@ -43,7 +95,7 @@ func TestApplicationScoreMetrics_Structure(t *testing.T) {
 			]
 		}`
 
-		var metric common.Metric
+		var metric zdxcommon.Metric
 		err := json.Unmarshal([]byte(jsonData), &metric)
 		require.NoError(t, err)
 
@@ -55,7 +107,7 @@ func TestApplicationScoreMetrics_Structure(t *testing.T) {
 	})
 
 	t.Run("DataPoint JSON marshaling", func(t *testing.T) {
-		dataPoint := common.DataPoint{
+		dataPoint := zdxcommon.DataPoint{
 			TimeStamp: 1699900000,
 			Value:     95.75,
 		}
@@ -68,7 +120,7 @@ func TestApplicationScoreMetrics_Structure(t *testing.T) {
 	})
 
 	t.Run("GetFromToFilters JSON marshaling", func(t *testing.T) {
-		filters := common.GetFromToFilters{
+		filters := zdxcommon.GetFromToFilters{
 			From:       1699900000,
 			To:         1700000000,
 			Loc:        []int{1, 2, 3},
@@ -104,7 +156,7 @@ func TestApplicationScoreMetrics_ResponseParsing(t *testing.T) {
 			}
 		]`
 
-		var metrics []common.Metric
+		var metrics []zdxcommon.Metric
 		err := json.Unmarshal([]byte(jsonResponse), &metrics)
 		require.NoError(t, err)
 
@@ -138,7 +190,7 @@ func TestApplicationScoreMetrics_ResponseParsing(t *testing.T) {
 			}
 		]`
 
-		var metrics []common.Metric
+		var metrics []zdxcommon.Metric
 		err := json.Unmarshal([]byte(jsonResponse), &metrics)
 		require.NoError(t, err)
 

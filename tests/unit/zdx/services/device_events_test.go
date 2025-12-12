@@ -1,14 +1,52 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device events service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceEvents_GetEvents_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/events"
+
+	server.On("GET", path, common.SuccessResponse([]devices.DeviceEvents{
+		{
+			TimeStamp: 1699900000,
+			Events: []devices.Events{
+				{Category: "Network", Name: "wifi_connect", DisplayName: "WiFi Connected"},
+				{Category: "System", Name: "reboot", DisplayName: "System Rebooted"},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetEvents(context.Background(), service, 12345, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, 1699900000, result[0].TimeStamp)
+	assert.Len(t, result[0].Events, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceEvents_Structure(t *testing.T) {
 	t.Parallel()

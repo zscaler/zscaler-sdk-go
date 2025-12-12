@@ -1,14 +1,108 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX deeptrace service
 package services
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeepTrace_GetDeepTraces_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/deeptraces"
+
+	server.On("GET", path, common.SuccessResponse([]deeptrace.DeepTraceSession{
+		{TraceID: "trace-001", Status: "completed"},
+		{TraceID: "trace-002", Status: "running"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := deeptrace.GetDeepTraces(context.Background(), service, 12345)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "trace-001", result[0].TraceID)
+}
+
+func TestDeepTrace_GetDeepTraceSession_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/deeptraces/trace-001"
+
+	server.On("GET", path, common.SuccessResponse(nil))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	resp, err := deeptrace.GetDeepTraceSession(context.Background(), service, 12345, "trace-001")
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestDeepTrace_CreateDeepTraceSession_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/deeptraces"
+
+	server.On("POST", path, common.SuccessResponse(deeptrace.DeepTraceSession{
+		TraceID: "new-trace-123",
+		Status:  "pending",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	payload := deeptrace.DeepTraceSessionPayload{
+		SessionName:          "Debug Session",
+		AppID:                100,
+		WebProbeID:           1,
+		SessionLengthMinutes: 30,
+		ProbeDevice:          true,
+	}
+
+	result, _, err := deeptrace.CreateDeepTraceSession(context.Background(), service, 12345, payload)
+
+	require.NoError(t, err)
+	assert.Equal(t, "new-trace-123", result.TraceID)
+}
+
+func TestDeepTrace_DeleteDeepTraceSession_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/deeptraces/trace-001"
+
+	server.On("DELETE", path, common.SuccessResponse(nil))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	resp, err := deeptrace.DeleteDeepTraceSession(context.Background(), service, 12345, "trace-001")
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeepTrace_Structure(t *testing.T) {
 	t.Parallel()

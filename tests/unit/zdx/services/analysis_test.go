@@ -1,14 +1,93 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX analysis service
 package services
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/analysis"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestAnalysis_GetAnalysis_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/analysis/analysis-123"
+
+	server.On("GET", path, common.SuccessResponse(analysis.AnalysisResult{
+		ErrMsg: "",
+		Result: analysis.Result{
+			Issue:      "Network Latency",
+			Confidence: 85,
+			Message:    "High latency detected",
+			Times:      []int{1699900000, 1699903600},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := analysis.GetAnalysis(context.Background(), service, "analysis-123")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Network Latency", result.Result.Issue)
+	assert.Equal(t, 85, result.Result.Confidence)
+}
+
+func TestAnalysis_CreateAnalysis_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/analysis"
+
+	server.On("POST", path, common.SuccessResponse(nil))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	request := analysis.AnalysisRequest{
+		DeviceID: 12345,
+		AppID:    67890,
+		T0:       1699900000,
+		T1:       1700000000,
+	}
+
+	resp, err := analysis.CreateAnalysis(context.Background(), service, request)
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestAnalysis_DeleteAnalysis_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/analysis/analysis-123"
+
+	server.On("DELETE", path, common.SuccessResponse(nil))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	resp, err := analysis.DeleteAnalysis(context.Background(), service, "analysis-123")
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestAnalysis_Structure(t *testing.T) {
 	t.Parallel()

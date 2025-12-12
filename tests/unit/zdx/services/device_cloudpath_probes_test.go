@@ -1,15 +1,86 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device cloudpath probes service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceCloudPathProbes_GetAllCloudPathProbes_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/cloudpath-probes"
+
+	server.On("GET", path, common.SuccessResponse([]devices.DeviceCloudPathProbe{
+		{ID: 1, Name: "probe-1", NumProbes: 50},
+		{ID: 2, Name: "probe-2", NumProbes: 40},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetAllCloudPathProbes(context.Background(), service, 12345, 100, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "probe-1", result[0].Name)
+}
+
+func TestDeviceCloudPathProbes_GetDeviceAppCloudPathProbe_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/cloudpath-probes/1"
+
+	server.On("GET", path, common.SuccessResponse([]devices.NetworkStats{
+		{LegSRC: "Client", LegDst: "Egress", Stats: []zdxcommon.Metric{{Metric: "latency", Unit: "ms"}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetDeviceAppCloudPathProbe(context.Background(), service, 12345, 100, 1, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "Client", result[0].LegSRC)
+}
+
+func TestDeviceCloudPathProbes_GetCloudPathAppDevice_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/cloudpath-probes/1//cloudpath"
+
+	server.On("GET", path, common.SuccessResponse([]devices.CloudPathProbe{
+		{TimeStamp: 1699900000, CloudPath: []devices.CloudPath{{SRC: "192.168.1.1", DST: "40.97.100.1", NumHops: 5}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetCloudPathAppDevice(context.Background(), service, 12345, 100, 1, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, 1699900000, result[0].TimeStamp)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceCloudPathProbes_Structure(t *testing.T) {
 	t.Parallel()
@@ -75,11 +146,11 @@ func TestDeviceCloudPathProbes_Structure(t *testing.T) {
 		stats := devices.NetworkStats{
 			LegSRC: "Client",
 			LegDst: "Egress",
-			Stats: []common.Metric{
+			Stats: []zdxcommon.Metric{
 				{
 					Metric: "latency",
 					Unit:   "ms",
-					DataPoints: []common.DataPoint{
+					DataPoints: []zdxcommon.DataPoint{
 						{TimeStamp: 1699900000, Value: 25.5},
 					},
 				},

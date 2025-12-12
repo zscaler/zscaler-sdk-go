@@ -1,14 +1,66 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device web probes service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceWebProbes_GetAllWebProbes_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/web-probes"
+
+	server.On("GET", path, common.SuccessResponse([]devices.DeviceWebProbe{
+		{ID: 1, Name: "microsoft.com", NumProbes: 100, AvgScore: 95.0, AvgPFT: 200.0},
+		{ID: 2, Name: "google.com", NumProbes: 80, AvgScore: 98.0, AvgPFT: 150.0},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetAllWebProbes(context.Background(), service, 12345, 100, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "microsoft.com", result[0].Name)
+}
+
+func TestDeviceWebProbes_GetWebProbes_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/web-probes/1"
+
+	server.On("GET", path, common.SuccessResponse([]zdxcommon.Metric{
+		{Metric: "pft", Unit: "ms", DataPoints: []zdxcommon.DataPoint{{TimeStamp: 1699900000, Value: 250.5}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetWebProbes(context.Background(), service, 12345, 100, 1, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "pft", result[0].Metric)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceWebProbes_Structure(t *testing.T) {
 	t.Parallel()

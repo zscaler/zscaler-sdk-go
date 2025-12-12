@@ -1,14 +1,126 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX users service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/users"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestUsers_GetUser_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/users/12345"
+
+	server.On("GET", path, common.SuccessResponse(users.User{
+		ID:    12345,
+		Name:  "John Doe",
+		Email: "john.doe@example.com",
+		Devices: []users.Devices{
+			{
+				ID:   1001,
+				Name: "LAPTOP-001",
+				UserLocation: []users.UserLocation{
+					{ID: "loc-1", City: "San Jose", State: "CA", Country: "US"},
+				},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.GetUser(context.Background(), service, "12345")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 12345, result.ID)
+	assert.Equal(t, "John Doe", result.Name)
+	assert.Equal(t, "john.doe@example.com", result.Email)
+	assert.Len(t, result.Devices, 1)
+}
+
+func TestUsers_GetAllUsers_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/users"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"users": []users.User{
+			{ID: 1, Name: "User 1", Email: "user1@example.com"},
+			{ID: 2, Name: "User 2", Email: "user2@example.com"},
+			{ID: 3, Name: "User 3", Email: "user3@example.com"},
+		},
+		"next_offset": nil,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.GetAllUsers(context.Background(), service, users.GetUsersFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "User 1", result[0].Name)
+}
+
+func TestUsers_GetUser_WithDevices_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/users/99999"
+
+	server.On("GET", path, common.SuccessResponse(users.User{
+		ID:    99999,
+		Name:  "Jane Smith",
+		Email: "jane.smith@example.com",
+		Devices: []users.Devices{
+			{
+				ID:   2001,
+				Name: "DESKTOP-001",
+				UserLocation: []users.UserLocation{
+					{ID: "geo-1", City: "New York", State: "NY", Country: "US", GeoLat: 40.7128, GeoLong: -74.0060},
+				},
+				ZSLocation: []users.ZSLocation{
+					{ID: 100, Name: "NYC Data Center"},
+				},
+			},
+			{
+				ID:   2002,
+				Name: "LAPTOP-002",
+				UserLocation: []users.UserLocation{
+					{ID: "geo-2", City: "Boston", State: "MA", Country: "US"},
+				},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.GetUser(context.Background(), service, "99999")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result.Devices, 2)
+	assert.Equal(t, "DESKTOP-001", result.Devices[0].Name)
+	assert.Equal(t, "New York", result.Devices[0].UserLocation[0].City)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestUsers_Structure(t *testing.T) {
 	t.Parallel()
@@ -16,60 +128,102 @@ func TestUsers_Structure(t *testing.T) {
 	t.Run("User JSON marshaling", func(t *testing.T) {
 		user := users.User{
 			ID:    12345,
-			Name:  "John Doe",
-			Email: "john.doe@example.com",
-			Devices: []users.Devices{
-				{
-					ID:   1001,
-					Name: "LAPTOP-001",
-					UserLocation: []users.UserLocation{
-						{
-							ID:           "US-CA-SJC",
-							City:         "San Jose",
-							State:        "California",
-							Country:      "United States",
-							GeoLat:       37.3382,
-							GeoLong:      -121.8863,
-							GeoDetection: "IP",
-						},
-					},
-					ZSLocation: []users.ZSLocation{
-						{ID: 100, Name: "San Jose DC"},
-					},
-				},
-			},
+			Name:  "Test User",
+			Email: "test@example.com",
 		}
 
 		data, err := json.Marshal(user)
 		require.NoError(t, err)
 
 		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"name":"John Doe"`)
-		assert.Contains(t, string(data), `"email":"john.doe@example.com"`)
+		assert.Contains(t, string(data), `"name":"Test User"`)
+		assert.Contains(t, string(data), `"email":"test@example.com"`)
 	})
 
 	t.Run("User JSON unmarshaling", func(t *testing.T) {
 		jsonData := `{
 			"id": 67890,
-			"name": "Jane Smith",
-			"email": "jane.smith@example.com",
+			"name": "Another User",
+			"email": "another@example.com"
+		}`
+
+		var user users.User
+		err := json.Unmarshal([]byte(jsonData), &user)
+		require.NoError(t, err)
+
+		assert.Equal(t, 67890, user.ID)
+		assert.Equal(t, "Another User", user.Name)
+		assert.Equal(t, "another@example.com", user.Email)
+	})
+
+	t.Run("Devices JSON marshaling", func(t *testing.T) {
+		device := users.Devices{
+			ID:   1001,
+			Name: "WORKSTATION-001",
+			UserLocation: []users.UserLocation{
+				{ID: "loc-1", City: "San Jose", State: "CA", Country: "US"},
+			},
+			ZSLocation: []users.ZSLocation{
+				{ID: 100, Name: "West Coast DC"},
+			},
+		}
+
+		data, err := json.Marshal(device)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":1001`)
+		assert.Contains(t, string(data), `"name":"WORKSTATION-001"`)
+		assert.Contains(t, string(data), `"geo_loc"`)
+		assert.Contains(t, string(data), `"zs_loc"`)
+	})
+
+	t.Run("UserLocation JSON marshaling", func(t *testing.T) {
+		location := users.UserLocation{
+			ID:           "geo-12345",
+			City:         "San Francisco",
+			State:        "California",
+			Country:      "United States",
+			GeoLat:       37.7749,
+			GeoLong:      -122.4194,
+			GeoDetection: "IP",
+		}
+
+		data, err := json.Marshal(location)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":"geo-12345"`)
+		assert.Contains(t, string(data), `"city":"San Francisco"`)
+		assert.Contains(t, string(data), `"country":"United States"`)
+		assert.Contains(t, string(data), `"geo_lat":37.7749`)
+	})
+
+	t.Run("ZSLocation JSON marshaling", func(t *testing.T) {
+		zsLoc := users.ZSLocation{
+			ID:   500,
+			Name: "Zscaler West Coast",
+		}
+
+		data, err := json.Marshal(zsLoc)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":500`)
+		assert.Contains(t, string(data), `"name":"Zscaler West Coast"`)
+	})
+
+	t.Run("Complete User with devices JSON unmarshaling", func(t *testing.T) {
+		jsonData := `{
+			"id": 11111,
+			"name": "Complex User",
+			"email": "complex@example.com",
 			"devices": [
 				{
 					"id": 2001,
-					"name": "DESKTOP-001",
+					"name": "LAPTOP-XYZ",
 					"geo_loc": [
-						{
-							"id": "US-NY-NYC",
-							"city": "New York",
-							"state": "New York",
-							"country": "United States",
-							"geo_lat": 40.7128,
-							"geo_long": -74.0060,
-							"geo_detection": "GPS"
-						}
+						{"id": "geo-1", "city": "Austin", "state": "TX", "country": "US", "geo_lat": 30.2672, "geo_long": -97.7431}
 					],
 					"zs_loc": [
-						{"id": 200, "name": "New York DC"}
+						{"id": 200, "name": "Texas DC"}
 					]
 				}
 			]
@@ -79,83 +233,11 @@ func TestUsers_Structure(t *testing.T) {
 		err := json.Unmarshal([]byte(jsonData), &user)
 		require.NoError(t, err)
 
-		assert.Equal(t, 67890, user.ID)
-		assert.Equal(t, "Jane Smith", user.Name)
-		assert.Equal(t, "jane.smith@example.com", user.Email)
+		assert.Equal(t, 11111, user.ID)
 		assert.Len(t, user.Devices, 1)
-		assert.Equal(t, "DESKTOP-001", user.Devices[0].Name)
-		assert.Len(t, user.Devices[0].UserLocation, 1)
-		assert.Equal(t, "New York", user.Devices[0].UserLocation[0].City)
-	})
-
-	t.Run("Devices JSON marshaling", func(t *testing.T) {
-		device := users.Devices{
-			ID:   3001,
-			Name: "MACBOOK-001",
-			UserLocation: []users.UserLocation{
-				{ID: "GB-LDN", City: "London", Country: "United Kingdom"},
-			},
-			ZSLocation: []users.ZSLocation{
-				{ID: 300, Name: "London DC"},
-			},
-		}
-
-		data, err := json.Marshal(device)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":3001`)
-		assert.Contains(t, string(data), `"name":"MACBOOK-001"`)
-	})
-
-	t.Run("UserLocation JSON marshaling", func(t *testing.T) {
-		location := users.UserLocation{
-			ID:           "JP-TYO",
-			City:         "Tokyo",
-			State:        "Tokyo",
-			Country:      "Japan",
-			GeoLat:       35.6762,
-			GeoLong:      139.6503,
-			GeoDetection: "IP",
-		}
-
-		data, err := json.Marshal(location)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":"JP-TYO"`)
-		assert.Contains(t, string(data), `"city":"Tokyo"`)
-		assert.Contains(t, string(data), `"geo_lat":35.6762`)
-	})
-
-	t.Run("ZSLocation JSON marshaling", func(t *testing.T) {
-		zsLoc := users.ZSLocation{
-			ID:   500,
-			Name: "Frankfurt DC",
-		}
-
-		data, err := json.Marshal(zsLoc)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":500`)
-		assert.Contains(t, string(data), `"name":"Frankfurt DC"`)
-	})
-
-	t.Run("GetUsersFilters JSON marshaling", func(t *testing.T) {
-		filters := users.GetUsersFilters{
-			From:   1699900000,
-			To:     1700000000,
-			Loc:    []int{1, 2},
-			Dept:   []int{10, 20},
-			Geo:    []string{"US-CA", "US-NY"},
-			Offset: "page2",
-			Limit:  50,
-			Q:      "john",
-		}
-
-		data, err := json.Marshal(filters)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"from":1699900000`)
-		assert.Contains(t, string(data), `"q":"john"`)
+		assert.Equal(t, "LAPTOP-XYZ", user.Devices[0].Name)
+		assert.Equal(t, "Austin", user.Devices[0].UserLocation[0].City)
+		assert.Equal(t, "Texas DC", user.Devices[0].ZSLocation[0].Name)
 	})
 }
 
@@ -165,25 +247,11 @@ func TestUsers_ResponseParsing(t *testing.T) {
 	t.Run("Parse users list response", func(t *testing.T) {
 		jsonResponse := `{
 			"users": [
-				{
-					"id": 1,
-					"name": "User One",
-					"email": "user1@example.com",
-					"devices": [
-						{"id": 101, "name": "Device 1"}
-					]
-				},
-				{
-					"id": 2,
-					"name": "User Two",
-					"email": "user2@example.com",
-					"devices": [
-						{"id": 201, "name": "Device 2"},
-						{"id": 202, "name": "Device 3"}
-					]
-				}
+				{"id": 1, "name": "User 1", "email": "user1@test.com"},
+				{"id": 2, "name": "User 2", "email": "user2@test.com"},
+				{"id": 3, "name": "User 3", "email": "user3@test.com"}
 			],
-			"next_offset": "abc123"
+			"next_offset": "page2"
 		}`
 
 		var response struct {
@@ -193,47 +261,23 @@ func TestUsers_ResponseParsing(t *testing.T) {
 		err := json.Unmarshal([]byte(jsonResponse), &response)
 		require.NoError(t, err)
 
-		assert.Len(t, response.Users, 2)
-		assert.Equal(t, "abc123", response.NextOffset)
-		assert.Equal(t, "User One", response.Users[0].Name)
-		assert.Len(t, response.Users[0].Devices, 1)
-		assert.Len(t, response.Users[1].Devices, 2)
+		assert.Len(t, response.Users, 3)
+		assert.Equal(t, "page2", response.NextOffset)
 	})
 
-	t.Run("Parse single user response", func(t *testing.T) {
+	t.Run("Parse empty users list", func(t *testing.T) {
 		jsonResponse := `{
-			"id": 12345,
-			"name": "Test User",
-			"email": "test@example.com",
-			"devices": [
-				{
-					"id": 1001,
-					"name": "Work Laptop",
-					"geo_loc": [
-						{
-							"id": "US-CA",
-							"city": "San Francisco",
-							"state": "California",
-							"country": "United States"
-						}
-					],
-					"zs_loc": [
-						{"id": 1, "name": "US West"}
-					]
-				}
-			]
+			"users": [],
+			"next_offset": null
 		}`
 
-		var user users.User
-		err := json.Unmarshal([]byte(jsonResponse), &user)
+		var response struct {
+			Users      []users.User `json:"users"`
+			NextOffset interface{}  `json:"next_offset"`
+		}
+		err := json.Unmarshal([]byte(jsonResponse), &response)
 		require.NoError(t, err)
 
-		assert.Equal(t, 12345, user.ID)
-		assert.Equal(t, "Test User", user.Name)
-		assert.Len(t, user.Devices, 1)
-		assert.Equal(t, "Work Laptop", user.Devices[0].Name)
-		assert.Len(t, user.Devices[0].UserLocation, 1)
-		assert.Equal(t, "San Francisco", user.Devices[0].UserLocation[0].City)
+		assert.Empty(t, response.Users)
 	})
 }
-

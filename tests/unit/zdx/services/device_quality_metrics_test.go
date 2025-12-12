@@ -1,15 +1,54 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX device quality metrics service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDeviceQualityMetrics_GetQualityMetrics_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices/12345/apps/100/call-quality-metrics"
+
+	server.On("GET", path, common.SuccessResponse([]devices.CallQualityMetrics{
+		{
+			MeetID:        "meet-123",
+			MeetSessionID: "session-456",
+			MeetSubject:   "Team Standup",
+			Metrics: []zdxcommon.Metric{
+				{Metric: "jitter", Unit: "ms"},
+				{Metric: "packet_loss", Unit: "%"},
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetQualityMetrics(context.Background(), service, 12345, 100, zdxcommon.GetFromToFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "meet-123", result[0].MeetID)
+	assert.Len(t, result[0].Metrics, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDeviceQualityMetrics_Structure(t *testing.T) {
 	t.Parallel()
@@ -19,11 +58,11 @@ func TestDeviceQualityMetrics_Structure(t *testing.T) {
 			MeetID:        "meet-123-abc",
 			MeetSessionID: "session-456",
 			MeetSubject:   "Team Weekly Standup",
-			Metrics: []common.Metric{
+			Metrics: []zdxcommon.Metric{
 				{
 					Metric: "jitter",
 					Unit:   "ms",
-					DataPoints: []common.DataPoint{
+					DataPoints: []zdxcommon.DataPoint{
 						{TimeStamp: 1699900000, Value: 5.5},
 						{TimeStamp: 1699903600, Value: 7.2},
 					},
@@ -31,7 +70,7 @@ func TestDeviceQualityMetrics_Structure(t *testing.T) {
 				{
 					Metric: "packet_loss",
 					Unit:   "%",
-					DataPoints: []common.DataPoint{
+					DataPoints: []zdxcommon.DataPoint{
 						{TimeStamp: 1699900000, Value: 0.5},
 						{TimeStamp: 1699903600, Value: 1.2},
 					},

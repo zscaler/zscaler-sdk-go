@@ -1,14 +1,58 @@
-// Package services provides unit tests for ZDX services
+// Package services provides unit tests for ZDX geo locations service
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestGeoLocations_GetGeoLocations_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/active_geo"
+
+	server.On("GET", path, common.SuccessResponse([]devices.GeoLocation{
+		{
+			ID:      "US",
+			Name:    "United States",
+			GeoType: "country",
+			Children: []devices.Children{
+				{ID: "US-CA", Description: "California", GeoType: "state"},
+				{ID: "US-NY", Description: "New York", GeoType: "state"},
+			},
+		},
+		{
+			ID:      "GB",
+			Name:    "United Kingdom",
+			GeoType: "country",
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetGeoLocations(context.Background(), service, devices.GeoLocationFilter{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "United States", result[0].Name)
+	assert.Len(t, result[0].Children, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestGeoLocations_Structure(t *testing.T) {
 	t.Parallel()

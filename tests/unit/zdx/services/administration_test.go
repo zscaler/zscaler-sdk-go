@@ -2,13 +2,138 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/administration"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestAdministration_GetDepartments_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/administration/departments"
+
+	server.On("GET", path, common.SuccessResponse([]administration.Department{
+		{ID: 1, Name: "Engineering"},
+		{ID: 2, Name: "Sales"},
+		{ID: 3, Name: "Marketing"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := administration.GetDepartments(context.Background(), service, administration.GetDepartmentsFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "Engineering", result[0].Name)
+}
+
+func TestAdministration_GetDepartments_WithFilters_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/administration/departments"
+
+	server.On("GET", path, common.SuccessResponse([]administration.Department{
+		{ID: 1, Name: "Engineering"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	filters := administration.GetDepartmentsFilters{
+		From:   1699900000,
+		To:     1700000000,
+		Search: "Engineering",
+	}
+
+	result, _, err := administration.GetDepartments(context.Background(), service, filters)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "Engineering", result[0].Name)
+}
+
+func TestAdministration_GetLocations_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/administration/locations"
+
+	server.On("GET", path, common.SuccessResponse([]administration.Location{
+		{ID: 100, Name: "San Jose HQ"},
+		{ID: 101, Name: "New York Office"},
+		{ID: 102, Name: "London Office"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := administration.GetLocations(context.Background(), service, administration.GetLocationsFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "San Jose HQ", result[0].Name)
+	assert.Equal(t, 100, result[0].ID)
+}
+
+func TestAdministration_GetLocations_WithFilters_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/administration/locations"
+
+	server.On("GET", path, common.SuccessResponse([]administration.Location{
+		{ID: 100, Name: "San Jose HQ"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	filters := administration.GetLocationsFilters{
+		From:   1699900000,
+		To:     1700000000,
+		Search: "San Jose",
+		Q:      "HQ",
+	}
+
+	result, _, err := administration.GetLocations(context.Background(), service, filters)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "San Jose HQ", result[0].Name)
+}
+
+func TestAdministration_GetDepartments_Empty_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/administration/departments"
+
+	server.On("GET", path, common.SuccessResponse([]administration.Department{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := administration.GetDepartments(context.Background(), service, administration.GetDepartmentsFilters{})
+
+	require.NoError(t, err)
+	assert.Len(t, result, 0)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestAdministration_Structure(t *testing.T) {
 	t.Parallel()
@@ -149,4 +274,3 @@ func TestAdministration_ResponseParsing(t *testing.T) {
 		assert.Empty(t, departments)
 	})
 }
-
