@@ -233,6 +233,88 @@ func TestZiaRequests(t *testing.T) {
 
 		require.NoError(t, err)
 	})
+
+	t.Run("CreateWithSlicePayload", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/zia/api/v1/urlCategories/bulk", common.SuccessResponse([]map[string]interface{}{
+			{"id": "cat-1", "name": "Category 1"},
+			{"id": "cat-2", "name": "Category 2"},
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		payload := []map[string]interface{}{
+			{"name": "Category 1"},
+			{"name": "Category 2"},
+		}
+
+		result, err := service.Client.CreateWithSlicePayload(context.Background(), "/zia/api/v1/urlCategories/bulk", payload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("UpdateWithSlicePayload", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("PUT", "/zia/api/v1/urlCategories/bulk", common.SuccessResponse([]map[string]interface{}{
+			{"id": "cat-1", "name": "Updated Category 1"},
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		payload := []map[string]interface{}{
+			{"id": "cat-1", "name": "Updated Category 1"},
+		}
+
+		result, err := service.Client.UpdateWithSlicePayload(context.Background(), "/zia/api/v1/urlCategories/bulk", payload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("CreateWithRawPayload", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/zia/api/v1/sandbox/submit", common.SuccessResponse(map[string]interface{}{
+			"status": "submitted",
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		rawPayload := `{"filename": "test.exe", "data": "base64encoded"}`
+		result, err := service.Client.CreateWithRawPayload(context.Background(), "/zia/api/v1/sandbox/submit", rawPayload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("CreateWithNoContent", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/zia/api/v1/status/activate", common.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		type ActivateRequest struct {
+			Status string `json:"status"`
+		}
+
+		requestBody := ActivateRequest{Status: "activate"}
+		resp, err := service.Client.CreateWithNoContent(context.Background(), "/zia/api/v1/status/activate", requestBody)
+
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+	})
 }
 
 // =====================================================
@@ -414,6 +496,151 @@ func TestZtwResourceRequests(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "active", result)
 	})
+
+	t.Run("UpdateResource - PATCH", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("PATCH", "/ztw/api/v1/ecgroup/123", common.SuccessResponse(map[string]interface{}{
+			"ID":   123,
+			"Name": "Updated EC Group",
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		type ECGroup struct {
+			ID   int    `json:"id,omitempty"`
+			Name string `json:"name"`
+		}
+
+		requestBody := ECGroup{ID: 123, Name: "Updated EC Group"}
+		result, err := service.Client.UpdateResource(context.Background(), "/ztw/api/v1/ecgroup/123", requestBody)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("UpdateWithPutResource - PUT", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("PUT", "/ztw/api/v1/ecgroup/123", common.SuccessResponse(map[string]interface{}{
+			"ID":   123,
+			"Name": "Updated EC Group via PUT",
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		type ECGroup struct {
+			ID   int    `json:"id,omitempty"`
+			Name string `json:"name"`
+		}
+
+		requestBody := ECGroup{ID: 123, Name: "Updated EC Group via PUT"}
+		result, err := service.Client.UpdateWithPutResource(context.Background(), "/ztw/api/v1/ecgroup/123", requestBody)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("BulkDeleteResource", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/ztw/api/v1/ecgroup/bulkDelete", common.SuccessResponse(nil))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		ids := []int{123, 456, 789}
+		_, err = service.Client.BulkDeleteResource(context.Background(), "/ztw/api/v1/ecgroup/bulkDelete", ids)
+
+		require.NoError(t, err)
+	})
+
+	t.Run("CreateWithSlicePayloadResource", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/ztw/api/v1/ecgroup/bulk", common.SuccessResponse([]map[string]interface{}{
+			{"id": 1, "name": "Group 1"},
+			{"id": 2, "name": "Group 2"},
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		payload := []map[string]interface{}{
+			{"name": "Group 1"},
+			{"name": "Group 2"},
+		}
+
+		result, err := service.Client.CreateWithSlicePayloadResource(context.Background(), "/ztw/api/v1/ecgroup/bulk", payload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("UpdateWithSlicePayloadResource", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("PUT", "/ztw/api/v1/ecgroup/bulk", common.SuccessResponse([]map[string]interface{}{
+			{"id": 1, "name": "Updated Group"},
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		payload := []map[string]interface{}{
+			{"id": 1, "name": "Updated Group"},
+		}
+
+		result, err := service.Client.UpdateWithSlicePayloadResource(context.Background(), "/ztw/api/v1/ecgroup/bulk", payload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("CreateWithRawPayloadResource", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/ztw/api/v1/ecgroup/raw", common.SuccessResponse(map[string]interface{}{
+			"status": "success",
+		}))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		rawPayload := `{"name": "Raw Group", "type": "custom"}`
+		result, err := service.Client.CreateWithRawPayloadResource(context.Background(), "/ztw/api/v1/ecgroup/raw", rawPayload)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("CreateWithNoContentResource", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		server.On("POST", "/ztw/api/v1/ecgroup/activate", common.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		type ActivateRequest struct {
+			GroupID int `json:"groupId"`
+		}
+
+		requestBody := ActivateRequest{GroupID: 123}
+		resp, err := service.Client.CreateWithNoContentResource(context.Background(), "/ztw/api/v1/ecgroup/activate", requestBody)
+
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+	})
 }
 
 // =====================================================
@@ -454,6 +681,76 @@ func TestClientHelpers(t *testing.T) {
 
 		logger := service.Client.GetLogger()
 		assert.NotNil(t, logger)
+	})
+
+	t.Run("Close client", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		// Close should not panic
+		service.Client.Close()
+	})
+}
+
+// =====================================================
+// OneAPI Configuration Tests via CreateTestService
+// =====================================================
+
+func TestOneAPIConfiguration(t *testing.T) {
+	t.Run("Configuration with all options", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		service, err := common.CreateTestService(context.Background(), server, "customer-id-123")
+		require.NoError(t, err)
+
+		// Verify the client was created
+		require.NotNil(t, service)
+		require.NotNil(t, service.Client)
+	})
+
+	t.Run("Service with sorting", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		// Test WithSort
+		sortedService := service.WithSort("id", "desc")
+		require.NotNil(t, sortedService)
+		assert.Equal(t, "id", string(sortedService.SortBy))
+		assert.Equal(t, "desc", string(sortedService.SortOrder))
+	})
+
+	t.Run("Service with micro tenant", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		// Test WithMicroTenant
+		mtService := service.WithMicroTenant("micro-tenant-456")
+		require.NotNil(t, mtService)
+		require.NotNil(t, mtService.MicroTenantID())
+		assert.Equal(t, "micro-tenant-456", *mtService.MicroTenantID())
+	})
+
+	t.Run("Service with empty micro tenant", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+
+		service, err := common.CreateTestService(context.Background(), server, "123456")
+		require.NoError(t, err)
+
+		// Empty micro tenant should result in nil
+		mtService := service.WithMicroTenant("")
+		require.NotNil(t, mtService)
+		assert.Nil(t, mtService.MicroTenantID())
 	})
 }
 
