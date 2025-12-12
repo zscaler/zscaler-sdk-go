@@ -201,3 +201,47 @@ func TestApplicationScoreMetrics_ResponseParsing(t *testing.T) {
 	})
 }
 
+// =====================================================
+// Common package tests - SafeCastToInt function
+// =====================================================
+
+func TestCommon_SafeCastToInt(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Valid int32 value", func(t *testing.T) {
+		result, err := zdxcommon.SafeCastToInt(12345)
+		require.NoError(t, err)
+		assert.Equal(t, 12345, result)
+	})
+
+	t.Run("Max int32 value", func(t *testing.T) {
+		result, err := zdxcommon.SafeCastToInt(2147483647)
+		require.NoError(t, err)
+		assert.Equal(t, 2147483647, result)
+	})
+
+	t.Run("Min int32 value", func(t *testing.T) {
+		result, err := zdxcommon.SafeCastToInt(-2147483648)
+		require.NoError(t, err)
+		assert.Equal(t, -2147483648, result)
+	})
+
+	t.Run("Value exceeds max int32", func(t *testing.T) {
+		_, err := zdxcommon.SafeCastToInt(2147483648)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "out of range")
+	})
+
+	t.Run("Value below min int32", func(t *testing.T) {
+		_, err := zdxcommon.SafeCastToInt(-2147483649)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "out of range")
+	})
+
+	t.Run("Zero value", func(t *testing.T) {
+		result, err := zdxcommon.SafeCastToInt(0)
+		require.NoError(t, err)
+		assert.Equal(t, 0, result)
+	})
+}
+

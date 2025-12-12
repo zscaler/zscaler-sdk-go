@@ -3,7 +3,9 @@ package zdx
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -165,6 +167,50 @@ func TestConfigSetter_Functions(t *testing.T) {
 		setter(cfg)
 		assert.Equal(t, "partner-123", cfg.ZDX.Client.PartnerID)
 	})
+
+	t.Run("WithProxyUsername", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		setter := zdx.WithProxyUsername("proxy-user")
+		setter(cfg)
+		assert.Equal(t, "proxy-user", cfg.ZDX.Client.Proxy.Username)
+	})
+
+	t.Run("WithProxyPassword", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		setter := zdx.WithProxyPassword("proxy-pass")
+		setter(cfg)
+		assert.Equal(t, "proxy-pass", cfg.ZDX.Client.Proxy.Password)
+	})
+
+	t.Run("WithRequestTimeout", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		setter := zdx.WithRequestTimeout(30 * time.Second)
+		setter(cfg)
+		assert.Equal(t, 30*time.Second, cfg.ZDX.Client.RequestTimeout)
+	})
+
+	t.Run("WithRateLimitMaxWait", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		setter := zdx.WithRateLimitMaxWait(10 * time.Second)
+		setter(cfg)
+		assert.Equal(t, 10*time.Second, cfg.ZDX.Client.RateLimit.RetryWaitMax)
+	})
+
+	t.Run("WithRateLimitMinWait", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		setter := zdx.WithRateLimitMinWait(2 * time.Second)
+		setter(cfg)
+		assert.Equal(t, 2*time.Second, cfg.ZDX.Client.RateLimit.RetryWaitMin)
+	})
+
+	t.Run("WithHttpClientPtr", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		httpClient := &http.Client{Timeout: 5 * time.Second}
+		setter := zdx.WithHttpClientPtr(httpClient)
+		setter(cfg)
+		assert.NotNil(t, cfg.HTTPClient)
+		assert.Equal(t, 5*time.Second, cfg.HTTPClient.Timeout)
+	})
 }
 
 func TestConstants(t *testing.T) {
@@ -225,6 +271,55 @@ func TestConfiguration_DefaultValues(t *testing.T) {
 		assert.Equal(t, 0, config.RetryWaitMinSeconds)
 		assert.Equal(t, 0, config.RetryWaitMaxSeconds)
 		assert.Equal(t, 0, config.MaxNumOfRetries)
+	})
+}
+
+func TestConfiguration_AddDefaultHeader(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Add single header", func(t *testing.T) {
+		cfg := &zdx.Configuration{
+			DefaultHeader: make(map[string]string),
+		}
+		cfg.AddDefaultHeader("X-Custom-Header", "custom-value")
+		assert.Equal(t, "custom-value", cfg.DefaultHeader["X-Custom-Header"])
+	})
+
+	t.Run("Add multiple headers", func(t *testing.T) {
+		cfg := &zdx.Configuration{
+			DefaultHeader: make(map[string]string),
+		}
+		cfg.AddDefaultHeader("Header1", "Value1")
+		cfg.AddDefaultHeader("Header2", "Value2")
+		assert.Equal(t, "Value1", cfg.DefaultHeader["Header1"])
+		assert.Equal(t, "Value2", cfg.DefaultHeader["Header2"])
+	})
+
+	t.Run("Override existing header", func(t *testing.T) {
+		cfg := &zdx.Configuration{
+			DefaultHeader: make(map[string]string),
+		}
+		cfg.AddDefaultHeader("X-Header", "old-value")
+		cfg.AddDefaultHeader("X-Header", "new-value")
+		assert.Equal(t, "new-value", cfg.DefaultHeader["X-Header"])
+	})
+}
+
+func TestConfiguration_SetBackoffConfig(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Set backoff config", func(t *testing.T) {
+		cfg := &zdx.Configuration{}
+		backoffCfg := &zdx.BackoffConfig{
+			Enabled:             true,
+			RetryWaitMinSeconds: 5,
+			RetryWaitMaxSeconds: 30,
+			MaxNumOfRetries:     10,
+		}
+		cfg.SetBackoffConfig(backoffCfg)
+		assert.NotNil(t, cfg.ZDX.Client.RateLimit.BackoffConf)
+		assert.True(t, cfg.ZDX.Client.RateLimit.BackoffConf.Enabled)
+		assert.Equal(t, 10, cfg.ZDX.Client.RateLimit.BackoffConf.MaxNumOfRetries)
 	})
 }
 
