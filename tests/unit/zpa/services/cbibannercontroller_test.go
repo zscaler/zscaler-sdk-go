@@ -1,56 +1,51 @@
-// Package unit provides unit tests for ZPA CBI Banner Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbibannercontroller"
 )
 
-func TestCBIBannerController_Structure(t *testing.T) {
-	t.Parallel()
+func TestCBIBannerController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CBIBannerController JSON marshaling", func(t *testing.T) {
-		banner := cbibannercontroller.CBIBannerController{
-			ID:                "banner-123",
-			Name:              "Test Banner",
-			PrimaryColor:      "#FF0000",
-			TextColor:         "#FFFFFF",
-			NotificationTitle: "Welcome",
-			NotificationText:  "You are accessing a protected resource",
-			Logo:              "base64logo==",
-			IsDefault:         false,
-			Persist:           true,
-		}
+	bannerID := "banner-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banner/" + bannerID
 
-		data, err := json.Marshal(banner)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(cbibannercontroller.CBIBannerController{
+		ID:   bannerID,
+		Name: "Test Banner",
+	}))
 
-		var unmarshaled cbibannercontroller.CBIBannerController
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, banner.ID, unmarshaled.ID)
-		assert.Equal(t, banner.Name, unmarshaled.Name)
-	})
+	result, _, err := cbibannercontroller.Get(context.Background(), service, bannerID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, bannerID, result.ID)
 }
 
-func TestCBIBannerController_MockServerOperations(t *testing.T) {
-	t.Run("GET banner by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "banner-123", "name": "Mock Banner"}`))
-		}))
-		defer server.Close()
+func TestCBIBannerController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/cbiBanner")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banner"
+
+	server.On("GET", path, common.SuccessResponse([]cbibannercontroller.CBIBannerController{{ID: "banner-001"}, {ID: "banner-002"}}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cbibannercontroller.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

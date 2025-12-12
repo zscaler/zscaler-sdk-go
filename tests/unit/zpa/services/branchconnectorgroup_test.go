@@ -1,49 +1,33 @@
-// Package unit provides unit tests for ZPA Branch Connector Group service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/branch_connector_group"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
-func TestBranchConnectorGroup_Structure(t *testing.T) {
-	t.Parallel()
+func TestBranchConnectorGroup_GetSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CommonSummary JSON marshaling", func(t *testing.T) {
-		summary := common.CommonSummary{
-			ID:   "bcg-123",
-			Name: "Test Group",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/branchConnectorGroup/summary"
 
-		data, err := json.Marshal(summary)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []zpacommon.CommonSummary{{ID: "bcg-001", Name: "Group 1"}, {ID: "bcg-002", Name: "Group 2"}},
+		"totalPages": 1,
+	}))
 
-		var unmarshaled common.CommonSummary
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, summary.ID, unmarshaled.ID)
-		assert.Equal(t, summary.Name, unmarshaled.Name)
-	})
-}
+	result, _, err := branch_connector_group.GetBranchConnectorGroupSummary(context.Background(), service)
 
-func TestBranchConnectorGroup_MockServerOperations(t *testing.T) {
-	t.Run("GET branch connector group summary", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"id": "bcg-123", "name": "Mock Group"}]`))
-		}))
-		defer server.Close()
-
-		resp, err := http.Get(server.URL + "/branchConnectorGroup/summary")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

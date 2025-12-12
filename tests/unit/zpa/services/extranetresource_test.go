@@ -1,49 +1,33 @@
-// Package unit provides unit tests for ZPA Extranet Resource service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/extranet_resource"
 )
 
-func TestExtranetResource_Structure(t *testing.T) {
-	t.Parallel()
+func TestExtranetResource_GetPartner_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CommonSummary JSON marshaling", func(t *testing.T) {
-		partner := common.CommonSummary{
-			ID:   "erp-123",
-			Name: "Test Partner",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/extranetPartner"
 
-		data, err := json.Marshal(partner)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []zpacommon.CommonSummary{{ID: "ext-001"}, {ID: "ext-002"}},
+		"totalPages": 1,
+	}))
 
-		var unmarshaled common.CommonSummary
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, partner.ID, unmarshaled.ID)
-		assert.Equal(t, partner.Name, unmarshaled.Name)
-	})
-}
+	result, _, err := extranet_resource.GetExtranetResourcePartner(context.Background(), service)
 
-func TestExtranetResource_MockServerOperations(t *testing.T) {
-	t.Run("GET extranet resource partner", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"id": "erp-123", "name": "Mock Partner"}]`))
-		}))
-		defer server.Close()
-
-		resp, err := http.Get(server.URL + "/extranetResource/partner")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

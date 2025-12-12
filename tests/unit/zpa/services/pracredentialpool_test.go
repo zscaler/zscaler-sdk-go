@@ -1,50 +1,54 @@
-// Package unit provides unit tests for ZPA PRA Credential Pool service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredentialpool"
 )
 
-func TestPRACredentialPool_Structure(t *testing.T) {
-	t.Parallel()
+func TestPRACredentialPool_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CredentialPool JSON marshaling", func(t *testing.T) {
-		pool := pracredentialpool.CredentialPool{
-			ID:             "pool-123",
-			Name:           "Test Pool",
-			CredentialType: "USERNAME_PASSWORD",
-		}
+	poolID := "pool-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/credentialPool/" + poolID
 
-		data, err := json.Marshal(pool)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(pracredentialpool.CredentialPool{
+		ID:   poolID,
+		Name: "Test Credential Pool",
+	}))
 
-		var unmarshaled pracredentialpool.CredentialPool
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, pool.ID, unmarshaled.ID)
-		assert.Equal(t, pool.Name, unmarshaled.Name)
-	})
+	result, _, err := pracredentialpool.Get(context.Background(), service, poolID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, poolID, result.ID)
 }
 
-func TestPRACredentialPool_MockServerOperations(t *testing.T) {
-	t.Run("GET pool by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "pool-123", "name": "Mock Pool"}`))
-		}))
-		defer server.Close()
+func TestPRACredentialPool_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/praCredentialPool")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/credentialPool"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []pracredentialpool.CredentialPool{{ID: "pool-001"}, {ID: "pool-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := pracredentialpool.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

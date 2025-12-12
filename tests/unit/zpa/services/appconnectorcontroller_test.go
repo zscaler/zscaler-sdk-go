@@ -1,155 +1,203 @@
-// Package unit provides unit tests for ZPA App Connector Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorcontroller"
 )
 
-// TestAppConnectorController_Structure tests the struct definitions
-func TestAppConnectorController_Structure(t *testing.T) {
-	t.Parallel()
+const testCustomerID = "123456789"
 
-	t.Run("AppConnector JSON marshaling", func(t *testing.T) {
-		connector := appconnectorcontroller.AppConnector{
-			ID:                   "conn-123",
-			Name:                 "Test Connector",
-			Description:          "Test Description",
-			Enabled:              true,
-			AppConnectorGroupID:  "acg-001",
-			AppConnectorGroupName: "Test Group",
-			ControlChannelStatus: "ZPN_STATUS_ONLINE",
-			CurrentVersion:       "24.1.0",
-			Latitude:             "37.3382",
-			Longitude:            "-121.8863",
-			Location:             "San Jose, CA",
-			Platform:             "el8",
-		}
+func TestAppConnectorController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		data, err := json.Marshal(connector)
-		require.NoError(t, err)
+	connectorID := "connector-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector/" + connectorID
 
-		var unmarshaled appconnectorcontroller.AppConnector
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(appconnectorcontroller.AppConnector{
+		ID:          connectorID,
+		Name:        "Test Connector",
+		Description: "Test description",
+		Enabled:     true,
+	}))
 
-		assert.Equal(t, connector.ID, unmarshaled.ID)
-		assert.Equal(t, connector.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-	t.Run("AppConnector from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "conn-456",
-			"name": "Production Connector",
-			"description": "Production environment connector",
-			"enabled": true,
-			"appConnectorGroupId": "acg-002",
-			"appConnectorGroupName": "Production Group",
-			"controlChannelStatus": "ZPN_STATUS_ONLINE",
-			"currentVersion": "24.2.0",
-			"expectedVersion": "24.3.0",
-			"latitude": "40.7128",
-			"longitude": "-74.0060",
-			"location": "New York, NY",
-			"platform": "ubuntu",
-			"privateIp": "10.0.0.5",
-			"publicIp": "203.0.113.5",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
+	result, resp, err := appconnectorcontroller.Get(context.Background(), service, connectorID)
 
-		var connector appconnectorcontroller.AppConnector
-		err := json.Unmarshal([]byte(apiResponse), &connector)
-		require.NoError(t, err)
-
-		assert.Equal(t, "conn-456", connector.ID)
-		assert.True(t, connector.Enabled)
-		assert.Equal(t, "ZPN_STATUS_ONLINE", connector.ControlChannelStatus)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, connectorID, result.ID)
+	assert.Equal(t, "Test Connector", result.Name)
 }
 
-// TestAppConnectorController_MockServerOperations tests CRUD operations
-func TestAppConnectorController_MockServerOperations(t *testing.T) {
-	t.Run("GET connector by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "conn-123", "name": "Mock Connector", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestAppConnectorController_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/appConnector/conn-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	connectorName := "Production Connector"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector"
 
-	t.Run("POST bulk delete", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "POST", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []appconnectorcontroller.AppConnector{
+			{ID: "conn-001", Name: "Other Connector", Enabled: true},
+			{ID: "conn-002", Name: connectorName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
 
-		resp, err := http.Post(server.URL+"/appConnector/bulkDelete", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-	t.Run("DELETE connector", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "DELETE", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
+	result, _, err := appconnectorcontroller.GetByName(context.Background(), service, connectorName)
 
-		req, _ := http.NewRequest("DELETE", server.URL+"/appConnector/conn-123", nil)
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "conn-002", result.ID)
+	assert.Equal(t, connectorName, result.Name)
 }
 
-// TestAppConnectorController_SpecialCases tests edge cases
-func TestAppConnectorController_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestAppConnectorController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Control channel status values", func(t *testing.T) {
-		statuses := []string{"ZPN_STATUS_ONLINE", "ZPN_STATUS_OFFLINE", "ZPN_STATUS_UNKNOWN"}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector"
 
-		for _, status := range statuses {
-			connector := appconnectorcontroller.AppConnector{
-				ID:                   "conn-" + status,
-				Name:                 status + " Connector",
-				ControlChannelStatus: status,
-			}
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []appconnectorcontroller.AppConnector{
+			{ID: "conn-001", Name: "Connector 1", Enabled: true},
+			{ID: "conn-002", Name: "Connector 2", Enabled: false},
+		},
+		"totalPages": 1,
+	}))
 
-			data, err := json.Marshal(connector)
-			require.NoError(t, err)
-			assert.Contains(t, string(data), status)
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := appconnectorcontroller.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestAppConnectorController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	connectorID := "connector-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector/" + connectorID
+
+	server.On("PUT", path, common.SuccessResponse(appconnectorcontroller.AppConnector{
+		ID:      connectorID,
+		Name:    "Updated Connector",
+		Enabled: true,
+	}))
+	server.On("GET", path, common.SuccessResponse(appconnectorcontroller.AppConnector{
+		ID:      connectorID,
+		Name:    "Updated Connector",
+		Enabled: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateConnector := appconnectorcontroller.AppConnector{
+		ID:          connectorID,
+		Name:        "Updated Connector",
+		Description: "Updated description",
+		Enabled:     true,
+	}
+
+	result, _, err := appconnectorcontroller.Update(context.Background(), service, connectorID, updateConnector)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestAppConnectorController_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	connectorID := "connector-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector/" + connectorID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := appconnectorcontroller.Delete(context.Background(), service, connectorID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestAppConnectorController_BulkDelete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector/bulkDelete"
+
+	server.On("POST", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	ids := []string{"conn-001", "conn-002", "conn-003"}
+	resp, err := appconnectorcontroller.BulkDelete(context.Background(), service, ids)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestAppConnectorController_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []appconnectorcontroller.AppConnector{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := appconnectorcontroller.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no app connector named")
+}
+
+func TestAppConnectorController_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	connectorID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/connector/" + connectorID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("BulkDeleteRequest", func(t *testing.T) {
-		req := appconnectorcontroller.BulkDeleteRequest{
-			IDs: []string{"conn-1", "conn-2", "conn-3"},
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		data, err := json.Marshal(req)
-		require.NoError(t, err)
+	result, _, err := appconnectorcontroller.Get(context.Background(), service, connectorID)
 
-		var unmarshaled appconnectorcontroller.BulkDeleteRequest
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Len(t, unmarshaled.IDs, 3)
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

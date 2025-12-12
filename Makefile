@@ -136,12 +136,17 @@ test\:unit:
 
 test\:unit\:coverage:
 	@echo "$(COLOR_OK)Running all unit tests with source coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic -coverpkg=./zscaler/... ./tests/unit/... -timeout 120s
-	@go tool cover -func unit-coverage.out 2>/dev/null | grep -E "(total:|zscaler)" | head -20 || echo "Coverage report generated"
+	@go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/... \
+		./tests/unit/... -timeout 180s
+	@echo ""
+	@echo "=== Coverage Summary ==="
+	@go tool cover -func unit-coverage.out 2>/dev/null | grep -E "total:" || echo "Coverage report generated"
 
 test\:unit\:zpa:
-	@echo "$(COLOR_OK)Running ZPA unit tests...$(COLOR_NONE)"
-	@go test -v -race ./tests/unit/zpa/... -timeout 60s
+	@echo "$(COLOR_OK)Running ZPA unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zpa-coverage.out -covermode=atomic ./tests/unit/zpa/... -timeout 60s
+	@go tool cover -func unit-zpa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:zia:
 	@echo "$(COLOR_OK)Running ZIA unit tests with coverage...$(COLOR_NONE)"

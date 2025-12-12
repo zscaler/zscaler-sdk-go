@@ -1,52 +1,54 @@
-// Package unit provides unit tests for ZPA App Segment PRA service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
 )
 
-func TestAppSegmentPRA_Structure(t *testing.T) {
-	t.Parallel()
+func TestApplicationSegmentPRA_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("AppSegmentPRA JSON marshaling", func(t *testing.T) {
-		segment := applicationsegmentpra.AppSegmentPRA{
-			ID:             "pra-123",
-			Name:           "Test PRA App",
-			Description:    "Test Description",
-			Enabled:        true,
-			SegmentGroupID: "sg-001",
-		}
+	appID := "pra-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
 
-		data, err := json.Marshal(segment)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(applicationsegmentpra.AppSegmentPRA{
+		ID:   appID,
+		Name: "Test PRA App",
+	}))
 
-		var unmarshaled applicationsegmentpra.AppSegmentPRA
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, segment.ID, unmarshaled.ID)
-		assert.Equal(t, segment.Name, unmarshaled.Name)
-	})
+	result, _, err := applicationsegmentpra.Get(context.Background(), service, appID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, appID, result.ID)
 }
 
-func TestAppSegmentPRA_MockServerOperations(t *testing.T) {
-	t.Run("GET PRA app segment", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "pra-123", "name": "Mock PRA App"}`))
-		}))
-		defer server.Close()
+func TestApplicationSegmentPRA_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/praApp")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []applicationsegmentpra.AppSegmentPRA{{ID: "pra-001"}, {ID: "pra-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegmentpra.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

@@ -1,320 +1,132 @@
-// Package unit provides unit tests for ZPA IDP Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 )
 
-// TestIdpController_Structure tests the struct definitions
-func TestIdpController_Structure(t *testing.T) {
-	t.Parallel()
+func TestIdpController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("IdpController JSON marshaling", func(t *testing.T) {
-		idp := idpcontroller.IdpController{
-			ID:                    "idp-123",
-			Name:                  "Okta IDP",
-			Description:           "Okta Identity Provider",
-			IdpEntityID:           "https://okta.example.com/entity",
-			LoginURL:              "https://okta.example.com/login",
-			SignSamlRequest:       "1",
-			SsoType:               []string{"USER", "ADMIN"},
-			Domainlist:            []string{"example.com", "test.com"},
-			Enabled:               true,
-			EnableScimBasedPolicy: true,
-			ForceAuth:             false,
-			AutoProvision:         "SCIM_HYBRID",
-			ScimEnabled:           true,
-		}
+	idpID := "idp-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/idp/" + idpID
 
-		data, err := json.Marshal(idp)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(idpcontroller.IdpController{
+		ID:          idpID,
+		Name:        "Test IDP",
+		Description: "Test description",
+		Enabled:     true,
+	}))
 
-		var unmarshaled idpcontroller.IdpController
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, idp.ID, unmarshaled.ID)
-		assert.Equal(t, idp.Name, unmarshaled.Name)
-		assert.Equal(t, idp.IdpEntityID, unmarshaled.IdpEntityID)
-		assert.ElementsMatch(t, idp.SsoType, unmarshaled.SsoType)
-		assert.ElementsMatch(t, idp.Domainlist, unmarshaled.Domainlist)
-	})
+	result, resp, err := idpcontroller.Get(context.Background(), service, idpID)
 
-	t.Run("IdpController JSON unmarshaling from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "idp-456",
-			"name": "Azure AD",
-			"description": "Azure Active Directory",
-			"idpEntityId": "https://login.microsoftonline.com/tenant-id",
-			"loginUrl": "https://login.microsoftonline.com/tenant-id/saml2",
-			"signSamlRequest": "1",
-			"ssoType": ["USER"],
-			"domainList": ["company.com"],
-			"enabled": true,
-			"enableScimBasedPolicy": true,
-			"disableSamlBasedPolicy": false,
-			"enableArbitraryAuthDomains": "false",
-			"forceAuth": true,
-			"autoProvision": "SCIM_HYBRID",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000",
-			"modifiedBy": "admin@example.com",
-			"reauthOnUserUpdate": true,
-			"redirectBinding": true,
-			"scimEnabled": true,
-			"scimServiceProviderEndpoint": "https://scim.example.com/Users",
-			"scimSharedSecretExists": true,
-			"adminMetadata": {
-				"certificateUrl": "https://admin.example.com/cert",
-				"spEntityId": "admin-entity-id",
-				"spMetadataUrl": "https://admin.example.com/metadata",
-				"spPostUrl": "https://admin.example.com/sso"
-			},
-			"userMetadata": {
-				"certificateUrl": "https://user.example.com/cert",
-				"spEntityId": "user-entity-id",
-				"spMetadataUrl": "https://user.example.com/metadata",
-				"spPostUrl": "https://user.example.com/sso"
-			}
-		}`
-
-		var idp idpcontroller.IdpController
-		err := json.Unmarshal([]byte(apiResponse), &idp)
-		require.NoError(t, err)
-
-		assert.Equal(t, "idp-456", idp.ID)
-		assert.Equal(t, "Azure AD", idp.Name)
-		assert.True(t, idp.Enabled)
-		assert.True(t, idp.ForceAuth)
-		assert.True(t, idp.ScimEnabled)
-		assert.True(t, idp.ReauthOnUserUpdate)
-		assert.NotEmpty(t, idp.AdminMetadata.SpEntityID)
-		assert.NotEmpty(t, idp.UserMetadata.SpEntityID)
-	})
-
-	t.Run("AdminMetadata structure", func(t *testing.T) {
-		metadata := idpcontroller.AdminMetadata{
-			CertificateURL: "https://cert.example.com",
-			SpEntityID:     "sp-entity-123",
-			SpMetadataURL:  "https://metadata.example.com",
-			SpPostURL:      "https://sso.example.com/post",
-		}
-
-		data, err := json.Marshal(metadata)
-		require.NoError(t, err)
-
-		var unmarshaled idpcontroller.AdminMetadata
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Equal(t, metadata.SpEntityID, unmarshaled.SpEntityID)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, idpID, result.ID)
+	assert.Equal(t, "Test IDP", result.Name)
 }
 
-// TestIdpController_ResponseParsing tests parsing of various API responses
-func TestIdpController_ResponseParsing(t *testing.T) {
-	t.Parallel()
+func TestIdpController_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Parse IDP list response", func(t *testing.T) {
-		response := `{
-			"list": [
-				{"id": "1", "name": "Okta", "enabled": true, "ssoType": ["USER", "ADMIN"]},
-				{"id": "2", "name": "Azure AD", "enabled": true, "ssoType": ["USER"]},
-				{"id": "3", "name": "OneLogin", "enabled": false, "ssoType": ["USER"]}
-			],
-			"totalPages": 1
-		}`
+	idpName := "Production IDP"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/idp"
 
-		type ListResponse struct {
-			List       []idpcontroller.IdpController `json:"list"`
-			TotalPages int                           `json:"totalPages"`
-		}
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []idpcontroller.IdpController{
+			{ID: "idp-001", Name: "Other IDP", Enabled: true},
+			{ID: "idp-002", Name: idpName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
 
-		var listResp ListResponse
-		err := json.Unmarshal([]byte(response), &listResp)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Len(t, listResp.List, 3)
-		assert.True(t, listResp.List[0].Enabled)
-		assert.False(t, listResp.List[2].Enabled)
-	})
+	result, _, err := idpcontroller.GetByName(context.Background(), service, idpName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "idp-002", result.ID)
+	assert.Equal(t, idpName, result.Name)
 }
 
-// TestIdpController_MockServerOperations tests CRUD operations with mock server
-func TestIdpController_MockServerOperations(t *testing.T) {
-	t.Run("GET IDP by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			assert.Contains(t, r.URL.Path, "/idp/")
+func TestIdpController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{
-				"id": "idp-123",
-				"name": "Mock IDP",
-				"enabled": true,
-				"ssoType": ["USER"]
-			}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/idp"
 
-		resp, err := http.Get(server.URL + "/zpa/mgmtconfig/v2/admin/customers/123/idp/idp-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []idpcontroller.IdpController{
+			{ID: "idp-001", Name: "IDP 1", Enabled: true},
+			{ID: "idp-002", Name: "IDP 2", Enabled: false},
+			{ID: "idp-003", Name: "IDP 3", Enabled: true},
+		},
+		"totalPages": 1,
+	}))
 
-	t.Run("GET all IDPs", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{
-				"list": [
-					{"id": "1", "name": "IDP A", "enabled": true},
-					{"id": "2", "name": "IDP B", "enabled": true}
-				],
-				"totalPages": 1
-			}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	result, _, err := idpcontroller.GetAll(context.Background(), service)
 
-		resp, err := http.Get(server.URL + "/zpa/mgmtconfig/v2/admin/customers/123/idp")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
-
-	t.Run("GET IDP by SSO type", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			assert.Equal(t, "USER", r.URL.Query().Get("ssoType"))
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{
-				"list": [
-					{"id": "1", "name": "User IDP", "enabled": true, "ssoType": ["USER"]}
-				],
-				"totalPages": 1
-			}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
-
-		resp, err := http.Get(server.URL + "/idp?ssoType=USER")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 3)
 }
 
-// TestIdpController_ErrorHandling tests error scenarios
-func TestIdpController_ErrorHandling(t *testing.T) {
-	t.Parallel()
+func TestIdpController_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("404 IDP Not Found", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"code": "NOT_FOUND", "message": "IDP not found"}`))
-		}))
-		defer server.Close()
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/idp"
 
-		resp, err := http.Get(server.URL + "/idp/nonexistent")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	})
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []idpcontroller.IdpController{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := idpcontroller.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no Idp-Controller named")
 }
 
-// TestIdpController_SpecialCases tests edge cases
-func TestIdpController_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestIdpController_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("IDP with SCIM enabled", func(t *testing.T) {
-		idp := idpcontroller.IdpController{
-			ID:                          "idp-123",
-			Name:                        "SCIM IDP",
-			ScimEnabled:                 true,
-			ScimServiceProviderEndpoint: "https://scim.example.com",
-			ScimSharedSecretExists:      true,
-			EnableScimBasedPolicy:       true,
-		}
+	idpID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/idp/" + idpID
 
-		data, err := json.Marshal(idp)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"scimEnabled":true`)
-		assert.Contains(t, string(data), `"enableScimBasedPolicy":true`)
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("IDP with multiple SSO types", func(t *testing.T) {
-		idp := idpcontroller.IdpController{
-			ID:      "idp-123",
-			Name:    "Multi SSO IDP",
-			SsoType: []string{"USER", "ADMIN"},
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		data, err := json.Marshal(idp)
-		require.NoError(t, err)
+	result, _, err := idpcontroller.Get(context.Background(), service, idpID)
 
-		var unmarshaled idpcontroller.IdpController
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Len(t, unmarshaled.SsoType, 2)
-		assert.Contains(t, unmarshaled.SsoType, "USER")
-		assert.Contains(t, unmarshaled.SsoType, "ADMIN")
-	})
-
-	t.Run("IDP with force auth", func(t *testing.T) {
-		idp := idpcontroller.IdpController{
-			ID:        "idp-123",
-			Name:      "Force Auth IDP",
-			ForceAuth: true,
-		}
-
-		data, err := json.Marshal(idp)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"forceAuth":true`)
-	})
-
-	t.Run("IDP with arbitrary auth domains", func(t *testing.T) {
-		idp := idpcontroller.IdpController{
-			ID:                         "idp-123",
-			Name:                       "Arbitrary Domains IDP",
-			EnableArbitraryAuthDomains: "true",
-			Domainlist:                 []string{"*"},
-		}
-
-		data, err := json.Marshal(idp)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"enableArbitraryAuthDomains":"true"`)
-	})
-
-	t.Run("Auto provision modes", func(t *testing.T) {
-		modes := []string{"SCIM_ONLY", "SAML_ONLY", "SCIM_HYBRID", "DISABLED"}
-
-		for _, mode := range modes {
-			idp := idpcontroller.IdpController{
-				ID:            "idp-" + mode,
-				Name:          mode + " IDP",
-				AutoProvision: mode,
-			}
-
-			data, err := json.Marshal(idp)
-			require.NoError(t, err)
-
-			assert.Contains(t, string(data), mode)
-		}
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

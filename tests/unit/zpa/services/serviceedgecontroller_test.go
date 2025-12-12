@@ -1,72 +1,54 @@
-// Package unit provides unit tests for ZPA Service Edge Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgecontroller"
 )
 
-func TestServiceEdgeController_Structure(t *testing.T) {
-	t.Parallel()
+func TestServiceEdgeController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("ServiceEdgeController JSON marshaling", func(t *testing.T) {
-		edge := serviceedgecontroller.ServiceEdgeController{
-			Description:          "Test Description",
-			Enabled:              true,
-			ServiceEdgeGroupID:   "seg-001",
-			ServiceEdgeGroupName: "Test Group",
-			ControlChannelStatus: "ZPN_STATUS_ONLINE",
-			CurrentVersion:       "24.1.0",
-		}
+	edgeID := "se-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdge/" + edgeID
 
-		data, err := json.Marshal(edge)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(serviceedgecontroller.ServiceEdgeController{
+		ID:   edgeID,
+		Name: "Test Service Edge",
+	}))
 
-		var unmarshaled serviceedgecontroller.ServiceEdgeController
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, edge.Description, unmarshaled.Description)
-		assert.True(t, unmarshaled.Enabled)
-	})
+	result, _, err := serviceedgecontroller.Get(context.Background(), service, edgeID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, edgeID, result.ID)
 }
 
-func TestServiceEdgeController_MockServerOperations(t *testing.T) {
-	t.Run("GET service edge by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"enabled": true}`))
-		}))
-		defer server.Close()
+func TestServiceEdgeController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/serviceEdge")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
-}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdge"
 
-func TestServiceEdgeController_SpecialCases(t *testing.T) {
-	t.Parallel()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []serviceedgecontroller.ServiceEdgeController{{ID: "se-001"}, {ID: "se-002"}},
+		"totalPages": 1,
+	}))
 
-	t.Run("BulkDeleteRequest", func(t *testing.T) {
-		req := serviceedgecontroller.BulkDeleteRequest{
-			IDs: []string{"se-1", "se-2", "se-3"},
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		data, err := json.Marshal(req)
-		require.NoError(t, err)
+	result, _, err := serviceedgecontroller.GetAll(context.Background(), service)
 
-		var unmarshaled serviceedgecontroller.BulkDeleteRequest
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Len(t, unmarshaled.IDs, 3)
-	})
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

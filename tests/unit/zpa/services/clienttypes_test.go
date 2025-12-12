@@ -1,52 +1,35 @@
-// Package unit provides unit tests for ZPA Client Types service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/clienttypes"
 )
 
-func TestClientTypes_Structure(t *testing.T) {
-	t.Parallel()
+func TestClientTypes_GetAllClientTypes_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("ClientTypes JSON marshaling", func(t *testing.T) {
-		types := clienttypes.ClientTypes{
-			ZPNClientTypeExplorer:         "zpn_client_type_exporter",
-			ZPNClientTypeBrowserIsolation: "zpn_client_type_browser_isolation",
-			ZPNClientTypeIPAnchoring:      "zpn_client_type_ip_anchoring",
-			ZPNClientTypeEdgeConnector:    "zpn_client_type_edge_connector",
-			ZPNClientTypeMachineTunnel:    "zpn_client_type_machine_tunnel",
-			ZPNClientTypeZAPP:             "zpn_client_type_zapp",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpnClientTypes"
 
-		data, err := json.Marshal(types)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"zpnClientTypesMap": map[string]interface{}{
+			"zpn_client_type_ip_anchoring":      "IP Anchoring Client",
+			"zpn_client_type_edge_connector":    "Cloud Connector",
+			"zpn_client_type_browser_isolation": "Browser Isolation",
+		},
+	}))
 
-		var unmarshaled clienttypes.ClientTypes
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, types.ZPNClientTypeZAPP, unmarshaled.ZPNClientTypeZAPP)
-	})
-}
+	result, _, err := clienttypes.GetAllClientTypes(context.Background(), service)
 
-func TestClientTypes_MockServerOperations(t *testing.T) {
-	t.Run("GET all client types", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"zpn_client_type_zapp": "zpn_client_type_zapp"}]`))
-		}))
-		defer server.Close()
-
-		resp, err := http.Get(server.URL + "/clientTypes")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 }

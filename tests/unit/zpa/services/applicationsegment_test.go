@@ -1,156 +1,177 @@
-// Package unit provides unit tests for ZPA Application Segment service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
 )
 
-// TestApplicationSegment_Structure tests the struct definitions
-func TestApplicationSegment_Structure(t *testing.T) {
-	t.Parallel()
+func TestApplicationSegment_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("ApplicationSegmentResource JSON marshaling", func(t *testing.T) {
-		appSeg := applicationsegment.ApplicationSegmentResource{
-			ID:              "app-123",
-			Name:            "Test App Segment",
-			Description:     "Test Description",
-			Enabled:         true,
-			DomainNames:     []string{"app.example.com", "www.app.example.com"},
-			SegmentGroupID:  "sg-001",
-			DoubleEncrypt:   false,
-			IpAnchored:      true,
-			HealthCheckType: "DEFAULT",
-			BypassType:      "NEVER",
-		}
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
 
-		data, err := json.Marshal(appSeg)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(applicationsegment.ApplicationSegmentResource{
+		ID:             appID,
+		Name:           "Test Application",
+		Description:    "Test description",
+		Enabled:        true,
+		DomainNames:    []string{"app.example.com"},
+		SegmentGroupID: "sg-001",
+	}))
 
-		var unmarshaled applicationsegment.ApplicationSegmentResource
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, appSeg.ID, unmarshaled.ID)
-		assert.Equal(t, appSeg.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-		assert.Len(t, unmarshaled.DomainNames, 2)
-	})
+	result, resp, err := applicationsegment.Get(context.Background(), service, appID)
 
-	t.Run("ApplicationSegmentResource from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "app-456",
-			"name": "Production App",
-			"description": "Production application segment",
-			"enabled": true,
-			"domainNames": ["prod.example.com"],
-			"segmentGroupId": "sg-002",
-			"segmentGroupName": "Production Group",
-			"doubleEncrypt": true,
-			"ipAnchored": false,
-			"healthCheckType": "DEFAULT",
-			"bypassType": "NEVER",
-			"passiveHealthEnabled": true,
-			"selectConnectorCloseToApp": true,
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var appSeg applicationsegment.ApplicationSegmentResource
-		err := json.Unmarshal([]byte(apiResponse), &appSeg)
-		require.NoError(t, err)
-
-		assert.Equal(t, "app-456", appSeg.ID)
-		assert.True(t, appSeg.Enabled)
-		assert.True(t, appSeg.DoubleEncrypt)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, appID, result.ID)
+	assert.Equal(t, "Test Application", result.Name)
 }
 
-// TestApplicationSegment_MockServerOperations tests CRUD operations
-func TestApplicationSegment_MockServerOperations(t *testing.T) {
-	t.Run("GET application segment by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "app-123", "name": "Mock App", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestApplicationSegment_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/application/app-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	appName := "Production App"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
 
-	t.Run("POST create application segment", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "POST", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "new-app", "name": "New App"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []applicationsegment.ApplicationSegmentResource{
+			{ID: "app-001", Name: "Other App", Enabled: true},
+			{ID: "app-002", Name: appName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
 
-		resp, err := http.Post(server.URL+"/application", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-	t.Run("DELETE application segment", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "DELETE", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
+	result, _, err := applicationsegment.GetByName(context.Background(), service, appName)
 
-		req, _ := http.NewRequest("DELETE", server.URL+"/application/app-123", nil)
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "app-002", result.ID)
 }
 
-// TestApplicationSegment_SpecialCases tests edge cases
-func TestApplicationSegment_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestApplicationSegment_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Bypass types", func(t *testing.T) {
-		types := []string{"NEVER", "ALWAYS", "ON_NET"}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
 
-		for _, bypassType := range types {
-			appSeg := applicationsegment.ApplicationSegmentResource{
-				ID:         "app-" + bypassType,
-				Name:       bypassType + " App",
-				BypassType: bypassType,
-			}
+	server.On("POST", path, common.SuccessResponse(applicationsegment.ApplicationSegmentResource{
+		ID:   "new-app-123",
+		Name: "New Application",
+	}))
 
-			data, err := json.Marshal(appSeg)
-			require.NoError(t, err)
-			assert.Contains(t, string(data), bypassType)
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newApp := applicationsegment.ApplicationSegmentResource{
+		Name:           "New Application",
+		SegmentGroupID: "sg-001",
+	}
+
+	result, _, err := applicationsegment.Create(context.Background(), service, newApp)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-app-123", result.ID)
+}
+
+func TestApplicationSegment_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateApp := applicationsegment.ApplicationSegmentResource{
+		ID:   appID,
+		Name: "Updated Application",
+	}
+
+	resp, err := applicationsegment.Update(context.Background(), service, appID, updateApp)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestApplicationSegment_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := applicationsegment.Delete(context.Background(), service, appID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestApplicationSegment_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []applicationsegment.ApplicationSegmentResource{
+			{ID: "app-001", Name: "App 1"},
+			{ID: "app-002", Name: "App 2"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestApplicationSegment_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("Health check types", func(t *testing.T) {
-		types := []string{"DEFAULT", "NONE"}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		for _, hcType := range types {
-			appSeg := applicationsegment.ApplicationSegmentResource{
-				ID:              "app-" + hcType,
-				Name:            hcType + " App",
-				HealthCheckType: hcType,
-			}
+	result, _, err := applicationsegment.Get(context.Background(), service, appID)
 
-			data, err := json.Marshal(appSeg)
-			require.NoError(t, err)
-			assert.Contains(t, string(data), hcType)
-		}
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

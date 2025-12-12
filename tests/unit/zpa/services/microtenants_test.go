@@ -1,120 +1,203 @@
-// Package unit provides unit tests for ZPA Microtenants service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
 )
 
-// TestMicrotenants_Structure tests the struct definitions
-func TestMicrotenants_Structure(t *testing.T) {
-	t.Parallel()
+func TestMicrotenants_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("MicroTenant JSON marshaling", func(t *testing.T) {
-		mt := microtenants.MicroTenant{
-			ID:                      "mt-123",
-			Name:                    "Test Microtenant",
-			Description:             "Test Description",
-			Enabled:                 true,
-			CriteriaAttribute:       "AuthDomain",
-			CriteriaAttributeValues: []string{"test.com", "example.com"},
-			Operator:                "OR",
-			Priority:                "1",
-			Roles: []microtenants.Roles{
-				{ID: "role-001", Name: "Admin"},
-			},
-		}
+	mtID := "mt-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants/" + mtID
 
-		data, err := json.Marshal(mt)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(microtenants.MicroTenant{
+		ID:          mtID,
+		Name:        "Test Microtenant",
+		Description: "Test description",
+		Enabled:     true,
+	}))
 
-		var unmarshaled microtenants.MicroTenant
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, mt.ID, unmarshaled.ID)
-		assert.Equal(t, mt.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-		assert.Len(t, unmarshaled.CriteriaAttributeValues, 2)
-	})
+	result, resp, err := microtenants.Get(context.Background(), service, mtID)
 
-	t.Run("MicroTenant from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "mt-456",
-			"name": "Production Microtenant",
-			"description": "Production environment",
-			"enabled": true,
-			"criteriaAttribute": "AuthDomain",
-			"criteriaAttributeValues": ["prod.example.com"],
-			"privilegedApprovalsEnabled": true,
-			"operator": "AND",
-			"priority": "1",
-			"roles": [
-				{"id": "role-001", "name": "Admin", "customRole": false}
-			],
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var mt microtenants.MicroTenant
-		err := json.Unmarshal([]byte(apiResponse), &mt)
-		require.NoError(t, err)
-
-		assert.Equal(t, "mt-456", mt.ID)
-		assert.True(t, mt.Enabled)
-		assert.True(t, mt.PrivilegedApprovalsEnabled)
-		assert.Len(t, mt.Roles, 1)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, mtID, result.ID)
+	assert.Equal(t, "Test Microtenant", result.Name)
 }
 
-// TestMicrotenants_MockServerOperations tests CRUD operations
-func TestMicrotenants_MockServerOperations(t *testing.T) {
-	t.Run("GET microtenant by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "mt-123", "name": "Mock Microtenant", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestMicrotenants_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/microtenant/mt-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	mtName := "Production Microtenant"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []microtenants.MicroTenant{
+			{ID: "mt-001", Name: "Other MT", Enabled: true},
+			{ID: "mt-002", Name: mtName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := microtenants.GetByName(context.Background(), service, mtName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "mt-002", result.ID)
+	assert.Equal(t, mtName, result.Name)
+}
+
+func TestMicrotenants_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants"
+
+	server.On("POST", path, common.SuccessResponse(microtenants.MicroTenant{
+		ID:          "new-mt-123",
+		Name:        "New Microtenant",
+		Description: "Created via unit test",
+		Enabled:     true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newMT := microtenants.MicroTenant{
+		Name:        "New Microtenant",
+		Description: "Created via unit test",
+		Enabled:     true,
+	}
+
+	result, _, err := microtenants.Create(context.Background(), service, newMT)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-mt-123", result.ID)
+}
+
+func TestMicrotenants_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	mtID := "mt-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants/" + mtID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateMT := &microtenants.MicroTenant{
+		ID:          mtID,
+		Name:        "Updated Microtenant",
+		Description: "Updated description",
+		Enabled:     false,
+	}
+
+	resp, err := microtenants.Update(context.Background(), service, mtID, updateMT)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestMicrotenants_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	mtID := "mt-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants/" + mtID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := microtenants.Delete(context.Background(), service, mtID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestMicrotenants_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []microtenants.MicroTenant{
+			{ID: "mt-001", Name: "MT 1", Enabled: true},
+			{ID: "mt-002", Name: "MT 2", Enabled: false},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := microtenants.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestMicrotenants_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []microtenants.MicroTenant{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := microtenants.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no microtenant named")
+}
+
+func TestMicrotenants_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	mtID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/microtenants/" + mtID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("POST create microtenant", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "POST", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "new-mt", "name": "New Microtenant"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		resp, err := http.Post(server.URL+"/microtenant", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	result, _, err := microtenants.Get(context.Background(), service, mtID)
 
-	t.Run("DELETE microtenant", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "DELETE", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
-
-		req, _ := http.NewRequest("DELETE", server.URL+"/microtenant/mt-123", nil)
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

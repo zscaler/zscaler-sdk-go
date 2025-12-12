@@ -1,51 +1,51 @@
-// Package unit provides unit tests for ZPA CBI ZPA Profile service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbizpaprofile"
 )
 
-func TestCBIZpaProfile_Structure(t *testing.T) {
-	t.Parallel()
+func TestCBIZPAProfile_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("ZPAProfiles JSON marshaling", func(t *testing.T) {
-		profile := cbizpaprofile.ZPAProfiles{
-			ID:          "zpa-123",
-			Name:        "Test ZPA Profile",
-			Description: "Test Description",
-			Enabled:     true,
-		}
+	profileID := "zpa-profile-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofile/" + profileID
 
-		data, err := json.Marshal(profile)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(cbizpaprofile.ZPAProfiles{
+		ID:   profileID,
+		Name: "Test ZPA Profile",
+	}))
 
-		var unmarshaled cbizpaprofile.ZPAProfiles
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, profile.ID, unmarshaled.ID)
-		assert.Equal(t, profile.Name, unmarshaled.Name)
-	})
+	result, _, err := cbizpaprofile.Get(context.Background(), service, profileID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, profileID, result.ID)
 }
 
-func TestCBIZpaProfile_MockServerOperations(t *testing.T) {
-	t.Run("GET ZPA profile", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "zpa-123", "name": "Mock Profile"}`))
-		}))
-		defer server.Close()
+func TestCBIZPAProfile_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/cbiZpaProfile")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/zpaprofile"
+
+	server.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{{ID: "zpa-001"}, {ID: "zpa-002"}}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cbizpaprofile.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

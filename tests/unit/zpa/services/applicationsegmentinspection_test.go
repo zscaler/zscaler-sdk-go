@@ -1,52 +1,54 @@
-// Package unit provides unit tests for ZPA App Segment Inspection service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentinspection"
 )
 
-func TestAppSegmentInspection_Structure(t *testing.T) {
-	t.Parallel()
+func TestApplicationSegmentInspection_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("AppSegmentInspection JSON marshaling", func(t *testing.T) {
-		segment := applicationsegmentinspection.AppSegmentInspection{
-			ID:             "ins-123",
-			Name:           "Test Inspection App",
-			Description:    "Test Description",
-			Enabled:        true,
-			SegmentGroupID: "sg-001",
-		}
+	appID := "insp-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID
 
-		data, err := json.Marshal(segment)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(applicationsegmentinspection.AppSegmentInspection{
+		ID:   appID,
+		Name: "Test Inspection App",
+	}))
 
-		var unmarshaled applicationsegmentinspection.AppSegmentInspection
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, segment.ID, unmarshaled.ID)
-		assert.Equal(t, segment.Name, unmarshaled.Name)
-	})
+	result, _, err := applicationsegmentinspection.Get(context.Background(), service, appID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, appID, result.ID)
 }
 
-func TestAppSegmentInspection_MockServerOperations(t *testing.T) {
-	t.Run("GET inspection app segment", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "ins-123", "name": "Mock Inspection App"}`))
-		}))
-		defer server.Close()
+func TestApplicationSegmentInspection_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/inspection")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []applicationsegmentinspection.AppSegmentInspection{{ID: "insp-001"}, {ID: "insp-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegmentinspection.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

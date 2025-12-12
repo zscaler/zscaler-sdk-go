@@ -1,117 +1,205 @@
-// Package unit provides unit tests for ZPA Service Edge Group service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
 
-// TestServiceEdgeGroup_Structure tests the struct definitions
-func TestServiceEdgeGroup_Structure(t *testing.T) {
-	t.Parallel()
+func TestServiceEdgeGroup_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("ServiceEdgeGroup JSON marshaling", func(t *testing.T) {
-		group := serviceedgegroup.ServiceEdgeGroup{
-			ID:                     "seg-123",
-			Name:                   "Test Service Edge Group",
-			Description:            "Test Description",
-			Enabled:                true,
-			CityCountry:            "San Jose, US",
-			Latitude:               "37.3382",
-			Longitude:              "-121.8863",
-			Location:               "San Jose, CA",
-			VersionProfileID:       "0",
-			OverrideVersionProfile: true,
-			UpgradeDay:             "SUNDAY",
-			UpgradeTimeInSecs:      "66600",
-		}
+	groupID := "seg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup/" + groupID
 
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(serviceedgegroup.ServiceEdgeGroup{
+		ID:          groupID,
+		Name:        "Test Service Edge Group",
+		Description: "Test description",
+		Enabled:     true,
+		Latitude:    "37.7749",
+		Longitude:   "-122.4194",
+	}))
 
-		var unmarshaled serviceedgegroup.ServiceEdgeGroup
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, group.ID, unmarshaled.ID)
-		assert.Equal(t, group.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-	})
+	result, resp, err := serviceedgegroup.Get(context.Background(), service, groupID)
 
-	t.Run("ServiceEdgeGroup from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "seg-456",
-			"name": "Production Service Edge Group",
-			"description": "Production environment",
-			"enabled": true,
-			"cityCountry": "New York, US",
-			"latitude": "40.7128",
-			"longitude": "-74.0060",
-			"location": "New York, NY",
-			"versionProfileId": "1",
-			"versionProfileName": "Default",
-			"isPublic": "TRUE",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var group serviceedgegroup.ServiceEdgeGroup
-		err := json.Unmarshal([]byte(apiResponse), &group)
-		require.NoError(t, err)
-
-		assert.Equal(t, "seg-456", group.ID)
-		assert.True(t, group.Enabled)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, groupID, result.ID)
+	assert.Equal(t, "Test Service Edge Group", result.Name)
 }
 
-// TestServiceEdgeGroup_MockServerOperations tests CRUD operations
-func TestServiceEdgeGroup_MockServerOperations(t *testing.T) {
-	t.Run("GET service edge group by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "seg-123", "name": "Mock Group", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestServiceEdgeGroup_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/serviceEdgeGroup/seg-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	groupName := "Production Service Edge Group"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []serviceedgegroup.ServiceEdgeGroup{
+			{ID: "seg-001", Name: "Other Group", Enabled: true},
+			{ID: "seg-002", Name: groupName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := serviceedgegroup.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "seg-002", result.ID)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestServiceEdgeGroup_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup"
+
+	server.On("POST", path, common.SuccessResponse(serviceedgegroup.ServiceEdgeGroup{
+		ID:          "new-seg-123",
+		Name:        "New Service Edge Group",
+		Description: "Created via unit test",
+		Enabled:     true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newGroup := serviceedgegroup.ServiceEdgeGroup{
+		Name:        "New Service Edge Group",
+		Description: "Created via unit test",
+		Enabled:     true,
+	}
+
+	createdGroup, _, err := serviceedgegroup.Create(context.Background(), service, newGroup)
+
+	require.NoError(t, err)
+	require.NotNil(t, createdGroup)
+	assert.Equal(t, "new-seg-123", createdGroup.ID)
+}
+
+func TestServiceEdgeGroup_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := "seg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup/" + groupID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateGroup := &serviceedgegroup.ServiceEdgeGroup{
+		ID:          groupID,
+		Name:        "Updated Service Edge Group",
+		Description: "Updated description",
+		Enabled:     false,
+	}
+
+	resp, err := serviceedgegroup.Update(context.Background(), service, groupID, updateGroup)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestServiceEdgeGroup_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := "seg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup/" + groupID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := serviceedgegroup.Delete(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestServiceEdgeGroup_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []serviceedgegroup.ServiceEdgeGroup{
+			{ID: "seg-001", Name: "Group 1", Enabled: true},
+			{ID: "seg-002", Name: "Group 2", Enabled: false},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := serviceedgegroup.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestServiceEdgeGroup_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []serviceedgegroup.ServiceEdgeGroup{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := serviceedgegroup.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no service edge group named")
+}
+
+func TestServiceEdgeGroup_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/serviceEdgeGroup/" + groupID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("POST create service edge group", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "POST", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "new-seg", "name": "New Group"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		resp, err := http.Post(server.URL+"/serviceEdgeGroup", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	result, _, err := serviceedgegroup.Get(context.Background(), service, groupID)
 
-	t.Run("DELETE service edge group", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "DELETE", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
-
-		req, _ := http.NewRequest("DELETE", server.URL+"/serviceEdgeGroup/seg-123", nil)
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

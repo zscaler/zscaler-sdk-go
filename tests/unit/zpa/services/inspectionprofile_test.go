@@ -1,51 +1,54 @@
-// Package unit provides unit tests for ZPA Inspection Profile service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_profile"
 )
 
-func TestInspectionProfile_Structure(t *testing.T) {
-	t.Parallel()
+func TestInspectionProfile_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("InspectionProfile JSON marshaling", func(t *testing.T) {
-		profile := inspection_profile.InspectionProfile{
-			ID:          "ip-123",
-			Name:        "Test Profile",
-			Description: "Test Description",
-			ParanoiaLevel: "2",
-		}
+	profileID := "profile-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionProfile/" + profileID
 
-		data, err := json.Marshal(profile)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(inspection_profile.InspectionProfile{
+		ID:   profileID,
+		Name: "Test Inspection Profile",
+	}))
 
-		var unmarshaled inspection_profile.InspectionProfile
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, profile.ID, unmarshaled.ID)
-		assert.Equal(t, profile.Name, unmarshaled.Name)
-	})
+	result, _, err := inspection_profile.Get(context.Background(), service, profileID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, profileID, result.ID)
 }
 
-func TestInspectionProfile_MockServerOperations(t *testing.T) {
-	t.Run("GET profile by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "ip-123", "name": "Mock Profile"}`))
-		}))
-		defer server.Close()
+func TestInspectionProfile_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/inspectionProfile")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionProfile"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []inspection_profile.InspectionProfile{{ID: "profile-001"}, {ID: "profile-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := inspection_profile.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

@@ -1,52 +1,51 @@
-// Package unit provides unit tests for ZPA CBI Profile Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbiprofilecontroller"
 )
 
-func TestCBIProfileController_Structure(t *testing.T) {
-	t.Parallel()
+func TestCBIProfileController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("IsolationProfile JSON marshaling", func(t *testing.T) {
-		profile := cbiprofilecontroller.IsolationProfile{
-			ID:          "profile-123",
-			Name:        "Test Profile",
-			Description: "Test Description",
-			Enabled:     true,
-			IsDefault:   false,
-		}
+	profileID := "profile-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile/" + profileID
 
-		data, err := json.Marshal(profile)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
+		ID:   profileID,
+		Name: "Test Profile",
+	}))
 
-		var unmarshaled cbiprofilecontroller.IsolationProfile
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, profile.ID, unmarshaled.ID)
-		assert.Equal(t, profile.Name, unmarshaled.Name)
-	})
+	result, _, err := cbiprofilecontroller.Get(context.Background(), service, profileID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, profileID, result.ID)
 }
 
-func TestCBIProfileController_MockServerOperations(t *testing.T) {
-	t.Run("GET profile by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "profile-123", "name": "Mock Profile"}`))
-		}))
-		defer server.Close()
+func TestCBIProfileController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/cbiProfile")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile"
+
+	server.On("GET", path, common.SuccessResponse([]cbiprofilecontroller.IsolationProfile{{ID: "profile-001"}, {ID: "profile-002"}}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cbiprofilecontroller.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

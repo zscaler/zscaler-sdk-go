@@ -1,49 +1,49 @@
-// Package unit provides unit tests for ZPA Step Up Auth service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/step_up_auth"
 )
 
-func TestStepUpAuth_Structure(t *testing.T) {
-	t.Parallel()
+func TestStepUpAuth_GetStepupAuthLevel_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("StepAuthLevel JSON marshaling", func(t *testing.T) {
-		auth := step_up_auth.StepAuthLevel{
-			ID:          "sua-123",
-			Description: "High Security Level",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/stepupauthlevel"
 
-		data, err := json.Marshal(auth)
-		require.NoError(t, err)
+	// The actual function returns []string (list of auth level names/IDs)
+	server.On("GET", path, common.SuccessResponse([]string{"Level1", "Level2", "Level3"}))
 
-		var unmarshaled step_up_auth.StepAuthLevel
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, auth.ID, unmarshaled.ID)
-		assert.Equal(t, auth.Description, unmarshaled.Description)
-	})
+	result, _, err := step_up_auth.GetStepupAuthLevel(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 3)
+	assert.Contains(t, result, "Level1")
 }
 
-func TestStepUpAuth_MockServerOperations(t *testing.T) {
-	t.Run("GET step up auth level", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "sua-123", "description": "Level 1"}`))
-		}))
-		defer server.Close()
+func TestStepUpAuth_GetStepupAuthLevel_Empty_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/stepUpAuth")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/stepupauthlevel"
+
+	server.On("GET", path, common.SuccessResponse([]string{}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := step_up_auth.GetStepupAuthLevel(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Empty(t, result)
 }

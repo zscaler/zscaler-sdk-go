@@ -1,139 +1,54 @@
-// Package unit provides unit tests for ZPA User Portal Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_controller"
 )
 
-// TestUserPortalController_Structure tests the struct definitions
-func TestUserPortalController_Structure(t *testing.T) {
-	t.Parallel()
+func TestUserPortalController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("UserPortalController JSON marshaling", func(t *testing.T) {
-		portal := portal_controller.UserPortalController{
-			ID:                      "portal-123",
-			Name:                    "Corporate User Portal",
-			Description:             "Main portal for corporate users",
-			Enabled:                 true,
-			Domain:                  "portal.company.com",
-			CertificateId:           "cert-001",
-			CertificateName:         "Corporate Cert",
-			UserNotification:        "Welcome to the User Portal",
-			UserNotificationEnabled: true,
-		}
+	portalID := "portal-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/userPortal/" + portalID
 
-		data, err := json.Marshal(portal)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(portal_controller.UserPortalController{
+		ID:   portalID,
+		Name: "Test Portal",
+	}))
 
-		var unmarshaled portal_controller.UserPortalController
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, portal.ID, unmarshaled.ID)
-		assert.Equal(t, portal.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-		assert.True(t, unmarshaled.UserNotificationEnabled)
-	})
+	result, _, err := portal_controller.Get(context.Background(), service, portalID)
 
-	t.Run("UserPortalController from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "portal-456",
-			"name": "Guest Portal",
-			"description": "Portal for guest access",
-			"enabled": true,
-			"domain": "guest.company.com",
-			"certificateId": "cert-002",
-			"certificateName": "Guest Cert",
-			"extDomain": "ext.company.com",
-			"extDomainName": "External Domain",
-			"userNotification": "Welcome, Guest!",
-			"userNotificationEnabled": true,
-			"managedByZs": false,
-			"microtenantId": "mt-001",
-			"microtenantName": "Production",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var portal portal_controller.UserPortalController
-		err := json.Unmarshal([]byte(apiResponse), &portal)
-		require.NoError(t, err)
-
-		assert.Equal(t, "portal-456", portal.ID)
-		assert.Equal(t, "Guest Portal", portal.Name)
-		assert.True(t, portal.Enabled)
-		assert.False(t, portal.ManagedByZS)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, portalID, result.ID)
 }
 
-// TestUserPortalController_MockServerOperations tests CRUD operations
-func TestUserPortalController_MockServerOperations(t *testing.T) {
-	t.Run("GET portal by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			assert.Contains(t, r.URL.Path, "/userPortal/")
+func TestUserPortalController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "portal-123", "name": "Mock Portal", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/userPortal"
 
-		resp, err := http.Get(server.URL + "/userPortal/portal-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []portal_controller.UserPortalController{{ID: "portal-001"}, {ID: "portal-002"}},
+		"totalPages": 1,
+	}))
 
-	t.Run("GET all portals", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"list": [{"id": "1"}, {"id": "2"}], "totalPages": 1}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	result, _, err := portal_controller.GetAll(context.Background(), service)
 
-		resp, err := http.Get(server.URL + "/userPortal")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
-
-	t.Run("POST create portal", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "POST", r.Method)
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "new-portal", "name": "New Portal"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
-
-		resp, err := http.Post(server.URL+"/userPortal", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
-
-	t.Run("DELETE portal", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "DELETE", r.Method)
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
-
-		req, _ := http.NewRequest("DELETE", server.URL+"/userPortal/portal-123", nil)
-		resp, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

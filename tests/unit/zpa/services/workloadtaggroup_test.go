@@ -1,49 +1,54 @@
-// Package unit provides unit tests for ZPA Workload Tag Group service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/workload_tag_group"
 )
 
-func TestWorkloadTagGroup_Structure(t *testing.T) {
-	t.Parallel()
+func TestWorkloadTagGroup_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CommonSummary JSON marshaling", func(t *testing.T) {
-		group := common.CommonSummary{
-			ID:   "wtg-123",
-			Name: "Production Tags",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/workloadTagGroup/summary"
 
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []zpacommon.CommonSummary{{ID: "tag-001"}, {ID: "tag-002"}},
+		"totalPages": 1,
+	}))
 
-		var unmarshaled common.CommonSummary
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, group.ID, unmarshaled.ID)
-		assert.Equal(t, group.Name, unmarshaled.Name)
-	})
+	result, _, err := workload_tag_group.GetWorkloadTagGroup(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }
 
-func TestWorkloadTagGroup_MockServerOperations(t *testing.T) {
-	t.Run("GET workload tag group", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"id": "wtg-123", "name": "Mock Group"}]`))
-		}))
-		defer server.Close()
+func TestWorkloadTagGroup_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/workloadTagGroup/summary")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/workloadTagGroup/summary"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []zpacommon.CommonSummary{{ID: "tag-001", Name: "Test Tag Group"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := workload_tag_group.GetByName(context.Background(), service, "Test Tag Group")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "tag-001", result.ID)
 }

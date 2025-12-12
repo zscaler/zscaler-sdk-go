@@ -1,209 +1,158 @@
-// Package unit provides unit tests for ZPA Trusted Network service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/trustednetwork"
 )
 
-// TestTrustedNetwork_Structure tests the struct definitions
-func TestTrustedNetwork_Structure(t *testing.T) {
-	t.Parallel()
+func TestTrustedNetwork_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("TrustedNetwork JSON marshaling", func(t *testing.T) {
-		network := trustednetwork.TrustedNetwork{
-			ID:               "tn-123",
-			Name:             "Corporate Network",
-			NetworkID:        "corp-network-id-12345",
-			ZscalerCloud:     "zscaler.net",
-			MasterCustomerID: "customer-123",
-		}
+	networkID := "network-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/network/" + networkID
 
-		data, err := json.Marshal(network)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(trustednetwork.TrustedNetwork{
+		ID:        networkID,
+		Name:      "Test Network",
+		NetworkID: "net-001",
+		Domain:    "example.com",
+	}))
 
-		var unmarshaled trustednetwork.TrustedNetwork
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, network.ID, unmarshaled.ID)
-		assert.Equal(t, network.Name, unmarshaled.Name)
-		assert.Equal(t, network.NetworkID, unmarshaled.NetworkID)
-	})
+	result, resp, err := trustednetwork.Get(context.Background(), service, networkID)
 
-	t.Run("TrustedNetwork JSON unmarshaling from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "tn-456",
-			"name": "Branch Office Network",
-			"networkId": "branch-network-id-67890",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000",
-			"modifiedBy": "admin@example.com",
-			"microtenantId": "mt-002",
-			"microtenantName": "Branch",
-			"zscalerCloud": "zscaler.net",
-			"masterCustomerId": "customer-456"
-		}`
-
-		var network trustednetwork.TrustedNetwork
-		err := json.Unmarshal([]byte(apiResponse), &network)
-		require.NoError(t, err)
-
-		assert.Equal(t, "tn-456", network.ID)
-		assert.Equal(t, "Branch Office Network", network.Name)
-		assert.Equal(t, "branch-network-id-67890", network.NetworkID)
-		assert.NotEmpty(t, network.CreationTime)
-		assert.NotEmpty(t, network.ZscalerCloud)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, networkID, result.ID)
+	assert.Equal(t, "Test Network", result.Name)
 }
 
-// TestTrustedNetwork_ResponseParsing tests parsing of various API responses
-func TestTrustedNetwork_ResponseParsing(t *testing.T) {
-	t.Parallel()
+func TestTrustedNetwork_GetByNetID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Parse trusted network list response", func(t *testing.T) {
-		response := `{
-			"list": [
-				{"id": "1", "name": "Network A", "networkId": "net-a-12345"},
-				{"id": "2", "name": "Network B", "networkId": "net-b-67890"},
-				{"id": "3", "name": "Network C", "networkId": "net-c-11111"}
-			],
-			"totalPages": 1
-		}`
+	netID := "net-12345"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/network"
 
-		type ListResponse struct {
-			List       []trustednetwork.TrustedNetwork `json:"list"`
-			TotalPages int                             `json:"totalPages"`
-		}
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []trustednetwork.TrustedNetwork{
+			{ID: "tn-001", Name: "Other Network", NetworkID: "net-001"},
+			{ID: "tn-002", Name: "Target Network", NetworkID: netID},
+		},
+		"totalPages": 1,
+	}))
 
-		var listResp ListResponse
-		err := json.Unmarshal([]byte(response), &listResp)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Len(t, listResp.List, 3)
-		assert.Equal(t, "Network A", listResp.List[0].Name)
-		assert.Equal(t, "net-a-12345", listResp.List[0].NetworkID)
-	})
+	result, _, err := trustednetwork.GetByNetID(context.Background(), service, netID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "tn-002", result.ID)
+	assert.Equal(t, netID, result.NetworkID)
 }
 
-// TestTrustedNetwork_MockServerOperations tests CRUD operations with mock server
-func TestTrustedNetwork_MockServerOperations(t *testing.T) {
-	t.Run("GET trusted network by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			assert.Contains(t, r.URL.Path, "/trustedNetwork/")
+func TestTrustedNetwork_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{
-				"id": "tn-123",
-				"name": "Mock Trusted Network",
-				"networkId": "mock-network-id"
-			}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	networkName := "Production Network"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/network"
 
-		resp, err := http.Get(server.URL + "/zpa/mgmtconfig/v2/admin/customers/123/trustedNetwork/tn-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []trustednetwork.TrustedNetwork{
+			{ID: "tn-001", Name: "Other Network"},
+			{ID: "tn-002", Name: networkName},
+		},
+		"totalPages": 1,
+	}))
 
-	t.Run("GET all trusted networks", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{
-				"list": [
-					{"id": "1", "name": "Network A", "networkId": "net-a"},
-					{"id": "2", "name": "Network B", "networkId": "net-b"}
-				],
-				"totalPages": 1
-			}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	result, _, err := trustednetwork.GetByName(context.Background(), service, networkName)
 
-		resp, err := http.Get(server.URL + "/zpa/mgmtconfig/v2/admin/customers/123/trustedNetwork")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "tn-002", result.ID)
+	assert.Equal(t, networkName, result.Name)
 }
 
-// TestTrustedNetwork_ErrorHandling tests error scenarios
-func TestTrustedNetwork_ErrorHandling(t *testing.T) {
-	t.Parallel()
+func TestTrustedNetwork_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("404 Trusted Network Not Found", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"code": "NOT_FOUND", "message": "Trusted network not found"}`))
-		}))
-		defer server.Close()
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/network"
 
-		resp, err := http.Get(server.URL + "/trustedNetwork/nonexistent")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	})
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []trustednetwork.TrustedNetwork{
+			{ID: "tn-001", Name: "Network 1"},
+			{ID: "tn-002", Name: "Network 2"},
+			{ID: "tn-003", Name: "Network 3"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := trustednetwork.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 3)
 }
 
-// TestTrustedNetwork_SpecialCases tests edge cases
-func TestTrustedNetwork_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestTrustedNetwork_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Network ID format validation", func(t *testing.T) {
-		network := trustednetwork.TrustedNetwork{
-			ID:        "tn-123",
-			Name:      "Formatted Network",
-			NetworkID: "ABC123-DEF456-GHI789",
-		}
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/network"
 
-		data, err := json.Marshal(network)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []trustednetwork.TrustedNetwork{},
+		"totalPages": 0,
+	}))
 
-		var unmarshaled trustednetwork.TrustedNetwork
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, "ABC123-DEF456-GHI789", unmarshaled.NetworkID)
+	result, _, err := trustednetwork.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no trusted network named")
+}
+
+func TestTrustedNetwork_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	networkID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/network/" + networkID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("Network with domain", func(t *testing.T) {
-		network := trustednetwork.TrustedNetwork{
-			ID:     "tn-123",
-			Name:   "Domain Network",
-			Domain: "example.com",
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		data, err := json.Marshal(network)
-		require.NoError(t, err)
+	result, _, err := trustednetwork.Get(context.Background(), service, networkID)
 
-		assert.Contains(t, string(data), `"domain":"example.com"`)
-	})
-
-	t.Run("Zscaler cloud configuration", func(t *testing.T) {
-		clouds := []string{"zscaler.net", "zscalerone.net", "zscalertwo.net", "zscloud.net"}
-
-		for _, cloud := range clouds {
-			network := trustednetwork.TrustedNetwork{
-				ID:           "tn-" + cloud,
-				Name:         cloud + " Network",
-				ZscalerCloud: cloud,
-			}
-
-			data, err := json.Marshal(network)
-			require.NoError(t, err)
-
-			assert.Contains(t, string(data), cloud)
-		}
-	})
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

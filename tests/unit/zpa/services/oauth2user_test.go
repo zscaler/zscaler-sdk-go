@@ -1,63 +1,64 @@
-// Package unit provides unit tests for ZPA OAuth2 User service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/oauth2_user"
 )
 
-func TestOAuth2User_Structure(t *testing.T) {
-	t.Parallel()
+func TestOAuth2User_VerifyUserCodes_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("OauthUser JSON marshaling", func(t *testing.T) {
-		user := oauth2_user.OauthUser{
-			TenantID:        "tenant-123",
-			ConfigCloudName: "zscaler.net",
-		}
+	associationType := "CONNECTOR_GRP"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/" + associationType + "/usercodes"
 
-		data, err := json.Marshal(user)
-		require.NoError(t, err)
+	server.On("POST", path, common.SuccessResponse(oauth2_user.OauthUser{
+		TenantID:     "tenant-123",
+		ZcomponentID: "zcomp-456",
+		UserCodes:    []string{"code1", "code2"},
+	}))
 
-		var unmarshaled oauth2_user.OauthUser
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, user.TenantID, unmarshaled.TenantID)
-	})
+	oauthUser := &oauth2_user.OauthUser{
+		UserCodes: []string{"code1", "code2"},
+	}
 
-	t.Run("UserCodeStatusRequest JSON marshaling", func(t *testing.T) {
-		req := oauth2_user.UserCodeStatusRequest{
-			UserCodes: []string{"code1", "code2"},
-		}
+	result, _, err := oauth2_user.VerifyUserCodes(context.Background(), service, associationType, oauthUser)
 
-		data, err := json.Marshal(req)
-		require.NoError(t, err)
-
-		var unmarshaled oauth2_user.UserCodeStatusRequest
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Len(t, unmarshaled.UserCodes, 2)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "tenant-123", result.TenantID)
+	assert.Len(t, result.UserCodes, 2)
 }
 
-func TestOAuth2User_MockServerOperations(t *testing.T) {
-	t.Run("POST verify user codes", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"tenantId": "tenant-123"}`))
-		}))
-		defer server.Close()
+func TestOAuth2User_VerifyUserCodeStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Post(server.URL+"/oauth2/verify", "application/json", nil)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	associationType := "SERVICE_EDGE_GRP"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/" + associationType + "/usercodes/status"
+
+	server.On("POST", path, common.SuccessResponse(oauth2_user.OauthUser{
+		TenantID:             "tenant-789",
+		NonceAssociationType: associationType,
+		UserCodes:            []string{"validcode1"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	userCodes := []string{"validcode1"}
+	result, _, err := oauth2_user.VerifyUserCodeStatus(context.Background(), service, associationType, userCodes)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "tenant-789", result.TenantID)
 }

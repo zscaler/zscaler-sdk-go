@@ -1,51 +1,53 @@
-// Package unit provides unit tests for ZPA PRA Approval service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praapproval"
 )
 
-func TestPRAApproval_Structure(t *testing.T) {
-	t.Parallel()
+func TestPRAApproval_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("PrivilegedApproval JSON marshaling", func(t *testing.T) {
-		approval := praapproval.PrivilegedApproval{
-			ID:           "pa-123",
-			EmailIDs:     []string{"user@example.com"},
-			StartTime:    "1609459200000",
-			EndTime:      "1612137600000",
-			Status:       "ACTIVE",
-		}
+	approvalID := "approval-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval/" + approvalID
 
-		data, err := json.Marshal(approval)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(praapproval.PrivilegedApproval{
+		ID: approvalID,
+	}))
 
-		var unmarshaled praapproval.PrivilegedApproval
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, approval.ID, unmarshaled.ID)
-	})
+	result, _, err := praapproval.Get(context.Background(), service, approvalID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, approvalID, result.ID)
 }
 
-func TestPRAApproval_MockServerOperations(t *testing.T) {
-	t.Run("GET approval by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "pa-123", "status": "ACTIVE"}`))
-		}))
-		defer server.Close()
+func TestPRAApproval_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/praApproval")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []praapproval.PrivilegedApproval{{ID: "approval-001"}, {ID: "approval-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := praapproval.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

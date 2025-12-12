@@ -1,51 +1,54 @@
-// Package unit provides unit tests for ZPA Private Cloud Group service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/private_cloud_group"
 )
 
-func TestPrivateCloudGroup_Structure(t *testing.T) {
-	t.Parallel()
+func TestPrivateCloudGroup_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("PrivateCloudGroup JSON marshaling", func(t *testing.T) {
-		group := private_cloud_group.PrivateCloudGroup{
-			ID:          "pcg-123",
-			Name:        "Test Group",
-			Description: "Test Description",
-			Enabled:     true,
-		}
+	groupID := "pcg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpccGroup/" + groupID
 
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(private_cloud_group.PrivateCloudGroup{
+		ID:   groupID,
+		Name: "Test Private Cloud Group",
+	}))
 
-		var unmarshaled private_cloud_group.PrivateCloudGroup
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, group.ID, unmarshaled.ID)
-		assert.Equal(t, group.Name, unmarshaled.Name)
-	})
+	result, _, err := private_cloud_group.Get(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
 }
 
-func TestPrivateCloudGroup_MockServerOperations(t *testing.T) {
-	t.Run("GET group by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "pcg-123", "name": "Mock Group"}`))
-		}))
-		defer server.Close()
+func TestPrivateCloudGroup_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/privateCloudGroup")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/zpccGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []private_cloud_group.PrivateCloudGroup{{ID: "pcg-001"}, {ID: "pcg-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := private_cloud_group.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

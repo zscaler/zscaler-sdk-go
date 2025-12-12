@@ -1,125 +1,131 @@
-// Package unit provides unit tests for ZPA Machine Group service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/machinegroup"
 )
 
-// TestMachineGroup_Structure tests the struct definitions
-func TestMachineGroup_Structure(t *testing.T) {
-	t.Parallel()
+func TestMachineGroup_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("MachineGroup JSON marshaling", func(t *testing.T) {
-		group := machinegroup.MachineGroup{
-			ID:          "mg-123",
-			Name:        "Test Machine Group",
-			Description: "Test Description",
-			Enabled:     true,
-			Machines: []machinegroup.Machines{
-				{ID: "m-001", Name: "Machine 1"},
-				{ID: "m-002", Name: "Machine 2"},
-			},
-			MicroTenantID:   "mt-001",
-			MicroTenantName: "Production",
-		}
+	groupID := "mg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup/" + groupID
 
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(machinegroup.MachineGroup{
+		ID:          groupID,
+		Name:        "Test Machine Group",
+		Description: "Test description",
+		Enabled:     true,
+	}))
 
-		var unmarshaled machinegroup.MachineGroup
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, group.ID, unmarshaled.ID)
-		assert.Equal(t, group.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.Enabled)
-		assert.Len(t, unmarshaled.Machines, 2)
-	})
+	result, resp, err := machinegroup.Get(context.Background(), service, groupID)
 
-	t.Run("MachineGroup from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "mg-456",
-			"name": "Production Machine Group",
-			"description": "Production machines",
-			"enabled": true,
-			"machines": [
-				{"id": "m-001", "name": "Server A", "fingerprint": "abc123"},
-				{"id": "m-002", "name": "Server B", "fingerprint": "def456"}
-			],
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000",
-			"microtenantId": "mt-002",
-			"microtenantName": "Prod Tenant"
-		}`
-
-		var group machinegroup.MachineGroup
-		err := json.Unmarshal([]byte(apiResponse), &group)
-		require.NoError(t, err)
-
-		assert.Equal(t, "mg-456", group.ID)
-		assert.True(t, group.Enabled)
-		assert.Len(t, group.Machines, 2)
-	})
-
-	t.Run("Machines structure", func(t *testing.T) {
-		machine := machinegroup.Machines{
-			ID:               "m-123",
-			Name:             "Test Machine",
-			Description:      "Test Description",
-			Fingerprint:      "abc123def456",
-			MachineGroupID:   "mg-001",
-			MachineGroupName: "Test Group",
-			MicroTenantID:    "mt-001",
-		}
-
-		data, err := json.Marshal(machine)
-		require.NoError(t, err)
-
-		var unmarshaled machinegroup.Machines
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
-
-		assert.Equal(t, machine.ID, unmarshaled.ID)
-		assert.Equal(t, machine.Fingerprint, unmarshaled.Fingerprint)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, groupID, result.ID)
+	assert.Equal(t, "Test Machine Group", result.Name)
 }
 
-// TestMachineGroup_MockServerOperations tests CRUD operations
-func TestMachineGroup_MockServerOperations(t *testing.T) {
-	t.Run("GET machine group by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "mg-123", "name": "Mock Group", "enabled": true}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestMachineGroup_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/machineGroup/mg-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	groupName := "Production Machine Group"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []machinegroup.MachineGroup{
+			{ID: "mg-001", Name: "Other Group", Enabled: true},
+			{ID: "mg-002", Name: groupName, Enabled: true},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := machinegroup.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "mg-002", result.ID)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestMachineGroup_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []machinegroup.MachineGroup{
+			{ID: "mg-001", Name: "Group 1", Enabled: true},
+			{ID: "mg-002", Name: "Group 2", Enabled: false},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := machinegroup.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestMachineGroup_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/machineGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []machinegroup.MachineGroup{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := machinegroup.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no machine group named")
+}
+
+func TestMachineGroup_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/machineGroup/" + groupID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
 
-	t.Run("GET all machine groups", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"list": [{"id": "1"}, {"id": "2"}], "totalPages": 1}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		resp, err := http.Get(server.URL + "/machineGroup")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	result, _, err := machinegroup.Get(context.Background(), service, groupID)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

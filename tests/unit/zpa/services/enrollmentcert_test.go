@@ -1,121 +1,110 @@
-// Package unit provides unit tests for ZPA Enrollment Certificate service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
 )
 
-// TestEnrollmentCert_Structure tests the struct definitions
-func TestEnrollmentCert_Structure(t *testing.T) {
-	t.Parallel()
+func TestEnrollmentCert_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("EnrollmentCert JSON marshaling", func(t *testing.T) {
-		cert := enrollmentcert.EnrollmentCert{
-			ID:             "cert-123",
-			Name:           "Test Enrollment Cert",
-			Description:    "Test Description",
-			Cname:          "enroll.example.com",
-			ClientCertType: "CONNECTOR",
-			AllowSigning:   true,
-			IssuedBy:       "CA Authority",
-			IssuedTo:       "enroll.example.com",
-		}
+	certID := "cert-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/" + certID
 
-		data, err := json.Marshal(cert)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(enrollmentcert.EnrollmentCert{
+		ID:          certID,
+		Name:        "Test Certificate",
+		Description: "Test description",
+		AllowSigning: true,
+	}))
 
-		var unmarshaled enrollmentcert.EnrollmentCert
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, cert.ID, unmarshaled.ID)
-		assert.Equal(t, cert.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.AllowSigning)
-	})
+	result, resp, err := enrollmentcert.Get(context.Background(), service, certID)
 
-	t.Run("EnrollmentCert from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "cert-456",
-			"name": "Production Enrollment Cert",
-			"description": "Production enrollment certificate",
-			"cName": "enroll.prod.example.com",
-			"clientCertType": "SERVICE_EDGE",
-			"allowSigning": true,
-			"issuedBy": "Zscaler CA",
-			"issuedTo": "enroll.prod.example.com",
-			"parentCertId": "parent-001",
-			"parentCertName": "Root CA",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var cert enrollmentcert.EnrollmentCert
-		err := json.Unmarshal([]byte(apiResponse), &cert)
-		require.NoError(t, err)
-
-		assert.Equal(t, "cert-456", cert.ID)
-		assert.Equal(t, "SERVICE_EDGE", cert.ClientCertType)
-		assert.True(t, cert.AllowSigning)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, certID, result.ID)
+	assert.Equal(t, "Test Certificate", result.Name)
 }
 
-// TestEnrollmentCert_MockServerOperations tests CRUD operations
-func TestEnrollmentCert_MockServerOperations(t *testing.T) {
-	t.Run("GET enrollment cert by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "cert-123", "name": "Mock Cert"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestEnrollmentCert_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/enrollmentCert/cert-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	certName := "Production Certificate"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/enrollmentCert"
 
-	t.Run("GET all enrollment certs", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"list": [{"id": "1"}, {"id": "2"}], "totalPages": 1}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []enrollmentcert.EnrollmentCert{
+			{ID: "cert-001", Name: "Other Cert"},
+			{ID: "cert-002", Name: certName},
+		},
+		"totalPages": 1,
+	}))
 
-		resp, err := http.Get(server.URL + "/enrollmentCert")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := enrollmentcert.GetByName(context.Background(), service, certName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "cert-002", result.ID)
+	assert.Equal(t, certName, result.Name)
 }
 
-// TestEnrollmentCert_SpecialCases tests edge cases
-func TestEnrollmentCert_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestEnrollmentCert_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Client cert types", func(t *testing.T) {
-		types := []string{"CONNECTOR", "SERVICE_EDGE", "NP_ASSISTANT"}
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/enrollmentCert"
 
-		for _, certType := range types {
-			cert := enrollmentcert.EnrollmentCert{
-				ID:             "cert-" + certType,
-				Name:           certType + " Cert",
-				ClientCertType: certType,
-			}
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []enrollmentcert.EnrollmentCert{
+			{ID: "cert-001", Name: "Cert 1"},
+			{ID: "cert-002", Name: "Cert 2"},
+		},
+		"totalPages": 1,
+	}))
 
-			data, err := json.Marshal(cert)
-			require.NoError(t, err)
-			assert.Contains(t, string(data), certType)
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := enrollmentcert.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestEnrollmentCert_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/" + certID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := enrollmentcert.Get(context.Background(), service, certID)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

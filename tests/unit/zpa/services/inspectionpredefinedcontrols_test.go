@@ -1,55 +1,54 @@
-// Package unit provides unit tests for ZPA Inspection Predefined Controls service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_predefined_controls"
 )
 
-func TestInspectionPredefinedControls_Structure(t *testing.T) {
-	t.Parallel()
+func TestInspectionPredefinedControls_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("PredefinedControls JSON marshaling", func(t *testing.T) {
-		control := inspection_predefined_controls.PredefinedControls{
-			ID:                    "ipc-123",
-			Name:                  "Test Predefined Control",
-			Description:           "Test Description",
-			Action:                "BLOCK",
-			Severity:              "CRITICAL",
-			ControlGroup:          "OWASP",
-			DefaultAction:         "BLOCK",
-			ParanoiaLevel:         "2",
-		}
+	controlID := "predefined-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/predefined/" + controlID
 
-		data, err := json.Marshal(control)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(inspection_predefined_controls.PredefinedControls{
+		ID:   controlID,
+		Name: "Test Predefined Control",
+	}))
 
-		var unmarshaled inspection_predefined_controls.PredefinedControls
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, control.ID, unmarshaled.ID)
-		assert.Equal(t, control.Name, unmarshaled.Name)
-	})
+	result, _, err := inspection_predefined_controls.Get(context.Background(), service, controlID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, controlID, result.ID)
 }
 
-func TestInspectionPredefinedControls_MockServerOperations(t *testing.T) {
-	t.Run("GET predefined control by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "ipc-123", "name": "Mock Control"}`))
-		}))
-		defer server.Close()
+func TestInspectionPredefinedControls_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/inspectionPredefinedControl")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/predefined"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []inspection_predefined_controls.PredefinedControls{{ID: "predefined-001"}, {ID: "predefined-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, err := inspection_predefined_controls.GetAll(context.Background(), service, "OWASP_CRS/3.3.0")
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

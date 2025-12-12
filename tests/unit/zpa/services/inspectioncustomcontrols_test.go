@@ -1,53 +1,54 @@
-// Package unit provides unit tests for ZPA Inspection Custom Controls service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_custom_controls"
 )
 
-func TestInspectionCustomControls_Structure(t *testing.T) {
-	t.Parallel()
+func TestInspectionCustomControls_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("InspectionCustomControl JSON marshaling", func(t *testing.T) {
-		control := inspection_custom_controls.InspectionCustomControl{
-			ID:          "icc-123",
-			Name:        "Test Custom Control",
-			Description: "Test Description",
-			Action:      "BLOCK",
-			Severity:    "CRITICAL",
-			Type:        "REQUEST",
-		}
+	controlID := "ctrl-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom/" + controlID
 
-		data, err := json.Marshal(control)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(inspection_custom_controls.InspectionCustomControl{
+		ID:   controlID,
+		Name: "Test Custom Control",
+	}))
 
-		var unmarshaled inspection_custom_controls.InspectionCustomControl
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, control.ID, unmarshaled.ID)
-		assert.Equal(t, control.Name, unmarshaled.Name)
-	})
+	result, _, err := inspection_custom_controls.Get(context.Background(), service, controlID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, controlID, result.ID)
 }
 
-func TestInspectionCustomControls_MockServerOperations(t *testing.T) {
-	t.Run("GET custom control by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "icc-123", "name": "Mock Control"}`))
-		}))
-		defer server.Close()
+func TestInspectionCustomControls_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/inspectionCustomControl")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []inspection_custom_controls.InspectionCustomControl{{ID: "ctrl-001"}, {ID: "ctrl-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := inspection_custom_controls.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

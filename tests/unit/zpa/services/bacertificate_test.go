@@ -1,97 +1,54 @@
-// Package unit provides unit tests for ZPA BA Certificate service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
 )
 
-// TestBaCertificate_Structure tests the struct definitions
-func TestBaCertificate_Structure(t *testing.T) {
-	t.Parallel()
+func TestBACertificate_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("BaCertificate JSON marshaling", func(t *testing.T) {
-		cert := bacertificate.BaCertificate{
-			ID:          "cert-123",
-			Name:        "Test Certificate",
-			Description: "Test Description",
-			CName:       "test.example.com",
-			IssuedBy:    "CA Authority",
-			IssuedTo:    "test.example.com",
-			San:         []string{"test.example.com", "*.test.example.com"},
-		}
+	certID := "cert-12345"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/clientlessCertificate/" + certID
 
-		data, err := json.Marshal(cert)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(bacertificate.BaCertificate{
+		ID:   certID,
+		Name: "Test Certificate",
+	}))
 
-		var unmarshaled bacertificate.BaCertificate
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, cert.ID, unmarshaled.ID)
-		assert.Equal(t, cert.Name, unmarshaled.Name)
-		assert.Len(t, unmarshaled.San, 2)
-	})
+	result, _, err := bacertificate.Get(context.Background(), service, certID)
 
-	t.Run("BaCertificate from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "cert-456",
-			"name": "Production Certificate",
-			"description": "Production SSL certificate",
-			"cName": "prod.example.com",
-			"issuedBy": "DigiCert",
-			"issuedTo": "prod.example.com",
-			"serialNo": "ABC123DEF456",
-			"san": ["prod.example.com", "www.prod.example.com"],
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var cert bacertificate.BaCertificate
-		err := json.Unmarshal([]byte(apiResponse), &cert)
-		require.NoError(t, err)
-
-		assert.Equal(t, "cert-456", cert.ID)
-		assert.Equal(t, "DigiCert", cert.IssuedBy)
-		assert.Equal(t, "ABC123DEF456", cert.SerialNo)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, certID, result.ID)
 }
 
-// TestBaCertificate_MockServerOperations tests CRUD operations
-func TestBaCertificate_MockServerOperations(t *testing.T) {
-	t.Run("GET certificate by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "cert-123", "name": "Mock Cert"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestBACertificate_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/certificate/cert-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/clientlessCertificate"
 
-	t.Run("GET all certificates", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"list": [{"id": "1"}, {"id": "2"}], "totalPages": 1}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []bacertificate.BaCertificate{{ID: "cert-001"}, {ID: "cert-002"}},
+		"totalPages": 1,
+	}))
 
-		resp, err := http.Get(server.URL + "/certificate")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := bacertificate.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

@@ -1,51 +1,51 @@
-// Package unit provides unit tests for ZPA CBI Certificate Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
 )
 
-func TestCBICertificateController_Structure(t *testing.T) {
-	t.Parallel()
+func TestCBICertificateController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CBICertificate JSON marshaling", func(t *testing.T) {
-		cert := cbicertificatecontroller.CBICertificate{
-			ID:          "cert-123",
-			Name:        "Test Certificate",
-			PEM:         "-----BEGIN CERTIFICATE-----",
-			IsDefault:   false,
-		}
+	certID := "cert-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificate/" + certID
 
-		data, err := json.Marshal(cert)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(cbicertificatecontroller.CBICertificate{
+		ID:   certID,
+		Name: "Test Certificate",
+	}))
 
-		var unmarshaled cbicertificatecontroller.CBICertificate
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, cert.ID, unmarshaled.ID)
-		assert.Equal(t, cert.Name, unmarshaled.Name)
-	})
+	result, _, err := cbicertificatecontroller.Get(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, certID, result.ID)
 }
 
-func TestCBICertificateController_MockServerOperations(t *testing.T) {
-	t.Run("GET certificate by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": "cert-123", "name": "Mock Cert"}`))
-		}))
-		defer server.Close()
+func TestCBICertificateController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/cbiCert")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/certificate"
+
+	server.On("GET", path, common.SuccessResponse([]cbicertificatecontroller.CBICertificate{{ID: "cert-001"}, {ID: "cert-002"}}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cbicertificatecontroller.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

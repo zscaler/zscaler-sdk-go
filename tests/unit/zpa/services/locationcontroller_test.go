@@ -1,49 +1,33 @@
-// Package unit provides unit tests for ZPA Location Controller service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/location_controller"
 )
 
-func TestLocationController_Structure(t *testing.T) {
-	t.Parallel()
+func TestLocationController_GetSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("CommonSummary JSON marshaling", func(t *testing.T) {
-		summary := common.CommonSummary{
-			ID:   "loc-123",
-			Name: "Test Location",
-		}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/location/summary"
 
-		data, err := json.Marshal(summary)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []zpacommon.CommonSummary{{ID: "loc-001"}, {ID: "loc-002"}},
+		"totalPages": 1,
+	}))
 
-		var unmarshaled common.CommonSummary
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, summary.ID, unmarshaled.ID)
-		assert.Equal(t, summary.Name, unmarshaled.Name)
-	})
-}
+	result, _, err := location_controller.GetLocationSummary(context.Background(), service)
 
-func TestLocationController_MockServerOperations(t *testing.T) {
-	t.Run("GET location summary", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"id": "loc-123", "name": "Mock Location"}]`))
-		}))
-		defer server.Close()
-
-		resp, err := http.Get(server.URL + "/location/summary")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
 }

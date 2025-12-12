@@ -1,116 +1,132 @@
-// Package unit provides unit tests for ZPA SAML Attribute service
+// Package unit provides unit tests for ZPA services
 package unit
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 )
 
-// TestSamlAttribute_Structure tests the struct definitions
-func TestSamlAttribute_Structure(t *testing.T) {
-	t.Parallel()
+func TestSamlAttribute_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("SamlAttribute JSON marshaling", func(t *testing.T) {
-		attr := samlattribute.SamlAttribute{
-			ID:            "saml-123",
-			Name:          "Department",
-			SamlName:      "department",
-			IdpID:         "idp-001",
-			IdpName:       "Okta",
-			UserAttribute: true,
-		}
+	attrID := "saml-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute/" + attrID
 
-		data, err := json.Marshal(attr)
-		require.NoError(t, err)
+	server.On("GET", path, common.SuccessResponse(samlattribute.SamlAttribute{
+		ID:               attrID,
+		Name:             "Test SAML Attribute",
+		IdpName:          "Test IDP",
+		SamlName:         "email",
+		UserAttribute:    true,
+	}))
 
-		var unmarshaled samlattribute.SamlAttribute
-		err = json.Unmarshal(data, &unmarshaled)
-		require.NoError(t, err)
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
 
-		assert.Equal(t, attr.ID, unmarshaled.ID)
-		assert.Equal(t, attr.Name, unmarshaled.Name)
-		assert.True(t, unmarshaled.UserAttribute)
-	})
+	result, resp, err := samlattribute.Get(context.Background(), service, attrID)
 
-	t.Run("SamlAttribute from API response", func(t *testing.T) {
-		apiResponse := `{
-			"id": "saml-456",
-			"name": "Groups",
-			"samlName": "groups",
-			"idpId": "idp-002",
-			"idpName": "Azure AD",
-			"userAttribute": true,
-			"delta": "30",
-			"creationTime": "1609459200000",
-			"modifiedTime": "1612137600000"
-		}`
-
-		var attr samlattribute.SamlAttribute
-		err := json.Unmarshal([]byte(apiResponse), &attr)
-		require.NoError(t, err)
-
-		assert.Equal(t, "saml-456", attr.ID)
-		assert.Equal(t, "Azure AD", attr.IdpName)
-		assert.True(t, attr.UserAttribute)
-	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotNil(t, resp)
+	assert.Equal(t, attrID, result.ID)
+	assert.Equal(t, "Test SAML Attribute", result.Name)
 }
 
-// TestSamlAttribute_MockServerOperations tests operations
-func TestSamlAttribute_MockServerOperations(t *testing.T) {
-	t.Run("GET SAML attribute by ID", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"id": "saml-123", "name": "Mock Attribute"}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+func TestSamlAttribute_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-		resp, err := http.Get(server.URL + "/samlAttribute/saml-123")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	attrName := "email"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/samlAttribute"
 
-	t.Run("GET all SAML attributes", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, "GET", r.Method)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			response := `{"list": [{"id": "1"}, {"id": "2"}], "totalPages": 1}`
-			w.Write([]byte(response))
-		}))
-		defer server.Close()
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []samlattribute.SamlAttribute{
+			{ID: "saml-001", Name: "Other Attribute"},
+			{ID: "saml-002", Name: attrName},
+		},
+		"totalPages": 1,
+	}))
 
-		resp, err := http.Get(server.URL + "/samlAttribute")
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.GetByName(context.Background(), service, attrName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "saml-002", result.ID)
+	assert.Equal(t, attrName, result.Name)
 }
 
-// TestSamlAttribute_SpecialCases tests edge cases
-func TestSamlAttribute_SpecialCases(t *testing.T) {
-	t.Parallel()
+func TestSamlAttribute_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
 
-	t.Run("Common SAML attributes", func(t *testing.T) {
-		attrs := []string{"department", "groups", "email", "displayName", "title", "manager"}
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/samlAttribute"
 
-		for _, name := range attrs {
-			attr := samlattribute.SamlAttribute{
-				ID:       "saml-" + name,
-				Name:     name,
-				SamlName: name,
-			}
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []samlattribute.SamlAttribute{
+			{ID: "saml-001", Name: "Attribute 1"},
+			{ID: "saml-002", Name: "Attribute 2"},
+		},
+		"totalPages": 1,
+	}))
 
-			data, err := json.Marshal(attr)
-			require.NoError(t, err)
-			assert.Contains(t, string(data), name)
-		}
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestSamlAttribute_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/samlAttribute"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []samlattribute.SamlAttribute{},
+		"totalPages": 0,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.GetByName(context.Background(), service, "NonExistent")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no saml attribute named")
+}
+
+func TestSamlAttribute_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	attrID := "nonexistent-id"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute/" + attrID
+
+	server.On("GET", path, common.MockResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"id": "resource.not.found", "message": "Resource not found"}`,
 	})
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.Get(context.Background(), service, attrID)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
