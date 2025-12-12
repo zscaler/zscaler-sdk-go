@@ -9,33 +9,18 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/trustednetwork"
 )
-
-// TrustedNetworkResource represents the trusted network structure for testing
-type TrustedNetworkResource struct {
-	ID                string `json:"id,omitempty"`
-	Name              string `json:"name,omitempty"`
-	NetworkID         string `json:"networkId,omitempty"`
-	CreationTime      string `json:"creationTime,omitempty"`
-	ModifiedBy        string `json:"modifiedBy,omitempty"`
-	ModifiedTime      string `json:"modifiedTime,omitempty"`
-	MicroTenantID     string `json:"microtenantId,omitempty"`
-	MicroTenantName   string `json:"microtenantName,omitempty"`
-	ZscalerCloud      string `json:"zscalerCloud,omitempty"`
-	MasterCustomerID  string `json:"masterCustomerId,omitempty"`
-}
 
 // TestTrustedNetwork_Structure tests the struct definitions
 func TestTrustedNetwork_Structure(t *testing.T) {
 	t.Parallel()
 
-	t.Run("TrustedNetworkResource JSON marshaling", func(t *testing.T) {
-		network := TrustedNetworkResource{
+	t.Run("TrustedNetwork JSON marshaling", func(t *testing.T) {
+		network := trustednetwork.TrustedNetwork{
 			ID:               "tn-123",
 			Name:             "Corporate Network",
 			NetworkID:        "corp-network-id-12345",
-			MicroTenantID:    "mt-001",
-			MicroTenantName:  "Production",
 			ZscalerCloud:     "zscaler.net",
 			MasterCustomerID: "customer-123",
 		}
@@ -43,7 +28,7 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 		data, err := json.Marshal(network)
 		require.NoError(t, err)
 
-		var unmarshaled TrustedNetworkResource
+		var unmarshaled trustednetwork.TrustedNetwork
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -52,7 +37,7 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 		assert.Equal(t, network.NetworkID, unmarshaled.NetworkID)
 	})
 
-	t.Run("TrustedNetworkResource JSON unmarshaling from API response", func(t *testing.T) {
+	t.Run("TrustedNetwork JSON unmarshaling from API response", func(t *testing.T) {
 		apiResponse := `{
 			"id": "tn-456",
 			"name": "Branch Office Network",
@@ -66,7 +51,7 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 			"masterCustomerId": "customer-456"
 		}`
 
-		var network TrustedNetworkResource
+		var network trustednetwork.TrustedNetwork
 		err := json.Unmarshal([]byte(apiResponse), &network)
 		require.NoError(t, err)
 
@@ -93,8 +78,8 @@ func TestTrustedNetwork_ResponseParsing(t *testing.T) {
 		}`
 
 		type ListResponse struct {
-			List       []TrustedNetworkResource `json:"list"`
-			TotalPages int                      `json:"totalPages"`
+			List       []trustednetwork.TrustedNetwork `json:"list"`
+			TotalPages int                             `json:"totalPages"`
 		}
 
 		var listResp ListResponse
@@ -176,8 +161,7 @@ func TestTrustedNetwork_SpecialCases(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Network ID format validation", func(t *testing.T) {
-		// Network IDs typically follow a specific format
-		network := TrustedNetworkResource{
+		network := trustednetwork.TrustedNetwork{
 			ID:        "tn-123",
 			Name:      "Formatted Network",
 			NetworkID: "ABC123-DEF456-GHI789",
@@ -186,33 +170,31 @@ func TestTrustedNetwork_SpecialCases(t *testing.T) {
 		data, err := json.Marshal(network)
 		require.NoError(t, err)
 
-		var unmarshaled TrustedNetworkResource
+		var unmarshaled trustednetwork.TrustedNetwork
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
 		assert.Equal(t, "ABC123-DEF456-GHI789", unmarshaled.NetworkID)
 	})
 
-	t.Run("Microtenant configuration", func(t *testing.T) {
-		network := TrustedNetworkResource{
-			ID:              "tn-123",
-			Name:            "Tenant Network",
-			MicroTenantID:   "mt-001",
-			MicroTenantName: "Tenant One",
+	t.Run("Network with domain", func(t *testing.T) {
+		network := trustednetwork.TrustedNetwork{
+			ID:     "tn-123",
+			Name:   "Domain Network",
+			Domain: "example.com",
 		}
 
 		data, err := json.Marshal(network)
 		require.NoError(t, err)
 
-		assert.Contains(t, string(data), `"microtenantId":"mt-001"`)
-		assert.Contains(t, string(data), `"microtenantName":"Tenant One"`)
+		assert.Contains(t, string(data), `"domain":"example.com"`)
 	})
 
 	t.Run("Zscaler cloud configuration", func(t *testing.T) {
 		clouds := []string{"zscaler.net", "zscalerone.net", "zscalertwo.net", "zscloud.net"}
 
 		for _, cloud := range clouds {
-			network := TrustedNetworkResource{
+			network := trustednetwork.TrustedNetwork{
 				ID:           "tn-" + cloud,
 				Name:         cloud + " Network",
 				ZscalerCloud: cloud,
@@ -225,4 +207,3 @@ func TestTrustedNetwork_SpecialCases(t *testing.T) {
 		}
 	})
 }
-

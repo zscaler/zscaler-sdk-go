@@ -9,45 +9,16 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_controller"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_link"
 )
-
-// UserPortalLink represents the user portal link for testing
-type UserPortalLink struct {
-	ID              string                  `json:"id,omitempty"`
-	Name            string                  `json:"name,omitempty"`
-	Description     string                  `json:"description,omitempty"`
-	Enabled         bool                    `json:"enabled,omitempty"`
-	ApplicationID   string                  `json:"applicationId,omitempty"`
-	Link            string                  `json:"link,omitempty"`
-	LinkPath        string                  `json:"linkPath,omitempty"`
-	Protocol        string                  `json:"protocol,omitempty"`
-	IconText        string                  `json:"iconText,omitempty"`
-	UserPortalID    string                  `json:"userPortalId,omitempty"`
-	UserPortals     []UserPortalLinkPortal  `json:"userPortals"`
-	MicrotenantID   string                  `json:"microtenantId,omitempty"`
-	MicrotenantName string                  `json:"microtenantName,omitempty"`
-	CreationTime    string                  `json:"creationTime,omitempty"`
-	ModifiedTime    string                  `json:"modifiedTime,omitempty"`
-}
-
-// UserPortalLinkPortal represents a portal reference
-type UserPortalLinkPortal struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-// PortalLinkBulkRequest represents bulk request
-type PortalLinkBulkRequest struct {
-	UserPortalLinks []UserPortalLink       `json:"userPortalLinks"`
-	UserPortals     []UserPortalLinkPortal `json:"userPortals"`
-}
 
 // TestUserPortalLink_Structure tests the struct definitions
 func TestUserPortalLink_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("UserPortalLink JSON marshaling", func(t *testing.T) {
-		link := UserPortalLink{
+		link := portal_link.UserPortalLink{
 			ID:            "link-123",
 			Name:          "Application Link",
 			Description:   "Link to internal application",
@@ -57,7 +28,7 @@ func TestUserPortalLink_Structure(t *testing.T) {
 			LinkPath:      "/app",
 			Protocol:      "HTTPS",
 			UserPortalID:  "portal-001",
-			UserPortals: []UserPortalLinkPortal{
+			UserPortals: []portal_controller.UserPortalController{
 				{ID: "portal-001", Name: "Main Portal"},
 			},
 		}
@@ -65,7 +36,7 @@ func TestUserPortalLink_Structure(t *testing.T) {
 		data, err := json.Marshal(link)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalLink
+		var unmarshaled portal_link.UserPortalLink
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -97,7 +68,7 @@ func TestUserPortalLink_Structure(t *testing.T) {
 			"modifiedTime": "1612137600000"
 		}`
 
-		var link UserPortalLink
+		var link portal_link.UserPortalLink
 		err := json.Unmarshal([]byte(apiResponse), &link)
 		require.NoError(t, err)
 
@@ -108,12 +79,12 @@ func TestUserPortalLink_Structure(t *testing.T) {
 	})
 
 	t.Run("PortalLinkBulkRequest JSON marshaling", func(t *testing.T) {
-		bulk := PortalLinkBulkRequest{
-			UserPortalLinks: []UserPortalLink{
+		bulk := portal_link.PortalLinkBulkRequest{
+			UserPortalLinks: []portal_link.UserPortalLink{
 				{ID: "link-1", Name: "Link 1"},
 				{ID: "link-2", Name: "Link 2"},
 			},
-			UserPortals: []UserPortalLinkPortal{
+			UserPortals: []portal_controller.UserPortalController{
 				{ID: "portal-1"},
 			},
 		}
@@ -121,7 +92,7 @@ func TestUserPortalLink_Structure(t *testing.T) {
 		data, err := json.Marshal(bulk)
 		require.NoError(t, err)
 
-		var unmarshaled PortalLinkBulkRequest
+		var unmarshaled portal_link.PortalLinkBulkRequest
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -221,7 +192,7 @@ func TestUserPortalLink_SpecialCases(t *testing.T) {
 		protocols := []string{"HTTP", "HTTPS", "RDP", "SSH", "VNC"}
 
 		for _, protocol := range protocols {
-			link := UserPortalLink{
+			link := portal_link.UserPortalLink{
 				ID:       "link-" + protocol,
 				Name:     protocol + " Link",
 				Protocol: protocol,
@@ -235,10 +206,10 @@ func TestUserPortalLink_SpecialCases(t *testing.T) {
 	})
 
 	t.Run("Link with multiple portals", func(t *testing.T) {
-		link := UserPortalLink{
+		link := portal_link.UserPortalLink{
 			ID:   "link-multi",
 			Name: "Multi-Portal Link",
-			UserPortals: []UserPortalLinkPortal{
+			UserPortals: []portal_controller.UserPortalController{
 				{ID: "portal-1", Name: "Portal 1"},
 				{ID: "portal-2", Name: "Portal 2"},
 				{ID: "portal-3", Name: "Portal 3"},
@@ -248,11 +219,10 @@ func TestUserPortalLink_SpecialCases(t *testing.T) {
 		data, err := json.Marshal(link)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalLink
+		var unmarshaled portal_link.UserPortalLink
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
 		assert.Len(t, unmarshaled.UserPortals, 3)
 	})
 }
-

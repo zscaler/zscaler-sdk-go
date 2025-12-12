@@ -9,30 +9,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/aup"
 )
-
-// UserPortalAup represents the AUP for testing
-type UserPortalAup struct {
-	ID              string `json:"id,omitempty"`
-	Name            string `json:"name,omitempty"`
-	Description     string `json:"description,omitempty"`
-	Aup             string `json:"aup,omitempty"`
-	Email           string `json:"email,omitempty"`
-	PhoneNum        string `json:"phoneNum,omitempty"`
-	Enabled         bool   `json:"enabled,omitempty"`
-	MicrotenantID   string `json:"microtenantId,omitempty"`
-	MicrotenantName string `json:"microtenantName,omitempty"`
-	CreationTime    string `json:"creationTime,omitempty"`
-	ModifiedBy      string `json:"modifiedBy,omitempty"`
-	ModifiedTime    string `json:"modifiedTime,omitempty"`
-}
 
 // TestUserPortalAup_Structure tests the struct definitions
 func TestUserPortalAup_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("UserPortalAup JSON marshaling", func(t *testing.T) {
-		aup := UserPortalAup{
+		userAup := aup.UserPortalAup{
 			ID:          "aup-123",
 			Name:        "Corporate AUP",
 			Description: "Acceptable Use Policy for corporate users",
@@ -42,15 +27,15 @@ func TestUserPortalAup_Structure(t *testing.T) {
 			Enabled:     true,
 		}
 
-		data, err := json.Marshal(aup)
+		data, err := json.Marshal(userAup)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalAup
+		var unmarshaled aup.UserPortalAup
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
-		assert.Equal(t, aup.ID, unmarshaled.ID)
-		assert.Equal(t, aup.Name, unmarshaled.Name)
+		assert.Equal(t, userAup.ID, unmarshaled.ID)
+		assert.Equal(t, userAup.Name, unmarshaled.Name)
 		assert.True(t, unmarshaled.Enabled)
 		assert.Contains(t, unmarshaled.Aup, "company policies")
 	})
@@ -70,14 +55,14 @@ func TestUserPortalAup_Structure(t *testing.T) {
 			"modifiedTime": "1612137600000"
 		}`
 
-		var aup UserPortalAup
-		err := json.Unmarshal([]byte(apiResponse), &aup)
+		var userAup aup.UserPortalAup
+		err := json.Unmarshal([]byte(apiResponse), &userAup)
 		require.NoError(t, err)
 
-		assert.Equal(t, "aup-456", aup.ID)
-		assert.Equal(t, "Guest AUP", aup.Name)
-		assert.True(t, aup.Enabled)
-		assert.Equal(t, "mt-001", aup.MicrotenantID)
+		assert.Equal(t, "aup-456", userAup.ID)
+		assert.Equal(t, "Guest AUP", userAup.Name)
+		assert.True(t, userAup.Enabled)
+		assert.Equal(t, "mt-001", userAup.MicrotenantID)
 	})
 }
 
@@ -96,8 +81,8 @@ func TestUserPortalAup_ResponseParsing(t *testing.T) {
 		}`
 
 		type ListResponse struct {
-			List       []UserPortalAup `json:"list"`
-			TotalPages int             `json:"totalPages"`
+			List       []aup.UserPortalAup `json:"list"`
+			TotalPages int                 `json:"totalPages"`
 		}
 
 		var listResp ListResponse
@@ -211,16 +196,16 @@ func TestUserPortalAup_SpecialCases(t *testing.T) {
 		All users must comply with this policy at all times.
 		`
 
-		aup := UserPortalAup{
+		userAup := aup.UserPortalAup{
 			ID:   "aup-long",
 			Name: "Detailed AUP",
 			Aup:  longContent,
 		}
 
-		data, err := json.Marshal(aup)
+		data, err := json.Marshal(userAup)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalAup
+		var unmarshaled aup.UserPortalAup
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -229,20 +214,19 @@ func TestUserPortalAup_SpecialCases(t *testing.T) {
 	})
 
 	t.Run("Disabled AUP", func(t *testing.T) {
-		aup := UserPortalAup{
+		userAup := aup.UserPortalAup{
 			ID:      "aup-disabled",
 			Name:    "Disabled AUP",
 			Enabled: false,
 		}
 
-		data, err := json.Marshal(aup)
+		data, err := json.Marshal(userAup)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalAup
+		var unmarshaled aup.UserPortalAup
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
 		assert.False(t, unmarshaled.Enabled)
 	})
 }
-

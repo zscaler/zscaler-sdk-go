@@ -1,0 +1,136 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+  schedule:
+    # Run daily at 6 AM UTC (instead of integration tests)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.24"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run all unit tests with coverage
+        run: |
+          go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic ./tests/unit/... -timeout 120s
+          go tool cover -func unit-coverage.out | grep total:
+
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./unit-coverage.out
+          flags: unit
+          name: unit-tests
+          fail_ci_if_error: false
+          verbose: true
+
+      # Optional: Upload test results for Codecov Test Analytics
+      - name: Run tests with JUnit output
+        run: |
+          go install gotest.tools/gotestsum@latest
+          gotestsum --junitfile junit.xml --format testname -- -v -race ./tests/unit/... -timeout 120s
+        continue-on-error: true
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./junit.xml
+          flags: unit
+          name: unit-test-results
+          fail_ci_if_error: false
+
+  # Individual product unit tests for granular coverage reporting
+  unit-tests-zpa:
+    name: ZPA Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goVersion: ["1.24"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run ZPA unit tests
+        run: |
+          go test -v -race -cover -coverprofile=unit-zpa-coverage.out -covermode=atomic ./tests/unit/zpa/... -timeout 60s
+          go tool cover -func unit-zpa-coverage.out | grep total:
+
+      - name: Upload ZPA coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./unit-zpa-coverage.out
+          flags: unit-zpa
+          name: unit-tests-zpa
+          fail_ci_if_error: false
+

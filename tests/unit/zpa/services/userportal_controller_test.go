@@ -9,43 +9,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_controller"
 )
-
-// UserPortalController represents the user portal controller for testing
-type UserPortalController struct {
-	ID                      string `json:"id,omitempty"`
-	Name                    string `json:"name,omitempty"`
-	Description             string `json:"description,omitempty"`
-	Enabled                 bool   `json:"enabled,omitempty"`
-	Domain                  string `json:"domain,omitempty"`
-	CertificateID           string `json:"certificateId,omitempty"`
-	CertificateName         string `json:"certificateName,omitempty"`
-	ExtDomain               string `json:"extDomain,omitempty"`
-	ExtDomainName           string `json:"extDomainName,omitempty"`
-	ExtDomainTranslation    string `json:"extDomainTranslation,omitempty"`
-	ExtLabel                string `json:"extLabel,omitempty"`
-	ImageData               string `json:"imageData,omitempty"`
-	UserNotification        string `json:"userNotification,omitempty"`
-	UserNotificationEnabled bool   `json:"userNotificationEnabled,omitempty"`
-	ManagedByZS             bool   `json:"managedByZs,omitempty"`
-	MicrotenantID           string `json:"microtenantId,omitempty"`
-	MicrotenantName         string `json:"microtenantName,omitempty"`
-	CreationTime            string `json:"creationTime,omitempty"`
-	ModifiedTime            string `json:"modifiedTime,omitempty"`
-}
 
 // TestUserPortalController_Structure tests the struct definitions
 func TestUserPortalController_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("UserPortalController JSON marshaling", func(t *testing.T) {
-		portal := UserPortalController{
+		portal := portal_controller.UserPortalController{
 			ID:                      "portal-123",
 			Name:                    "Corporate User Portal",
 			Description:             "Main portal for corporate users",
 			Enabled:                 true,
 			Domain:                  "portal.company.com",
-			CertificateID:           "cert-001",
+			CertificateId:           "cert-001",
 			CertificateName:         "Corporate Cert",
 			UserNotification:        "Welcome to the User Portal",
 			UserNotificationEnabled: true,
@@ -54,7 +32,7 @@ func TestUserPortalController_Structure(t *testing.T) {
 		data, err := json.Marshal(portal)
 		require.NoError(t, err)
 
-		var unmarshaled UserPortalController
+		var unmarshaled portal_controller.UserPortalController
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -84,7 +62,7 @@ func TestUserPortalController_Structure(t *testing.T) {
 			"modifiedTime": "1612137600000"
 		}`
 
-		var portal UserPortalController
+		var portal portal_controller.UserPortalController
 		err := json.Unmarshal([]byte(apiResponse), &portal)
 		require.NoError(t, err)
 
@@ -159,4 +137,3 @@ func TestUserPortalController_MockServerOperations(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 	})
 }
-

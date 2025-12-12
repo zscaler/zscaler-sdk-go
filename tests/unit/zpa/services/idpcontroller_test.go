@@ -9,60 +9,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 )
-
-// IdpController represents the IDP controller structure for testing
-type IdpController struct {
-	ID                     string          `json:"id,omitempty"`
-	Name                   string          `json:"name,omitempty"`
-	Description            string          `json:"description,omitempty"`
-	IdpEntityID            string          `json:"idpEntityId,omitempty"`
-	LoginURL               string          `json:"loginUrl,omitempty"`
-	AdminSPSigningCertID   string          `json:"adminSpSigningCertId,omitempty"`
-	SignSamlRequest        string          `json:"signSamlRequest,omitempty"`
-	UseCustomSPMetadata    bool            `json:"useCustomSpMetadata"`
-	SsoType                []string        `json:"ssoType,omitempty"`
-	DomainList             []string        `json:"domainList,omitempty"`
-	Enabled                bool            `json:"enabled"`
-	EnableScimBasedPolicy  bool            `json:"enableScimBasedPolicy"`
-	DisableSamlBasedPolicy bool            `json:"disableSamlBasedPolicy"`
-	EnableArbitraryAuthDomains bool        `json:"enableArbitraryAuthDomains"`
-	ForceAuth              bool            `json:"forceAuth"`
-	AutoProvision          string          `json:"autoProvision,omitempty"`
-	CreationTime           string          `json:"creationTime,omitempty"`
-	ModifiedBy             string          `json:"modifiedBy,omitempty"`
-	ModifiedTime           string          `json:"modifiedTime,omitempty"`
-	MicroTenantID          string          `json:"microtenantId,omitempty"`
-	MicroTenantName        string          `json:"microtenantName,omitempty"`
-	ReauthOnUserUpdate     bool            `json:"reauthOnUserUpdate"`
-	RedirectBinding        bool            `json:"redirectBinding"`
-	ScimEnabled            bool            `json:"scimEnabled"`
-	ScimServiceProviderEndpoint string     `json:"scimServiceProviderEndpoint,omitempty"`
-	ScimSharedSecretExists bool            `json:"scimSharedSecretExists"`
-	AdminMetadata          AdminMetadata   `json:"adminMetadata,omitempty"`
-	UserMetadata           UserMetadata    `json:"userMetadata,omitempty"`
-}
-
-type AdminMetadata struct {
-	CertificateURL string `json:"certificateUrl,omitempty"`
-	SpEntityID     string `json:"spEntityId,omitempty"`
-	SpMetadataURL  string `json:"spMetadataUrl,omitempty"`
-	SpPostURL      string `json:"spPostUrl,omitempty"`
-}
-
-type UserMetadata struct {
-	CertificateURL string `json:"certificateUrl,omitempty"`
-	SpEntityID     string `json:"spEntityId,omitempty"`
-	SpMetadataURL  string `json:"spMetadataUrl,omitempty"`
-	SpPostURL      string `json:"spPostUrl,omitempty"`
-}
 
 // TestIdpController_Structure tests the struct definitions
 func TestIdpController_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("IdpController JSON marshaling", func(t *testing.T) {
-		idp := IdpController{
+		idp := idpcontroller.IdpController{
 			ID:                    "idp-123",
 			Name:                  "Okta IDP",
 			Description:           "Okta Identity Provider",
@@ -70,7 +25,7 @@ func TestIdpController_Structure(t *testing.T) {
 			LoginURL:              "https://okta.example.com/login",
 			SignSamlRequest:       "1",
 			SsoType:               []string{"USER", "ADMIN"},
-			DomainList:            []string{"example.com", "test.com"},
+			Domainlist:            []string{"example.com", "test.com"},
 			Enabled:               true,
 			EnableScimBasedPolicy: true,
 			ForceAuth:             false,
@@ -81,7 +36,7 @@ func TestIdpController_Structure(t *testing.T) {
 		data, err := json.Marshal(idp)
 		require.NoError(t, err)
 
-		var unmarshaled IdpController
+		var unmarshaled idpcontroller.IdpController
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -89,7 +44,7 @@ func TestIdpController_Structure(t *testing.T) {
 		assert.Equal(t, idp.Name, unmarshaled.Name)
 		assert.Equal(t, idp.IdpEntityID, unmarshaled.IdpEntityID)
 		assert.ElementsMatch(t, idp.SsoType, unmarshaled.SsoType)
-		assert.ElementsMatch(t, idp.DomainList, unmarshaled.DomainList)
+		assert.ElementsMatch(t, idp.Domainlist, unmarshaled.Domainlist)
 	})
 
 	t.Run("IdpController JSON unmarshaling from API response", func(t *testing.T) {
@@ -105,7 +60,7 @@ func TestIdpController_Structure(t *testing.T) {
 			"enabled": true,
 			"enableScimBasedPolicy": true,
 			"disableSamlBasedPolicy": false,
-			"enableArbitraryAuthDomains": false,
+			"enableArbitraryAuthDomains": "false",
 			"forceAuth": true,
 			"autoProvision": "SCIM_HYBRID",
 			"creationTime": "1609459200000",
@@ -130,7 +85,7 @@ func TestIdpController_Structure(t *testing.T) {
 			}
 		}`
 
-		var idp IdpController
+		var idp idpcontroller.IdpController
 		err := json.Unmarshal([]byte(apiResponse), &idp)
 		require.NoError(t, err)
 
@@ -145,7 +100,7 @@ func TestIdpController_Structure(t *testing.T) {
 	})
 
 	t.Run("AdminMetadata structure", func(t *testing.T) {
-		metadata := AdminMetadata{
+		metadata := idpcontroller.AdminMetadata{
 			CertificateURL: "https://cert.example.com",
 			SpEntityID:     "sp-entity-123",
 			SpMetadataURL:  "https://metadata.example.com",
@@ -155,7 +110,7 @@ func TestIdpController_Structure(t *testing.T) {
 		data, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		var unmarshaled AdminMetadata
+		var unmarshaled idpcontroller.AdminMetadata
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -178,8 +133,8 @@ func TestIdpController_ResponseParsing(t *testing.T) {
 		}`
 
 		type ListResponse struct {
-			List       []IdpController `json:"list"`
-			TotalPages int             `json:"totalPages"`
+			List       []idpcontroller.IdpController `json:"list"`
+			TotalPages int                           `json:"totalPages"`
 		}
 
 		var listResp ListResponse
@@ -284,7 +239,7 @@ func TestIdpController_SpecialCases(t *testing.T) {
 	t.Parallel()
 
 	t.Run("IDP with SCIM enabled", func(t *testing.T) {
-		idp := IdpController{
+		idp := idpcontroller.IdpController{
 			ID:                          "idp-123",
 			Name:                        "SCIM IDP",
 			ScimEnabled:                 true,
@@ -301,7 +256,7 @@ func TestIdpController_SpecialCases(t *testing.T) {
 	})
 
 	t.Run("IDP with multiple SSO types", func(t *testing.T) {
-		idp := IdpController{
+		idp := idpcontroller.IdpController{
 			ID:      "idp-123",
 			Name:    "Multi SSO IDP",
 			SsoType: []string{"USER", "ADMIN"},
@@ -310,7 +265,7 @@ func TestIdpController_SpecialCases(t *testing.T) {
 		data, err := json.Marshal(idp)
 		require.NoError(t, err)
 
-		var unmarshaled IdpController
+		var unmarshaled idpcontroller.IdpController
 		err = json.Unmarshal(data, &unmarshaled)
 		require.NoError(t, err)
 
@@ -320,7 +275,7 @@ func TestIdpController_SpecialCases(t *testing.T) {
 	})
 
 	t.Run("IDP with force auth", func(t *testing.T) {
-		idp := IdpController{
+		idp := idpcontroller.IdpController{
 			ID:        "idp-123",
 			Name:      "Force Auth IDP",
 			ForceAuth: true,
@@ -333,24 +288,24 @@ func TestIdpController_SpecialCases(t *testing.T) {
 	})
 
 	t.Run("IDP with arbitrary auth domains", func(t *testing.T) {
-		idp := IdpController{
+		idp := idpcontroller.IdpController{
 			ID:                         "idp-123",
 			Name:                       "Arbitrary Domains IDP",
-			EnableArbitraryAuthDomains: true,
-			DomainList:                 []string{"*"},
+			EnableArbitraryAuthDomains: "true",
+			Domainlist:                 []string{"*"},
 		}
 
 		data, err := json.Marshal(idp)
 		require.NoError(t, err)
 
-		assert.Contains(t, string(data), `"enableArbitraryAuthDomains":true`)
+		assert.Contains(t, string(data), `"enableArbitraryAuthDomains":"true"`)
 	})
 
 	t.Run("Auto provision modes", func(t *testing.T) {
 		modes := []string{"SCIM_ONLY", "SAML_ONLY", "SCIM_HYBRID", "DISABLED"}
 
 		for _, mode := range modes {
-			idp := IdpController{
+			idp := idpcontroller.IdpController{
 				ID:            "idp-" + mode,
 				Name:          mode + " IDP",
 				AutoProvision: mode,
@@ -363,4 +318,3 @@ func TestIdpController_SpecialCases(t *testing.T) {
 		}
 	})
 }
-
