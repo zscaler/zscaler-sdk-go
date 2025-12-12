@@ -23,12 +23,23 @@ coverage:
         threshold: 1%
         informational: false
         only_pulls: false
+      # Unit test coverage - primary coverage metric
+      unit:
+        target: 80%
+        threshold: 2%
+        flags:
+          - unit
+        informational: false
     patch:
       default:
         target: auto
         threshold: 1%
         informational: false
         only_pulls: false
+      unit:
+        target: 70%
+        flags:
+          - unit
 
 parsers:
   go:
@@ -41,27 +52,80 @@ comment:
   require_base: false
   require_head: true
 
+# Coverage flags for different test types
 flags:
+  # Unit test flags (primary - these are used for coverage calculation)
+  unit:
+    paths:
+      - zscaler/
+    carryforward: true
+
+  unit-zpa:
+    paths:
+      - zscaler/zpa/
+    carryforward: true
+
+  unit-zia:
+    paths:
+      - zscaler/zia/
+    carryforward: true
+
+  unit-zdx:
+    paths:
+      - zscaler/zdx/
+    carryforward: true
+
+  unit-zcc:
+    paths:
+      - zscaler/zcc/
+    carryforward: true
+
+  unit-ztw:
+    paths:
+      - zscaler/ztw/
+    carryforward: true
+
+  unit-zwa:
+    paths:
+      - zscaler/zwa/
+    carryforward: true
+
+  unit-zidentity:
+    paths:
+      - zscaler/zidentity/
+    carryforward: true
+
+  unit-oneapi:
+    paths:
+      - zscaler/
+    carryforward: true
+
+  # Integration test flags (secondary - run selectively)
   zia:
     paths:
       - zscaler/zia/
     carryforward: true
+
   zpa:
     paths:
       - zscaler/zpa/
     carryforward: true
+
   zdx:
     paths:
       - zscaler/zdx/
     carryforward: true
+
   zcc:
     paths:
       - zscaler/zcc/
     carryforward: true
+
   ztw:
     paths:
       - zscaler/ztw/
     carryforward: true
+
   zidentity:
     paths:
       - zscaler/zidentity/
@@ -74,4 +138,3 @@ ignore:
   - "tests/**/*"
   - "local_test/**/*"
   - "examples/**/*"
-

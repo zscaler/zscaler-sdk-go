@@ -1,0 +1,456 @@
+// Package services provides unit tests for ZIdentity services
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/groups"
+)
+
+func TestGroups_Structure(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Groups JSON marshaling", func(t *testing.T) {
+		group := groups.Groups{
+			ID:                        "group-123",
+			Name:                      "Engineering Team",
+			Description:               "Engineering department group",
+			Source:                    "OKTA",
+			IsDynamicGroup:            false,
+			DynamicGroup:              false,
+			AdminEntitlementEnabled:   true,
+			ServiceEntitlementEnabled: true,
+			IDP: &common.IDNameDisplayName{
+				ID:          "idp-001",
+				Name:        "Okta",
+				DisplayName: "Okta Identity Provider",
+			},
+		}
+
+		data, err := json.Marshal(group)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":"group-123"`)
+		assert.Contains(t, string(data), `"name":"Engineering Team"`)
+		assert.Contains(t, string(data), `"source":"OKTA"`)
+		assert.Contains(t, string(data), `"adminEntitlementEnabled":true`)
+	})
+
+	t.Run("Groups JSON unmarshaling", func(t *testing.T) {
+		jsonData := `{
+			"id": "group-456",
+			"name": "Sales Team",
+			"description": "Sales department group",
+			"source": "AZURE_AD",
+			"isDynamicGroup": true,
+			"dynamicGroup": true,
+			"adminEntitlementEnabled": false,
+			"serviceEntitlementEnabled": true,
+			"idp": {
+				"id": "idp-002",
+				"name": "Azure AD",
+				"displayName": "Azure Active Directory"
+			}
+		}`
+
+		var group groups.Groups
+		err := json.Unmarshal([]byte(jsonData), &group)
+		require.NoError(t, err)
+
+		assert.Equal(t, "group-456", group.ID)
+		assert.Equal(t, "Sales Team", group.Name)
+		assert.Equal(t, "AZURE_AD", group.Source)
+		assert.True(t, group.IsDynamicGroup)
+		assert.True(t, group.DynamicGroup)
+		assert.False(t, group.AdminEntitlementEnabled)
+		assert.NotNil(t, group.IDP)
+		assert.Equal(t, "Azure AD", group.IDP.Name)
+	})
+
+	t.Run("UserID JSON marshaling", func(t *testing.T) {
+		userID := groups.UserID{
+			ID: "user-12345",
+		}
+
+		data, err := json.Marshal(userID)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":"user-12345"`)
+	})
+
+	t.Run("Groups without IDP", func(t *testing.T) {
+		group := groups.Groups{
+			ID:          "group-local",
+			Name:        "Local Group",
+			Description: "Locally managed group",
+			Source:      "LOCAL",
+		}
+
+		data, err := json.Marshal(group)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"name":"Local Group"`)
+		assert.Contains(t, string(data), `"source":"LOCAL"`)
+		assert.NotContains(t, string(data), `"idp"`)
+	})
+}
+
+func TestGroups_ResponseParsing(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Parse groups list response", func(t *testing.T) {
+		jsonResponse := `{
+			"results_total": 3,
+			"pageOffset": 0,
+			"pageSize": 100,
+			"next_link": "",
+			"records": [
+				{
+					"id": "group-001",
+					"name": "Administrators",
+					"source": "LOCAL",
+					"adminEntitlementEnabled": true
+				},
+				{
+					"id": "group-002",
+					"name": "Developers",
+					"source": "OKTA",
+					"isDynamicGroup": false
+				},
+				{
+					"id": "group-003",
+					"name": "All Employees",
+					"source": "AZURE_AD",
+					"isDynamicGroup": true,
+					"dynamicGroup": true
+				}
+			]
+		}`
+
+		var response common.PaginationResponse[groups.Groups]
+		err := json.Unmarshal([]byte(jsonResponse), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, 3, response.ResultsTotal)
+		assert.Len(t, response.Records, 3)
+		assert.Equal(t, "Administrators", response.Records[0].Name)
+		assert.Equal(t, "LOCAL", response.Records[0].Source)
+		assert.True(t, response.Records[2].IsDynamicGroup)
+	})
+
+	t.Run("Parse single group response", func(t *testing.T) {
+		jsonResponse := `{
+			"id": "group-detailed",
+			"name": "Security Team",
+			"description": "Information Security Team",
+			"source": "OKTA",
+			"isDynamicGroup": false,
+			"dynamicGroup": false,
+			"adminEntitlementEnabled": true,
+			"serviceEntitlementEnabled": true,
+			"idp": {
+				"id": "idp-okta",
+				"name": "Okta",
+				"displayName": "Corporate Okta"
+			}
+		}`
+
+		var group groups.Groups
+		err := json.Unmarshal([]byte(jsonResponse), &group)
+		require.NoError(t, err)
+
+		assert.Equal(t, "group-detailed", group.ID)
+		assert.Equal(t, "Security Team", group.Name)
+		assert.Equal(t, "Information Security Team", group.Description)
+		assert.True(t, group.AdminEntitlementEnabled)
+		assert.NotNil(t, group.IDP)
+		assert.Equal(t, "Corporate Okta", group.IDP.DisplayName)
+	})
+
+	t.Run("Parse paginated groups response", func(t *testing.T) {
+		jsonResponse := `{
+			"results_total": 250,
+			"pageOffset": 100,
+			"pageSize": 100,
+			"next_link": "/admin/api/v1/groups?offset=200&limit=100",
+			"prev_link": "/admin/api/v1/groups?offset=0&limit=100",
+			"records": [
+				{"id": "group-101", "name": "Group 101"},
+				{"id": "group-102", "name": "Group 102"}
+			]
+		}`
+
+		var response common.PaginationResponse[groups.Groups]
+		err := json.Unmarshal([]byte(jsonResponse), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, 250, response.ResultsTotal)
+		assert.Equal(t, 100, response.PageOffset)
+		assert.Equal(t, 100, response.PageSize)
+		assert.NotEmpty(t, response.NextLink)
+		assert.NotEmpty(t, response.PrevLink)
+		assert.Len(t, response.Records, 2)
+	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestGroups_Get_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID
+
+	server.On("GET", path, testcommon.SuccessResponse(groups.Groups{
+		ID:                      groupID,
+		Name:                    "Engineering Team",
+		Description:             "Engineering department group",
+		Source:                  "OKTA",
+		AdminEntitlementEnabled: true,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.Get(context.Background(), service, groupID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
+	assert.Equal(t, "Engineering Team", result.Name)
+	assert.True(t, result.AdminEntitlementEnabled)
+}
+
+func TestGroups_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Administrators", Source: "LOCAL"},
+			{ID: "group-2", Name: "Developers", Source: "OKTA"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "Administrators", results[0].Name)
+}
+
+func TestGroups_Create_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	newGroup := &groups.Groups{
+		Name:        "New Group",
+		Description: "A new group for testing",
+	}
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &groups.Groups{
+		ID:          "group-new",
+		Name:        "New Group",
+		Description: "A new group for testing",
+		Source:      "LOCAL",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Create(context.Background(), service, newGroup)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "group-new", result.ID)
+	assert.Equal(t, "New Group", result.Name)
+}
+
+func TestGroups_Delete_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.Delete(context.Background(), service, groupID)
+	require.NoError(t, err)
+}
+
+func TestGroups_AddUserToGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	userID := "user-67890"
+	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.AddUserToGroup(context.Background(), service, groupID, userID)
+	require.NoError(t, err)
+}
+
+func TestGroups_DeleteUserFromGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	userID := "user-67890"
+	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.DeleteUserFromGroup(context.Background(), service, groupID, userID)
+	require.NoError(t, err)
+}
+
+func TestGroups_Update_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/admin/api/v1/groups/12345"
+
+	updateGroup := &groups.Groups{
+		Name:        "Updated Group Name",
+		Description: "Updated description",
+	}
+
+	server.On("PUT", path, testcommon.SuccessResponse(&groups.Groups{
+		ID:          "12345",
+		Name:        "Updated Group Name",
+		Description: "Updated description",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Update(context.Background(), service, groupID, updateGroup)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Group Name", result.Name)
+}
+
+func TestGroups_GetUsers_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []interface{}{
+			map[string]interface{}{"id": "user-1", "displayName": "User One"},
+			map[string]interface{}{"id": "user-2", "displayName": "User Two"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetUsers(context.Background(), service, groupID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+}
+
+func TestGroups_AddUserListToGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &groups.Groups{
+		ID:   groupID,
+		Name: "Test Group",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.AddUserListToGroup(context.Background(), service, groupID, []string{"user-1", "user-2", "user-3"})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestGroups_ReplaceUserListInGroup_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("PUT", path, testcommon.SuccessResponse(&groups.Groups{
+		ID:   groupID,
+		Name: "Test Group",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.ReplaceUserListInGroup(context.Background(), service, groupID, []string{"user-1", "user-2"})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestGroups_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/admin/api/v1/groups"
+
+	// Mock first page with matching result
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 3,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering", Source: "OKTA"},
+			{ID: "group-2", Name: "Marketing", Source: "OKTA"},
+			{ID: "group-3", Name: "Engineering Team", Source: "LOCAL"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := groups.GetByName(context.Background(), service, "Engineering")
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2) // Should match "Engineering" and "Engineering Team"
+}
+

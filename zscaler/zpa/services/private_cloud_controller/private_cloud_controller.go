@@ -27,7 +27,7 @@ type PrivateCloudController struct {
 	ExpectedUpgradeTime              string                 `json:"expectedUpgradeTime,omitempty"`
 	ExpectedVersion                  string                 `json:"expectedVersion,omitempty"`
 	Fingerprint                      string                 `json:"fingerprint,omitempty"`
-	Id                               string                 `json:"id,omitempty"`
+	ID                               string                 `json:"id,omitempty"`
 	IpAcl                            []string               `json:"ipAcl,omitempty"`
 	IssuedCertId                     string                 `json:"issuedCertId,omitempty"`
 	LastBrokerConnectTime            string                 `json:"lastBrokerConnectTime,omitempty"`
