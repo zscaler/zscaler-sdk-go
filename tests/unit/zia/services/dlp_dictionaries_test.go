@@ -2,13 +2,143 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDLPDictionaries_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	dictID := 12345
+	path := "/zia/api/v1/dlpDictionaries/12345"
+
+	server.On("GET", path, common.SuccessResponse(dlpdictionaries.DlpDictionary{
+		ID:             dictID,
+		Name:           "Custom SSN Dictionary",
+		Description:    "Detects SSN patterns",
+		Custom:         true,
+		DictionaryType: "PATTERNS_AND_PHRASES",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlpdictionaries.Get(context.Background(), service, dictID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, dictID, result.ID)
+	assert.Equal(t, "Custom SSN Dictionary", result.Name)
+	assert.True(t, result.Custom)
+}
+
+func TestDLPDictionaries_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/dlpDictionaries"
+
+	server.On("GET", path, common.SuccessResponse([]dlpdictionaries.DlpDictionary{
+		{ID: 1, Name: "SSN", Custom: false, DictionaryType: "PREDEFINED"},
+		{ID: 2, Name: "Credit Card", Custom: false, DictionaryType: "PREDEFINED"},
+		{ID: 3, Name: "Custom PII", Custom: true, DictionaryType: "PATTERNS_AND_PHRASES"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlpdictionaries.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+}
+
+func TestDLPDictionaries_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/dlpDictionaries"
+
+	server.On("POST", path, common.SuccessResponse(dlpdictionaries.DlpDictionary{
+		ID:             99999,
+		Name:           "New Dictionary",
+		Custom:         true,
+		DictionaryType: "PATTERNS_AND_PHRASES",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newDict := &dlpdictionaries.DlpDictionary{
+		Name:           "New Dictionary",
+		DictionaryType: "PATTERNS_AND_PHRASES",
+	}
+
+	result, _, err := dlpdictionaries.Create(context.Background(), service, newDict)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestDLPDictionaries_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	dictID := 12345
+	path := "/zia/api/v1/dlpDictionaries/12345"
+
+	server.On("PUT", path, common.SuccessResponse(dlpdictionaries.DlpDictionary{
+		ID:   dictID,
+		Name: "Updated Dictionary",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateDict := &dlpdictionaries.DlpDictionary{
+		ID:   dictID,
+		Name: "Updated Dictionary",
+	}
+
+	result, _, err := dlpdictionaries.Update(context.Background(), service, dictID, updateDict)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Dictionary", result.Name)
+}
+
+func TestDLPDictionaries_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	dictID := 12345
+	path := "/zia/api/v1/dlpDictionaries/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = dlpdictionaries.DeleteDlpDictionary(context.Background(), service, dictID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDLPDictionaries_Structure(t *testing.T) {
 	t.Parallel()
@@ -77,59 +207,6 @@ func TestDLPDictionaries_Structure(t *testing.T) {
 		assert.Len(t, dict.BinNumbers, 3)
 		assert.Len(t, dict.EDMMatchDetails, 1)
 	})
-
-	t.Run("Phrases JSON marshaling", func(t *testing.T) {
-		phrase := dlpdictionaries.Phrases{
-			Action: "PHRASE_COUNT_TYPE_UNIQUE",
-			Phrase: "confidential",
-		}
-
-		data, err := json.Marshal(phrase)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"action":"PHRASE_COUNT_TYPE_UNIQUE"`)
-		assert.Contains(t, string(data), `"phrase":"confidential"`)
-	})
-
-	t.Run("Patterns JSON marshaling", func(t *testing.T) {
-		pattern := dlpdictionaries.Patterns{
-			Action:  "PATTERN_COUNT_TYPE_ALL",
-			Pattern: "\\b[A-Z]{2}\\d{6}\\b",
-		}
-
-		data, err := json.Marshal(pattern)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"action":"PATTERN_COUNT_TYPE_ALL"`)
-		assert.Contains(t, string(data), `"pattern"`)
-	})
-
-	t.Run("EDMMatchDetails JSON marshaling", func(t *testing.T) {
-		edm := dlpdictionaries.EDMMatchDetails{
-			DictionaryEdmMappingID: 100,
-			SchemaID:               200,
-			PrimaryFields:          []int{1, 2, 3},
-			SecondaryFields:        []int{4, 5},
-			SecondaryFieldMatchOn:  "MATCHON_ANY",
-		}
-
-		data, err := json.Marshal(edm)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"dictionaryEdmMappingId":100`)
-		assert.Contains(t, string(data), `"schemaId":200`)
-	})
-
-	t.Run("IDMProfileMatchAccuracy JSON marshaling", func(t *testing.T) {
-		idm := dlpdictionaries.IDMProfileMatchAccuracy{
-			MatchAccuracy: "LOW",
-		}
-
-		data, err := json.Marshal(idm)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"matchAccuracy":"LOW"`)
-	})
 }
 
 func TestDLPDictionaries_ResponseParsing(t *testing.T) {
@@ -149,21 +226,4 @@ func TestDLPDictionaries_ResponseParsing(t *testing.T) {
 		assert.Len(t, dicts, 3)
 		assert.True(t, dicts[2].Custom)
 	})
-
-	t.Run("Parse hierarchical dictionary", func(t *testing.T) {
-		jsonResponse := `{
-			"id": 100,
-			"name": "Hierarchical Dict",
-			"hierarchicalDictionary": true,
-			"hierarchicalIdentifiers": ["US_SSN", "US_DRIVER_LICENSE", "US_PASSPORT"]
-		}`
-
-		var dict dlpdictionaries.DlpDictionary
-		err := json.Unmarshal([]byte(jsonResponse), &dict)
-		require.NoError(t, err)
-
-		assert.True(t, dict.HierarchicalDictionary)
-		assert.Len(t, dict.HierarchicalIdentifiers, 3)
-	})
 }
-

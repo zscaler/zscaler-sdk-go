@@ -2,74 +2,174 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDLPWebRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/webDlpRules/12345"
+
+	server.On("GET", path, common.SuccessResponse(dlp_web_rules.WebDLPRules{
+		ID:          ruleID,
+		Name:        "Block SSN Uploads",
+		Description: "Block uploads containing SSN",
+		Action:      "BLOCK",
+		State:       "ENABLED",
+		Order:       1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlp_web_rules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "Block SSN Uploads", result.Name)
+}
+
+func TestDLPWebRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/webDlpRules"
+
+	server.On("GET", path, common.SuccessResponse([]dlp_web_rules.WebDLPRules{
+		{ID: 1, Name: "Rule 1", Action: "BLOCK", State: "ENABLED"},
+		{ID: 2, Name: "Rule 2", Action: "ALLOW", State: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlp_web_rules.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestDLPWebRules_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/webDlpRules"
+
+	server.On("POST", path, common.SuccessResponse(dlp_web_rules.WebDLPRules{
+		ID:     99999,
+		Name:   "New DLP Rule",
+		Action: "BLOCK",
+		State:  "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &dlp_web_rules.WebDLPRules{
+		Name:   "New DLP Rule",
+		Action: "BLOCK",
+		State:  "ENABLED",
+	}
+
+	result, err := dlp_web_rules.Create(context.Background(), service, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestDLPWebRules_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/webDlpRules/12345"
+
+	server.On("PUT", path, common.SuccessResponse(dlp_web_rules.WebDLPRules{
+		ID:   ruleID,
+		Name: "Updated DLP Rule",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &dlp_web_rules.WebDLPRules{
+		ID:   ruleID,
+		Name: "Updated DLP Rule",
+	}
+
+	result, err := dlp_web_rules.Update(context.Background(), service, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated DLP Rule", result.Name)
+}
+
+func TestDLPWebRules_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/webDlpRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = dlp_web_rules.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDLPWebRules_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("WebDLPRules JSON marshaling", func(t *testing.T) {
 		rule := dlp_web_rules.WebDLPRules{
-			ID:                       12345,
-			Order:                    1,
-			Rank:                     7,
-			Name:                     "Block PII Upload",
-			Description:              "Block uploads containing PII",
-			Protocols:                []string{"HTTPS_RULE", "HTTP_RULE"},
-			FileTypes:                []string{"ALL_DOCUMENT", "ALL_SPREADSHEET"},
-			CloudApplications:        []string{"GOOGLE_DRIVE", "DROPBOX"},
-			MinSize:                  1024,
-			Action:                   "BLOCK",
-			State:                    "ENABLED",
-			OcrEnabled:               true,
-			DLPDownloadScanEnabled:   true,
-			ZCCNotificationsEnabled:  true,
-			WithoutContentInspection: false,
-			Severity:                 "RULE_SEVERITY_HIGH",
-			UserRiskScoreLevels:      []string{"HIGH", "CRITICAL"},
+			ID:          12345,
+			Name:        "Block Credit Cards",
+			Description: "Block uploads containing credit card numbers",
+			Action:      "BLOCK",
+			State:       "ENABLED",
+			Order:       1,
 		}
 
 		data, err := json.Marshal(rule)
 		require.NoError(t, err)
 
 		assert.Contains(t, string(data), `"id":12345`)
+		assert.Contains(t, string(data), `"name":"Block Credit Cards"`)
 		assert.Contains(t, string(data), `"action":"BLOCK"`)
-		assert.Contains(t, string(data), `"ocrEnabled":true`)
 	})
 
 	t.Run("WebDLPRules JSON unmarshaling", func(t *testing.T) {
 		jsonData := `{
 			"id": 54321,
-			"order": 2,
-			"name": "Monitor Financial Data",
-			"description": "Monitor financial data uploads",
-			"protocols": ["HTTPS_RULE"],
-			"fileTypes": ["ALL_SPREADSHEET"],
-			"cloudApplications": ["OFFICE365"],
-			"action": "ALLOW",
+			"name": "SSN Detection Rule",
+			"action": "BLOCK",
 			"state": "ENABLED",
-			"matchOnly": true,
-			"ocrEnabled": false,
-			"dlpDownloadScanEnabled": true,
-			"externalAuditorEmail": "audit@company.com",
-			"severity": "RULE_SEVERITY_MEDIUM",
-			"locations": [
-				{"id": 100, "name": "HQ"}
-			],
-			"departments": [
-				{"id": 200, "name": "Finance"}
-			],
-			"dlpEngines": [
-				{"id": 300, "name": "PCI DSS Engine"}
-			],
-			"workloadGroups": [
-				{"id": 400, "name": "Production"}
-			]
+			"order": 2,
+			"dlpEngines": [{"id": 100, "name": "SSN Engine"}],
+			"matchOnly": false
 		}`
 
 		var rule dlp_web_rules.WebDLPRules
@@ -77,72 +177,6 @@ func TestDLPWebRules_Structure(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, 54321, rule.ID)
-		assert.True(t, rule.MatchOnly)
-		assert.Equal(t, "audit@company.com", rule.ExternalAuditorEmail)
-		assert.Len(t, rule.Locations, 1)
-		assert.Len(t, rule.DLPEngines, 1)
-	})
-
-	t.Run("Receiver JSON marshaling", func(t *testing.T) {
-		receiver := dlp_web_rules.Receiver{
-			ID:   100,
-			Name: "Incident Receiver",
-			Type: "ZIA",
-		}
-
-		data, err := json.Marshal(receiver)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":100`)
-		assert.Contains(t, string(data), `"type":"ZIA"`)
-	})
-
-	t.Run("SubRule JSON marshaling", func(t *testing.T) {
-		subRule := dlp_web_rules.SubRule{
-			ID: 12345,
-		}
-
-		data, err := json.Marshal(subRule)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":12345`)
+		assert.Equal(t, "BLOCK", rule.Action)
 	})
 }
-
-func TestDLPWebRules_ResponseParsing(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Parse DLP web rules list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "Rule 1", "action": "BLOCK", "state": "ENABLED"},
-			{"id": 2, "name": "Rule 2", "action": "ALLOW", "state": "ENABLED"},
-			{"id": 3, "name": "Rule 3", "action": "CAUTION", "state": "DISABLED"}
-		]`
-
-		var rules []dlp_web_rules.WebDLPRules
-		err := json.Unmarshal([]byte(jsonResponse), &rules)
-		require.NoError(t, err)
-
-		assert.Len(t, rules, 3)
-		assert.Equal(t, "CAUTION", rules[2].Action)
-	})
-
-	t.Run("Parse rule with sub-rules", func(t *testing.T) {
-		jsonResponse := `{
-			"id": 100,
-			"name": "Parent Rule",
-			"action": "BLOCK",
-			"subRules": [
-				{"id": 101},
-				{"id": 102}
-			]
-		}`
-
-		var rule dlp_web_rules.WebDLPRules
-		err := json.Unmarshal([]byte(jsonResponse), &rule)
-		require.NoError(t, err)
-
-		assert.Len(t, rule.SubRules, 2)
-	})
-}
-

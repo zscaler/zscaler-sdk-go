@@ -2,13 +2,79 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestDevices_GetDevice_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	deviceID := "12345"
+	path := "/zdx/v1/devices/" + deviceID
+
+	server.On("GET", path, common.SuccessResponse(devices.DeviceDetail{
+		ID:   12345,
+		Name: "LAPTOP-ENG-001",
+		Hardware: &devices.Hardware{
+			HWModel: "MacBook Pro",
+			HWMFG:   "Apple",
+		},
+		Software: &devices.Software{
+			OSName: "macOS",
+			OSVer:  "14.0",
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := devices.GetDevice(context.Background(), service, deviceID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 12345, result.ID)
+	assert.Equal(t, "LAPTOP-ENG-001", result.Name)
+	assert.Equal(t, "MacBook Pro", result.Hardware.HWModel)
+}
+
+func TestDevices_GetAllDevices_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zdx/v1/devices"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"devices": []devices.DeviceDetail{
+			{ID: 1, Name: "Device 1"},
+			{ID: 2, Name: "Device 2"},
+		},
+		"next_offset": nil,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	filters := devices.GetDevicesFilters{}
+	result, _, err := devices.GetAllDevices(context.Background(), service, filters)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestDevices_Structure(t *testing.T) {
 	t.Parallel()

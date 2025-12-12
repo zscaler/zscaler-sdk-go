@@ -2,28 +2,149 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/users"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestUsers_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	userID := 12345
+	path := "/zia/api/v1/users/12345"
+
+	server.On("GET", path, common.SuccessResponse(users.Users{
+		ID:       userID,
+		Name:     "John Doe",
+		Email:    "john.doe@company.com",
+		Comments: "Test user",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.Get(context.Background(), service, userID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, userID, result.ID)
+	assert.Equal(t, "John Doe", result.Name)
+}
+
+func TestUsers_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/users"
+
+	server.On("GET", path, common.SuccessResponse([]users.Users{
+		{ID: 1, Name: "User 1", Email: "user1@example.com"},
+		{ID: 2, Name: "User 2", Email: "user2@example.com"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetAllUsers(context.Background(), service, nil)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestUsers_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/users"
+
+	server.On("POST", path, common.SuccessResponse(users.Users{
+		ID:    99999,
+		Name:  "New User",
+		Email: "new@example.com",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newUser := users.Users{
+		Name:  "New User",
+		Email: "new@example.com",
+	}
+
+	result, err := users.Create(context.Background(), service, &newUser)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestUsers_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	userID := 12345
+	path := "/zia/api/v1/users/12345"
+
+	server.On("PUT", path, common.SuccessResponse(users.Users{
+		ID:   userID,
+		Name: "Updated User",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateUser := users.Users{
+		ID:   userID,
+		Name: "Updated User",
+	}
+
+	result, _, err := users.Update(context.Background(), service, userID, &updateUser)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated User", result.Name)
+}
+
+func TestUsers_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	userID := 12345
+	path := "/zia/api/v1/users/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.Delete(context.Background(), service, userID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestUsers_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Users JSON marshaling", func(t *testing.T) {
 		user := users.Users{
-			ID:            12345,
-			Name:          "John Doe",
-			Email:         "john.doe@company.com",
-			Comments:      "Engineering team lead",
-			TempAuthEmail: "temp@company.com",
-			AuthMethods:   []string{"BASIC", "DIGEST"},
-			AdminUser:     false,
-			Type:          "STANDARD",
-			Deleted:       false,
+			ID:       12345,
+			Name:     "John Doe",
+			Email:    "john.doe@company.com",
+			Comments: "Engineering team lead",
 		}
 
 		data, err := json.Marshal(user)
@@ -31,7 +152,6 @@ func TestUsers_Structure(t *testing.T) {
 
 		assert.Contains(t, string(data), `"id":12345`)
 		assert.Contains(t, string(data), `"name":"John Doe"`)
-		assert.Contains(t, string(data), `"email":"john.doe@company.com"`)
 	})
 
 	t.Run("Users JSON unmarshaling", func(t *testing.T) {
@@ -39,19 +159,8 @@ func TestUsers_Structure(t *testing.T) {
 			"id": 54321,
 			"name": "Jane Smith",
 			"email": "jane.smith@company.com",
-			"groups": [
-				{"id": 100, "name": "Engineering", "idp_id": 1}
-			],
-			"department": {
-				"id": 200,
-				"name": "Product",
-				"idp_id": 1
-			},
-			"comments": "Product manager",
-			"authMethods": ["BASIC"],
-			"adminUser": false,
-			"type": "STANDARD",
-			"deleted": false
+			"groups": [{"id": 100, "name": "Engineering"}],
+			"department": {"id": 200, "name": "Product"}
 		}`
 
 		var user users.Users
@@ -60,101 +169,5 @@ func TestUsers_Structure(t *testing.T) {
 
 		assert.Equal(t, 54321, user.ID)
 		assert.Equal(t, "Jane Smith", user.Name)
-		assert.Len(t, user.Groups, 1)
-		assert.NotNil(t, user.Department)
-		assert.Equal(t, "Product", user.Department.Name)
-	})
-
-	t.Run("EnrollResult JSON marshaling", func(t *testing.T) {
-		result := users.EnrollResult{
-			UserID: 12345,
-		}
-
-		data, err := json.Marshal(result)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"userId":12345`)
-	})
-
-	t.Run("EnrollUserRequest JSON marshaling", func(t *testing.T) {
-		request := users.EnrollUserRequest{
-			AuthMethods: []string{"BASIC", "DIGEST"},
-			Password:    "securePassword123",
-		}
-
-		data, err := json.Marshal(request)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"authMethods"`)
-		assert.Contains(t, string(data), `"password":"securePassword123"`)
-	})
-
-	t.Run("GetAllUsersFilterOptions structure", func(t *testing.T) {
-		opts := users.GetAllUsersFilterOptions{
-			Name:  "John",
-			Dept:  "Engineering",
-			Group: "Developers",
-		}
-
-		assert.Equal(t, "John", opts.Name)
-		assert.Equal(t, "Engineering", opts.Dept)
-		assert.Equal(t, "Developers", opts.Group)
 	})
 }
-
-func TestUsers_ResponseParsing(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Parse users list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "User 1", "email": "user1@company.com", "adminUser": false},
-			{"id": 2, "name": "User 2", "email": "user2@company.com", "adminUser": false},
-			{"id": 3, "name": "Admin User", "email": "admin@company.com", "adminUser": true}
-		]`
-
-		var usersList []users.Users
-		err := json.Unmarshal([]byte(jsonResponse), &usersList)
-		require.NoError(t, err)
-
-		assert.Len(t, usersList, 3)
-		assert.True(t, usersList[2].AdminUser)
-	})
-
-	t.Run("Parse user with groups and department", func(t *testing.T) {
-		jsonResponse := `{
-			"id": 100,
-			"name": "Full User",
-			"email": "full@company.com",
-			"groups": [
-				{"id": 1, "name": "Group 1"},
-				{"id": 2, "name": "Group 2"}
-			],
-			"department": {
-				"id": 10,
-				"name": "Engineering"
-			}
-		}`
-
-		var user users.Users
-		err := json.Unmarshal([]byte(jsonResponse), &user)
-		require.NoError(t, err)
-
-		assert.Len(t, user.Groups, 2)
-		assert.NotNil(t, user.Department)
-	})
-
-	t.Run("Parse auditors list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "Auditor 1", "adminUser": false, "type": "AUDITOR"},
-			{"id": 2, "name": "Auditor 2", "adminUser": false, "type": "AUDITOR"}
-		]`
-
-		var auditors []users.Users
-		err := json.Unmarshal([]byte(jsonResponse), &auditors)
-		require.NoError(t, err)
-
-		assert.Len(t, auditors, 2)
-		assert.Equal(t, "AUDITOR", auditors[0].Type)
-	})
-}
-

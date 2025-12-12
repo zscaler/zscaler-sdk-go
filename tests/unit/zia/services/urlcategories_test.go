@@ -2,14 +2,191 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	ziacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlcategories"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestURLCategories_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	categoryID := "CUSTOM_01"
+	path := "/zia/api/v1/urlCategories/" + categoryID
+
+	server.On("GET", path, common.SuccessResponse(urlcategories.URLCategory{
+		ID:             categoryID,
+		ConfiguredName: "Blocked Sites",
+		CustomCategory: true,
+		Description:    "Custom blocked sites",
+		SuperCategory:  "USER_DEFINED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.Get(context.Background(), service, categoryID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, categoryID, result.ID)
+	assert.Equal(t, "Blocked Sites", result.ConfiguredName)
+	assert.True(t, result.CustomCategory)
+}
+
+func TestURLCategories_GetAllCustomURLCategories_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories"
+
+	server.On("GET", path, common.SuccessResponse([]urlcategories.URLCategory{
+		{ID: "CUSTOM_01", ConfiguredName: "Custom 1", CustomCategory: true},
+		{ID: "CUSTOM_02", ConfiguredName: "Custom 2", CustomCategory: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetAllCustomURLCategories(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestURLCategories_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories"
+
+	server.On("POST", path, common.SuccessResponse(urlcategories.URLCategory{
+		ID:             "CUSTOM_NEW",
+		ConfiguredName: "New Category",
+		CustomCategory: true,
+		SuperCategory:  "USER_DEFINED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newCategory := &urlcategories.URLCategory{
+		ConfiguredName: "New Category",
+		SuperCategory:  "USER_DEFINED",
+		Urls:           []string{"blocked.example.com"},
+	}
+
+	result, err := urlcategories.CreateURLCategories(context.Background(), service, newCategory)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "CUSTOM_NEW", result.ID)
+}
+
+func TestURLCategories_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	categoryID := "CUSTOM_01"
+	path := "/zia/api/v1/urlCategories/" + categoryID
+
+	server.On("PUT", path, common.SuccessResponse(urlcategories.URLCategory{
+		ID:             categoryID,
+		ConfiguredName: "Updated Category",
+		CustomCategory: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateCategory := &urlcategories.URLCategory{
+		ID:             categoryID,
+		ConfiguredName: "Updated Category",
+		SuperCategory:  "USER_DEFINED",
+	}
+
+	result, _, err := urlcategories.UpdateURLCategories(context.Background(), service, categoryID, updateCategory, "")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Category", result.ConfiguredName)
+}
+
+func TestURLCategories_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	categoryID := "CUSTOM_01"
+	path := "/zia/api/v1/urlCategories/" + categoryID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = urlcategories.DeleteURLCategories(context.Background(), service, categoryID)
+
+	require.NoError(t, err)
+}
+
+func TestURLCategories_GetURLQuota_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// Note: SDK builds path as urlCategoriesEndpoint + "/" + urlQuotaHandler
+	// where urlQuotaHandler = "/urlQuota", resulting in double slash
+	path := "/zia/api/v1/urlCategories//urlQuota"
+
+	server.On("GET", path, common.SuccessResponse(urlcategories.URLQuota{
+		UniqueUrlsProvisioned: 5000,
+		RemainingUrlsQuota:    20000,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetURLQuota(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 5000, result.UniqueUrlsProvisioned)
+	assert.Equal(t, 20000, result.RemainingUrlsQuota)
+}
+
+func TestURLCategories_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories/lite"
+
+	server.On("GET", path, common.SuccessResponse([]urlcategories.URLCategory{
+		{ID: "ADULT_CONTENT", ConfiguredName: "Adult Content"},
+		{ID: "GAMBLING", ConfiguredName: "Gambling"},
+		{ID: "MALWARE", ConfiguredName: "Malware"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetAllLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestURLCategory_Structure(t *testing.T) {
 	t.Parallel()
@@ -78,7 +255,7 @@ func TestURLCategory_Structure(t *testing.T) {
 	t.Run("Scopes JSON marshaling", func(t *testing.T) {
 		scope := urlcategories.Scopes{
 			Type: "LOCATION",
-			ScopeEntities: []common.IDNameExtensions{
+			ScopeEntities: []ziacommon.IDNameExtensions{
 				{ID: 1, Name: "HQ"},
 			},
 		}
@@ -194,4 +371,3 @@ func TestURLCategories_ResponseParsing(t *testing.T) {
 		assert.Len(t, classifications[1].URLClassificationsWithSecurityAlert, 1)
 	})
 }
-

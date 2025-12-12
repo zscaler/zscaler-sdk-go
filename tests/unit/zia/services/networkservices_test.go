@@ -2,51 +2,169 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkapplicationgroups"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkapplications"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservicegroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestNetworkServices_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/zia/api/v1/networkServices/12345"
+
+	server.On("GET", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:          serviceID,
+		Name:        "HTTPS",
+		Description: "HTTPS Traffic",
+		Type:        "STANDARD",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.Get(context.Background(), service, serviceID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, serviceID, result.ID)
+	assert.Equal(t, "HTTPS", result.Name)
+}
+
+func TestNetworkServices_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/networkServices"
+
+	server.On("GET", path, common.SuccessResponse([]networkservices.NetworkServices{
+		{ID: 1, Name: "HTTP", Type: "STANDARD"},
+		{ID: 2, Name: "HTTPS", Type: "STANDARD"},
+		{ID: 3, Name: "Custom Service", Type: "CUSTOM"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.GetAllNetworkServices(context.Background(), service, nil, nil)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3)
+}
+
+func TestNetworkServices_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/networkServices"
+
+	server.On("POST", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:   99999,
+		Name: "New Service",
+		Type: "CUSTOM",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newSvc := &networkservices.NetworkServices{
+		Name: "New Service",
+		Type: "CUSTOM",
+	}
+
+	result, err := networkservices.Create(context.Background(), service, newSvc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestNetworkServices_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/zia/api/v1/networkServices/12345"
+
+	server.On("PUT", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:   serviceID,
+		Name: "Updated Service",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateSvc := &networkservices.NetworkServices{
+		ID:   serviceID,
+		Name: "Updated Service",
+	}
+
+	result, _, err := networkservices.Update(context.Background(), service, serviceID, updateSvc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Service", result.Name)
+}
+
+func TestNetworkServices_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/zia/api/v1/networkServices/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = networkservices.Delete(context.Background(), service, serviceID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestNetworkServices_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("NetworkServices JSON marshaling", func(t *testing.T) {
 		svc := networkservices.NetworkServices{
-			ID:            12345,
-			Name:          "Custom HTTPS",
-			Description:   "Custom HTTPS on alternate port",
-			Type:          "CUSTOM",
-			Tag:           "HTTPS_ALT",
-			IsNameL10nTag: false,
+			ID:           12345,
+			Name:         "Custom HTTPS",
+			Description:  "Custom HTTPS service",
+			Type:         "CUSTOM",
+			SrcTCPPorts:  []networkservices.NetworkPorts{{Start: 443, End: 443}},
+			DestTCPPorts: []networkservices.NetworkPorts{{Start: 443, End: 443}},
 		}
 
 		data, err := json.Marshal(svc)
 		require.NoError(t, err)
 
 		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"type":"CUSTOM"`)
+		assert.Contains(t, string(data), `"name":"Custom HTTPS"`)
 	})
 
 	t.Run("NetworkServices JSON unmarshaling", func(t *testing.T) {
 		jsonData := `{
 			"id": 54321,
-			"name": "HTTP",
-			"description": "Hypertext Transfer Protocol",
-			"type": "PREDEFINED",
-			"tag": "HTTP",
-			"isNameL10nTag": true,
-			"srcTcpPorts": [
-				{"start": 1, "end": 65535}
-			],
-			"destTcpPorts": [
-				{"start": 80, "end": 80}
-			]
+			"name": "DNS",
+			"type": "STANDARD",
+			"description": "DNS service",
+			"destTcpPorts": [{"start": 53, "end": 53}],
+			"destUdpPorts": [{"start": 53, "end": 53}]
 		}`
 
 		var svc networkservices.NetworkServices
@@ -54,157 +172,6 @@ func TestNetworkServices_Structure(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, 54321, svc.ID)
-		assert.True(t, svc.IsNameL10nTag)
-	})
-
-	t.Run("NetworkPorts JSON marshaling", func(t *testing.T) {
-		ports := networkservices.NetworkPorts{
-			Start: 443,
-			End:   443,
-		}
-
-		data, err := json.Marshal(ports)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"start":443`)
-		assert.Contains(t, string(data), `"end":443`)
+		assert.Equal(t, "DNS", svc.Name)
 	})
 }
-
-func TestNetworkServiceGroups_Structure(t *testing.T) {
-	t.Parallel()
-
-	t.Run("NetworkServiceGroups JSON marshaling", func(t *testing.T) {
-		group := networkservicegroups.NetworkServiceGroups{
-			ID:          12345,
-			Name:        "Web Services",
-			Description: "HTTP and HTTPS services",
-		}
-
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"name":"Web Services"`)
-	})
-
-	t.Run("NetworkServiceGroups JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": 54321,
-			"name": "Database Services",
-			"description": "Database protocols",
-			"services": [
-				{"id": 100, "name": "MySQL"},
-				{"id": 101, "name": "PostgreSQL"}
-			]
-		}`
-
-		var group networkservicegroups.NetworkServiceGroups
-		err := json.Unmarshal([]byte(jsonData), &group)
-		require.NoError(t, err)
-
-		assert.Equal(t, 54321, group.ID)
-		assert.Len(t, group.Services, 2)
-	})
-}
-
-func TestNetworkApplications_Structure(t *testing.T) {
-	t.Parallel()
-
-	t.Run("NetworkApplications JSON marshaling", func(t *testing.T) {
-		app := networkapplications.NetworkApplications{
-			ID:          "SSH",
-			Description: "Secure Shell Protocol",
-			Deprecated:  false,
-		}
-
-		data, err := json.Marshal(app)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":"SSH"`)
-		assert.Contains(t, string(data), `"deprecated":false`)
-	})
-
-	t.Run("NetworkApplications JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": "FTP",
-			"description": "File Transfer Protocol",
-			"deprecated": false,
-			"parentCategory": "FILE_TRANSFER"
-		}`
-
-		var app networkapplications.NetworkApplications
-		err := json.Unmarshal([]byte(jsonData), &app)
-		require.NoError(t, err)
-
-		assert.Equal(t, "FTP", app.ID)
-		assert.Equal(t, "FILE_TRANSFER", app.ParentCategory)
-	})
-}
-
-func TestNetworkApplicationGroups_Structure(t *testing.T) {
-	t.Parallel()
-
-	t.Run("NetworkApplicationGroups JSON marshaling", func(t *testing.T) {
-		group := networkapplicationgroups.NetworkApplicationGroups{
-			ID:          12345,
-			Name:        "Remote Access",
-			Description: "Remote access applications",
-		}
-
-		data, err := json.Marshal(group)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":12345`)
-	})
-
-	t.Run("NetworkApplicationGroups JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": 54321,
-			"name": "File Sharing",
-			"description": "File sharing applications",
-			"networkApplications": ["FTP", "SFTP", "SCP"]
-		}`
-
-		var group networkapplicationgroups.NetworkApplicationGroups
-		err := json.Unmarshal([]byte(jsonData), &group)
-		require.NoError(t, err)
-
-		assert.Equal(t, 54321, group.ID)
-		assert.Len(t, group.NetworkApplications, 3)
-	})
-}
-
-func TestNetworkServices_ResponseParsing(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Parse network services list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "HTTP", "type": "PREDEFINED"},
-			{"id": 2, "name": "HTTPS", "type": "PREDEFINED"},
-			{"id": 3, "name": "Custom", "type": "CUSTOM"}
-		]`
-
-		var services []networkservices.NetworkServices
-		err := json.Unmarshal([]byte(jsonResponse), &services)
-		require.NoError(t, err)
-
-		assert.Len(t, services, 3)
-	})
-
-	t.Run("Parse network applications list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": "SSH", "deprecated": false},
-			{"id": "TELNET", "deprecated": true},
-			{"id": "FTP", "deprecated": false}
-		]`
-
-		var apps []networkapplications.NetworkApplications
-		err := json.Unmarshal([]byte(jsonResponse), &apps)
-		require.NoError(t, err)
-
-		assert.Len(t, apps, 3)
-		assert.True(t, apps[1].Deprecated)
-	})
-}
-

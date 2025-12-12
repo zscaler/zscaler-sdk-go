@@ -2,13 +2,147 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestFirewallFilteringRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallFilteringRules/12345"
+
+	server.On("GET", path, common.SuccessResponse(filteringrules.FirewallFilteringRules{
+		ID:          ruleID,
+		Name:        "Block Malicious IPs",
+		Description: "Block known malicious IP addresses",
+		Action:      "BLOCK",
+		State:       "ENABLED",
+		Order:       1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "Block Malicious IPs", result.Name)
+	assert.Equal(t, "BLOCK", result.Action)
+}
+
+func TestFirewallFilteringRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules"
+
+	server.On("GET", path, common.SuccessResponse([]filteringrules.FirewallFilteringRules{
+		{ID: 1, Name: "Rule 1", Action: "ALLOW", State: "ENABLED"},
+		{ID: 2, Name: "Rule 2", Action: "BLOCK", State: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.GetAll(context.Background(), service, nil)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestFirewallFilteringRules_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules"
+
+	server.On("POST", path, common.SuccessResponse(filteringrules.FirewallFilteringRules{
+		ID:     99999,
+		Name:   "New Rule",
+		Action: "ALLOW",
+		State:  "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := filteringrules.FirewallFilteringRules{
+		Name:   "New Rule",
+		Action: "ALLOW",
+		State:  "ENABLED",
+	}
+
+	result, err := filteringrules.Create(context.Background(), service, &newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestFirewallFilteringRules_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallFilteringRules/12345"
+
+	server.On("PUT", path, common.SuccessResponse(filteringrules.FirewallFilteringRules{
+		ID:     ruleID,
+		Name:   "Updated Rule",
+		Action: "BLOCK",
+		State:  "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := filteringrules.FirewallFilteringRules{
+		ID:     ruleID,
+		Name:   "Updated Rule",
+		Action: "BLOCK",
+	}
+
+	result, err := filteringrules.Update(context.Background(), service, ruleID, &updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Rule", result.Name)
+}
+
+func TestFirewallFilteringRules_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallFilteringRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = filteringrules.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestFirewallFilteringRules_Structure(t *testing.T) {
 	t.Parallel()
