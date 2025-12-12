@@ -223,6 +223,14 @@ func SuccessResponse(body interface{}) MockResponse {
 	}
 }
 
+// SuccessResponseWithStatus creates a response with a custom status code
+func SuccessResponseWithStatus(statusCode int, body interface{}) MockResponse {
+	return MockResponse{
+		StatusCode: statusCode,
+		Body:       body,
+	}
+}
+
 // CreatedResponse creates a 201 Created response
 func CreatedResponse(body interface{}) MockResponse {
 	return MockResponse{
