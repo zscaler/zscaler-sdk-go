@@ -54,3 +54,69 @@ func TestInspectionCustomControls_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestInspectionCustomControls_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom"
+
+	server.On("POST", path, common.SuccessResponse(inspection_custom_controls.InspectionCustomControl{
+		ID:   "new-ctrl-123",
+		Name: "New Control",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newCtrl := inspection_custom_controls.InspectionCustomControl{
+		Name: "New Control",
+	}
+
+	result, _, err := inspection_custom_controls.Create(context.Background(), service, newCtrl)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-ctrl-123", result.ID)
+}
+
+func TestInspectionCustomControls_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	controlID := "ctrl-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom/" + controlID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateCtrl := &inspection_custom_controls.InspectionCustomControl{
+		ID:   controlID,
+		Name: "Updated Control",
+	}
+
+	resp, err := inspection_custom_controls.Update(context.Background(), service, controlID, updateCtrl)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestInspectionCustomControls_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	controlID := "ctrl-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/inspectionControls/custom/" + controlID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := inspection_custom_controls.Delete(context.Background(), service, controlID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

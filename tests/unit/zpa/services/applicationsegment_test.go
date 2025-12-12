@@ -175,3 +175,141 @@ func TestApplicationSegment_Get_NotFound_SDK(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+func TestApplicationSegment_GetApplicationSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/summary"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []map[string]interface{}{
+			{"id": "app-001", "name": "App 1"},
+			{"id": "app-002", "name": "App 2"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetApplicationSummary(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestApplicationSegment_GetApplicationCount_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/configured/count"
+
+	server.On("GET", path, common.SuccessResponse([]applicationsegment.ApplicationCountResponse{
+		{AppsConfigured: "10", ConfiguredDateInEpochSeconds: "1704067200"},
+		{AppsConfigured: "5", ConfiguredDateInEpochSeconds: "1704153600"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetApplicationCount(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "10", result[0].AppsConfigured)
+}
+
+func TestApplicationSegment_GetCurrentAndMaxLimit_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/count/currentAndMaxLimit"
+
+	server.On("GET", path, common.SuccessResponse(applicationsegment.ApplicationCurrentMaxLimitResponse{
+		MaxAppsLimit:     "1000",
+		CurrentAppsCount: "250",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetCurrentAndMaxLimit(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "1000", result.MaxAppsLimit)
+	assert.Equal(t, "250", result.CurrentAppsCount)
+}
+
+func TestApplicationSegment_GetApplicationMappings_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID + "/mappings"
+
+	server.On("GET", path, common.SuccessResponse([]applicationsegment.ApplicationMappings{
+		{Name: "server-group-1", Type: "SERVER_GROUP"},
+		{Name: "server-group-2", Type: "SERVER_GROUP"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetApplicationMappings(context.Background(), service, appID)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "server-group-1", result[0].Name)
+}
+
+func TestApplicationSegment_GetWeightedLoadBalancerConfig_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID + "/weightedLbConfig"
+
+	server.On("GET", path, common.SuccessResponse(applicationsegment.WeightedLoadBalancerConfig{
+		ApplicationID:         appID,
+		WeightedLoadBalancing: true,
+		ApplicationToServerGroupMaps: []applicationsegment.ApplicationToServerGroupMapping{
+			{ID: "sg-001", Name: "Server Group 1", Weight: "50", Passive: false},
+			{ID: "sg-002", Name: "Server Group 2", Weight: "50", Passive: false},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := applicationsegment.GetWeightedLoadBalancerConfig(context.Background(), service, appID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.True(t, result.WeightedLoadBalancing)
+	assert.Len(t, result.ApplicationToServerGroupMaps, 2)
+}
+
+func TestApplicationSegment_UpdateWeightedLoadBalancerConfig_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	appID := "app-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/" + appID + "/weightedLbConfig"
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	config := applicationsegment.WeightedLoadBalancerConfig{
+		ApplicationID:         appID,
+		WeightedLoadBalancing: true,
+	}
+
+	_, resp, err := applicationsegment.UpdateWeightedLoadBalancerConfig(context.Background(), service, appID, config)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

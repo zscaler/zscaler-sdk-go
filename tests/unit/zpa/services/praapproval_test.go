@@ -51,3 +51,65 @@ func TestPRAApproval_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestPRAApproval_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval"
+
+	server.On("POST", path, common.SuccessResponse(praapproval.PrivilegedApproval{
+		ID: "new-approval-123",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newApproval := &praapproval.PrivilegedApproval{}
+
+	result, _, err := praapproval.Create(context.Background(), service, newApproval)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-approval-123", result.ID)
+}
+
+func TestPRAApproval_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	approvalID := "approval-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval/" + approvalID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateApproval := &praapproval.PrivilegedApproval{
+		ID: approvalID,
+	}
+
+	resp, err := praapproval.Update(context.Background(), service, approvalID, updateApproval)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestPRAApproval_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	approvalID := "approval-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval/" + approvalID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := praapproval.Delete(context.Background(), service, approvalID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

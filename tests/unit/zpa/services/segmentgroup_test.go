@@ -14,6 +14,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 )
 
+
 // =============================================================================
 // SegmentGroup Structure Tests
 // =============================================================================

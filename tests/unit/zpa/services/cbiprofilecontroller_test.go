@@ -51,3 +51,70 @@ func TestCBIProfileController_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestCBIProfileController_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// Create uses singular endpoint "/profile"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile"
+
+	server.On("POST", path, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
+		ID:   "new-profile-123",
+		Name: "New Profile",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newProfile := &cbiprofilecontroller.IsolationProfile{
+		Name: "New Profile",
+	}
+
+	result, _, err := cbiprofilecontroller.Create(context.Background(), service, newProfile)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-profile-123", result.ID)
+}
+
+func TestCBIProfileController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	profileID := "profile-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profiles/" + profileID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateProfile := &cbiprofilecontroller.IsolationProfile{
+		ID:   profileID,
+		Name: "Updated Profile",
+	}
+
+	resp, err := cbiprofilecontroller.Update(context.Background(), service, profileID, updateProfile)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestCBIProfileController_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	profileID := "profile-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profiles/" + profileID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := cbiprofilecontroller.Delete(context.Background(), service, profileID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

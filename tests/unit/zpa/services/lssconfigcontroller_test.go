@@ -51,3 +51,65 @@ func TestLSSConfigController_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestLSSConfigController_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/lssConfig"
+
+	server.On("POST", path, common.SuccessResponse(lssconfigcontroller.LSSResource{
+		ID: "new-lss-123",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newConfig := lssconfigcontroller.LSSResource{}
+
+	result, _, err := lssconfigcontroller.Create(context.Background(), service, &newConfig)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-lss-123", result.ID)
+}
+
+func TestLSSConfigController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	configID := "lss-12345"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/lssConfig/" + configID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateConfig := &lssconfigcontroller.LSSResource{
+		ID: configID,
+	}
+
+	resp, err := lssconfigcontroller.Update(context.Background(), service, configID, updateConfig)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestLSSConfigController_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	configID := "lss-12345"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/lssConfig/" + configID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := lssconfigcontroller.Delete(context.Background(), service, configID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

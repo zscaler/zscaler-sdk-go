@@ -54,3 +54,30 @@ func TestScimAttributeHeader_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestScimAttributeHeader_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	idpID := "idp-12345"
+	attrName := "email"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/idp/" + idpID + "/scimattribute"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []scimattributeheader.ScimAttributeHeader{
+			{ID: "attr-001", Name: "otherAttr"},
+			{ID: "attr-002", Name: attrName},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := scimattributeheader.GetByName(context.Background(), service, attrName, idpID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "attr-002", result.ID)
+	assert.Equal(t, attrName, result.Name)
+}

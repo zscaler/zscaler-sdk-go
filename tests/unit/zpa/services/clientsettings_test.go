@@ -31,3 +31,4 @@ func TestClientSettings_GetAll_SDK(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "settings-123", result.ID)
 }
+

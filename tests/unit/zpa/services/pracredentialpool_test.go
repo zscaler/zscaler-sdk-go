@@ -54,3 +54,70 @@ func TestPRACredentialPool_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestPRACredentialPool_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	poolName := "Production Pool"
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []pracredentialpool.CredentialPool{
+			{ID: "pool-001", Name: "Other Pool"},
+			{ID: "pool-002", Name: poolName},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := pracredentialpool.GetByName(context.Background(), service, poolName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "pool-002", result.ID)
+	assert.Equal(t, poolName, result.Name)
+}
+
+func TestPRACredentialPool_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	poolID := "pool-12345"
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool/" + poolID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updatePool := &pracredentialpool.CredentialPool{
+		ID:   poolID,
+		Name: "Updated Pool",
+	}
+
+	resp, err := pracredentialpool.Update(context.Background(), service, poolID, updatePool)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestPRACredentialPool_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	poolID := "pool-12345"
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool/" + poolID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := pracredentialpool.Delete(context.Background(), service, poolID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

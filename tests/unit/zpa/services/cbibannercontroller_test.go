@@ -52,3 +52,70 @@ func TestCBIBannerController_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestCBIBannerController_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// Create uses singular endpoint "/banner"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banner"
+
+	server.On("POST", path, common.SuccessResponse(cbibannercontroller.CBIBannerController{
+		ID:   "new-banner-123",
+		Name: "New Banner",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newBanner := &cbibannercontroller.CBIBannerController{
+		Name: "New Banner",
+	}
+
+	result, _, err := cbibannercontroller.Create(context.Background(), service, newBanner)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-banner-123", result.ID)
+}
+
+func TestCBIBannerController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	bannerID := "banner-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banners/" + bannerID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateBanner := &cbibannercontroller.CBIBannerController{
+		ID:   bannerID,
+		Name: "Updated Banner",
+	}
+
+	resp, err := cbibannercontroller.Update(context.Background(), service, bannerID, updateBanner)
+
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestCBIBannerController_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	bannerID := "banner-12345"
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/banners/" + bannerID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := cbibannercontroller.Delete(context.Background(), service, bannerID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
