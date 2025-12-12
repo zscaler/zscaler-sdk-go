@@ -72,11 +72,20 @@ type ApplicationSegmentResource struct {
 	ShareToMicrotenants      []string                                         `json:"shareToMicrotenants"`
 	SharedMicrotenantDetails SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
 	ZPNERID                  *common.ZPNERID                                  `json:"zpnErId"`
+	Tags                     []Tag                                            `json:"tags,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {
 	SharedFromMicrotenant SharedFromMicrotenant `json:"sharedFromMicrotenant,omitempty"`
 	SharedToMicrotenants  []SharedToMicrotenant `json:"sharedToMicrotenants,omitempty"`
+}
+
+// Tag represents a tag associated with an application segment
+type Tag struct {
+	Namespace common.CommonSummary `json:"namespace,omitempty"`
+	TagKey    common.CommonSummary `json:"tagKey,omitempty"`
+	TagValue  common.CommonIDName  `json:"tagValue,omitempty"`
+	Origin    string               `json:"origin,omitempty"`
 }
 
 type SharedFromMicrotenant struct {
