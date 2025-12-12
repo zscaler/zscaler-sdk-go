@@ -37,19 +37,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
-
-      - name: Clean existing Go modules
-        run: go clean -modcache
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache: true
+          cache-dependency-path: go.sum
 
       - name: Set Go env
         run: |
