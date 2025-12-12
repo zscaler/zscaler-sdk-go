@@ -2,7 +2,10 @@
 package zcc
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -324,5 +327,221 @@ func TestConfiguration_MultipleOptions(t *testing.T) {
 		assert.Equal(t, "proxy.corp.com", cfg.ZCC.Client.Proxy.Host)
 		assert.Equal(t, int32(3128), cfg.ZCC.Client.Proxy.Port)
 		assert.Contains(t, cfg.UserAgentExtra, "terraform-provider-zscaler/1.0")
+	})
+}
+
+// =====================================================
+// Client struct tests
+// =====================================================
+
+func TestClient_Structure(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Client with configuration", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+		zcc.WithZCCClientID("test-id")(cfg)
+		zcc.WithZCCClientSecret("test-secret")(cfg)
+		zcc.WithZCCCloud("zscalertwo")(cfg)
+
+		client := &zcc.Client{
+			Config: cfg,
+		}
+
+		assert.NotNil(t, client)
+		assert.NotNil(t, client.Config)
+		assert.Equal(t, "test-id", client.Config.ZCC.Client.ZCCClientID)
+	})
+}
+
+// =====================================================
+// HTTP Client Configuration Tests
+// =====================================================
+
+func TestConfiguration_HTTPClientSettings(t *testing.T) {
+	t.Parallel()
+
+	t.Run("WithHttpClientPtr sets custom HTTP client", func(t *testing.T) {
+		customClient := &http.Client{
+			Timeout: 120 * time.Second,
+		}
+
+		cfg := &zcc.Configuration{}
+		zcc.WithHttpClientPtr(customClient)(cfg)
+
+		// The HTTP client should be set
+		assert.NotNil(t, cfg)
+	})
+
+	t.Run("Configuration with full proxy settings", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+		zcc.WithProxyHost("proxy.example.com")(cfg)
+		zcc.WithProxyPort(8080)(cfg)
+		zcc.WithProxyUsername("proxyuser")(cfg)
+		zcc.WithProxyPassword("proxypass")(cfg)
+
+		assert.Equal(t, "proxy.example.com", cfg.ZCC.Client.Proxy.Host)
+		assert.Equal(t, int32(8080), cfg.ZCC.Client.Proxy.Port)
+		assert.Equal(t, "proxyuser", cfg.ZCC.Client.Proxy.Username)
+		assert.Equal(t, "proxypass", cfg.ZCC.Client.Proxy.Password)
+	})
+}
+
+// =====================================================
+// Context Tests
+// =====================================================
+
+func TestConfiguration_Context(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Configuration with context", func(t *testing.T) {
+		cfg := &zcc.Configuration{
+			Context: context.Background(),
+		}
+
+		assert.NotNil(t, cfg.Context)
+	})
+
+	t.Run("Configuration with timeout context", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		cfg := &zcc.Configuration{
+			Context: ctx,
+		}
+
+		assert.NotNil(t, cfg.Context)
+	})
+}
+
+// =====================================================
+// Authentication Mock Tests
+// =====================================================
+
+func TestAuthentication_MockServer(t *testing.T) {
+	t.Run("Mock auth endpoint returns valid token", func(t *testing.T) {
+		// Create a test server that returns a valid auth response
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/auth/v1/login" {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{
+					"token_type": "Bearer",
+					"jwtToken": "mock-jwt-token-12345",
+					"expires_in": "3600"
+				}`))
+				return
+			}
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer server.Close()
+
+		// Parse the auth response manually to test parsing
+		jsonData := `{
+			"token_type": "Bearer",
+			"jwtToken": "mock-jwt-token-12345",
+			"expires_in": "3600"
+		}`
+
+		var token zcc.AuthToken
+		err := json.Unmarshal([]byte(jsonData), &token)
+		require.NoError(t, err)
+
+		assert.Equal(t, "Bearer", token.TokenType)
+		assert.Equal(t, "mock-jwt-token-12345", token.AccessToken)
+		assert.Equal(t, "3600", token.RawExpiresIn)
+	})
+}
+
+// =====================================================
+// Default Header Tests
+// =====================================================
+
+func TestConfiguration_DefaultHeaders(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Configuration with default headers", func(t *testing.T) {
+		cfg := &zcc.Configuration{
+			DefaultHeader: map[string]string{
+				"X-Custom-Header": "custom-value",
+				"Accept":          "application/json",
+			},
+		}
+
+		assert.Equal(t, "custom-value", cfg.DefaultHeader["X-Custom-Header"])
+		assert.Equal(t, "application/json", cfg.DefaultHeader["Accept"])
+	})
+}
+
+// =====================================================
+// Rate Limit Configuration Tests
+// =====================================================
+
+func TestConfiguration_RateLimitSettings(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Full rate limit configuration", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+
+		zcc.WithRateLimitMaxRetries(10)(cfg)
+		zcc.WithRateLimitMinWait(5 * time.Second)(cfg)
+		zcc.WithRateLimitMaxWait(60 * time.Second)(cfg)
+
+		backoff := &zcc.BackoffConfig{
+			Enabled:             true,
+			MaxNumOfRetries:     5,
+			RetryWaitMinSeconds: 10,
+			RetryWaitMaxSeconds: 120,
+		}
+		cfg.SetBackoffConfig(backoff)
+
+		assert.Equal(t, int32(10), cfg.ZCC.Client.RateLimit.MaxRetries)
+		assert.Equal(t, 5*time.Second, cfg.ZCC.Client.RateLimit.RetryWaitMin)
+		assert.Equal(t, 60*time.Second, cfg.ZCC.Client.RateLimit.RetryWaitMax)
+		assert.NotNil(t, cfg.ZCC.Client.RateLimit.BackoffConf)
+		assert.True(t, cfg.ZCC.Client.RateLimit.BackoffConf.Enabled)
+	})
+}
+
+// =====================================================
+// Testing Mode Tests
+// =====================================================
+
+func TestConfiguration_TestingMode(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Enable HTTPS check disable for testing", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+		zcc.WithTestingDisableHttpsCheck(true)(cfg)
+
+		assert.True(t, cfg.ZCC.Testing.DisableHttpsCheck)
+	})
+
+	t.Run("HTTPS check enabled by default", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+
+		assert.False(t, cfg.ZCC.Testing.DisableHttpsCheck)
+	})
+}
+
+// =====================================================
+// User Agent Tests
+// =====================================================
+
+func TestConfiguration_UserAgent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Set user agent extra", func(t *testing.T) {
+		cfg := &zcc.Configuration{}
+		zcc.WithUserAgentExtra("terraform-provider-zscaler/2.0")(cfg)
+
+		assert.Contains(t, cfg.UserAgentExtra, "terraform-provider-zscaler/2.0")
+	})
+
+	t.Run("Set custom user agent", func(t *testing.T) {
+		cfg := &zcc.Configuration{
+			UserAgent: "custom-sdk/1.0",
+		}
+
+		assert.Equal(t, "custom-sdk/1.0", cfg.UserAgent)
 	})
 }

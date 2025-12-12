@@ -366,6 +366,26 @@ func MockZPAOAuthResponse() MockResponse {
 	}
 }
 
+// RawResponse creates a response with raw bytes and custom content type
+func RawResponse(body []byte, statusCode int, headers map[string]string) MockResponse {
+	return MockResponse{
+		StatusCode: statusCode,
+		Body:       body,
+		Headers:    headers,
+	}
+}
+
+// CSVResponse creates a CSV response
+func CSVResponse(csvData string) MockResponse {
+	return MockResponse{
+		StatusCode: http.StatusOK,
+		Body:       csvData,
+		Headers: map[string]string{
+			"Content-Type": "text/csv",
+		},
+	}
+}
+
 // =============================================================================
 // ZPA Specific Helpers
 // =============================================================================
