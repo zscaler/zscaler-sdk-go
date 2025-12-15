@@ -113,3 +113,45 @@ func TestPRAApproval_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestPRAApproval_GetByEmailID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	emailID := "user@example.com"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []praapproval.PrivilegedApproval{
+			{ID: "approval-001", EmailIDs: []string{"other@example.com"}},
+			{ID: "approval-002", EmailIDs: []string{emailID}},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := praapproval.GetByEmailID(context.Background(), service, emailID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "approval-002", result.ID)
+}
+
+func TestPRAApproval_DeleteExpired_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/approval/expired"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := praapproval.DeleteExpired(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

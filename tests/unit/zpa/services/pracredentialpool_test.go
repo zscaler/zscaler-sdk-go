@@ -81,6 +81,40 @@ func TestPRACredentialPool_GetByName_SDK(t *testing.T) {
 	assert.Equal(t, poolName, result.Name)
 }
 
+func TestPRACredentialPool_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/waap-pra-config/v1/admin/customers/" + testCustomerID + "/credential-pool"
+
+	// Create returns a minimal response, then SDK does a GetAll to fetch the full resource
+	server.On("POST", path, common.SuccessResponse(pracredentialpool.CredentialPool{
+		ID:   "new-pool-123",
+		Name: "New Pool",
+	}))
+
+	// Mock the GetAll call that Create does internally to find the created resource
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []pracredentialpool.CredentialPool{
+			{ID: "new-pool-123", Name: "New Pool"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newPool := &pracredentialpool.CredentialPool{
+		Name: "New Pool",
+	}
+
+	result, _, err := pracredentialpool.Create(context.Background(), service, newPool)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-pool-123", result.ID)
+}
+
 func TestPRACredentialPool_Update_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()

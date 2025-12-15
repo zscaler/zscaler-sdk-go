@@ -123,3 +123,49 @@ func TestPrivateCloudGroup_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestPrivateCloudGroup_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := "pcg-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudControllerGroup/" + groupID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateGroup := &private_cloud_group.PrivateCloudGroup{
+		ID:   groupID,
+		Name: "Updated Group",
+	}
+
+	resp, err := private_cloud_group.Update(context.Background(), service, groupID, updateGroup)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestPrivateCloudGroup_GetGroupSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudControllerGroup/summary"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []private_cloud_group.PrivateCloudGroup{
+			{ID: "pcg-001", Name: "Summary Group 1"},
+			{ID: "pcg-002", Name: "Summary Group 2"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := private_cloud_group.GetGroupSummary(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}

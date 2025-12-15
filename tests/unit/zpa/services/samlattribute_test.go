@@ -130,3 +130,126 @@ func TestSamlAttribute_Get_NotFound_SDK(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+func TestSamlAttribute_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute"
+
+	server.On("POST", path, common.SuccessResponse(samlattribute.SamlAttribute{
+		ID:            "new-saml-123",
+		Name:          "New SAML Attribute",
+		SamlName:      "department",
+		UserAttribute: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newAttr := &samlattribute.SamlAttribute{
+		Name:          "New SAML Attribute",
+		SamlName:      "department",
+		UserAttribute: true,
+	}
+
+	result, _, err := samlattribute.Create(context.Background(), service, newAttr)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-saml-123", result.ID)
+}
+
+func TestSamlAttribute_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	attrID := "saml-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute/" + attrID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateAttr := &samlattribute.SamlAttribute{
+		ID:       attrID,
+		Name:     "Updated Attribute",
+		SamlName: "updated_field",
+	}
+
+	resp, err := samlattribute.Update(context.Background(), service, attrID, updateAttr)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestSamlAttribute_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	attrID := "saml-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute/" + attrID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := samlattribute.Delete(context.Background(), service, attrID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestSamlAttribute_GetAllByIdp_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	idpID := "idp-12345"
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/samlAttribute/idp/" + idpID
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []samlattribute.SamlAttribute{
+			{ID: "saml-001", Name: "Attribute 1", IdpID: idpID},
+			{ID: "saml-002", Name: "Attribute 2", IdpID: idpID},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.GetAllByIdp(context.Background(), service, idpID)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestSamlAttribute_GetByIdpAndAttributeID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	idpID := "idp-12345"
+	attrID := "saml-002"
+	// GetByIdpAndAttributeID internally calls GetAllByIdp
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/samlAttribute/idp/" + idpID
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []samlattribute.SamlAttribute{
+			{ID: "saml-001", Name: "Attribute 1", IdpID: idpID},
+			{ID: attrID, Name: "IDP Specific Attribute", IdpID: idpID, SamlName: "email"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := samlattribute.GetByIdpAndAttributeID(context.Background(), service, idpID, attrID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, attrID, result.ID)
+	assert.Equal(t, idpID, result.IdpID)
+}

@@ -126,3 +126,21 @@ func TestPrivateCloudController_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestPrivateCloudController_ControllerRestart_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudID := "pc-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/restart/" + cloudID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := private_cloud_controller.ControllerRestart(context.Background(), service, cloudID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

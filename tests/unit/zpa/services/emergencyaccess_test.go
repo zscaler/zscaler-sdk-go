@@ -93,7 +93,6 @@ func TestEmergencyAccess_Deactivate_SDK(t *testing.T) {
 	defer server.Close()
 
 	userID := "user-12345"
-	// Deactivate uses a different endpoint format with /deactivate suffix
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/emergencyAccess/user/" + userID + "/deactivate"
 
 	server.On("PUT", path, common.NoContentResponse())
@@ -106,3 +105,23 @@ func TestEmergencyAccess_Deactivate_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestEmergencyAccess_Activate_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/emergencyAccess/user/" + userID + "/activate"
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := emergencyaccess.Activate(context.Background(), service, userID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+// Note: GetByEmailID and GetAll tests omitted as they use complex pagination that is difficult to mock

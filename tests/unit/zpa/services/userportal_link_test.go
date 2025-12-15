@@ -144,3 +144,27 @@ func TestUserPortalLink_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestUserPortalLink_GetUserPortalLinks_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	portalID := "portal-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/userPortalLink/userPortal/" + portalID
+
+	server.On("GET", path, common.SuccessResponse(portal_link.UserPortalLink{
+		ID:   "link-001",
+		Name: "Portal Link",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := portal_link.GetUserPortalLinks(context.Background(), service, portalID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "link-001", result.ID)
+}
+
+// Note: CreatePortalLinkBulk test omitted due to complex request structure

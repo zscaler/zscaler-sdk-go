@@ -144,3 +144,25 @@ func TestPRAConsole_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestPRAConsole_GetPraPortal_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	portalID := "portal-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/praConsole/praPortal/" + portalID
+
+	server.On("GET", path, common.SuccessResponse(praconsole.PRAConsole{
+		ID:   "console-001",
+		Name: "Portal Console",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := praconsole.GetPraPortal(context.Background(), service, portalID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "console-001", result.ID)
+}
