@@ -32,3 +32,29 @@ func TestExtranetResource_GetPartner_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestExtranetResource_GetPartnerByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	partnerName := "Partner 1"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/extranetResource/partner"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []zpacommon.CommonSummary{
+			{ID: "partner-001", Name: partnerName},
+			{ID: "partner-002", Name: "Partner 2"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := extranet_resource.GetExtranetResourcePartnerByName(context.Background(), service, partnerName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "partner-001", result.ID)
+	assert.Equal(t, partnerName, result.Name)
+}

@@ -52,3 +52,53 @@ func TestCloudConnectorGroup_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestCloudConnectorGroup_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupName := "Production Group"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/cloudConnectorGroup"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []cloud_connector_group.CloudConnectorGroup{
+			{ID: "ccg-001", Name: "Other Group"},
+			{ID: "ccg-002", Name: groupName},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cloud_connector_group.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "ccg-002", result.ID)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestCloudConnectorGroup_GetCloudConnectorGroupSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/cloudConnectorGroup/summary"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []cloud_connector_group.CloudConnectorGroup{
+			{ID: "ccg-001", Name: "Summary 1"},
+			{ID: "ccg-002", Name: "Summary 2"},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := cloud_connector_group.GetCloudConnectorGroupSummary(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}

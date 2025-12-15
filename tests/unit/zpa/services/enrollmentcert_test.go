@@ -108,3 +108,122 @@ func TestEnrollmentCert_Get_NotFound_SDK(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+func TestEnrollmentCert_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert"
+
+	server.On("POST", path, common.SuccessResponse(enrollmentcert.EnrollmentCert{
+		ID:           "new-cert-123",
+		Name:         "New Certificate",
+		AllowSigning: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newCert := &enrollmentcert.EnrollmentCert{
+		Name:         "New Certificate",
+		AllowSigning: true,
+	}
+
+	result, _, err := enrollmentcert.Create(context.Background(), service, newCert)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "new-cert-123", result.ID)
+}
+
+func TestEnrollmentCert_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := "cert-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/" + certID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateCert := &enrollmentcert.EnrollmentCert{
+		ID:           certID,
+		Name:         "Updated Certificate",
+		AllowSigning: false,
+	}
+
+	resp, err := enrollmentcert.Update(context.Background(), service, certID, updateCert)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestEnrollmentCert_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := "cert-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/" + certID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := enrollmentcert.Delete(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestEnrollmentCert_GenerateCSR_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/csr"
+
+	server.On("POST", path, common.SuccessResponse(enrollmentcert.GenerateEnrollmentCSR{
+		Name: "CSR Request",
+		CSR:  "CSR-CONTENT-HERE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	csrRequest := &enrollmentcert.GenerateEnrollmentCSR{
+		Name: "CSR Request",
+	}
+
+	result, _, err := enrollmentcert.GenerateCSR(context.Background(), service, csrRequest)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotEmpty(t, result.CSR)
+}
+
+func TestEnrollmentCert_GenerateSelfSigned_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/selfsigned"
+
+	server.On("POST", path, common.SuccessResponse(enrollmentcert.GenerateSelfSignedCert{
+		Name:        "Self-Signed Certificate",
+		Certificate: "SELF-SIGNED-CERT-HERE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	certRequest := &enrollmentcert.GenerateSelfSignedCert{
+		Name: "Self-Signed Certificate",
+	}
+
+	result, _, err := enrollmentcert.GenerateSelfSigned(context.Background(), service, certRequest)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.NotEmpty(t, result.Certificate)
+}

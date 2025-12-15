@@ -32,3 +32,22 @@ func TestClientSettings_GetAll_SDK(t *testing.T) {
 	assert.Equal(t, "settings-123", result.ID)
 }
 
+// Note: GetClientSettings and Create tests omitted as they use query params that are difficult to mock
+
+func TestClientSettings_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/clientSetting"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := client_settings.Delete(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
