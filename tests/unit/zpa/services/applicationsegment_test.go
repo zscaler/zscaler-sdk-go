@@ -313,3 +313,71 @@ func TestApplicationSegment_UpdateWeightedLoadBalancerConfig_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestApplicationSegment_GetMultiMatchUnsupportedReferences_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/multimatchUnsupportedReferences"
+
+	server.On("POST", path, common.SuccessResponse([]applicationsegment.MultiMatchUnsupportedReferencesResponse{
+		{ID: "ref-001", AppSegmentName: "App 1"},
+		{ID: "ref-002", AppSegmentName: "App 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	domainNames := applicationsegment.MultiMatchUnsupportedReferencesPayload{"example.com", "test.com"}
+	result, _, err := applicationsegment.GetMultiMatchUnsupportedReferences(context.Background(), service, domainNames)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestApplicationSegment_UpdatebulkUpdateMultiMatch_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/bulkUpdateMultiMatch"
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	bulkUpdate := applicationsegment.BulkUpdateMultiMatchPayload{
+		ApplicationIDs: []int{1, 2, 3},
+		MatchStyle:     "MULTIPLE",
+	}
+
+	resp, err := applicationsegment.UpdatebulkUpdateMultiMatch(context.Background(), service, bulkUpdate)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestApplicationSegment_ApplicationValidation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/application/validate"
+
+	server.On("POST", path, common.SuccessResponse(applicationsegment.ApplicationValidationError{
+		ID:     "",
+		Reason: "",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	validateReq := applicationsegment.ApplicationSegmentResource{
+		Name:        "Test App",
+		DomainNames: []string{"app.example.com"},
+	}
+
+	result, _, err := applicationsegment.ApplicationValidation(context.Background(), service, validateReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}

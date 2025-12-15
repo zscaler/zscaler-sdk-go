@@ -31,4 +31,4 @@ func TestAdminSSOController_GetSSOLoginController_SDK(t *testing.T) {
 	assert.True(t, result.SSOLoginOnly)
 }
 
-// Note: UpdateSSOLoginController test omitted as it uses query params that are difficult to mock
+// Note: UpdateSSOLoginController test omitted due to complex query parameter handling

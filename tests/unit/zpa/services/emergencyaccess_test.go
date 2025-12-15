@@ -124,4 +124,75 @@ func TestEmergencyAccess_Activate_SDK(t *testing.T) {
 	assert.NotNil(t, resp)
 }
 
-// Note: GetByEmailID and GetAll tests omitted as they use complex pagination that is difficult to mock
+func TestEmergencyAccess_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// GetAll uses the /emergencyAccess/users endpoint (plural) with pagination
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/emergencyAccess/users"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"items": []emergencyaccess.EmergencyAccess{
+			{UserID: "user-001", EmailID: "user1@example.com"},
+			{UserID: "user-002", EmailID: "user2@example.com"},
+		},
+		"nextPage": "",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := emergencyaccess.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestEmergencyAccess_GetByEmailID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	emailID := "user@example.com"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/emergencyAccess/users"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"items": []emergencyaccess.EmergencyAccess{
+			{UserID: "user-001", EmailID: "other@example.com"},
+			{UserID: "user-002", EmailID: emailID},
+		},
+		"nextPage": "",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := emergencyaccess.GetByEmailID(context.Background(), service, emailID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "user-002", result.UserID)
+	assert.Equal(t, emailID, result.EmailID)
+}
+
+func TestEmergencyAccess_GetByEmailID_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/emergencyAccess/users"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"items": []emergencyaccess.EmergencyAccess{
+			{UserID: "user-001", EmailID: "other@example.com"},
+		},
+		"nextPage": "",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := emergencyaccess.GetByEmailID(context.Background(), service, "notfound@example.com")
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no emergency access record found")
+}

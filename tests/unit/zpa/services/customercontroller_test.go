@@ -52,4 +52,23 @@ func TestCustomerController_GetAncestorPolicy_SDK(t *testing.T) {
 	assert.Equal(t, "FULL_ACCESS", result.AccessType)
 }
 
-// Note: Create test omitted as it uses query params that are difficult to mock accurately
+func TestCustomerController_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/ancestorPolicy"
+
+	server.On("POST", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	newPolicy := &customercontroller.AncestorPolicy{
+		AccessType: "RESTRICTED_ACCESS",
+	}
+
+	_, resp, err := customercontroller.Create(context.Background(), service, newPolicy)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

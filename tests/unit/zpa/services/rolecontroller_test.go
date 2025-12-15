@@ -121,3 +121,47 @@ func TestRoleController_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestRoleController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	roleID := "role-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/roles/" + roleID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateRole := &role_controller.RoleController{
+		ID:   roleID,
+		Name: "Updated Role",
+	}
+
+	resp, err := role_controller.Update(context.Background(), service, roleID, updateRole)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestRoleController_GetPermissionGroups_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/permissionGroups"
+
+	// This endpoint returns a raw array, not a paginated response
+	server.On("GET", path, common.SuccessResponse([]role_controller.ClassPermissionGroup{
+		{ID: "group-001", Name: "Admin Permissions"},
+		{ID: "group-002", Name: "Read-Only Permissions"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := role_controller.GetPermissionGroups(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
