@@ -136,6 +136,28 @@ func TestDLPWebRules_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDLPWebRules_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "Block SSN Uploads"
+	path := "/zia/api/v1/webDlpRules"
+
+	server.On("GET", path, common.SuccessResponse([]dlp_web_rules.WebDLPRules{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: 2, Name: ruleName, Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlp_web_rules.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleName, result.Name)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

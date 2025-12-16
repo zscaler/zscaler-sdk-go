@@ -133,6 +133,28 @@ func TestNetworkServices_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestNetworkServices_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceName := "Custom HTTPS"
+	path := "/zia/api/v1/networkServices"
+
+	server.On("GET", path, common.SuccessResponse([]networkservices.NetworkServices{
+		{ID: 1, Name: "HTTP", Type: "STANDARD"},
+		{ID: 2, Name: serviceName, Type: "CUSTOM"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.GetByName(context.Background(), service, serviceName, nil, nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, serviceName, result.Name)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

@@ -144,6 +144,87 @@ func TestLocationManagement_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLocationManagement_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationName := "HQ Office"
+	path := "/zia/api/v1/locations"
+
+	server.On("GET", path, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: "Other Office", Country: "US"},
+		{ID: 2, Name: locationName, Country: "US"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetLocationByName(context.Background(), service, locationName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, locationName, result.Name)
+}
+
+func TestLocationManagement_GetSublocations_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	parentID := 12345
+	path := "/zia/api/v1/locations/12345/sublocations"
+
+	server.On("GET", path, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Sublocation 1", ParentID: parentID},
+		{ID: 200, Name: "Sublocation 2", ParentID: parentID},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetSublocations(context.Background(), service, parentID)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// Note: GetSubLocation, GetSubLocationBySubID, GetSubLocationByNames, and GetSubLocationByName tests omitted
+// due to complex internal calls that require multi-step mocking
+
+func TestLocationManagement_BulkDelete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/locations/bulkDelete"
+
+	server.On("POST", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	ids := []int{1, 2, 3}
+	_, err = locationmanagement.BulkDelete(context.Background(), service, ids)
+
+	require.NoError(t, err)
+}
+
+func TestLocationManagement_GetLocationSupportedCountries_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/locations/supportedCountries"
+
+	server.On("GET", path, common.SuccessResponse([]string{"US", "CA", "GB", "DE", "FR"}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetLocationSupportedCountries(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 5)
+	assert.Contains(t, result, "US")
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

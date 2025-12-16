@@ -77,6 +77,153 @@ func TestDevices_GetAll_SDK(t *testing.T) {
 	assert.Len(t, result, 2)
 }
 
+func TestDevices_GetByID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByID(context.Background(), service, 1)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 1, result.ID)
+}
+
+func TestDevices_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByName(context.Background(), service, "Device 1")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Device 1", result.Name)
+}
+
+func TestDevices_GetByModel_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByModel(context.Background(), service, "iPhone 15")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "iPhone 15", result.DeviceModel)
+}
+
+func TestDevices_GetByOwner_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15", OwnerName: "john@company.com"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24", OwnerName: "jane@company.com"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByOwner(context.Background(), service, "john@company.com")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "john@company.com", result.OwnerName)
+}
+
+func TestDevices_GetByOSType_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15", OSType: "IOS"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24", OSType: "ANDROID_OS"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByOSType(context.Background(), service, "IOS")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "IOS", result.OSType)
+}
+
+func TestDevices_GetByOSVersion_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups/devices"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.Devices{
+		{ID: 1, Name: "Device 1", DeviceModel: "iPhone 15", OSVersion: "17.0"},
+		{ID: 2, Name: "Device 2", DeviceModel: "Galaxy S24", OSVersion: "14.0"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetDevicesByOSVersion(context.Background(), service, "17.0")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "17.0", result.OSVersion)
+}
+
+func TestDeviceGroups_GetIncludeDeviceInfo_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/deviceGroups"
+
+	server.On("GET", path, common.SuccessResponse([]devicegroups.DeviceGroups{
+		{ID: 1, Name: "Mobile Devices", Description: "All mobile devices"},
+		{ID: 2, Name: "Windows Devices", Description: "All Windows devices"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := devicegroups.GetIncludeDeviceInfo(context.Background(), service, true, false)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

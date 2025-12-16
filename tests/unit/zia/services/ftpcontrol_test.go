@@ -2,13 +2,72 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/ftp_control_policy"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestFTPControlPolicy_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/ftpSettings"
+
+	server.On("GET", path, common.SuccessResponse(ftp_control_policy.FTPControlPolicy{
+		FtpOverHttpEnabled: true,
+		FtpEnabled:         true,
+		UrlCategories:      []string{"BUSINESS", "FINANCE"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ftp_control_policy.GetFTPControlPolicy(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.True(t, result.FtpOverHttpEnabled)
+	assert.True(t, result.FtpEnabled)
+}
+
+func TestFTPControlPolicy_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/ftpSettings"
+
+	server.On("PUT", path, common.SuccessResponse(ftp_control_policy.FTPControlPolicy{
+		FtpOverHttpEnabled: false,
+		FtpEnabled:         true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updatePolicy := &ftp_control_policy.FTPControlPolicy{
+		FtpOverHttpEnabled: false,
+		FtpEnabled:         true,
+	}
+
+	result, _, err := ftp_control_policy.UpdateFTPControlPolicy(context.Background(), service, updatePolicy)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.False(t, result.FtpOverHttpEnabled)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestFTPControlPolicy_Structure(t *testing.T) {
 	t.Parallel()

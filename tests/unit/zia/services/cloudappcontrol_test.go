@@ -2,13 +2,170 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/cloudappcontrol"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestCloudAppControl_GetByRuleID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "STREAMING_MEDIA"
+	ruleID := 12345
+	path := "/zia/api/v1/webApplicationRules/" + ruleType + "/12345"
+
+	server.On("GET", path, common.SuccessResponse(cloudappcontrol.WebApplicationRules{
+		ID:   ruleID,
+		Name: "Block Streaming",
+		Type: ruleType,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := cloudappcontrol.GetByRuleID(context.Background(), service, ruleType, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestCloudAppControl_GetByRuleType_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "STREAMING_MEDIA"
+	path := "/zia/api/v1/webApplicationRules/" + ruleType
+
+	server.On("GET", path, common.SuccessResponse([]cloudappcontrol.WebApplicationRules{
+		{ID: 1, Name: "Rule 1", Type: ruleType},
+		{ID: 2, Name: "Rule 2", Type: ruleType},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := cloudappcontrol.GetByRuleType(context.Background(), service, ruleType)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestCloudAppControl_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "STREAMING_MEDIA"
+	path := "/zia/api/v1/webApplicationRules/" + ruleType
+
+	server.On("POST", path, common.SuccessResponse(cloudappcontrol.WebApplicationRules{
+		ID:   100,
+		Name: "New Rule",
+		Type: ruleType,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &cloudappcontrol.WebApplicationRules{
+		Name:  "New Rule",
+		Type:  ruleType,
+		State: "ENABLED",
+		Order: 1,
+	}
+
+	result, err := cloudappcontrol.Create(context.Background(), service, ruleType, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 100, result.ID)
+}
+
+func TestCloudAppControl_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "STREAMING_MEDIA"
+	ruleID := 12345
+	path := "/zia/api/v1/webApplicationRules/" + ruleType + "/12345"
+
+	server.On("PUT", path, common.SuccessResponse(cloudappcontrol.WebApplicationRules{
+		ID:   ruleID,
+		Name: "Updated Rule",
+		Type: ruleType,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &cloudappcontrol.WebApplicationRules{
+		ID:    ruleID,
+		Name:  "Updated Rule",
+		Type:  ruleType,
+		State: "ENABLED",
+	}
+
+	result, err := cloudappcontrol.Update(context.Background(), service, ruleType, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Rule", result.Name)
+}
+
+func TestCloudAppControl_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "STREAMING_MEDIA"
+	ruleID := 12345
+	path := "/zia/api/v1/webApplicationRules/" + ruleType + "/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = cloudappcontrol.Delete(context.Background(), service, ruleType, ruleID)
+
+	require.NoError(t, err)
+}
+
+func TestCloudAppControl_GetRuleTypeMapping_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/webApplicationRules/ruleTypeMapping"
+
+	server.On("GET", path, common.SuccessResponse(map[string]string{
+		"STREAMING_MEDIA": "Streaming Media",
+		"CLOUD_STORAGE":   "Cloud Storage",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := cloudappcontrol.GetRuleTypeMapping(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Equal(t, "Streaming Media", result["STREAMING_MEDIA"])
+}
+
+// Note: CreateDuplicate and AllAvailableActions tests omitted due to special payload handling
+// that requires nil or raw payloads that are difficult to mock in unit tests
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestCloudAppControl_Structure(t *testing.T) {
 	t.Parallel()

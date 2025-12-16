@@ -2,13 +2,166 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestURLFilteringRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/urlFilteringRules"
+
+	// Get uses GetAll internally and finds by ID
+	server.On("GET", path, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: ruleID, Name: "Block Social Media", Action: "BLOCK", State: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlfilteringpolicies.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "Block Social Media", result.Name)
+}
+
+func TestURLFilteringRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlFilteringRules"
+
+	server.On("GET", path, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
+		{ID: 1, Name: "Rule 1", Action: "BLOCK"},
+		{ID: 2, Name: "Rule 2", Action: "ALLOW"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlfilteringpolicies.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestURLFilteringRules_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "Block Social Media"
+	path := "/zia/api/v1/urlFilteringRules"
+
+	server.On("GET", path, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: 2, Name: ruleName, Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlfilteringpolicies.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleName, result.Name)
+}
+
+func TestURLFilteringRules_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlFilteringRules"
+
+	server.On("POST", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
+		ID:     99999,
+		Name:   "New URL Rule",
+		Action: "BLOCK",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &urlfilteringpolicies.URLFilteringRule{
+		Name:   "New URL Rule",
+		Action: "BLOCK",
+	}
+
+	result, err := urlfilteringpolicies.Create(context.Background(), service, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestURLFilteringRules_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/urlFilteringRules/12345"
+	listPath := "/zia/api/v1/urlFilteringRules"
+
+	// Mock GetAll call that Update performs to fetch CBIProfile
+	server.On("GET", listPath, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
+		{ID: ruleID, Name: "Updated URL Rule", CBIProfile: &urlfilteringpolicies.CBIProfile{ID: "cbi-id"}},
+	}))
+
+	server.On("PUT", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
+		ID:   ruleID,
+		Name: "Updated URL Rule",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &urlfilteringpolicies.URLFilteringRule{
+		ID:   ruleID,
+		Name: "Updated URL Rule",
+	}
+
+	result, _, err := urlfilteringpolicies.Update(context.Background(), service, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated URL Rule", result.Name)
+}
+
+func TestURLFilteringRules_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/urlFilteringRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = urlfilteringpolicies.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestURLFilteringPolicies_Structure(t *testing.T) {
 	t.Parallel()

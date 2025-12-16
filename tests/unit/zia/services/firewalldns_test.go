@@ -2,14 +2,312 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
 )
+
+// =====================================================
+// Firewall DNS Control Policies - SDK Function Tests
+// =====================================================
+
+func TestFirewallDNS_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallDnsRules/12345"
+
+	server.On("GET", path, common.SuccessResponse(firewalldnscontrolpolicies.FirewallDNSRules{
+		ID:     ruleID,
+		Name:   "Block Malicious DNS",
+		Action: "BLOCK",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewalldnscontrolpolicies.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestFirewallDNS_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "Block Malicious DNS"
+	path := "/zia/api/v1/firewallDnsRules"
+
+	server.On("GET", path, common.SuccessResponse([]firewalldnscontrolpolicies.FirewallDNSRules{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: 2, Name: ruleName, Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewalldnscontrolpolicies.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 2, result.ID)
+}
+
+func TestFirewallDNS_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallDnsRules"
+
+	server.On("POST", path, common.SuccessResponse(firewalldnscontrolpolicies.FirewallDNSRules{
+		ID:     100,
+		Name:   "New DNS Rule",
+		Action: "BLOCK",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &firewalldnscontrolpolicies.FirewallDNSRules{
+		Name:   "New DNS Rule",
+		Action: "BLOCK",
+		State:  "ENABLED",
+		Order:  1,
+	}
+
+	result, err := firewalldnscontrolpolicies.Create(context.Background(), service, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 100, result.ID)
+}
+
+func TestFirewallDNS_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallDnsRules/12345"
+
+	server.On("PUT", path, common.SuccessResponse(firewalldnscontrolpolicies.FirewallDNSRules{
+		ID:     ruleID,
+		Name:   "Updated DNS Rule",
+		Action: "ALLOW",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &firewalldnscontrolpolicies.FirewallDNSRules{
+		ID:     ruleID,
+		Name:   "Updated DNS Rule",
+		Action: "ALLOW",
+		State:  "ENABLED",
+		Order:  1,
+	}
+
+	result, err := firewalldnscontrolpolicies.Update(context.Background(), service, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated DNS Rule", result.Name)
+}
+
+func TestFirewallDNS_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallDnsRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = firewalldnscontrolpolicies.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+func TestFirewallDNS_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallDnsRules"
+
+	server.On("GET", path, common.SuccessResponse([]firewalldnscontrolpolicies.FirewallDNSRules{
+		{ID: 1, Name: "Rule 1", Action: "BLOCK"},
+		{ID: 2, Name: "Rule 2", Action: "ALLOW"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewalldnscontrolpolicies.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Firewall IPS Control Policies - SDK Function Tests
+// =====================================================
+
+func TestFirewallIPS_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallIpsRules/12345"
+
+	server.On("GET", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+		ID:     ruleID,
+		Name:   "IPS Rule",
+		Action: "BLOCK",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewallipscontrolpolicies.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestFirewallIPS_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "IPS Rule"
+	path := "/zia/api/v1/firewallIpsRules"
+
+	server.On("GET", path, common.SuccessResponse([]firewallipscontrolpolicies.FirewallIPSRules{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: 2, Name: ruleName, Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewallipscontrolpolicies.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 2, result.ID)
+}
+
+func TestFirewallIPS_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallIpsRules"
+
+	server.On("POST", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+		ID:     100,
+		Name:   "New IPS Rule",
+		Action: "BLOCK",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &firewallipscontrolpolicies.FirewallIPSRules{
+		Name:   "New IPS Rule",
+		Action: "BLOCK",
+		State:  "ENABLED",
+		Order:  1,
+	}
+
+	result, err := firewallipscontrolpolicies.Create(context.Background(), service, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 100, result.ID)
+}
+
+func TestFirewallIPS_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallIpsRules/12345"
+
+	server.On("PUT", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+		ID:     ruleID,
+		Name:   "Updated IPS Rule",
+		Action: "MONITOR",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &firewallipscontrolpolicies.FirewallIPSRules{
+		ID:     ruleID,
+		Name:   "Updated IPS Rule",
+		Action: "MONITOR",
+		State:  "ENABLED",
+		Order:  1,
+	}
+
+	result, err := firewallipscontrolpolicies.Update(context.Background(), service, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated IPS Rule", result.Name)
+}
+
+func TestFirewallIPS_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/firewallIpsRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = firewallipscontrolpolicies.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+func TestFirewallIPS_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallIpsRules"
+
+	server.On("GET", path, common.SuccessResponse([]firewallipscontrolpolicies.FirewallIPSRules{
+		{ID: 1, Name: "Rule 1", Action: "BLOCK"},
+		{ID: 2, Name: "Rule 2", Action: "MONITOR"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := firewallipscontrolpolicies.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestFirewallDNSRules_Structure(t *testing.T) {
 	t.Parallel()

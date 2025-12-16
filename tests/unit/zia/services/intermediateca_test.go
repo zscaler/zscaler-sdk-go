@@ -2,13 +2,459 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/intermediatecacertificates"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestIntermediateCA_GetCertificate_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   certID,
+		Name: "Zscaler Intermediate CA",
+		Type: "ZSCALER",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetCertificate(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, certID, result.ID)
+}
+
+func TestIntermediateCA_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certName := "Zscaler Intermediate CA"
+	path := "/zia/api/v1/intermediateCaCertificate"
+
+	server.On("GET", path, common.SuccessResponse([]intermediatecacertificates.IntermediateCACertificate{
+		{ID: 1, Name: "Other CA", Type: "SOFTWARE"},
+		{ID: 2, Name: certName, Type: "ZSCALER"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetByName(context.Background(), service, certName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 2, result.ID)
+}
+
+func TestIntermediateCA_GetIntCAReadyToUse_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/readyToUse"
+
+	server.On("GET", path, common.SuccessResponse([]intermediatecacertificates.IntermediateCACertificate{
+		{ID: 1, Name: "CA 1", CurrentState: "READY"},
+		{ID: 2, Name: "CA 2", CurrentState: "READY"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetIntCAReadyToUse(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestIntermediateCA_GetShowCert_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/showCert/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.CertSigningRequest{
+		CertID:   certID,
+		CommName: "company.com",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetShowCert(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, certID, result.CertID)
+}
+
+func TestIntermediateCA_GetShowCSR_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/showCsr/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.CertSigningRequest{
+		CertID:      certID,
+		CSRFileName: "csr_request.csr",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetShowCSR(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, certID, result.CertID)
+}
+
+func TestIntermediateCA_GetDownloadAttestation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/downloadAttestation/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   certID,
+		Name: "Attestation Data",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetDownloadAttestation(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_GetDownloadCSR_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/downloadCsr/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID: certID,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetDownloadCSR(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_GetDownloadPublicKey_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/downloadPublicKey/12345"
+
+	server.On("GET", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:        certID,
+		PublicKey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetDownloadPublicKey(context.Background(), service, certID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate"
+
+	server.On("GET", path, common.SuccessResponse([]intermediatecacertificates.IntermediateCACertificate{
+		{ID: 1, Name: "Zscaler CA", Type: "ZSCALER"},
+		{ID: 2, Name: "Custom CA", Type: "SOFTWARE"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestIntermediateCA_CreateIntCACertificate_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   99999,
+		Name: "New Intermediate CA",
+		Type: "SOFTWARE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newCert := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "New Intermediate CA",
+		Type: "SOFTWARE",
+	}
+
+	result, err := intermediatecacertificates.CreateIntCACertificate(context.Background(), service, newCert)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestIntermediateCA_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/12345"
+
+	server.On("PUT", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   certID,
+		Name: "Updated CA",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateCert := &intermediatecacertificates.IntermediateCACertificate{
+		ID:   certID,
+		Name: "Updated CA",
+	}
+
+	result, err := intermediatecacertificates.Update(context.Background(), service, certID, updateCert)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated CA", result.Name)
+}
+
+func TestIntermediateCA_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = intermediatecacertificates.Delete(context.Background(), service, certID)
+
+	require.NoError(t, err)
+}
+
+func TestIntermediateCA_UpdateMakeDefault_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	certID := 12345
+	path := "/zia/api/v1/intermediateCaCertificate/makeDefault/12345"
+
+	server.On("PUT", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:                 certID,
+		Name:               "Default CA",
+		DefaultCertificate: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateCert := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Default CA",
+	}
+
+	result, err := intermediatecacertificates.UpdateMakeDefault(context.Background(), service, certID, updateCert)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.True(t, result.DefaultCertificate)
+}
+
+func TestIntermediateCA_CreateIntCAGenerateCSR_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/generateCsr"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   99999,
+		Name: "CSR Generated",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	csrReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "CSR Cert",
+	}
+
+	result, err := intermediatecacertificates.CreateIntCAGenerateCSR(context.Background(), service, csrReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_CreateIntCAKeyPair_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/keyPair"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   99999,
+		Name: "Key Pair Generated",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	keyPairReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Key Pair Cert",
+		Type: "CLOUD_HSM",
+	}
+
+	result, err := intermediatecacertificates.CreateIntCAKeyPair(context.Background(), service, keyPairReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_CreateIntCAFinalizeCert_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/finalizeCert"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:           99999,
+		Name:         "Finalized Cert",
+		CurrentState: "READY",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	finalizeReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Finalize Cert",
+	}
+
+	result, err := intermediatecacertificates.CreateIntCAFinalizeCert(context.Background(), service, finalizeReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_CreateUploadCert_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/uploadCert"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   99999,
+		Name: "Uploaded Cert",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	uploadReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Upload Cert",
+	}
+
+	result, err := intermediatecacertificates.CreateUploadCert(context.Background(), service, uploadReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_CreateUploadCertChain_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/uploadCertChain"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:   99999,
+		Name: "Uploaded Cert Chain",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	uploadReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Upload Cert Chain",
+	}
+
+	result, err := intermediatecacertificates.CreateUploadCertChain(context.Background(), service, uploadReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+func TestIntermediateCA_CreateVerifyKeyAttestation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/verifyKeyAttestation"
+
+	server.On("POST", path, common.SuccessResponse(intermediatecacertificates.IntermediateCACertificate{
+		ID:                         99999,
+		Name:                       "Verified Attestation",
+		HSMAttestationVerifiedTime: 1699000000,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	verifyReq := &intermediatecacertificates.IntermediateCACertificate{
+		Name: "Verify Attestation",
+	}
+
+	result, err := intermediatecacertificates.CreateVerifyKeyAttestation(context.Background(), service, verifyReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestIntermediateCACertificates_Structure(t *testing.T) {
 	t.Parallel()

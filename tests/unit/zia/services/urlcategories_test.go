@@ -184,6 +184,48 @@ func TestURLCategories_GetAllLite_SDK(t *testing.T) {
 	assert.Len(t, result, 3)
 }
 
+func TestURLCategories_GetCustomURLCategories_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories"
+
+	server.On("GET", path, common.SuccessResponse([]urlcategories.URLCategory{
+		{ID: "CUSTOM_01", ConfiguredName: "Custom 1", CustomCategory: true},
+		{ID: "GAMBLING", ConfiguredName: "Gambling", CustomCategory: false},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetCustomURLCategories(context.Background(), service, "Custom 1", false, true, "URL_CATEGORY")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "CUSTOM_01", result.ID)
+}
+
+func TestURLCategories_GetURLLookup_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlLookup"
+
+	server.On("POST", path, common.SuccessResponse([]urlcategories.URLClassification{
+		{URL: "google.com", URLClassifications: []string{"SEARCH_ENGINES"}},
+		{URL: "facebook.com", URLClassifications: []string{"SOCIAL_NETWORKING"}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	urls := []string{"google.com", "facebook.com"}
+	result, err := urlcategories.GetURLLookup(context.Background(), service, urls)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

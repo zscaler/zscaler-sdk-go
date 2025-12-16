@@ -2,13 +2,85 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminauditlogs"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestAdminAuditLogs_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport"
+
+	server.On("GET", path, common.SuccessResponse(adminauditlogs.AuditLogEntryReportTaskInfo{
+		Status:                "COMPLETE",
+		ProgressItemsComplete: 1000,
+		ProgressEndTime:       1699999999,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := adminauditlogs.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Equal(t, "COMPLETE", result.Status)
+	assert.Equal(t, 1000, result.ProgressItemsComplete)
+}
+
+func TestAdminAuditLogs_CreateAdminAuditLogsExport_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport"
+
+	server.On("POST", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	exportRequest := adminauditlogs.AuditLogEntryRequest{
+		StartTime: 1699000000,
+		EndTime:   1699999999,
+	}
+
+	resp, err := adminauditlogs.CreateAdminAuditLogsExport(context.Background(), service, exportRequest)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestAdminAuditLogs_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = adminauditlogs.Delete(context.Background(), service)
+
+	require.NoError(t, err)
+}
+
+// Note: GetAdminAuditLogsDownload test omitted due to raw byte response handling
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestAdminAuditLogs_Structure(t *testing.T) {
 	t.Parallel()

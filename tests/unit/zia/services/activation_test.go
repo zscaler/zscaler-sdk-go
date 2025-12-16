@@ -2,13 +2,116 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/activation"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestActivation_GetActivationStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/status"
+
+	server.On("GET", path, common.SuccessResponse(activation.Activation{
+		Status: "ACTIVE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.GetActivationStatus(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "ACTIVE", result.Status)
+}
+
+func TestActivation_CreateActivation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/status/activate"
+
+	server.On("POST", path, common.SuccessResponse(activation.Activation{
+		Status: "PENDING",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	activationReq := activation.Activation{
+		Status: "ACTIVE",
+	}
+
+	result, err := activation.CreateActivation(context.Background(), service, activationReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "PENDING", result.Status)
+}
+
+func TestActivation_GetEusaStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/eusaStatus/latest"
+
+	server.On("GET", path, common.SuccessResponse(activation.ZiaEusaStatus{
+		ID:             12345,
+		AcceptedStatus: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.GetEusaStatus(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 12345, result.ID)
+	assert.True(t, result.AcceptedStatus)
+}
+
+func TestActivation_UpdateEusaStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	statusID := 12345
+	path := "/zia/api/v1/eusaStatus/12345"
+
+	server.On("PUT", path, common.SuccessResponse(activation.ZiaEusaStatus{
+		ID:             statusID,
+		AcceptedStatus: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	eusaStatus := &activation.ZiaEusaStatus{
+		ID:             statusID,
+		AcceptedStatus: true,
+	}
+
+	result, _, err := activation.UpdateEusaStatus(context.Background(), service, statusID, eusaStatus)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.True(t, result.AcceptedStatus)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestActivation_Structure(t *testing.T) {
 	t.Parallel()

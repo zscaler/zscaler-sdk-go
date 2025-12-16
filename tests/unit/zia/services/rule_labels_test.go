@@ -129,6 +129,28 @@ func TestRuleLabels_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestRuleLabels_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	labelName := "Test Label"
+	path := "/zia/api/v1/ruleLabels"
+
+	server.On("GET", path, common.SuccessResponse([]rule_labels.RuleLabels{
+		{ID: 1, Name: "Other Label"},
+		{ID: 2, Name: labelName},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := rule_labels.GetRuleLabelByName(context.Background(), service, labelName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, labelName, result.Name)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

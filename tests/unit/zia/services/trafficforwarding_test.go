@@ -132,6 +132,89 @@ func TestVPNCredentials_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestVPNCredentials_GetByType_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	vpnType := "UFQDN"
+	path := "/zia/api/v1/vpnCredentials"
+
+	server.On("GET", path, common.SuccessResponse([]vpncredentials.VPNCredentials{
+		{ID: 1, Type: vpnType, FQDN: "vpn1.company.com"},
+		{ID: 2, Type: "IP", IPAddress: "203.0.113.1"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vpncredentials.GetVPNByType(context.Background(), service, vpnType, nil, nil, nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 2)
+}
+
+func TestVPNCredentials_GetByFQDN_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	fqdn := "vpn1.company.com"
+	path := "/zia/api/v1/vpnCredentials"
+
+	server.On("GET", path, common.SuccessResponse([]vpncredentials.VPNCredentials{
+		{ID: 1, Type: "UFQDN", FQDN: fqdn},
+		{ID: 2, Type: "UFQDN", FQDN: "vpn2.company.com"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vpncredentials.GetByFQDN(context.Background(), service, fqdn)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, fqdn, result.FQDN)
+}
+
+func TestVPNCredentials_GetByIP_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ipAddress := "203.0.113.1"
+	path := "/zia/api/v1/vpnCredentials"
+
+	server.On("GET", path, common.SuccessResponse([]vpncredentials.VPNCredentials{
+		{ID: 1, Type: "IP", IPAddress: ipAddress},
+		{ID: 2, Type: "IP", IPAddress: "198.51.100.1"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vpncredentials.GetByIP(context.Background(), service, ipAddress)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ipAddress, result.IPAddress)
+}
+
+func TestVPNCredentials_BulkDelete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/vpnCredentials/bulkDelete"
+
+	server.On("POST", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	ids := []int{1, 2, 3}
+	_, err = vpncredentials.BulkDelete(context.Background(), service, ids)
+
+	require.NoError(t, err)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

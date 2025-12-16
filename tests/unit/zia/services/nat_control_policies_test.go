@@ -2,13 +2,162 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/nat_control_policies"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestNatControlPolicies_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/dnatRules/12345"
+
+	server.On("GET", path, common.SuccessResponse(nat_control_policies.NatControlPolicies{
+		ID:    ruleID,
+		Name:  "NAT Policy 1",
+		State: "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := nat_control_policies.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestNatControlPolicies_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "NAT Policy 1"
+	path := "/zia/api/v1/dnatRules"
+
+	server.On("GET", path, common.SuccessResponse([]nat_control_policies.NatControlPolicies{
+		{ID: 1, Name: "Other Policy", State: "ENABLED"},
+		{ID: 2, Name: ruleName, State: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := nat_control_policies.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 2, result.ID)
+}
+
+func TestNatControlPolicies_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/dnatRules"
+
+	server.On("POST", path, common.SuccessResponse(nat_control_policies.NatControlPolicies{
+		ID:    100,
+		Name:  "New NAT Policy",
+		State: "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newPolicy := &nat_control_policies.NatControlPolicies{
+		Name:  "New NAT Policy",
+		State: "ENABLED",
+		Order: 1,
+	}
+
+	result, err := nat_control_policies.Create(context.Background(), service, newPolicy)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 100, result.ID)
+}
+
+func TestNatControlPolicies_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/dnatRules/12345"
+
+	server.On("PUT", path, common.SuccessResponse(nat_control_policies.NatControlPolicies{
+		ID:    ruleID,
+		Name:  "Updated NAT Policy",
+		State: "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updatePolicy := &nat_control_policies.NatControlPolicies{
+		ID:    ruleID,
+		Name:  "Updated NAT Policy",
+		State: "ENABLED",
+	}
+
+	result, err := nat_control_policies.Update(context.Background(), service, ruleID, updatePolicy)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated NAT Policy", result.Name)
+}
+
+func TestNatControlPolicies_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/zia/api/v1/dnatRules/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = nat_control_policies.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+func TestNatControlPolicies_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/dnatRules"
+
+	server.On("GET", path, common.SuccessResponse([]nat_control_policies.NatControlPolicies{
+		{ID: 1, Name: "Policy 1", State: "ENABLED"},
+		{ID: 2, Name: "Policy 2", State: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := nat_control_policies.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestNatControlPolicies_Structure(t *testing.T) {
 	t.Parallel()

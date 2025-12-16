@@ -136,6 +136,55 @@ func TestDLPDictionaries_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDLPDictionaries_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	dictName := "Custom SSN Dictionary"
+	path := "/zia/api/v1/dlpDictionaries"
+
+	server.On("GET", path, common.SuccessResponse([]dlpdictionaries.DlpDictionary{
+		{ID: 1, Name: "Other Dictionary", Custom: true},
+		{ID: 2, Name: dictName, Custom: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dlpdictionaries.GetByName(context.Background(), service, dictName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, dictName, result.Name)
+}
+
+func TestDLPDictionaries_GetPredefinedIdentifiers_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	dictName := "SSN_DICTIONARY"
+	dictID := 12345
+
+	// Mock GetAll which is called by GetByName
+	server.On("GET", "/zia/api/v1/dlpDictionaries", common.SuccessResponse([]dlpdictionaries.DlpDictionary{
+		{ID: dictID, Name: dictName, Custom: false},
+	}))
+
+	// Mock the predefinedIdentifiers endpoint
+	path := "/zia/api/v1/dlpDictionaries/12345/predefinedIdentifiers"
+	server.On("GET", path, common.SuccessResponse([]string{"SSN", "PASSPORT", "DRIVER_LICENSE"}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, returnedID, err := dlpdictionaries.GetPredefinedIdentifiers(context.Background(), service, dictName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result, 3)
+	assert.Equal(t, dictID, returnedID)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

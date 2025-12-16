@@ -140,6 +140,45 @@ func TestFirewallFilteringRules_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestFirewallFilteringRules_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "Block Malicious IPs"
+	path := "/zia/api/v1/firewallFilteringRules"
+
+	server.On("GET", path, common.SuccessResponse([]filteringrules.FirewallFilteringRules{
+		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
+		{ID: 2, Name: ruleName, Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleName, result.Name)
+}
+
+func TestFirewallFilteringRules_GetFilteringRuleCount_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules/count"
+
+	server.On("GET", path, common.SuccessResponse(15))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.GetFirewallFilteringRuleCount(context.Background(), service, nil)
+
+	require.NoError(t, err)
+	assert.Equal(t, 15, result)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

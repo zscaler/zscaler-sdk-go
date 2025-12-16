@@ -2,14 +2,210 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/timewindow"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/time_intervals"
 )
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestTimeWindow_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/timeWindows"
+
+	server.On("GET", path, common.SuccessResponse([]timewindow.TimeWindow{
+		{ID: 1, Name: "Business Hours", StartTime: 540, EndTime: 1080},
+		{ID: 2, Name: "After Hours", StartTime: 1080, EndTime: 540},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := timewindow.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestTimeWindow_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	windowName := "Business Hours"
+	path := "/zia/api/v1/timeWindows"
+
+	server.On("GET", path, common.SuccessResponse([]timewindow.TimeWindow{
+		{ID: 1, Name: windowName, StartTime: 540, EndTime: 1080},
+		{ID: 2, Name: "After Hours", StartTime: 1080, EndTime: 540},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := timewindow.GetTimeWindowByName(context.Background(), service, windowName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, windowName, result.Name)
+}
+
+// =====================================================
+// Time Intervals SDK Function Tests
+// =====================================================
+
+func TestTimeIntervals_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	intervalID := 12345
+	path := "/zia/api/v1/timeIntervals/12345"
+
+	server.On("GET", path, common.SuccessResponse(time_intervals.TimeInterval{
+		ID:         intervalID,
+		Name:       "Business Hours",
+		StartTime:  540,
+		EndTime:    1080,
+		DaysOfWeek: []string{"MON", "TUE", "WED", "THU", "FRI"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := time_intervals.Get(context.Background(), service, intervalID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, intervalID, result.ID)
+}
+
+func TestTimeIntervals_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/timeIntervals"
+
+	server.On("GET", path, common.SuccessResponse([]time_intervals.TimeInterval{
+		{ID: 1, Name: "Business Hours", StartTime: 540, EndTime: 1080},
+		{ID: 2, Name: "After Hours", StartTime: 1080, EndTime: 540},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := time_intervals.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestTimeIntervals_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	intervalName := "Business Hours"
+	path := "/zia/api/v1/timeIntervals"
+
+	server.On("GET", path, common.SuccessResponse([]time_intervals.TimeInterval{
+		{ID: 1, Name: intervalName, StartTime: 540, EndTime: 1080},
+		{ID: 2, Name: "After Hours", StartTime: 1080, EndTime: 540},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := time_intervals.GetTimeIntervalByName(context.Background(), service, intervalName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, intervalName, result.Name)
+}
+
+func TestTimeIntervals_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/timeIntervals"
+
+	server.On("POST", path, common.SuccessResponse(time_intervals.TimeInterval{
+		ID:        99999,
+		Name:      "New Interval",
+		StartTime: 600,
+		EndTime:   1200,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newInterval := &time_intervals.TimeInterval{
+		Name:      "New Interval",
+		StartTime: 600,
+		EndTime:   1200,
+	}
+
+	result, _, err := time_intervals.Create(context.Background(), service, newInterval)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestTimeIntervals_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	intervalID := 12345
+	path := "/zia/api/v1/timeIntervals/12345"
+
+	server.On("PUT", path, common.SuccessResponse(time_intervals.TimeInterval{
+		ID:   intervalID,
+		Name: "Updated Interval",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateInterval := &time_intervals.TimeInterval{
+		ID:   intervalID,
+		Name: "Updated Interval",
+	}
+
+	result, _, err := time_intervals.Update(context.Background(), service, intervalID, updateInterval)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Interval", result.Name)
+}
+
+func TestTimeIntervals_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	intervalID := 12345
+	path := "/zia/api/v1/timeIntervals/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = time_intervals.Delete(context.Background(), service, intervalID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests - JSON marshaling/unmarshaling
+// =====================================================
 
 func TestTimeIntervals_Structure(t *testing.T) {
 	t.Parallel()
