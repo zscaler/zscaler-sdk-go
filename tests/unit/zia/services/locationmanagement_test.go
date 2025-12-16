@@ -187,8 +187,186 @@ func TestLocationManagement_GetSublocations_SDK(t *testing.T) {
 	assert.Len(t, result, 2)
 }
 
-// Note: GetSubLocation, GetSubLocationBySubID, GetSubLocationByNames, and GetSubLocationByName tests omitted
-// due to complex internal calls that require multi-step mocking
+func TestLocationManagement_GetSubLocation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	parentID := 12345
+	subLocationID := 100
+	path := "/zia/api/v1/locations/12345/sublocations"
+
+	server.On("GET", path, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Sublocation 1", ParentID: parentID},
+		{ID: 200, Name: "Sublocation 2", ParentID: parentID},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetSubLocation(context.Background(), service, parentID, subLocationID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, subLocationID, result.ID)
+	assert.Equal(t, "Sublocation 1", result.Name)
+}
+
+func TestLocationManagement_GetSubLocationBySubID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	subLocationID := 100
+	parentPath := "/zia/api/v1/locations"
+	subPath := "/zia/api/v1/locations/1/sublocations"
+
+	// First mock returns parent locations
+	server.On("GET", parentPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: "Parent Location 1"},
+	}))
+
+	// Second mock returns sublocations for parent 1
+	server.On("GET", subPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Target Sublocation", ParentID: 1},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetSubLocationBySubID(context.Background(), service, subLocationID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, subLocationID, result.ID)
+}
+
+func TestLocationManagement_GetSubLocationByNames_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	parentPath := "/zia/api/v1/locations"
+	subPath := "/zia/api/v1/locations/1/sublocations"
+
+	// First mock returns parent locations
+	server.On("GET", parentPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: "Parent Location"},
+	}))
+
+	// Second mock returns sublocations
+	server.On("GET", subPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Target Sublocation", ParentID: 1},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetSubLocationByNames(context.Background(), service, "Parent Location", "Target Sublocation")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Target Sublocation", result.Name)
+}
+
+func TestLocationManagement_GetSubLocationByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	parentPath := "/zia/api/v1/locations"
+	subPath := "/zia/api/v1/locations/1/sublocations"
+
+	// First mock returns parent locations
+	server.On("GET", parentPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: "Parent Location"},
+	}))
+
+	// Second mock returns sublocations
+	server.On("GET", subPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Target Sublocation", ParentID: 1},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetSubLocationByName(context.Background(), service, "Target Sublocation")
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Target Sublocation", result.Name)
+}
+
+func TestLocationManagement_GetAllSublocations_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	parentPath := "/zia/api/v1/locations"
+	subPath1 := "/zia/api/v1/locations/1/sublocations"
+	subPath2 := "/zia/api/v1/locations/2/sublocations"
+
+	// Mock parent locations
+	server.On("GET", parentPath, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: "Parent 1"},
+		{ID: 2, Name: "Parent 2"},
+	}))
+
+	// Mock sublocations for each parent
+	server.On("GET", subPath1, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 100, Name: "Sublocation 1a", ParentID: 1},
+	}))
+	server.On("GET", subPath2, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 200, Name: "Sublocation 2a", ParentID: 2},
+		{ID: 201, Name: "Sublocation 2b", ParentID: 2},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetAllSublocations(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 3) // 1 from parent 1, 2 from parent 2
+}
+
+func TestLocationManagement_GetLocationOrSublocationByID_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationID := 12345
+	path := "/zia/api/v1/locations/12345"
+
+	server.On("GET", path, common.SuccessResponse(locationmanagement.Locations{
+		ID:   locationID,
+		Name: "HQ Office",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetLocationOrSublocationByID(context.Background(), service, locationID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, locationID, result.ID)
+}
+
+func TestLocationManagement_GetLocationOrSublocationByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationName := "HQ Office"
+	path := "/zia/api/v1/locations"
+
+	server.On("GET", path, common.SuccessResponse([]locationmanagement.Locations{
+		{ID: 1, Name: locationName},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := locationmanagement.GetLocationOrSublocationByName(context.Background(), service, locationName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, locationName, result.Name)
+}
 
 func TestLocationManagement_BulkDelete_SDK(t *testing.T) {
 	server := common.NewTestServer()

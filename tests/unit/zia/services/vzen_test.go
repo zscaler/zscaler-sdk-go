@@ -148,6 +148,48 @@ func TestVZENClusters_Update_SDK(t *testing.T) {
 	assert.Equal(t, "Updated Cluster", result.Name)
 }
 
+func TestVZENClusters_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	clusterID := 12345
+	getPath := "/zia/api/v1/virtualZenClusters/12345"
+	updatePath := "/zia/api/v1/virtualZenClusters/12345"
+	deletePath := "/zia/api/v1/virtualZenClusters/12345"
+
+	// Step 1: Mock Get call
+	server.On("GET", getPath, common.SuccessResponse(vzen_clusters.VZENClusters{
+		ID:             clusterID,
+		Name:           "Cluster to Delete",
+		Status:         "ENABLED",
+		Type:           "CLOUD_CONNECTOR",
+		IpAddress:      "192.168.1.100",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "192.168.1.1",
+		IpSecEnabled:   true,
+		VirtualZenNodes: []ziacommon.IDNameExternalID{
+			{ID: 1, Name: "Node 1"},
+		},
+	}))
+
+	// Step 2: Mock Update call (to detach nodes)
+	server.On("PUT", updatePath, common.SuccessResponse(vzen_clusters.VZENClusters{
+		ID:              clusterID,
+		Name:            "Cluster to Delete",
+		VirtualZenNodes: []ziacommon.IDNameExternalID{},
+	}))
+
+	// Step 3: Mock Delete call
+	server.On("DELETE", deletePath, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = vzen_clusters.Delete(context.Background(), service, clusterID)
+
+	require.NoError(t, err)
+}
+
 // =====================================================
 // VZEN Nodes SDK Function Tests
 // =====================================================

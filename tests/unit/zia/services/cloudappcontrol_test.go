@@ -160,8 +160,34 @@ func TestCloudAppControl_GetRuleTypeMapping_SDK(t *testing.T) {
 	assert.Equal(t, "Streaming Media", result["STREAMING_MEDIA"])
 }
 
-// Note: CreateDuplicate and AllAvailableActions tests omitted due to special payload handling
-// that requires nil or raw payloads that are difficult to mock in unit tests
+// Note: CreateDuplicate test is skipped because the SDK function passes nil to Create
+// which is rejected by the OneAPI client. This is a known limitation.
+// The test below exercises code paths where the SDK would need to be fixed to support nil payloads.
+
+func TestCloudAppControl_AllAvailableActions_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleType := "CLOUD_STORAGE"
+	path := "/zia/api/v1/webApplicationRules/" + ruleType + "/availableActions"
+
+	server.On("POST", path, common.SuccessResponse([]string{"ALLOW", "BLOCK", "CAUTION", "ISOLATE"}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	payload := cloudappcontrol.AvailableActionsRequest{
+		CloudApps: []string{"GOOGLE_DRIVE", "DROPBOX"},
+		Type:      ruleType,
+	}
+
+	result, err := cloudappcontrol.AllAvailableActions(context.Background(), service, ruleType, payload)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 4)
+	assert.Contains(t, result, "ALLOW")
+	assert.Contains(t, result, "BLOCK")
+}
 
 // =====================================================
 // Structure Tests
