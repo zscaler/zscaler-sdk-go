@@ -2,13 +2,89 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/workload_groups"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestWorkloadGroups_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	workloadID := 12345
+	path := "/ztw/api/v1/workloadGroups/12345"
+
+	server.On("GET", path, common.SuccessResponse(workload_groups.WorkloadGroup{
+		ID:          workloadID,
+		Name:        "Production Workloads",
+		Description: "All production workloads",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := workload_groups.Get(context.Background(), service, workloadID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, workloadID, result.ID)
+	assert.Equal(t, "Production Workloads", result.Name)
+}
+
+func TestWorkloadGroups_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupName := "Production Workloads"
+	path := "/ztw/api/v1/workloadGroups"
+
+	server.On("GET", path, common.SuccessResponse([]workload_groups.WorkloadGroup{
+		{ID: 1, Name: "Other Group", Description: "Other workloads"},
+		{ID: 2, Name: groupName, Description: "Production workloads"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := workload_groups.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestWorkloadGroups_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/workloadGroups"
+
+	server.On("GET", path, common.SuccessResponse([]workload_groups.WorkloadGroup{
+		{ID: 1, Name: "Group 1"},
+		{ID: 2, Name: "Group 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := workload_groups.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestWorkloadGroups_Structure(t *testing.T) {
 	t.Parallel()

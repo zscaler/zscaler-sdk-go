@@ -2,13 +2,165 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/location"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestLocation_GetLocation_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationID := 12345
+	path := "/ztw/api/v1/location/12345"
+
+	server.On("GET", path, common.SuccessResponse(location.Locations{
+		ID:         locationID,
+		Name:       "US-East-HQ",
+		Country:    "US",
+		ECLocation: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := location.GetLocation(context.Background(), service, locationID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, locationID, result.ID)
+	assert.Equal(t, "US-East-HQ", result.Name)
+}
+
+func TestLocation_GetLocationByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationName := "US-East-HQ"
+	path := "/ztw/api/v1/location"
+
+	server.On("GET", path, common.SuccessResponse([]location.Locations{
+		{ID: 1, Name: "Other Location", Country: "UK"},
+		{ID: 2, Name: locationName, Country: "US"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := location.GetLocationByName(context.Background(), service, locationName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, locationName, result.Name)
+}
+
+func TestLocation_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/location"
+
+	server.On("GET", path, common.SuccessResponse([]location.Locations{
+		{ID: 1, Name: "Location 1", Country: "US"},
+		{ID: 2, Name: "Location 2", Country: "UK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := location.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestLocation_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/location"
+
+	server.On("POST", path, common.SuccessResponse(location.Locations{
+		ID:         99999,
+		Name:       "New Location",
+		Country:    "US",
+		ECLocation: true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newLoc := &location.Locations{
+		Name:       "New Location",
+		Country:    "US",
+		ECLocation: true,
+	}
+
+	result, err := location.Create(context.Background(), service, newLoc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestLocation_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationID := 12345
+	path := "/ztw/api/v1/location/12345"
+
+	server.On("PUT", path, common.SuccessResponse(location.Locations{
+		ID:      locationID,
+		Name:    "Updated Location",
+		Country: "US",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateLoc := &location.Locations{
+		ID:      locationID,
+		Name:    "Updated Location",
+		Country: "US",
+	}
+
+	result, _, err := location.Update(context.Background(), service, locationID, updateLoc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Location", result.Name)
+}
+
+func TestLocation_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	locationID := 12345
+	path := "/ztw/api/v1/location/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = location.Delete(context.Background(), service, locationID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestLocation_Structure(t *testing.T) {
 	t.Parallel()

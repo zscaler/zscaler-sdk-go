@@ -2,14 +2,320 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/policyresources/ipdestinationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/policyresources/networkservices"
 )
+
+// =====================================================
+// IP Destination Groups SDK Function Tests
+// =====================================================
+
+func TestIPDestinationGroups_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ipDestinationGroups/12345"
+
+	server.On("GET", path, common.SuccessResponse(ipdestinationgroups.IPDestinationGroups{
+		ID:   groupID,
+		Name: "External-Servers",
+		Type: "DSTN_IP",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ipdestinationgroups.Get(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
+}
+
+func TestIPDestinationGroups_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupName := "External-Servers"
+	path := "/ztw/api/v1/ipDestinationGroups"
+
+	server.On("GET", path, common.SuccessResponse([]ipdestinationgroups.IPDestinationGroups{
+		{ID: 1, Name: "Other Group", Type: "DSTN_FQDN"},
+		{ID: 2, Name: groupName, Type: "DSTN_IP"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ipdestinationgroups.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestIPDestinationGroups_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ipDestinationGroups"
+
+	server.On("GET", path, common.SuccessResponse([]ipdestinationgroups.IPDestinationGroups{
+		{ID: 1, Name: "Group 1", Type: "DSTN_IP"},
+		{ID: 2, Name: "Group 2", Type: "DSTN_FQDN"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ipdestinationgroups.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestIPDestinationGroups_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ipDestinationGroups/lite"
+
+	server.On("GET", path, common.SuccessResponse([]ipdestinationgroups.IPDestinationGroups{
+		{ID: 1, Name: "Group 1"},
+		{ID: 2, Name: "Group 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ipdestinationgroups.GetAllLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestIPDestinationGroups_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ipDestinationGroups"
+
+	server.On("POST", path, common.SuccessResponse(ipdestinationgroups.IPDestinationGroups{
+		ID:   99999,
+		Name: "New Group",
+		Type: "DSTN_IP",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newGroup := &ipdestinationgroups.IPDestinationGroups{
+		Name: "New Group",
+		Type: "DSTN_IP",
+	}
+
+	result, err := ipdestinationgroups.Create(context.Background(), service, newGroup)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestIPDestinationGroups_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ipDestinationGroups/12345"
+
+	server.On("PUT", path, common.SuccessResponse(ipdestinationgroups.IPDestinationGroups{
+		ID:   groupID,
+		Name: "Updated Group",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateGroup := &ipdestinationgroups.IPDestinationGroups{
+		ID:   groupID,
+		Name: "Updated Group",
+	}
+
+	result, _, err := ipdestinationgroups.Update(context.Background(), service, groupID, updateGroup)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Group", result.Name)
+}
+
+func TestIPDestinationGroups_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ipDestinationGroups/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = ipdestinationgroups.Delete(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Network Services SDK Function Tests
+// =====================================================
+
+func TestNetworkServices_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/ztw/api/v1/networkServices/12345"
+
+	server.On("GET", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:   serviceID,
+		Name: "Custom-HTTP-Service",
+		Type: "CUSTOM",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.Get(context.Background(), service, serviceID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, serviceID, result.ID)
+}
+
+func TestNetworkServices_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceName := "Custom-HTTP-Service"
+	path := "/ztw/api/v1/networkServices"
+
+	server.On("GET", path, common.SuccessResponse([]networkservices.NetworkServices{
+		{ID: 1, Name: "Other Service", Type: "PREDEFINED"},
+		{ID: 2, Name: serviceName, Type: "CUSTOM"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.GetByName(context.Background(), service, serviceName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, serviceName, result.Name)
+}
+
+func TestNetworkServices_GetAllNetworkServices_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/networkServices"
+
+	server.On("GET", path, common.SuccessResponse([]networkservices.NetworkServices{
+		{ID: 1, Name: "Service 1", Type: "CUSTOM"},
+		{ID: 2, Name: "Service 2", Type: "PREDEFINED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := networkservices.GetAllNetworkServices(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestNetworkServices_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/networkServices"
+
+	server.On("POST", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:   99999,
+		Name: "New Service",
+		Type: "CUSTOM",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newSvc := &networkservices.NetworkServices{
+		Name: "New Service",
+		Type: "CUSTOM",
+	}
+
+	result, err := networkservices.Create(context.Background(), service, newSvc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestNetworkServices_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/ztw/api/v1/networkServices/12345"
+
+	server.On("PUT", path, common.SuccessResponse(networkservices.NetworkServices{
+		ID:   serviceID,
+		Name: "Updated Service",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateSvc := &networkservices.NetworkServices{
+		ID:   serviceID,
+		Name: "Updated Service",
+	}
+
+	result, _, err := networkservices.Update(context.Background(), service, serviceID, updateSvc)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Service", result.Name)
+}
+
+func TestNetworkServices_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	serviceID := 12345
+	path := "/ztw/api/v1/networkServices/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = networkservices.Delete(context.Background(), service, serviceID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestIPDestinationGroups_Structure(t *testing.T) {
 	t.Parallel()

@@ -2,14 +2,326 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/forwarding_gateways/dns_forwarding_gateway"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/forwarding_gateways/zia_forwarding_gateway"
 )
+
+// =====================================================
+// DNS Forwarding Gateway SDK Function Tests
+// =====================================================
+
+func TestDNSForwardingGateway_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/dnsGateways/12345"
+
+	server.On("GET", path, common.SuccessResponse(dns_forwarding_gateway.DNSGateway{
+		ID:        gatewayID,
+		Name:      "DNS-Gateway-1",
+		Type:      "ZIA",
+		PrimaryIP: "10.0.0.1",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := dns_forwarding_gateway.Get(context.Background(), service, gatewayID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gatewayID, result.ID)
+	assert.Equal(t, "DNS-Gateway-1", result.Name)
+}
+
+func TestDNSForwardingGateway_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayName := "DNS-Gateway-1"
+	path := "/ztw/api/v1/dnsGateways"
+
+	server.On("GET", path, common.SuccessResponse([]dns_forwarding_gateway.DNSGateway{
+		{ID: 1, Name: "Other Gateway", Type: "ECSELF"},
+		{ID: 2, Name: gatewayName, Type: "ZIA"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dns_forwarding_gateway.GetByName(context.Background(), service, gatewayName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gatewayName, result.Name)
+}
+
+func TestDNSForwardingGateway_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/dnsGateways"
+
+	server.On("GET", path, common.SuccessResponse([]dns_forwarding_gateway.DNSGateway{
+		{ID: 1, Name: "Gateway 1", Type: "ZIA"},
+		{ID: 2, Name: "Gateway 2", Type: "ECSELF"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dns_forwarding_gateway.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestDNSForwardingGateway_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/dnsGateways/lite"
+
+	server.On("GET", path, common.SuccessResponse([]dns_forwarding_gateway.DNSGateway{
+		{ID: 1, Name: "Gateway 1"},
+		{ID: 2, Name: "Gateway 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := dns_forwarding_gateway.GetAllLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestDNSForwardingGateway_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/dnsGateways"
+
+	server.On("POST", path, common.SuccessResponse(dns_forwarding_gateway.DNSGateway{
+		ID:        99999,
+		Name:      "New Gateway",
+		Type:      "ZIA",
+		PrimaryIP: "10.0.0.1",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newGW := &dns_forwarding_gateway.DNSGateway{
+		Name:      "New Gateway",
+		Type:      "ZIA",
+		PrimaryIP: "10.0.0.1",
+	}
+
+	result, _, err := dns_forwarding_gateway.Create(context.Background(), service, newGW)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestDNSForwardingGateway_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/dnsGateways/12345"
+
+	server.On("PUT", path, common.SuccessResponse(dns_forwarding_gateway.DNSGateway{
+		ID:   gatewayID,
+		Name: "Updated Gateway",
+		Type: "ZIA",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateGW := &dns_forwarding_gateway.DNSGateway{
+		ID:   gatewayID,
+		Name: "Updated Gateway",
+		Type: "ZIA",
+	}
+
+	result, _, err := dns_forwarding_gateway.Update(context.Background(), service, gatewayID, updateGW)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Gateway", result.Name)
+}
+
+func TestDNSForwardingGateway_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/dnsGateways/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = dns_forwarding_gateway.Delete(context.Background(), service, gatewayID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// ZIA Forwarding Gateway SDK Function Tests
+// =====================================================
+
+func TestZIAForwardingGateway_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/gateways/12345"
+
+	server.On("GET", path, common.SuccessResponse(zia_forwarding_gateway.ECGateway{
+		ID:          gatewayID,
+		Name:        "ZIA-Gateway-1",
+		PrimaryType: "AUTO",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := zia_forwarding_gateway.Get(context.Background(), service, gatewayID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gatewayID, result.ID)
+}
+
+func TestZIAForwardingGateway_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayName := "ZIA-Gateway-1"
+	path := "/ztw/api/v1/gateways"
+
+	server.On("GET", path, common.SuccessResponse([]zia_forwarding_gateway.ECGateway{
+		{ID: 1, Name: "Other Gateway"},
+		{ID: 2, Name: gatewayName},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zia_forwarding_gateway.GetByName(context.Background(), service, gatewayName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gatewayName, result.Name)
+}
+
+func TestZIAForwardingGateway_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/gateways"
+
+	server.On("GET", path, common.SuccessResponse([]zia_forwarding_gateway.ECGateway{
+		{ID: 1, Name: "Gateway 1"},
+		{ID: 2, Name: "Gateway 2"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zia_forwarding_gateway.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestZIAForwardingGateway_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/gateways"
+
+	server.On("POST", path, common.SuccessResponse(zia_forwarding_gateway.ECGateway{
+		ID:          99999,
+		Name:        "New ZIA Gateway",
+		PrimaryType: "AUTO",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newGW := &zia_forwarding_gateway.ECGateway{
+		Name:        "New ZIA Gateway",
+		PrimaryType: "AUTO",
+	}
+
+	result, _, err := zia_forwarding_gateway.Create(context.Background(), service, newGW)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestZIAForwardingGateway_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/gateways/12345"
+
+	server.On("PUT", path, common.SuccessResponse(zia_forwarding_gateway.ECGateway{
+		ID:   gatewayID,
+		Name: "Updated ZIA Gateway",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateGW := &zia_forwarding_gateway.ECGateway{
+		ID:   gatewayID,
+		Name: "Updated ZIA Gateway",
+	}
+
+	result, _, err := zia_forwarding_gateway.Update(context.Background(), service, gatewayID, updateGW)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated ZIA Gateway", result.Name)
+}
+
+func TestZIAForwardingGateway_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gatewayID := 12345
+	path := "/ztw/api/v1/gateways/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = zia_forwarding_gateway.Delete(context.Background(), service, gatewayID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestDNSForwardingGateway_Structure(t *testing.T) {
 	t.Parallel()

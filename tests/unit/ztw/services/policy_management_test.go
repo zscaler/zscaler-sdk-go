@@ -2,15 +2,261 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/forwarding_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/traffic_dns_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/traffic_log_rules"
 )
+
+// =====================================================
+// Forwarding Rules SDK Function Tests
+// =====================================================
+
+func TestForwardingRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/ztw/api/v1/ecRules/ecRdr/12345"
+
+	server.On("GET", path, common.SuccessResponse(forwarding_rules.ForwardingRules{
+		ID:            ruleID,
+		Name:          "Forward-to-ZIA",
+		ForwardMethod: "ZIA",
+		State:         "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "ZIA", result.ForwardMethod)
+}
+
+func TestForwardingRules_GetRulesByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "Forward-to-ZIA"
+	path := "/ztw/api/v1/ecRules/ecRdr"
+
+	server.On("GET", path, common.SuccessResponse([]forwarding_rules.ForwardingRules{
+		{ID: 1, Name: "Other Rule", ForwardMethod: "DIRECT"},
+		{ID: 2, Name: ruleName, ForwardMethod: "ZIA"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.GetRulesByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleName, result.Name)
+}
+
+func TestForwardingRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecRules/ecRdr"
+
+	server.On("GET", path, common.SuccessResponse([]forwarding_rules.ForwardingRules{
+		{ID: 1, Name: "Rule 1", ForwardMethod: "ZIA"},
+		{ID: 2, Name: "Rule 2", ForwardMethod: "DIRECT"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestForwardingRules_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecRules/ecRdr"
+
+	server.On("POST", path, common.SuccessResponse(forwarding_rules.ForwardingRules{
+		ID:            99999,
+		Name:          "New Rule",
+		ForwardMethod: "ZIA",
+		State:         "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newRule := &forwarding_rules.ForwardingRules{
+		Name:          "New Rule",
+		ForwardMethod: "ZIA",
+	}
+
+	result, err := forwarding_rules.Create(context.Background(), service, newRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestForwardingRules_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/ztw/api/v1/ecRules/ecRdr/12345"
+
+	server.On("PUT", path, common.SuccessResponse(forwarding_rules.ForwardingRules{
+		ID:            ruleID,
+		Name:          "Updated Rule",
+		ForwardMethod: "DIRECT",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateRule := &forwarding_rules.ForwardingRules{
+		ID:            ruleID,
+		Name:          "Updated Rule",
+		ForwardMethod: "DIRECT",
+	}
+
+	result, err := forwarding_rules.Update(context.Background(), service, ruleID, updateRule)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Rule", result.Name)
+}
+
+func TestForwardingRules_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/ztw/api/v1/ecRules/ecRdr/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = forwarding_rules.Delete(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Traffic DNS Rules SDK Function Tests
+// =====================================================
+
+func TestTrafficDNSRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/ztw/api/v1/ecRules/ecDns/12345"
+
+	server.On("GET", path, common.SuccessResponse(traffic_dns_rules.ECDNSRules{
+		ID:     ruleID,
+		Name:   "DNS Rule",
+		Action: "ALLOW",
+		State:  "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := traffic_dns_rules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestTrafficDNSRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecRules/ecDns"
+
+	server.On("GET", path, common.SuccessResponse([]traffic_dns_rules.ECDNSRules{
+		{ID: 1, Name: "DNS Rule 1", Action: "ALLOW"},
+		{ID: 2, Name: "DNS Rule 2", Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := traffic_dns_rules.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Traffic Log Rules SDK Function Tests
+// =====================================================
+
+func TestTrafficLogRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	path := "/ztw/api/v1/ecRules/self/12345"
+
+	server.On("GET", path, common.SuccessResponse(traffic_log_rules.ECTrafficLogRules{
+		ID:    ruleID,
+		Name:  "Log Rule",
+		State: "ENABLED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := traffic_log_rules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+}
+
+func TestTrafficLogRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecRules/self"
+
+	server.On("GET", path, common.SuccessResponse([]traffic_log_rules.ECTrafficLogRules{
+		{ID: 1, Name: "Log Rule 1", State: "ENABLED"},
+		{ID: 2, Name: "Log Rule 2", State: "DISABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := traffic_log_rules.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestForwardingRules_Structure(t *testing.T) {
 	t.Parallel()

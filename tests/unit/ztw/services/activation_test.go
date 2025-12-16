@@ -2,13 +2,101 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/activation"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestActivation_GetActivationStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecAdminActivateStatus"
+
+	server.On("GET", path, common.SuccessResponse(activation.ECAdminActivation{
+		OrgEditStatus:         "ACTIVE",
+		OrgLastActivateStatus: "SUCCESS",
+		AdminActivateStatus:   "READY",
+		AdminStatusMap: map[string]interface{}{
+			"admin@company.com": "active",
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.GetActivationStatus(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "ACTIVE", result.OrgEditStatus)
+	assert.Equal(t, "SUCCESS", result.OrgLastActivateStatus)
+}
+
+func TestActivation_UpdateActivationStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecAdminActivateStatus/activate"
+
+	server.On("PUT", path, common.SuccessResponse(activation.ECAdminActivation{
+		OrgEditStatus:         "PENDING",
+		OrgLastActivateStatus: "ACTIVATION_IN_PROGRESS",
+		AdminActivateStatus:   "ACTIVATING",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateReq := activation.ECAdminActivation{
+		AdminActivateStatus: "ACTIVATING",
+	}
+
+	result, err := activation.UpdateActivationStatus(context.Background(), service, updateReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "ACTIVATION_IN_PROGRESS", result.OrgLastActivateStatus)
+}
+
+func TestActivation_ForceActivationStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecAdminActivateStatus/forcedActivate"
+
+	server.On("PUT", path, common.SuccessResponse(activation.ECAdminActivation{
+		OrgEditStatus:         "FORCE_ACTIVATED",
+		OrgLastActivateStatus: "FORCED_SUCCESS",
+		AdminActivateStatus:   "FORCE_ACTIVATED",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	forceReq := activation.ECAdminActivation{
+		AdminActivateStatus: "FORCE_ACTIVATE",
+	}
+
+	result, err := activation.ForceActivationStatus(context.Background(), service, forceReq)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "FORCE_ACTIVATED", result.OrgEditStatus)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestActivation_Structure(t *testing.T) {
 	t.Parallel()

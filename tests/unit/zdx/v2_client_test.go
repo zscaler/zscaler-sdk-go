@@ -323,3 +323,46 @@ func TestConfiguration_SetBackoffConfig(t *testing.T) {
 	})
 }
 
+// =====================================================
+// Client Creation Tests
+// =====================================================
+
+func TestNewConfiguration_MissingCredentials(t *testing.T) {
+	t.Run("NewConfiguration missing credentials returns error", func(t *testing.T) {
+		_, err := zdx.NewConfiguration()
+		assert.Error(t, err)
+	})
+}
+
+func TestAuthToken_Structure(t *testing.T) {
+	t.Run("AuthToken fields", func(t *testing.T) {
+		token := &zdx.AuthToken{
+			TokenType:   "Bearer",
+			AccessToken: "test-token",
+			ExpiresIn:   3600,
+		}
+
+		assert.Equal(t, "Bearer", token.TokenType)
+		assert.Equal(t, "test-token", token.AccessToken)
+		assert.Equal(t, 3600, token.ExpiresIn)
+	})
+
+	t.Run("AuthToken JSON round-trip", func(t *testing.T) {
+		token := zdx.AuthToken{
+			TokenType:   "Bearer",
+			AccessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+			ExpiresIn:   7200,
+		}
+
+		data, err := json.Marshal(token)
+		require.NoError(t, err)
+
+		var parsed zdx.AuthToken
+		err = json.Unmarshal(data, &parsed)
+		require.NoError(t, err)
+
+		assert.Equal(t, token.TokenType, parsed.TokenType)
+		assert.Equal(t, token.ExpiresIn, parsed.ExpiresIn)
+	})
+}
+

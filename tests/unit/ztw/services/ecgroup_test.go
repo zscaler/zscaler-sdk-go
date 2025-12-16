@@ -2,14 +2,152 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/ecgroup"
 )
+
+// =====================================================
+// SDK Function Tests
+// =====================================================
+
+func TestEcGroup_Get_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ecgroup/12345"
+
+	server.On("GET", path, testcommon.SuccessResponse(ecgroup.EcGroup{
+		ID:          groupID,
+		Name:        "AWS-US-East-EC-Group",
+		Description: "Cloud Connector group",
+		DeployType:  "AWS",
+		Platform:    "AWS",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ecgroup.Get(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
+	assert.Equal(t, "AWS-US-East-EC-Group", result.Name)
+}
+
+func TestEcGroup_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupName := "AWS-US-East-EC-Group"
+	path := "/ztw/api/v1/ecgroup"
+
+	server.On("GET", path, testcommon.SuccessResponse([]ecgroup.EcGroup{
+		{ID: 1, Name: "Other Group", Platform: "AZURE"},
+		{ID: 2, Name: groupName, Platform: "AWS"},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ecgroup.GetByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupName, result.Name)
+}
+
+func TestEcGroup_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/ztw/api/v1/ecgroup"
+
+	server.On("GET", path, testcommon.SuccessResponse([]ecgroup.EcGroup{
+		{ID: 1, Name: "Group 1", Platform: "AWS"},
+		{ID: 2, Name: "Group 2", Platform: "AZURE"},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ecgroup.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestEcGroup_Delete_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ecgroup/12345"
+
+	server.On("DELETE", path, testcommon.NoContentResponse())
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = ecgroup.Delete(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+}
+
+func TestEcGroup_GetEcGroupLiteID_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/ztw/api/v1/ecgroup/lite/12345"
+
+	server.On("GET", path, testcommon.SuccessResponse(ecgroup.EcGroup{
+		ID:   groupID,
+		Name: "AWS-Lite-Group",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ecgroup.GetEcGroupLiteID(context.Background(), service, groupID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupID, result.ID)
+}
+
+func TestEcGroup_GetEcGroupLiteByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupName := "AWS-Lite-Group"
+	path := "/ztw/api/v1/ecgroup/lite"
+
+	server.On("GET", path, testcommon.SuccessResponse([]ecgroup.EcGroup{
+		{ID: 1, Name: groupName},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ecgroup.GetEcGroupLiteByName(context.Background(), service, groupName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, groupName, result.Name)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestEcGroup_Structure(t *testing.T) {
 	t.Parallel()
