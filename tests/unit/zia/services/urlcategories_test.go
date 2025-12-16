@@ -226,6 +226,47 @@ func TestURLCategories_GetURLLookup_SDK(t *testing.T) {
 	assert.Len(t, result, 2)
 }
 
+func TestURLCategories_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories"
+
+	server.On("GET", path, common.SuccessResponse([]urlcategories.URLCategory{
+		{ID: "ADULT_CONTENT", ConfiguredName: "Adult Content", CustomCategory: false},
+		{ID: "CUSTOM_01", ConfiguredName: "Custom 1", CustomCategory: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetAll(context.Background(), service, false, false, "")
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestURLCategories_CreateURLReview_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories/review/domains"
+
+	server.On("POST", path, common.SuccessResponse([]urlcategories.URLReview{
+		{URL: "newsite.com", DomainType: "FULL_DOMAIN", Matches: []urlcategories.DomainMatch{{ID: "UNCATEGORIZED", Name: "Uncategorized"}}},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	domains := []string{"newsite.com"}
+	result, err := urlcategories.CreateURLReview(context.Background(), service, domains)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "newsite.com", result[0].URL)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

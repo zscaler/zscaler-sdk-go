@@ -2,15 +2,307 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	ziacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/vzen_clusters"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/vzen_nodes"
 )
+
+// =====================================================
+// VZEN Clusters SDK Function Tests
+// =====================================================
+
+func TestVZENClusters_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	clusterID := 12345
+	path := "/zia/api/v1/virtualZenClusters/12345"
+
+	server.On("GET", path, common.SuccessResponse(vzen_clusters.VZENClusters{
+		ID:             clusterID,
+		Name:           "VZEN Cluster 1",
+		Status:         "ENABLED",
+		IpAddress:      "192.168.1.100",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "192.168.1.1",
+		Type:           "CLOUD_CONNECTOR",
+		IpSecEnabled:   true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_clusters.Get(context.Background(), service, clusterID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, clusterID, result.ID)
+	assert.Equal(t, "VZEN Cluster 1", result.Name)
+}
+
+func TestVZENClusters_GetClusterByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	clusterName := "Production Cluster"
+	path := "/zia/api/v1/virtualZenClusters"
+
+	server.On("GET", path, common.SuccessResponse([]vzen_clusters.VZENClusters{
+		{ID: 1, Name: "Other Cluster", Status: "ENABLED"},
+		{ID: 2, Name: clusterName, Status: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_clusters.GetClusterByName(context.Background(), service, clusterName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, clusterName, result.Name)
+}
+
+func TestVZENClusters_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenClusters"
+
+	server.On("GET", path, common.SuccessResponse([]vzen_clusters.VZENClusters{
+		{ID: 1, Name: "Cluster 1", Status: "ENABLED"},
+		{ID: 2, Name: "Cluster 2", Status: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_clusters.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestVZENClusters_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenClusters"
+
+	server.On("POST", path, common.SuccessResponse(vzen_clusters.VZENClusters{
+		ID:             99999,
+		Name:           "New Cluster",
+		Status:         "ENABLED",
+		IpAddress:      "10.0.0.100",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "10.0.0.1",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newCluster := &vzen_clusters.VZENClusters{
+		Name:           "New Cluster",
+		IpAddress:      "10.0.0.100",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "10.0.0.1",
+	}
+
+	result, _, err := vzen_clusters.Create(context.Background(), service, newCluster)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestVZENClusters_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	clusterID := 12345
+	path := "/zia/api/v1/virtualZenClusters/12345"
+
+	server.On("PUT", path, common.SuccessResponse(vzen_clusters.VZENClusters{
+		ID:   clusterID,
+		Name: "Updated Cluster",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateCluster := &vzen_clusters.VZENClusters{
+		ID:   clusterID,
+		Name: "Updated Cluster",
+	}
+
+	result, _, err := vzen_clusters.Update(context.Background(), service, clusterID, updateCluster)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Cluster", result.Name)
+}
+
+// =====================================================
+// VZEN Nodes SDK Function Tests
+// =====================================================
+
+func TestVZENNodes_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	nodeID := 12345
+	path := "/zia/api/v1/virtualZenNodes/12345"
+
+	server.On("GET", path, common.SuccessResponse(vzen_nodes.VZENNodes{
+		ID:             nodeID,
+		Name:           "VZEN Node 1",
+		Status:         "ENABLED",
+		IPAddress:      "192.168.1.101",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "192.168.1.1",
+		DeploymentMode: "CLUSTER",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_nodes.Get(context.Background(), service, nodeID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, nodeID, result.ID)
+	assert.Equal(t, "VZEN Node 1", result.Name)
+}
+
+func TestVZENNodes_GetNodeByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	nodeName := "Production Node"
+	path := "/zia/api/v1/virtualZenNodes"
+
+	server.On("GET", path, common.SuccessResponse([]vzen_nodes.VZENNodes{
+		{ID: 1, Name: "Other Node", Status: "ENABLED"},
+		{ID: 2, Name: nodeName, Status: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_nodes.GetNodeByName(context.Background(), service, nodeName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, nodeName, result.Name)
+}
+
+func TestVZENNodes_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenNodes"
+
+	server.On("GET", path, common.SuccessResponse([]vzen_nodes.VZENNodes{
+		{ID: 1, Name: "Node 1", Status: "ENABLED"},
+		{ID: 2, Name: "Node 2", Status: "ENABLED"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_nodes.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestVZENNodes_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenNodes"
+
+	server.On("POST", path, common.SuccessResponse(vzen_nodes.VZENNodes{
+		ID:             99999,
+		Name:           "New Node",
+		Status:         "ENABLED",
+		IPAddress:      "10.0.0.101",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "10.0.0.1",
+		DeploymentMode: "STANDALONE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	newNode := &vzen_nodes.VZENNodes{
+		Name:           "New Node",
+		IPAddress:      "10.0.0.101",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "10.0.0.1",
+		DeploymentMode: "STANDALONE",
+	}
+
+	result, _, err := vzen_nodes.Create(context.Background(), service, newNode)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestVZENNodes_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	nodeID := 12345
+	path := "/zia/api/v1/virtualZenNodes/12345"
+
+	server.On("PUT", path, common.SuccessResponse(vzen_nodes.VZENNodes{
+		ID:   nodeID,
+		Name: "Updated Node",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateNode := &vzen_nodes.VZENNodes{
+		ID:   nodeID,
+		Name: "Updated Node",
+	}
+
+	result, _, err := vzen_nodes.Update(context.Background(), service, nodeID, updateNode)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Node", result.Name)
+}
+
+func TestVZENNodes_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	nodeID := 12345
+	path := "/zia/api/v1/virtualZenNodes/12345"
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = vzen_nodes.Delete(context.Background(), service, nodeID)
+
+	require.NoError(t, err)
+}
+
+// =====================================================
+// Structure Tests
+// =====================================================
 
 func TestVZENClusters_Structure(t *testing.T) {
 	t.Parallel()
@@ -25,7 +317,7 @@ func TestVZENClusters_Structure(t *testing.T) {
 			DefaultGateway: "192.168.1.1",
 			Type:           "CLOUD_CONNECTOR",
 			IpSecEnabled:   true,
-			VirtualZenNodes: []common.IDNameExternalID{
+			VirtualZenNodes: []ziacommon.IDNameExternalID{
 				{ID: 1, Name: "Node 1"},
 				{ID: 2, Name: "Node 2"},
 			},

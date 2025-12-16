@@ -159,6 +159,78 @@ func TestURLFilteringRules_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestURLFilteringRules_GetUrlAndAppSettings_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/advancedUrlFilterAndCloudAppSettings"
+
+	server.On("GET", path, common.SuccessResponse(urlfilteringpolicies.URLAdvancedPolicySettings{
+		EnableDynamicContentCat: true,
+		EnforceSafeSearch:       true,
+		EnableOffice365:         true,
+		EnableUcaasZoom:         true,
+		EnableChatGptPrompt:     true,
+		SafeSearchApps:          []string{"GOOGLE", "BING"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlfilteringpolicies.GetUrlAndAppSettings(context.Background(), service)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.True(t, result.EnableDynamicContentCat)
+	assert.True(t, result.EnforceSafeSearch)
+}
+
+func TestURLFilteringRules_UpdateUrlAndAppSettings_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/advancedUrlFilterAndCloudAppSettings"
+
+	server.On("PUT", path, common.SuccessResponse(urlfilteringpolicies.URLAdvancedPolicySettings{
+		EnableDynamicContentCat: false,
+		EnforceSafeSearch:       true,
+		EnableOffice365:         true,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	settings := urlfilteringpolicies.URLAdvancedPolicySettings{
+		EnableDynamicContentCat: false,
+		EnforceSafeSearch:       true,
+		EnableOffice365:         true,
+	}
+
+	result, _, err := urlfilteringpolicies.UpdateUrlAndAppSettings(context.Background(), service, settings)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.False(t, result.EnableDynamicContentCat)
+}
+
+func TestURLFilteringRules_UpdateUrlAndAppSettings_ValidationError(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	// Test validation error when EnableCIPACompliance is set with incompatible options
+	settings := urlfilteringpolicies.URLAdvancedPolicySettings{
+		EnableCIPACompliance:      true,
+		EnableNewlyRegisteredDomains: true, // This should fail validation
+	}
+
+	_, _, err = urlfilteringpolicies.UpdateUrlAndAppSettings(context.Background(), service, settings)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "EnableCIPACompliance cannot be enabled")
+}
+
 // =====================================================
 // Structure Tests
 // =====================================================
