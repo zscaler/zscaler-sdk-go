@@ -132,50 +132,57 @@ test\:integration\:zidentity:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running all unit tests...$(COLOR_NONE)"
-	@go test -failfast -race ./tests/unit/... -test.v
-	@make test:unit:zpa
-	@make test:unit:zia
-	@make test:unit:ztw
-	@make test:unit:zdx
-	@make test:unit:zcc
-	@make test:unit:zwa
-	@make test:unit:oneapi
+	@go test -v -race ./tests/unit/... -timeout 120s
+
+test\:unit\:coverage:
+	@echo "$(COLOR_OK)Running all unit tests with source coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/... \
+		./tests/unit/... -timeout 180s
+	@echo ""
+	@echo "=== Coverage Summary ==="
+	@go tool cover -func unit-coverage.out 2>/dev/null | grep -E "total:" || echo "Coverage report generated"
 
 test\:unit\:zpa:
-	@echo "$(COLOR_OK)Running ZPA unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/zpa -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZPA unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zpa-coverage.out -covermode=atomic ./tests/unit/zpa/... -timeout 60s
+	@go tool cover -func unit-zpa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:zia:
-	@echo "$(COLOR_OK)Running ZIA unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/zia -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZIA unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zia-coverage.out -covermode=atomic ./tests/unit/zia/... -timeout 60s
+	@go tool cover -func unit-zia-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:ztw:
-	@echo "$(COLOR_OK)Running ZTW unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/ztw -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZTW unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-ztw-coverage.out -covermode=atomic ./tests/unit/ztw/... -timeout 60s
+	@go tool cover -func unit-ztw-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:zdx:
-	@echo "$(COLOR_OK)Running ZDX unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/zdx -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZDX unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zdx-coverage.out -covermode=atomic ./tests/unit/zdx/... -timeout 60s
+	@go tool cover -func unit-zdx-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:zcc:
-	@echo "$(COLOR_OK)Running ZCC unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/zcc -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZCC unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zcc-coverage.out -covermode=atomic ./tests/unit/zcc/... -timeout 60s
+	@go tool cover -func unit-zcc-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:zwa:
-	@echo "$(COLOR_OK)Running ZWA unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler/zwa -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running ZWA unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zwa-coverage.out -covermode=atomic ./tests/unit/zwa/... -timeout 60s
+	@go tool cover -func unit-zwa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
 test\:unit\:oneapi:
-	@echo "$(COLOR_OK)Running OneAPI unit tests...$(COLOR_NONE)"
-	@go test -v ./zscaler -run "Test" -timeout 10s
+	@echo "$(COLOR_OK)Running OneAPI unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-oneapi-coverage.out -covermode=atomic ./tests/unit/common/... -timeout 60s
+	@go tool cover -func unit-oneapi-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
 
-test\:unit\all:
-	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
-	go test -race ./tests/unit/zcc -test.v
-	go test -race ./tests/unit/ztw -test.v
-	go test -race ./tests/unit/zdx -test.v
-	go test -race ./tests/unit/zia -test.v
-	go test -race ./tests/unit/zpa -test.v
+test\:unit\:all:
+	@echo "$(COLOR_OK)Running all unit tests with combined coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic ./tests/unit/... -timeout 120s
+	@go tool cover -html=unit-coverage.out -o unit-coverage.html
+	@go tool cover -func unit-coverage.out | grep total:
 
 ziaActivator: GOOS=$(shell go env GOOS)
 ziaActivator: GOARCH=$(shell go env GOARCH)

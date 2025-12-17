@@ -8,7 +8,8 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 13 * * 1-5' # UTC
+    # Weekly integration tests on Sunday at 6:00 AM PST (14:00 UTC)
+    - cron: "0 14 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -33,19 +34,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goVersion }}
-
-      - name: Clean existing Go modules
-        run: go clean -modcache
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache: true
+          cache-dependency-path: go.sum
 
       - name: Set Go env
         run: |
@@ -73,7 +63,7 @@ jobs:
           ZSCALER_CLOUD: ${{ secrets.ZSCALER_CLOUD }}
 
       - name: Publish test coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./zcccoverage.out

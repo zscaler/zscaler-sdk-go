@@ -1,0 +1,146 @@
+// Package unit provides unit tests for ZPA services
+package unit
+
+import (
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/private_cloud_controller"
+)
+
+func TestPrivateCloudController_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudID := "pc-12345"
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/privateCloudController/{id}
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/" + cloudID
+
+	server.On("GET", path, common.SuccessResponse(private_cloud_controller.PrivateCloudController{
+		ID:   cloudID,
+		Name: "Test Private Cloud",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := private_cloud_controller.Get(context.Background(), service, cloudID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, cloudID, result.ID)
+}
+
+func TestPrivateCloudController_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	// Correct path: /zpa/mgmtconfig/v1/admin/customers/{customerId}/privateCloudController
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list":       []private_cloud_controller.PrivateCloudController{{ID: "pc-001"}, {ID: "pc-002"}},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := private_cloud_controller.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestPrivateCloudController_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudName := "Production Cloud"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController"
+
+	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
+		"list": []private_cloud_controller.PrivateCloudController{
+			{ID: "pc-001", Name: "Other Cloud"},
+			{ID: "pc-002", Name: cloudName},
+		},
+		"totalPages": 1,
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := private_cloud_controller.GetByName(context.Background(), service, cloudName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "pc-002", result.ID)
+	assert.Equal(t, cloudName, result.Name)
+}
+
+func TestPrivateCloudController_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudID := "pc-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/" + cloudID
+
+	// Update calls PUT first then GET to fetch updated resource
+	server.On("PUT", path, common.NoContentResponse())
+	server.On("GET", path, common.SuccessResponse(private_cloud_controller.PrivateCloudController{
+		ID:   cloudID,
+		Name: "Updated Private Cloud",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	updateCloud := private_cloud_controller.PrivateCloudController{
+		ID:   cloudID,
+		Name: "Updated Private Cloud",
+	}
+
+	result, _, err := private_cloud_controller.Update(context.Background(), service, cloudID, updateCloud)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+}
+
+func TestPrivateCloudController_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudID := "pc-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/" + cloudID
+
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := private_cloud_controller.Delete(context.Background(), service, cloudID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestPrivateCloudController_ControllerRestart_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	cloudID := "pc-12345"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/privateCloudController/restart/" + cloudID
+
+	server.On("PUT", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	resp, err := private_cloud_controller.ControllerRestart(context.Background(), service, cloudID)
+
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

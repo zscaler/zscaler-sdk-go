@@ -1,0 +1,101 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.24"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+
+      - name: Run all unit tests with coverage
+        run: |
+          # Run unit tests with -coverpkg to track coverage on actual SDK packages
+          # This ensures we measure coverage on the source code, not test files
+          gotestsum --junitfile junit.xml --format testname -- \
+            -v -race -cover \
+            -coverprofile=coverage.out \
+            -covermode=atomic \
+            -coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/...,github.com/zscaler/zscaler-sdk-go/v3/cache,github.com/zscaler/zscaler-sdk-go/v3/logger,github.com/zscaler/zscaler-sdk-go/v3/ratelimiter \
+            ./tests/unit/... \
+            -timeout 180s
+          echo ""
+          echo "=== Coverage Summary ==="
+          go tool cover -func coverage.out | tail -20
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out
+          flags: unit
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./junit.xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            ./coverage.out
+            ./junit.xml
+          retention-days: 30
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: ./junit.xml
+          check_name: Unit Test Results
+          comment_mode: off
