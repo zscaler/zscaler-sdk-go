@@ -364,5 +364,45 @@ func TestZWA_DefaultHeader(t *testing.T) {
 
 		assert.Equal(t, "test-value", cfg.DefaultHeader["X-Test-Header"])
 	})
+
+	t.Run("AddDefaultHeader multiple headers", func(t *testing.T) {
+		cfg := &zwa.Configuration{
+			DefaultHeader: make(map[string]string),
+		}
+		cfg.AddDefaultHeader("X-API-Version", "v1")
+		cfg.AddDefaultHeader("X-Request-ID", "req-12345")
+		cfg.AddDefaultHeader("X-Correlation-ID", "corr-67890")
+
+		assert.Equal(t, "v1", cfg.DefaultHeader["X-API-Version"])
+		assert.Equal(t, "req-12345", cfg.DefaultHeader["X-Request-ID"])
+		assert.Equal(t, "corr-67890", cfg.DefaultHeader["X-Correlation-ID"])
+	})
+
+	t.Run("AddDefaultHeader override existing", func(t *testing.T) {
+		cfg := &zwa.Configuration{
+			DefaultHeader: make(map[string]string),
+		}
+		cfg.AddDefaultHeader("X-Custom", "old-value")
+		assert.Equal(t, "old-value", cfg.DefaultHeader["X-Custom"])
+
+		cfg.AddDefaultHeader("X-Custom", "new-value")
+		assert.Equal(t, "new-value", cfg.DefaultHeader["X-Custom"])
+	})
+}
+
+func TestZWA_NewConfiguration_MissingCredentials(t *testing.T) {
+	t.Run("NewConfiguration missing credentials returns error", func(t *testing.T) {
+		_, err := zwa.NewConfiguration()
+		assert.Error(t, err)
+	})
+}
+
+func TestZWA_Client_NilConfiguration(t *testing.T) {
+	t.Run("NewClient with nil configuration returns error", func(t *testing.T) {
+		client, err := zwa.NewClient(nil)
+		assert.Error(t, err)
+		assert.Nil(t, client)
+		assert.Contains(t, err.Error(), "configuration cannot be nil")
+	})
 }
 
