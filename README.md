@@ -1085,14 +1085,14 @@ The ZTW Cloud is identified by several cloud name prefixes, which determines whi
 
 ### ZTW Environment variables
 
-You can provide credentials via the `ZTW_USERNAME`, `ZTW_PASSWORD`, `ZTW_API_KEY`, `ZTW_CLOUD` environment variables, representing your ZTW `username`, `password`, `api_key` and `cloud` respectively.
+You can provide credentials via the `ZTC_USERNAME`, `ZTC_PASSWORD`, `ZTC_API_KEY`, `ZTC_CLOUD` environment variables, representing your ZTW `username`, `password`, `api_key` and `cloud` respectively.
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZTW_USERNAME` |
-| `password`       | _(String)_ A string that contains the password for the API admin.| `ZTW_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTW_API_KEY` |
-| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTW_CLOUD` |
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZTC_USERNAME` |
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZTC_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTC_API_KEY` |
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTC_CLOUD` |
 
 **NOTE**: The Zscaler Cloud Connector (ZTW) API Client instantiation DOES NOT require the use of the `useLegacyClient` attribute.
 
@@ -1110,10 +1110,10 @@ import (
 )
 
 func main() {
-	username := os.Getenv("ZTW_USERNAME")
-	password := os.Getenv("ZTW_PASSWORD")
-	apiKey   := os.Getenv("ZTW_API_KEY")
-	ztwCloud := os.Getenv("ZTW_CLOUD")
+	username := os.Getenv("ZTC_USERNAME")
+	password := os.Getenv("ZTC_PASSWORD")
+	apiKey   := os.Getenv("ZTC_API_KEY")
+	ztwCloud := os.Getenv("ZTC_CLOUD")
 
   ztwCfg, err := ztw.NewConfiguration(
 		ztw.WithZtwUsername(username),

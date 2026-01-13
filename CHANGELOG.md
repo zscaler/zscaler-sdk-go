@@ -1,5 +1,29 @@
 # Changelog
 
+# 3.8.12 (January 13, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #398](https://github.com/zscaler/zscaler-sdk-go/pull/398) - Fixed ZTW Legacy Client environment variables
+
+
+# 3.8.11 (December 16, 2025)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #396](https://github.com/zscaler/zscaler-sdk-go/pull/396) - Added new `tags` field to ZPA `applicationsegment`
+- [PR #396](https://github.com/zscaler/zscaler-sdk-go/pull/396) - Improved several unit tests across all packages.
+
+### Bug Fixes
+
+- [PR #396](https://github.com/zscaler/zscaler-sdk-go/pull/396) - Adjusted retry logic for ZIA calls under OneAPI client.
+
 # 3.8.10 (December 10, 2025)
 
 ## Notes
