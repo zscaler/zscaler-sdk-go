@@ -36,10 +36,10 @@ const (
 
 const (
 	VERSION      = "3.7.5"
-	ZTW_USERNAME = "ZTW_USERNAME"
-	ZTW_PASSWORD = "ZTW_PASSWORD"
-	ZTW_API_KEY  = "ZTW_API_KEY"
-	ZTW_CLOUD    = "ZTW_CLOUD"
+	ZTC_USERNAME = "ZTC_USERNAME"
+	ZTC_PASSWORD = "ZTC_PASSWORD"
+	ZTC_API_KEY  = "ZTC_API_KEY"
+	ZTC_CLOUD    = "ZTC_CLOUD"
 )
 
 type contextKey string
@@ -110,32 +110,32 @@ type Configuration struct {
 	Context        context.Context
 	ZTW            struct {
 		Client struct {
-			ZTWUsername string `yaml:"username" envconfig:"ZTW_USERNAME"`
-			ZTWPassword string `yaml:"password" envconfig:"ZTW_PASSWORD"`
-			ZTWApiKey   string `yaml:"apiKey" envconfig:"ZTW_API_KEY"`
-			ZTWCloud    string `yaml:"cloud" envconfig:"ZTW_CLOUD"`
+			ZTCUsername string `yaml:"username" envconfig:"ZTC_USERNAME"`
+			ZTCPassword string `yaml:"password" envconfig:"ZTC_PASSWORD"`
+			ZTCApiKey   string `yaml:"apiKey" envconfig:"ZTC_API_KEY"`
+			ZTCCloud    string `yaml:"cloud" envconfig:"ZTC_CLOUD"`
 			PartnerID   string `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			Cache       struct {
-				Enabled               bool          `yaml:"enabled" envconfig:"ZTW_CLIENT_CACHE_ENABLED"`
-				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_TTL"`
-				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_SIZE"`
+				Enabled               bool          `yaml:"enabled" envconfig:"ZTC_CLIENT_CACHE_ENABLED"`
+				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZTC_CLIENT_CACHE_DEFAULT_TTL"`
+				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZTC_CLIENT_CACHE_DEFAULT_TTI"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZTC_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
-				Port     int32  `yaml:"port" envconfig:"ZTW_CLIENT_PROXY_PORT"`
-				Host     string `yaml:"host" envconfig:"ZTW_CLIENT_PROXY_HOST"`
-				Username string `yaml:"username" envconfig:"ZTW_CLIENT_PROXY_USERNAME"`
-				Password string `yaml:"password" envconfig:"ZTW_CLIENT_PROXY_PASSWORD"`
+				Port     int32  `yaml:"port" envconfig:"ZTC_CLIENT_PROXY_PORT"`
+				Host     string `yaml:"host" envconfig:"ZTC_CLIENT_PROXY_HOST"`
+				Username string `yaml:"username" envconfig:"ZTC_CLIENT_PROXY_USERNAME"`
+				Password string `yaml:"password" envconfig:"ZTC_CLIENT_PROXY_PASSWORD"`
 			} `yaml:"proxy"`
-			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZTW_CLIENT_REQUEST_TIMEOUT"`
+			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZTC_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
-				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZTW_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZTW_CLIENT_RATE_LIMIT_MIN_WAIT"`
-				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZTW_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZTC_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZTC_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZTC_CLIENT_RATE_LIMIT_MAX_WAIT"`
 			} `yaml:"rateLimit"`
 		} `yaml:"client"`
 		Testing struct {
-			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZTW_TESTING_DISABLE_HTTPS_CHECK"`
+			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZTC_TESTING_DISABLE_HTTPS_CHECK"`
 		} `yaml:"testing"`
 	} `yaml:"ztw"`
 	CacheManager cache.Cache
@@ -169,13 +169,13 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	readConfigFromEnvironment(cfg)
 
 	// Validate critical configuration fields
-	if cfg.ZTW.Client.ZTWUsername == "" || cfg.ZTW.Client.ZTWPassword == "" || cfg.ZTW.Client.ZTWApiKey == "" || cfg.ZTW.Client.ZTWCloud == "" {
-		logger.Printf("[ERROR] Missing client credentials (ZTW_USERNAME, ZTW_PASSWORD, ZTW_API_KEY, ZTW_CLOUD).")
-		return nil, fmt.Errorf("client credentials (ZTW_USERNAME, ZTW_PASSWORD, ZTW_API_KEY, ZTW_CLOUD) are missing")
+	if cfg.ZTW.Client.ZTCUsername == "" || cfg.ZTW.Client.ZTCPassword == "" || cfg.ZTW.Client.ZTCApiKey == "" || cfg.ZTW.Client.ZTCCloud == "" {
+		logger.Printf("[ERROR] Missing client credentials (ZTC_USERNAME, ZTC_PASSWORD, ZTC_API_KEY, ZTC_CLOUD).")
+		return nil, fmt.Errorf("client credentials (ZTC_USERNAME, ZTC_PASSWORD, ZTC_API_KEY, ZTC_CLOUD) are missing")
 	}
 
 	// Construct base URL with the API version
-	rawURL := fmt.Sprintf("https://connector.%s.net/%s", cfg.ZTW.Client.ZTWCloud, ztwAPIVersion)
+	rawURL := fmt.Sprintf("https://connector.%s.net/%s", cfg.ZTW.Client.ZTCCloud, ztwAPIVersion)
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		logger.Printf("[ERROR] Error occurred while parsing the base URL: %v", err)
@@ -200,28 +200,28 @@ type ConfigSetter func(*Configuration)
 // WithZtwUsername sets the Username in the Config.
 func WithZtwUsername(username string) ConfigSetter {
 	return func(c *Configuration) {
-		c.ZTW.Client.ZTWUsername = username
+		c.ZTW.Client.ZTCUsername = username
 	}
 }
 
 // WithZtwPassword sets the Password in the Config.
 func WithZtwPassword(password string) ConfigSetter {
 	return func(c *Configuration) {
-		c.ZTW.Client.ZTWPassword = password
+		c.ZTW.Client.ZTCPassword = password
 	}
 }
 
 // func WithZtwAPIKey(apiKey string) ConfigSetter {
 func WithZtwAPIKey(apiKey string) ConfigSetter {
 	return func(c *Configuration) {
-		c.ZTW.Client.ZTWApiKey = apiKey
+		c.ZTW.Client.ZTCApiKey = apiKey
 	}
 }
 
 // WithZtwCloud sets the ApiKey in the Config.
 func WithZtwCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
-		c.ZTW.Client.ZTWCloud = cloud
+		c.ZTW.Client.ZTCCloud = cloud
 	}
 }
 
