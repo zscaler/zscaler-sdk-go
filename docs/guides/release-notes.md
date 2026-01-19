@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.11``
+``Last updated: v3.8.13``
 
 ---
+
+# 3.8.13 (January 19, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #400](https://github.com/zscaler/zscaler-sdk-go/pull/400) - Fixed `GetAll` function in forwarding_rules ztw package to support new optional parameters.
 
 # 3.8.12 (January 13, 2026)
 

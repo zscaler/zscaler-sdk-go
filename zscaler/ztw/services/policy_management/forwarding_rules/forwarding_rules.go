@@ -206,6 +206,17 @@ type ForwardingRulesCountQuery struct {
 	Location            string
 }
 
+// ForwardingRulesQuery defines optional filter parameters for GetAll
+type ForwardingRulesQuery struct {
+	RuleName          string
+	RuleOrder         string
+	RuleDescription   string
+	RuleForwardMethod string
+	Location          string
+	SortBy            string
+	SortOrder         string
+}
+
 // ForwardingRulesCountResponse defines the expected response structure
 type ForwardingRulesCountResponse struct {
 	Count int `json:"count"`
@@ -271,10 +282,43 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service) ([]ForwardingRules, error) {
+// GetAll retrieves forwarding rules with optional filter parameters
+// Pass nil for params to retrieve all rules without filters
+func GetAll(ctx context.Context, service *zscaler.Service, params ...ForwardingRulesQuery) ([]ForwardingRules, error) {
 	var rules []ForwardingRules
-	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(ctx, service.Client, forwardingRulesEndpoint, &rules)
+
+	// Build query string with optional filters
+	endpoint := forwardingRulesEndpoint
+	if len(params) > 0 {
+		query := url.Values{}
+		if params[0].RuleName != "" {
+			query.Set("ruleName", params[0].RuleName)
+		}
+		if params[0].RuleOrder != "" {
+			query.Set("ruleOrder", params[0].RuleOrder)
+		}
+		if params[0].RuleDescription != "" {
+			query.Set("ruleDescription", params[0].RuleDescription)
+		}
+		if params[0].RuleForwardMethod != "" {
+			query.Set("ruleForwardMethod", params[0].RuleForwardMethod)
+		}
+		if params[0].Location != "" {
+			query.Set("location", params[0].Location)
+		}
+		if params[0].SortBy != "" {
+			query.Set("sortBy", params[0].SortBy)
+		}
+		if params[0].SortOrder != "" {
+			query.Set("sortOrder", params[0].SortOrder)
+		}
+		if len(query) > 0 {
+			endpoint += "?" + query.Encode()
+		}
+	}
+
+	// Use ReadAllPages which handles page and pageSize automatically
+	err := common.ReadAllPages(ctx, service.Client, endpoint, &rules)
 	return rules, err
 }
 
