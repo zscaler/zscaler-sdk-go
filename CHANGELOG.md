@@ -1,5 +1,15 @@
 # Changelog
 
+# 3.8.14 (January 21, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #401](https://github.com/zscaler/zscaler-sdk-go/pull/401) - Fixed `GetAll` function in `ssl_inspection_rules` zia package by removing unsupported pagination parameters.
+
+
 # 3.8.13 (January 19, 2026)
 
 ## Notes

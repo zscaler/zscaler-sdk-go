@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.13``
+``Last updated: v3.8.14``
 
 ---
+
+# 3.8.14 (January 21, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #401](https://github.com/zscaler/zscaler-sdk-go/pull/401) - Fixed `GetAll` function in `ssl_inspection_rules` zia package by removing unsupported pagination parameters.
 
 # 3.8.13 (January 19, 2026)
 
