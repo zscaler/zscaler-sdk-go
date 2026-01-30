@@ -52,11 +52,12 @@ type AppConnectorGroup struct {
 	ReadOnly                      bool                                  `json:"readOnly,omitempty"`
 	RestrictionType               string                                `json:"restrictionType,omitempty"`
 	ZscalerManaged                bool                                  `json:"zscalerManaged,omitempty"`
-	DCHostingInfo                 string                                `json:"dcHostingInfo,omitempty"`
+	DCHostingInfo                 string                                `json:"dcHostingInfo"`
 	NameWithoutTrim               string                                `json:"nameWithoutTrim,omitempty"`
 	AppServerGroup                []AppServerGroup                      `json:"serverGroups,omitempty"`
 	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
 	NPAssistantGroup              NPAssistantGroup                      `json:"npAssistantGroup,omitempty"`
+	EnrollmentCertID              string                                `json:"enrollmentCertId,omitempty"`
 }
 
 type AppServerGroup struct {

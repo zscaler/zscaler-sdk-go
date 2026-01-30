@@ -73,6 +73,7 @@ type ApplicationSegmentResource struct {
 	SharedMicrotenantDetails SharedMicrotenantDetails                         `json:"sharedMicrotenantDetails,omitempty"`
 	ZPNERID                  *common.ZPNERID                                  `json:"zpnErId"`
 	Tags                     []Tag                                            `json:"tags,omitempty"`
+	PolicyStyle              string                                           `json:"policyStyle,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {

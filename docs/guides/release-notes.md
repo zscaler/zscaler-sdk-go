@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.14``
+``Last updated: v3.8.15``
 
 ---
+
+# 3.8.15 (January 29, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #403](https://github.com/zscaler/zscaler-sdk-go/pull/403) - Added new attributes `url_type`, `regex_patterns`,  and `regex_patterns_retaining_parent_category` to `zia_url_categories` resource to specify whether the category uses exact URLs or regex patterns. Supported values are `EXACT` and `REGEX`. See [Zscaler Release Notes](https://help.zscaler.com/zia/release-upgrade-summary-2026) for details. To enable this feature, contact Zscaler Support.
 
 # 3.8.14 (January 21, 2026)
 
