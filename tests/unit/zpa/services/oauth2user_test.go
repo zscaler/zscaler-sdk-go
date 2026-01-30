@@ -27,7 +27,7 @@ func TestOAuth2User_VerifyUserCodes_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
 	require.NoError(t, err)
 
-	oauthUser := &oauth2_user.OauthUser{
+	oauthUser := &oauth2_user.UserCodeRequest{
 		UserCodes: []string{"code1", "code2"},
 	}
 

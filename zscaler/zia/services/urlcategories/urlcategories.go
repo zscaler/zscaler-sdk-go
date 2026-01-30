@@ -63,6 +63,13 @@ type URLCategory struct {
 	// Super Category of the URL category. This field is required when creating custom URL categories.
 	SuperCategory string `json:"superCategory,omitempty"`
 
+	// Specifies the type of URL match, such as using exact URLs or regex patterns.
+	// For regex, the patterns can be specified using the regexPatterns and regexPatternsRetainingParentCategory fields.
+	// For exact URLs, specify the required URLs, keywords, or IP ranges using the appropriate fields.
+	// Supported Values: EXACT, REGEX
+	// Note: To enable the Regex feature, contact Zscaler Support.
+	UrlType string `json:"urlType,omitempty"`
+
 	// The number of custom URLs associated to the URL category, that also need to be retained under the original parent category.
 	UrlsRetainingParentCategoryCount int `json:"urlsRetainingParentCategoryCount"`
 
@@ -77,6 +84,13 @@ type URLCategory struct {
 
 	// The number of custom IP address ranges associated to the URL category, that also need to be retained under the original parent category.
 	IPRangesRetainingParentCategoryCount int `json:"ipRangesRetainingParentCategoryCount"`
+
+	// Regex patterns associated with this custom category to support full or partial matches with URLs. Multiple patterns can be added to a category. A pattern must be between 3 and 255 characters, and a maximum of 256 patterns can be added across all categories.
+	RegexPatterns []string `json:"regexPatterns"`
+
+	// This field specifies regex patterns for URLs that must be covered by policies directly referencing this custom category as well as by policies referencing its parent URL category (e.g., Corporate Marketing). Multiple patterns can be added to a category.
+	// A pattern must be between 3 and 255 characters, and a maximum of 256 patterns can be added across all categories.
+	RegexPatternsRetainingParentCategory []string `json:"regexPatternsRetainingParentCategory"`
 }
 
 type Scopes struct {

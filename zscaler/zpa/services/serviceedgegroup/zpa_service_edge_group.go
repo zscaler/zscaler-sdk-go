@@ -58,6 +58,7 @@ type ServiceEdgeGroup struct {
 	NameWithoutTrim                string                                        `json:"nameWithoutTrim,omitempty"`
 	ServiceEdges                   []serviceedgecontroller.ServiceEdgeController `json:"serviceEdges,omitempty"`
 	TrustedNetworks                []trustednetwork.TrustedNetwork               `json:"trustedNetworks,omitempty"`
+	EnrollmentCertID               string                                        `json:"enrollmentCertId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, serviceEdgeGroupID string) (*ServiceEdgeGroup, *http.Response, error) {
