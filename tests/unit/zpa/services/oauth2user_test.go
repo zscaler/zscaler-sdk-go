@@ -18,10 +18,13 @@ func TestOAuth2User_VerifyUserCodes_SDK(t *testing.T) {
 	associationType := "CONNECTOR_GRP"
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/" + associationType + "/usercodes"
 
-	server.On("POST", path, common.SuccessResponse(oauth2_user.OauthUser{
+	server.On("POST", path, common.SuccessResponse(oauth2_user.UserCodeResponse{
 		TenantID:     "tenant-123",
 		ZcomponentID: "zcomp-456",
-		UserCodes:    []string{"code1", "code2"},
+		UserCodes: []oauth2_user.UserCodeInfo{
+			{UserCode: "code1", Status: "VALID"},
+			{UserCode: "code2", Status: "VALID"},
+		},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
