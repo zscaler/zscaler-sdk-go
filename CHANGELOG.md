@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.16 (February 4, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #405](https://github.com/zscaler/zscaler-sdk-go/pull/405) - Added new attributes to ZIA `firewalldnscontrolpolicies` and `ipscontrolpolicies`
+
 # 3.8.15 (January 29, 2026)
 
 ## Notes

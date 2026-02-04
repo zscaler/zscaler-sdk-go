@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.15``
+``Last updated: v3.8.16``
 
 ---
+
+# 3.8.16 (February 4, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #405](https://github.com/zscaler/zscaler-sdk-go/pull/405) - Added new attributes to ZIA:
+  * `ipscontrolpolicies`: `eunEnabled`, and `eunTemplateId`
+  * `firewalldnscontrolpolicies`: `isWebEunEnabled` and `defaultDnsRuleNameUsed` 
 
 # 3.8.15 (January 29, 2026)
 

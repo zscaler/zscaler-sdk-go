@@ -91,6 +91,12 @@ type FirewallDNSRules struct {
 	// A Boolean field that indicates that the rule is predefined by using a true value
 	Predefined bool `json:"predefined,omitempty"`
 
+	// If set to true, Web EUN is enabled for the rule
+	IsWebEUNEnabled bool `json:"isWebEunEnabled,omitempty"`
+
+	// If set to true, the default DNS rule name is used for the rule
+	DefaultDNSRuleNameUsed bool `json:"defaultDnsRuleNameUsed,omitempty"`
+
 	// DNS application groups to which the rule applies
 	ApplicationGroups []common.IDNameExtensions `json:"applicationGroups,omitempty"`
 
