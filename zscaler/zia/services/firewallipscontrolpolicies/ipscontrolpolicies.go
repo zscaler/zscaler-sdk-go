@@ -74,6 +74,10 @@ type FirewallIPSRules struct {
 	// A Boolean field that indicates that the rule is predefined by using a true value
 	Predefined bool `json:"predefined"`
 
+	EUNEnabled bool `json:"eunEnabled,omitempty"`
+
+	EUNTemplateID int `json:"eunTemplateId,omitempty"`
+
 	// The locations to which the Firewall Filtering policy rule applies
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
 
