@@ -7,7 +7,9 @@
 
 ### Enhancements
 
-- [PR #405](https://github.com/zscaler/zscaler-sdk-go/pull/405) - Added new attributes to ZIA `firewalldnscontrolpolicies` and `ipscontrolpolicies`
+- [PR #405](https://github.com/zscaler/zscaler-sdk-go/pull/405) - Added new attributes to ZIA:
+  * `ipscontrolpolicies`: `eunEnabled`, and `eunTemplateId`
+  * `firewalldnscontrolpolicies`: `isWebEunEnabled` and `defaultDnsRuleNameUsed` 
 
 # 3.8.15 (January 29, 2026)
 
