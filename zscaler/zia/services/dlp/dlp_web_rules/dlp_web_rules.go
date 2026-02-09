@@ -75,6 +75,8 @@ type WebDLPRules struct {
 	// Indicates whether a Zscaler Incident Receiver is associated to the DLP policy rule.
 	ZscalerIncidentReceiver bool `json:"zscalerIncidentReceiver,omitempty"`
 
+	EUNTemplateID int `json:"eunTemplateId,omitempty"`
+
 	// The email address of an external auditor to whom DLP email notifications are sent.
 	ExternalAuditorEmail string `json:"externalAuditorEmail,omitempty"`
 

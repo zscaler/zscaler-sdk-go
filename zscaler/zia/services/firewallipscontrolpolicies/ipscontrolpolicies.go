@@ -74,7 +74,7 @@ type FirewallIPSRules struct {
 	// A Boolean field that indicates that the rule is predefined by using a true value
 	Predefined bool `json:"predefined"`
 
-	EUNEnabled bool `json:"eunEnabled,omitempty"`
+	IsEUNEnabled bool `json:"isEunEnabled,omitempty"`
 
 	EUNTemplateID int `json:"eunTemplateId,omitempty"`
 

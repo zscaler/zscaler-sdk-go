@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
@@ -49,6 +50,19 @@ func GetAll(ctx context.Context, service *zscaler.Service) ([]SubClouds, error) 
 	var subClouds []SubClouds
 	err := common.ReadAllPages(ctx, service.Client, subCloudsEndpoint, &subClouds)
 	return subClouds, err
+}
+
+func GetByName(ctx context.Context, service *zscaler.Service, subCloudName string) (*SubClouds, error) {
+	subClouds, err := GetAll(ctx, service)
+	if err != nil {
+		return nil, err
+	}
+	for i := range subClouds {
+		if strings.EqualFold(subClouds[i].Name, subCloudName) {
+			return &subClouds[i], nil
+		}
+	}
+	return nil, fmt.Errorf("no subcloud found with name: %s", subCloudName)
 }
 
 func Update(ctx context.Context, service *zscaler.Service, cloudID int, subClouds *SubClouds) (*SubClouds, *http.Response, error) {
