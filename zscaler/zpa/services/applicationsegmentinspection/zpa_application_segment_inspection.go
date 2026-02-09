@@ -64,6 +64,7 @@ type AppSegmentInspection struct {
 	InspectionAppDto          []InspectionAppDto        `json:"inspectionApps,omitempty"`
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
 	AppServerGroups           []servergroup.ServerGroup `json:"serverGroups,omitempty"`
+	PolicyStyle               string                    `json:"policyStyle,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
 }
 

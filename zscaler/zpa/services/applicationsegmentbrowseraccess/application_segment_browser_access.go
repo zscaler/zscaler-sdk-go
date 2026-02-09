@@ -61,6 +61,7 @@ type BrowserAccess struct {
 	ClientlessApps            []ClientlessApps          `json:"clientlessApps,omitempty"`
 	AppServerGroups           []servergroup.ServerGroup `json:"serverGroups,omitempty"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
+	PolicyStyle               string                    `json:"policyStyle,omitempty"`
 	ZPNERID                   *common.ZPNERID           `json:"zpnErId"`
 }
 

@@ -64,6 +64,7 @@ type AppSegmentPRA struct {
 	PRAApps                   []PRAApps                 `json:"praApps"`
 	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
+	PolicyStyle               string                    `json:"policyStyle,omitempty"`
 	ZPNERID                   *common.ZPNERID           `json:"zpnErId"`
 }
 

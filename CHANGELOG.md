@@ -1,15 +1,26 @@
 # Changelog
 
-# 3.8.16 (February 4, 2026)
+# 3.8.17 (February 9, 2026)
 
 ## Notes
 - Golang: **v1.24**
 
 ### Enhancements
 
-- [PR #405](https://github.com/zscaler/zscaler-sdk-go/pull/405) - Added new attributes to ZIA:
+- [PR #406](https://github.com/zscaler/zscaler-sdk-go/pull/406) - Added new attributes to ZIA:
   * `ipscontrolpolicies`: `eunEnabled`, and `eunTemplateId`
   * `firewalldnscontrolpolicies`: `isWebEunEnabled` and `defaultDnsRuleNameUsed` 
+  * `dlp_web_rules`: `eunTemplateId`
+
+- [PR #406](https://github.com/zscaler/zscaler-sdk-go/pull/406) - Added new function `GetByName` to ZIA `sub_clouds` resource
+
+- [PR #406](https://github.com/zscaler/zscaler-sdk-go/pull/406) - Added new attributes to all ZPA Application Segments:
+  * `policyStyle` to enable `FQDN-to-IP Policy Evaluation`
+
+### Bug Fixes
+
+- [PR #406](https://github.com/zscaler/zscaler-sdk-go/pull/406) - Fixed `Update` function in ZIA `dc_exclusion`.
+- [PR #406](https://github.com/zscaler/zscaler-sdk-go/pull/406) - Added `omitempty` to all attributes in ZIA `extranet`
 
 # 3.8.15 (January 29, 2026)
 
