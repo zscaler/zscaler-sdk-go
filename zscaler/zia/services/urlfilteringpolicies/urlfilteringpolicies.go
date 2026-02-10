@@ -214,20 +214,14 @@ type URLAdvancedPolicySettings struct {
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
-	var urlFilteringPolicies []URLFilteringRule
-	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+	var rule URLFilteringRule
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, urlFilteringPolicy := range urlFilteringPolicies {
-		if urlFilteringPolicy.ID == ruleID {
-			service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicy.ID)
-			return &urlFilteringPolicy, nil
-		}
-	}
-
-	return nil, fmt.Errorf("no url filtering rule found with id: %d", ruleID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", rule.ID)
+	return &rule, nil
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {
@@ -265,17 +259,11 @@ func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URL
 
 	// Check if CBIProfile is nil or has empty ID, or if CBIProfileID is 0
 	if rule.CBIProfile == nil || rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
-		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
-		var urlFilteringPolicies []URLFilteringRule
-		err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
-		if err != nil {
-			return nil, nil, err
-		}
-		for _, urlFilteringPolicy := range urlFilteringPolicies {
-			if urlFilteringPolicy.ID == ruleID {
-				rule.CBIProfile = urlFilteringPolicy.CBIProfile
-				rule.CBIProfileID = urlFilteringPolicy.CBIProfileID
-			}
+		// If CBIProfile object is empty, fetch it using Get by ID
+		existingRule, err := Get(ctx, service, ruleID)
+		if err == nil && existingRule != nil {
+			rule.CBIProfile = existingRule.CBIProfile
+			rule.CBIProfileID = existingRule.CBIProfileID
 		}
 	}
 	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
@@ -299,12 +287,12 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 
 // GetAll returns the all rules.
 func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
-	var urlFilteringPolicies []URLFilteringRule
-	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
-	if err != nil {
-		return nil, err
-	}
-	return urlFilteringPolicies, nil
+	var rules []URLFilteringRule
+
+	// Use service.Client.Read directly since the API doesn't support pagination
+	// The API returns all results in a single response
+	err := service.Client.Read(ctx, urlFilteringPoliciesEndpoint, &rules)
+	return rules, err
 }
 
 func GetUrlAndAppSettings(ctx context.Context, service *zscaler.Service) (*URLAdvancedPolicySettings, error) {

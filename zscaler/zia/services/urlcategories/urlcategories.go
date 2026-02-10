@@ -63,6 +63,9 @@ type URLCategory struct {
 	// Super Category of the URL category. This field is required when creating custom URL categories.
 	SuperCategory string `json:"superCategory,omitempty"`
 
+	// Super Category of the URL category. This field is required when creating custom URL categories.
+	CategoryGroup string `json:"categoryGroup,omitempty"`
+
 	// Specifies the type of URL match, such as using exact URLs or regex patterns.
 	// For regex, the patterns can be specified using the regexPatterns and regexPatternsRetainingParentCategory fields.
 	// For exact URLs, specify the required URLs, keywords, or IP ranges using the appropriate fields.
