@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.17``
+``Last updated: v3.8.18``
 
 ---
+
+# 3.8.18 (February 10, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #408](https://github.com/zscaler/zscaler-sdk-go/pull/408) - Fixed `GET` function in ZIA `urlfilteringpolicies`.
 
 # 3.8.17 (February 9, 2026)
 

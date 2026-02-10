@@ -21,12 +21,11 @@ func TestURLFilteringRules_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	ruleID := 12345
-	path := "/zia/api/v1/urlFilteringRules"
+	path := "/zia/api/v1/urlFilteringRules/12345"
 
-	// Get uses GetAll internally and finds by ID
-	server.On("GET", path, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
-		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
-		{ID: ruleID, Name: "Block Social Media", Action: "BLOCK", State: "ENABLED"},
+	// Get retrieves a single rule by ID via direct API call
+	server.On("GET", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
+		ID: ruleID, Name: "Block Social Media", Action: "BLOCK", State: "ENABLED",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -115,11 +114,10 @@ func TestURLFilteringRules_Update_SDK(t *testing.T) {
 
 	ruleID := 12345
 	path := "/zia/api/v1/urlFilteringRules/12345"
-	listPath := "/zia/api/v1/urlFilteringRules"
 
-	// Mock GetAll call that Update performs to fetch CBIProfile
-	server.On("GET", listPath, common.SuccessResponse([]urlfilteringpolicies.URLFilteringRule{
-		{ID: ruleID, Name: "Updated URL Rule", CBIProfile: &urlfilteringpolicies.CBIProfile{ID: "cbi-id"}},
+	// Mock Get call that Update performs to fetch CBIProfile (direct by ID)
+	server.On("GET", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
+		ID: ruleID, Name: "Updated URL Rule", CBIProfile: &urlfilteringpolicies.CBIProfile{ID: "cbi-id"},
 	}))
 
 	server.On("PUT", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
