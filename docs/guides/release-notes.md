@@ -24,7 +24,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Bug Fixes
 
-- [PR #407](https://github.com/zscaler/zscaler-sdk-go/pull/407) - Fixed `GET` function in ZIA `urlfilteringrule`.
+- [PR #408](https://github.com/zscaler/zscaler-sdk-go/pull/408) - Fixed `GET` function in ZIA `urlfilteringpolicies`.
 
 # 3.8.17 (February 9, 2026)
 
