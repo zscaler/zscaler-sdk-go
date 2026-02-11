@@ -98,12 +98,21 @@ func NewClient(config *Configuration) (*Client, error) {
 	}
 
 	// Initialize the cache
-	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
-	if err != nil {
-		logger.Printf("[WARN] Failed to initialize cache, using NopCache: %v", err)
-		cche = cache.NewNopCache()
+	// Only create bigcache when caching is explicitly enabled.
+	// On 32-bit platforms (e.g., windows/386), bigcache uses atomic 64-bit operations
+	// that require 8-byte alignment, which can cause panics if the struct fields
+	// are not properly aligned. Using NopCache when disabled avoids this entirely.
+	if cli.cacheEnabled {
+		cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
+		if err != nil {
+			logger.Printf("[WARN] Failed to initialize cache, using NopCache: %v", err)
+			cli.cache = cache.NewNopCache()
+		} else {
+			cli.cache = cche
+		}
+	} else {
+		cli.cache = cache.NewNopCache()
 	}
-	cli.cache = cche
 
 	// Start the session refresh ticker
 	cli.startSessionTicker(ctx)

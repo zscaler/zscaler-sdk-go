@@ -284,13 +284,16 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
+	if !c.ZIA.Client.Cache.Enabled {
+		return cache.NewNopCache()
+	}
 	cche, err := cache.NewCache(
 		time.Duration(c.ZIA.Client.Cache.DefaultTtl),
 		time.Duration(c.ZIA.Client.Cache.DefaultTti),
 		int(c.ZIA.Client.Cache.DefaultCacheMaxSizeMB),
 	)
 	if err != nil {
-		cche = cache.NewNopCache()
+		return cache.NewNopCache()
 	}
 	return cche
 }

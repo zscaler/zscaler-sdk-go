@@ -537,9 +537,12 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
+	if !c.Zscaler.Client.Cache.Enabled {
+		return cache.NewNopCache()
+	}
 	cche, err := cache.NewCache(time.Duration(c.Zscaler.Client.Cache.DefaultTtl), time.Duration(c.Zscaler.Client.Cache.DefaultTti), int(c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
 	if err != nil {
-		cche = cache.NewNopCache()
+		return cache.NewNopCache()
 	}
 	return cche
 }
