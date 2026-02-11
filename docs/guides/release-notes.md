@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.18``
+``Last updated: v3.8.19``
 
 ---
+
+# 3.8.19 (February 11, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #409](https://github.com/zscaler/zscaler-sdk-go/pull/409) - Fixed `bigcache` initialization to use `NopCache` when caching is disabled, preventing `unaligned 64-bit atomic operation` panic on 32-bit platforms (windows/386). Applied to ZTW, ZIA, ZPA, and OneAPI clients.
 
 # 3.8.18 (February 10, 2026)
 
