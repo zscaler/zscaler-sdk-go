@@ -211,6 +211,12 @@ func TestZPAClient_ErrorDetection(t *testing.T) {
 				body:       `{"code": "EDIT_LOCK_NOT_AVAILABLE"}`,
 				expected:   false,
 			},
+			{
+				name:       "412 with Failed during enter Org barrier",
+				statusCode: 412,
+				body:       `{"message": "Failed during enter Org barrier"}`,
+				expected:   true,
+			},
 		}
 
 		for _, tt := range tests {

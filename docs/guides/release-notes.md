@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.19``
+``Last updated: v3.8.20``
 
 ---
+
+# 3.8.20 (February 16, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #410](https://github.com/zscaler/zscaler-sdk-go/pull/410) - Added automatic retry for 412 Precondition Failed responses with "Failed during enter Org barrier" (edit lock/org barrier errors) in OneAPI client.
 
 # 3.8.19 (February 11, 2026)
 

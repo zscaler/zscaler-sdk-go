@@ -311,6 +311,13 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
 	}
+	// Retry 409 Conflict and 412 Precondition Failed when body indicates edit lock / org barrier
+	// (e.g. "Failed during enter Org barrier") - same logic as ZIA/ZTW legacy clients
+	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict) {
+		if errorx.IsEditLockError(resp) {
+			return true, nil
+		}
+	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
@@ -623,20 +630,21 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			break
 		}
 
-		// Handle 409 Conflict errors (EDIT_LOCK_NOT_AVAILABLE) - these are retryable
-		if resp.StatusCode == http.StatusConflict {
+		// Handle 409 Conflict and 412 Precondition Failed (EDIT_LOCK_NOT_AVAILABLE, org barrier) - these are retryable
+		// The API may return either 409 or 412 for "Failed during enter Org barrier" under high concurrency
+		if resp.StatusCode == http.StatusConflict || resp.StatusCode == http.StatusPreconditionFailed {
 			bodyCopy, readErr := io.ReadAll(resp.Body)
 			if readErr == nil {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
 
-				// Check if this is an EDIT_LOCK_NOT_AVAILABLE error
+				// Check if this is an EDIT_LOCK_NOT_AVAILABLE / org barrier error
 				if errorx.IsEditLockError(resp) {
 					backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
 					maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
 					if backoffDelay > maxBackoff {
 						backoffDelay = maxBackoff
 					}
-					c.oauth2Credentials.Logger.Printf("[WARN] Edit lock conflict detected (attempt %d), waiting %v before retry", retry, backoffDelay)
+					c.oauth2Credentials.Logger.Printf("[WARN] Edit lock/org barrier conflict detected (status %d, attempt %d), waiting %v before retry", resp.StatusCode, retry, backoffDelay)
 
 					// Track this wait time so it doesn't count against request timeout
 					beforeWait := time.Now()
