@@ -108,9 +108,9 @@ func TestZTWBackoffLogic(t *testing.T) {
 	t.Log("ZTW backoff logic validated ✓")
 }
 
-// TestZTWRateLimiter tests ZTW-specific rate limiting (20 GET per 10s, 10 POST/PUT/DELETE per 61s)
+// TestZTWRateLimiter tests ZTW-specific rate limiting (20 GET per 10s, 10 POST/PUT/DELETE per 10s)
 func TestZTWRateLimiter(t *testing.T) {
-	rateLimiter := rl.NewRateLimiter(20, 10, 10, 61)
+	rateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 	t.Run("ZTW GET rate limit (20 per 10s)", func(t *testing.T) {
 		for i := 0; i < 20; i++ {
@@ -125,8 +125,8 @@ func TestZTWRateLimiter(t *testing.T) {
 		t.Log("ZTW GET rate limit validated: 20 per 10s ✓")
 	})
 
-	t.Run("ZTW POST/PUT/DELETE rate limit (10 per 61s)", func(t *testing.T) {
-		rateLimiter := rl.NewRateLimiter(20, 10, 10, 61)
+	t.Run("ZTW POST/PUT/DELETE rate limit (10 per 10s)", func(t *testing.T) {
+		rateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 		for i := 0; i < 10; i++ {
 			wait, _ := rateLimiter.Wait("POST")
@@ -137,7 +137,7 @@ func TestZTWRateLimiter(t *testing.T) {
 		require.True(t, wait, "11th POST should trigger wait")
 		require.Greater(t, duration, time.Duration(0), "Wait duration should be > 0")
 
-		t.Log("ZTW POST/PUT/DELETE rate limit validated: 10 per 61s ✓")
+		t.Log("ZTW POST/PUT/DELETE rate limit validated: 10 per 10s ✓")
 	})
 }
 
