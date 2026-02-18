@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -45,7 +44,7 @@ func Get(ctx context.Context, service *zscaler.Service, ipGroupID int) (*IPSourc
 
 func GetByName(ctx context.Context, service *zscaler.Service, ipSourceGroupsName string) (*IPSourceGroups, error) {
 	var ipSourceGroups []IPSourceGroups
-	err := common.ReadAllPages(ctx, service.Client, ipSourceGroupsEndpoint, &ipSourceGroups)
+	err := service.Client.Read(ctx, ipSourceGroupsEndpoint, &ipSourceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +91,10 @@ func Delete(ctx context.Context, service *zscaler.Service, ipGroupID int) (*http
 	return nil, nil
 }
 
+// GetAll retrieves all IP source groups.
+// The API doesn't support pagination and returns all results in a single response.
 func GetAll(ctx context.Context, service *zscaler.Service) ([]IPSourceGroups, error) {
 	var ipSourceGroups []IPSourceGroups
-	err := common.ReadAllPages(ctx, service.Client, ipSourceGroupsEndpoint, &ipSourceGroups)
+	err := service.Client.Read(ctx, ipSourceGroupsEndpoint, &ipSourceGroups)
 	return ipSourceGroups, err
 }
