@@ -156,6 +156,40 @@ func TestZIARateLimiter(t *testing.T) {
 	})
 }
 
+// TestZIARateLimiterProductionParams validates the exact parameters used in v2_config.go
+// and v2_client.go after the rate limiter fix (20 GET/10s, 10 POST-PUT-DELETE/10s).
+// Previously the legacy v2 clients incorrectly passed retry config values as rate limiter
+// parameters, and the postPutDeleteFreq was 61s instead of 10s.
+func TestZIARateLimiterProductionParams(t *testing.T) {
+	limiter := rl.NewRateLimiter(20, 10, 10, 10)
+
+	t.Run("20 GETs allowed then throttled", func(t *testing.T) {
+		lim := rl.NewRateLimiter(20, 10, 10, 10)
+		for i := 0; i < 20; i++ {
+			wait, _ := lim.Wait("GET")
+			require.False(t, wait, "GET #%d should not wait", i+1)
+		}
+		wait, delay := lim.Wait("GET")
+		require.True(t, wait, "21st GET should trigger wait")
+		require.LessOrEqual(t, delay, 10*time.Second, "delay should be within 10s window")
+	})
+
+	t.Run("10 POSTs allowed then throttled within 10s window", func(t *testing.T) {
+		lim := rl.NewRateLimiter(20, 10, 10, 10)
+		for i := 0; i < 10; i++ {
+			wait, _ := lim.Wait("POST")
+			require.False(t, wait, "POST #%d should not wait", i+1)
+		}
+		wait, delay := lim.Wait("POST")
+		require.True(t, wait, "11th POST should trigger wait")
+		require.LessOrEqual(t, delay, 10*time.Second,
+			"delay should be <= 10s (not 61s as in the old config)")
+		require.Greater(t, delay, time.Duration(0))
+	})
+
+	_ = limiter
+}
+
 // TestZIARetryAfterHeaderCaseInsensitive validates case-insensitive header parsing
 func TestZIARetryAfterHeaderCaseInsensitive(t *testing.T) {
 	l := logger.GetDefaultLogger("zia-test: ")

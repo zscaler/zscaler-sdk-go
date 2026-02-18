@@ -57,13 +57,10 @@ func NewClient(config *Configuration) (*Client, error) {
 		return nil, errors.New("missing required ZTC credentials")
 	}
 
-	// Initialize rate limiter
-	rateLimiter := rl.NewRateLimiter(
-		int(config.ZTW.Client.RateLimit.MaxRetries),
-		int(config.ZTW.Client.RateLimit.RetryWaitMin.Seconds()),
-		int(config.ZTW.Client.RateLimit.RetryWaitMax.Seconds()),
-		int(config.ZTW.Client.RequestTimeout.Seconds()),
-	)
+	// Initialize rate limiter with ZTW-specific limits (same as ZIA).
+	// Server enforces per-endpoint limits via 429 + Retry-After.
+	// GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
+	rateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 	// Initialize HTTP client
 	httpClient := config.HTTPClient

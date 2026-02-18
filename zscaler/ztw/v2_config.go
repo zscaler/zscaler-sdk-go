@@ -394,9 +394,9 @@ func setHttpClients(cfg *Configuration) {
 		log = cfg.Logger
 	}
 
-	// ZTW-specific rate limits:
-	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
-	ztwRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZTW based on official limits and +1 sec buffer
+	// ZTW-specific rate limits (same as ZIA): server enforces per-endpoint limits via 429 + Retry-After.
+	// GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
+	ztwRateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 	// Configure the ZTW HTTP client
 	cfg.HTTPClient = getHTTPClient(log, ztwRateLimiter, cfg)

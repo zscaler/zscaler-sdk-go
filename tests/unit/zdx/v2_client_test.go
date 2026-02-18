@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
 )
 
@@ -142,6 +143,7 @@ func TestConfigSetter_Functions(t *testing.T) {
 
 	t.Run("WithRateLimitMaxRetries", func(t *testing.T) {
 		cfg := &zdx.Configuration{}
+		cfg.Logger = logger.GetDefaultLogger("zdx-test: ")
 		setter := zdx.WithRateLimitMaxRetries(5)
 		setter(cfg)
 		assert.Equal(t, int32(5), cfg.ZDX.Client.RateLimit.MaxRetries)
@@ -184,6 +186,7 @@ func TestConfigSetter_Functions(t *testing.T) {
 
 	t.Run("WithRequestTimeout", func(t *testing.T) {
 		cfg := &zdx.Configuration{}
+		cfg.Logger = logger.GetDefaultLogger("zdx-test: ")
 		setter := zdx.WithRequestTimeout(30 * time.Second)
 		setter(cfg)
 		assert.Equal(t, 30*time.Second, cfg.ZDX.Client.RequestTimeout)
@@ -191,6 +194,7 @@ func TestConfigSetter_Functions(t *testing.T) {
 
 	t.Run("WithRateLimitMaxWait", func(t *testing.T) {
 		cfg := &zdx.Configuration{}
+		cfg.Logger = logger.GetDefaultLogger("zdx-test: ")
 		setter := zdx.WithRateLimitMaxWait(10 * time.Second)
 		setter(cfg)
 		assert.Equal(t, 10*time.Second, cfg.ZDX.Client.RateLimit.RetryWaitMax)
@@ -198,6 +202,7 @@ func TestConfigSetter_Functions(t *testing.T) {
 
 	t.Run("WithRateLimitMinWait", func(t *testing.T) {
 		cfg := &zdx.Configuration{}
+		cfg.Logger = logger.GetDefaultLogger("zdx-test: ")
 		setter := zdx.WithRateLimitMinWait(2 * time.Second)
 		setter(cfg)
 		assert.Equal(t, 2*time.Second, cfg.ZDX.Client.RateLimit.RetryWaitMin)
