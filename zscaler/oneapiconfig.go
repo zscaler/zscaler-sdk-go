@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -676,6 +677,26 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			time.Sleep(backoffDelay)
 			totalWaitTime += time.Since(beforeWait)
 			continue
+		}
+
+		// Handle 403 LIMIT_EXCEEDED immediately — tenant resource capacity exhausted, non-retryable
+		if resp.StatusCode == http.StatusForbidden {
+			bodyCopy, readErr := io.ReadAll(resp.Body)
+			if readErr == nil {
+				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy))
+				var jsonBody map[string]interface{}
+				if json.Unmarshal(bodyCopy, &jsonBody) == nil {
+					if code, ok := jsonBody["code"].(string); ok && code == "LIMIT_EXCEEDED" {
+						msg := "tenant resource limit exceeded"
+						if m, ok := jsonBody["message"].(string); ok {
+							msg = m
+						}
+						c.oauth2Credentials.Logger.Printf("[ERROR] %s — this is a non-retryable tenant capacity error", msg)
+						return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("limit exceeded"))
+					}
+				}
+			}
+			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy))
 		}
 
 		// Handle non-retryable client errors (4xx except 401, 409, 429 which are handled above)

@@ -147,6 +147,23 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 	return false
 }
 
+// IsLimitExceeded checks if the response indicates a tenant resource limit has been
+// reached (e.g., "Maximum 100 static IPs are allowed. Limit has exceeded.").
+// The API returns HTTP 403 with code "LIMIT_EXCEEDED" when the tenant's maximum
+// capacity for a given resource type is exhausted. This error is non-retryable.
+func (r *ErrorResponse) IsLimitExceeded() bool {
+	if r == nil || r.Response == nil {
+		return false
+	}
+	if r.Response.StatusCode == http.StatusForbidden && r.Parsed != nil {
+		code, ok := r.Parsed.Code.(string)
+		if ok && code == "LIMIT_EXCEEDED" {
+			return true
+		}
+	}
+	return false
+}
+
 // IsSessionInvalidError checks if the response indicates a session invalidation error
 // that requires token refresh. Only checks for known error messages returned by the API.
 func IsSessionInvalidError(res *http.Response) bool {

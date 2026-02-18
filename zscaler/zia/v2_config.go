@@ -447,9 +447,9 @@ func setHttpClients(cfg *Configuration) {
 		log = cfg.Logger
 	}
 
-	// ZIA-specific rate limits:
-	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
-	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
+	// ZIA-specific rate limits: server enforces per-endpoint limits via 429 + Retry-After.
+	// GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
+	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 	// Configure the ZIA HTTP client
 	cfg.HTTPClient = getHTTPClient(log, ziaRateLimiter, cfg)

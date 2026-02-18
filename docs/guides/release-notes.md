@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.20``
+``Last updated: v3.8.21``
 
 ---
+
+# 3.8.21 (February 18, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #411](https://github.com/zscaler/zscaler-sdk-go/pull/411) - Relaxed ZIA and ZTW client-side rate limiter from 10 POST/PUT/DELETE per 61 seconds to 10 per 10 seconds, aligning with ZPA's pattern and deferring per-endpoint enforcement to server-side 429 + Retry-After. Fixed legacy ZIA and ZTW v2 clients that were incorrectly passing retry config values (MaxRetries, RetryWaitMin, RetryWaitMax, RequestTimeout) as rate limiter parameters. Added `IsLimitExceeded()` helper to `errorx.ErrorResponse` for detecting tenant resource capacity errors (HTTP 403 LIMIT_EXCEEDED). Added explicit handling for LIMIT_EXCEEDED in OneAPI `ExecuteRequest` to fail fast on non-retryable tenant capacity errors.
 
 # 3.8.20 (February 16, 2026)
 
