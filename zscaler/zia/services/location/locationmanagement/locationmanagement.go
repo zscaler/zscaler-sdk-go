@@ -186,6 +186,7 @@ type Locations struct {
 
 	DynamiclocationGroups []common.IDNameExtensions `json:"dynamiclocationGroups"`
 	StaticLocationGroups  []common.IDNameExtensions `json:"staticLocationGroups"`
+	VirtualZenClusters    []common.IDNameExtensions `json:"virtualZenClusters"`
 }
 
 type Location struct {

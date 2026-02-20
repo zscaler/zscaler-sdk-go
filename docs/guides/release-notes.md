@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.21``
+``Last updated: v3.8.22``
 
 ---
+
+# 3.8.22 (February 20, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #412](https://github.com/zscaler/zscaler-sdk-go/pull/412) - Added new `behavioralAnalysisAdvancedSettings` payload format support.
+- [PR #412](https://github.com/zscaler/zscaler-sdk-go/pull/412) - Added new attribute list `virtualZenClusters` to ZIA `locationmanagement`
 
 # 3.8.21 (February 18, 2026)
 
