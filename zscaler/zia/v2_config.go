@@ -111,6 +111,8 @@ type Configuration struct {
 	Debug          bool              `json:"debug,omitempty"`
 	UserAgentExtra string
 	Context        context.Context
+	cachedClient   *Client
+	clientMu       sync.Mutex
 	ZIA            struct {
 		Client struct {
 			ZIAUsername string `yaml:"username" envconfig:"ZIA_USERNAME"`

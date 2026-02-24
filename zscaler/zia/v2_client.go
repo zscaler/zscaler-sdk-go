@@ -115,6 +115,27 @@ func NewClient(config *Configuration) (*Client, error) {
 	return cli, nil
 }
 
+// GetOrCreateClient returns the cached Client if one already exists on this
+// Configuration, otherwise it calls NewClient, caches the result, and returns
+// it. This ensures the JSESSIONID obtained during the first authentication is
+// reused across all subsequent calls that share the same Configuration
+// instance (which is already a singleton via sync.Once in NewConfiguration).
+func (c *Configuration) GetOrCreateClient() (*Client, error) {
+	c.clientMu.Lock()
+	defer c.clientMu.Unlock()
+
+	if c.cachedClient != nil {
+		return c.cachedClient, nil
+	}
+
+	client, err := NewClient(c)
+	if err != nil {
+		return nil, err
+	}
+	c.cachedClient = client
+	return client, nil
+}
+
 func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	// check min required size
 	if len(timeStamp) < 6 || len(apiKey) < 12 {
@@ -600,7 +621,15 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
 			c.cache.Delete(key)
-			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+			baseKey := strings.Split(key, "?")[0]
+			c.cache.ClearAllKeysWithPrefix(baseKey)
+			// Also invalidate the parent collection endpoint so that
+			// list responses (e.g. /ipSourceGroups) are cleared when a
+			// child resource (e.g. /ipSourceGroups/123) is mutated.
+			if idx := strings.LastIndex(baseKey, "/"); idx > 0 {
+				parentKey := baseKey[:idx]
+				c.cache.ClearAllKeysWithPrefix(parentKey)
+			}
 		}
 		resp := c.cache.Get(key)
 		inCache := resp != nil

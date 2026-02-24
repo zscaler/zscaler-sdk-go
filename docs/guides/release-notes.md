@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.22``
+``Last updated: v3.8.23``
 
 ---
+
+# 3.8.23 (February 24, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #413](https://github.com/zscaler/zscaler-sdk-go/pull/413) - Fixed ZIA legacy client (`v2_client`) to reuse the cached `JSESSIONID` via `GetOrCreateClient` and to invalidate parent collection cache keys on child resource mutations.
+
 
 # 3.8.22 (February 20, 2026)
 
