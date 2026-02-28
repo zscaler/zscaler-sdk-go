@@ -24,7 +24,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Enhancements
 
-- [PR #414](https://github.com/zscaler/zscaler-sdk-go/pull/414) Added the following new ZIA Endpoints
+- [PR #415](https://github.com/zscaler/zscaler-sdk-go/pull/415) Added the following new ZIA Endpoints
   - `GET /emailRecipientProfile` Retrieves a list of all recipient email profiles in an organization.
   - `POST /emailRecipientProfile` Adds a new recipient profile.
   - `GET /emailRecipientProfile/{profileId}` Retrieves the recipient email profile based on the specified ID

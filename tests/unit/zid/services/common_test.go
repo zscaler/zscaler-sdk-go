@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
 )
 
 func TestCommon_Structure(t *testing.T) {
@@ -71,20 +71,20 @@ func TestCommon_Structure(t *testing.T) {
 
 	t.Run("PaginationQueryParams creation", func(t *testing.T) {
 		params := common.NewPaginationQueryParams(50)
-		
+
 		assert.Equal(t, 50, params.Limit)
 		assert.Equal(t, 0, params.Offset)
 	})
 
 	t.Run("PaginationQueryParams with default", func(t *testing.T) {
 		params := common.NewPaginationQueryParams(0)
-		
+
 		assert.Equal(t, common.DefaultPaginationOptions.DefaultPageSize, params.Limit)
 	})
 
 	t.Run("PaginationQueryParams with max limit", func(t *testing.T) {
 		params := common.NewPaginationQueryParams(5000)
-		
+
 		assert.Equal(t, common.DefaultPaginationOptions.MaxPageSize, params.Limit)
 	})
 
@@ -94,7 +94,7 @@ func TestCommon_Structure(t *testing.T) {
 			WithLimit(50).
 			WithNameFilter("test").
 			WithExcludeDynamicGroups(true)
-		
+
 		assert.Equal(t, 200, params.Offset)
 		assert.Equal(t, 50, params.Limit)
 		assert.Equal(t, "test", params.NameLike)
@@ -109,7 +109,7 @@ func TestCommon_Structure(t *testing.T) {
 			WithPrimaryEmailLike("john@example.com").
 			WithDomainName([]string{"example.com", "test.com"}).
 			WithIDPName([]string{"Okta", "Azure"})
-		
+
 		assert.Equal(t, []string{"user1", "user2"}, params.LoginName)
 		assert.Equal(t, "john", params.LoginNameLike)
 		assert.Equal(t, "John Doe", params.DisplayNameLike)
@@ -123,9 +123,9 @@ func TestCommon_Structure(t *testing.T) {
 		params.WithOffset(50).
 			WithNameFilter("test").
 			WithExcludeDynamicGroups(true)
-		
+
 		values := params.ToURLValues()
-		
+
 		assert.Equal(t, "50", values.Get("offset"))
 		assert.Equal(t, "100", values.Get("limit"))
 		assert.Equal(t, "test", values.Get("name[like]"))
@@ -241,4 +241,3 @@ func TestCommon_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "/admin/api/v1/users", endpoint)
 	})
 }
-
