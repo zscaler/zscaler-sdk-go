@@ -13,10 +13,34 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.23``
+``Last updated: v3.8.24``
 
 ---
 
+# 3.8.24 (February 27, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #415](https://github.com/zscaler/zscaler-sdk-go/pull/415) Added the following new ZIA Endpoints
+  - `GET /emailRecipientProfile` Retrieves a list of all recipient email profiles in an organization.
+  - `POST /emailRecipientProfile` Adds a new recipient profile.
+  - `GET /emailRecipientProfile/{profileId}` Retrieves the recipient email profile based on the specified ID
+  - `PUT /emailRecipientProfile/{profileId}` Updates the recipient email profile based on the specified ID
+  - `DELETE /emailRecipientProfile/{profileId}` Deletes the recipient email profile based on the specified ID
+  - `GET /emailRecipientProfile/lite` Retrieves a list of all recipient email profiles in an organization
+  - `GET /emailRecipientProfile/count` Retrieves the count of recipient email profiles
+
+- [PR #415](https://github.com/zscaler/zscaler-sdk-go/pull/415) Added the following new ZTW DNS Gateway Endpoints
+  - `GET /dnsGateways` Retrieves a list of all DNS gateways.
+  - `POST /dnsGateways` Creates a new DNS gateway.
+  - `GET /dnsGateways/lite` Retrieves a lite list of all DNS gateways.
+  - `GET /dnsGateways/{gatewayId}` Retrieves the DNS gateway based on the specified ID.
+  - `PUT /dnsGateways/{id}` Updates the DNS gateway based on the specified ID.
+  - `DELETE /dnsGateways/{id}` Deletes the DNS gateway based on the specified ID.
+  
 # 3.8.23 (February 24, 2026)
 
 ## Notes

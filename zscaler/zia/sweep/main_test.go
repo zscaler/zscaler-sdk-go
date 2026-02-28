@@ -20,6 +20,7 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/email_profiles"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/filetypecontrol"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
@@ -114,6 +115,7 @@ func sweep() error {
 		sweepSecurityPolicySettings,
 		sweepUserAuthenticationSettings,
 		sweepAlertsSubscription,
+		sweepEmailProfiles,
 	}
 
 	// Execute each sweep function
@@ -494,6 +496,27 @@ func sweepRuleLabels(client *zscaler.Client) error {
 	return nil
 }
 
+func sweepEmailProfiles(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := email_profiles.GetAll(context.Background(), service, nil)
+	if err != nil {
+		log.Printf("[ERROR] Failed to email profiles: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := email_profiles.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete email profiles with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
 // TODO: Need to review method calls.
 func sweepSandboxSettings(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
@@ -639,14 +662,31 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 		return err
 	}
 
+	var idsToDelete []int
 	for _, r := range resources {
 		if !strings.HasPrefix(r.FQDN, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %d, FQDN: %s", r.ID, r.FQDN)
-		err := vpncredentials.Delete(context.Background(), service, r.ID)
+		idsToDelete = append(idsToDelete, r.ID)
+		log.Printf("Marking VPN credential for deletion: ID: %d, FQDN: %s", r.ID, r.FQDN)
+	}
+
+	if len(idsToDelete) == 0 {
+		return nil
+	}
+
+	const batchSize = 100
+	for i := 0; i < len(idsToDelete); i += batchSize {
+		end := i + batchSize
+		if end > len(idsToDelete) {
+			end = len(idsToDelete)
+		}
+		batch := idsToDelete[i:end]
+		log.Printf("Bulk deleting %d VPN credentials (IDs: %v)", len(batch), batch)
+		_, err := vpncredentials.BulkDelete(context.Background(), service, batch)
 		if err != nil {
-			log.Printf("[ERROR] Failed to delete vpn credentials with ID: %d, Name: %s: %v", r.ID, r.Comments, err)
+			log.Printf("[ERROR] Failed to bulk delete VPN credentials: %v", err)
+			return err
 		}
 	}
 	return nil

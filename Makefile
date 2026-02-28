@@ -31,7 +31,7 @@ help:
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:integration:zidentity      Run only zidentity integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zid        	Run only zid integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             			Run all unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zpa         			Run ZPA unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zia         			Run ZIA unit tests$(COLOR_NONE)"
@@ -83,9 +83,9 @@ sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
 	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
 
-sweep\:zidentity:
+sweep\:zid:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zidentity/sweep -v -sweep=true
+	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zid/sweep -v -sweep=true
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
@@ -124,11 +124,11 @@ test\:integration\:zia:
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 
-test\:integration\:zidentity:
-	@echo "$(COLOR_ZSCALER)Running zidentity integration tests...$(COLOR_NONE)"
-	go test -v -failfast -race -cover -coverprofile=zidentitycoverage.out -covermode=atomic ./zscaler/zidentity/... -parallel 10 -timeout 60m
-	go tool cover -html=zidentitycoverage.out -o zidentitycoverage.html
-	@go tool cover -func zidentitycoverage.out | grep total:
+test\:integration\:zid:
+	@echo "$(COLOR_ZSCALER)Running zid integration tests...$(COLOR_NONE)"
+	go test -v -failfast -race -cover -coverprofile=zidcoverage.out -covermode=atomic ./zscaler/zid/... -parallel 10 -timeout 60m
+	go tool cover -html=zidcoverage.out -o zidcoverage.html
+	@go tool cover -func zidcoverage.out | grep total:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running all unit tests...$(COLOR_NONE)"

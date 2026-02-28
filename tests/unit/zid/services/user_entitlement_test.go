@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/user_entitlement"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/user_entitlement"
 )
 
 func TestUserEntitlement_Structure(t *testing.T) {
@@ -202,7 +202,7 @@ func TestUserEntitlement_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "ZPA", services[0].ServiceName)
 		assert.Equal(t, "ZIA", services[1].ServiceName)
 		assert.Equal(t, "ZDX", services[2].ServiceName)
-		
+
 		// All services should belong to the same org
 		for _, svc := range services {
 			assert.Equal(t, "enterprise-corp", svc.OrgName)
@@ -308,4 +308,3 @@ func TestUserEntitlement_GetServiceEntitlement_SDK(t *testing.T) {
 	assert.Equal(t, "ZIA", results[1].ServiceName)
 	assert.Equal(t, "ZDX", results[2].ServiceName)
 }
-

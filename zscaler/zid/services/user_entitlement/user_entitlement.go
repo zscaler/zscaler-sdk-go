@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
 )
 
 const (

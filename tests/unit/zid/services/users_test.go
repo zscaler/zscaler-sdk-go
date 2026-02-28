@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/users"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/users"
 )
 
 func TestUsers_Structure(t *testing.T) {
@@ -439,4 +439,3 @@ func TestUsers_GetGroupsByUser_SDK(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Len(t, result.Records, 2)
 }
-

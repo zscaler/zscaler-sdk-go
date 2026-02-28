@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
-	resourceservers "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/resource_servers"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	resourceservers "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/resource_servers"
 )
 
 func TestResourceServers_Structure(t *testing.T) {
@@ -312,4 +312,3 @@ func TestResourceServers_GetByName_SDK(t *testing.T) {
 	require.NotNil(t, results)
 	assert.Len(t, results, 2) // Should match "ZPA API" and "ZPA Private API"
 }
-

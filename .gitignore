@@ -23,6 +23,8 @@ vendor/
 go-test
 /go-test
 .vscode
+.cursor
+.claude
 zpacoverage.txt
 ziacoverage.txt
 zpacoverage.html
