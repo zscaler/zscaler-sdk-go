@@ -196,6 +196,24 @@ type URLAdvancedPolicySettings struct {
 	// A Boolean value indicating if the use of generative AI prompts with Perplexity by users should be categorized and logged
 	EnablePerPlexityPrompt bool `json:"enablePerPlexityPrompt,omitempty"`
 
+	// A Boolean value indicating if the use of generative AI prompts with DeepSeek by users should be categorized and logged
+	EnableDeepSeekPrompt bool `json:"enableDeepSeekPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Writer by users should be categorized and logged
+	EnableWriterPrompt bool `json:"enableWriterPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Grok by users should be categorized and logged
+	EnableGrokPrompt bool `json:"enableGrokPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Mistral AI by users should be categorized and logged
+	EnableMistralAIPrompt bool `json:"enableMistralAIPrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Claude by users should be categorized and logged
+	EnableClaudePrompt bool `json:"enableClaudePrompt,omitempty"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Grammarly by users should be categorized and logged
+	EnableGrammarlyPrompt bool `json:"enableGrammarlyPrompt,omitempty"`
+
 	// A Boolean value indicating whether access to Skype is blocked or not.
 	BlockSkype bool `json:"blockSkype,omitempty"`
 
@@ -211,6 +229,12 @@ type URLAdvancedPolicySettings struct {
 	//  list of applications for which the SafeSearch enforcement applies. You cannot modify this field when the enforceSafeSearch field is disabled.
 	// Supported Values: "ANY", "DAILYMOTION", "BING", "GOOGLE", "YAHOO", "AOL", "FLICKR", "YOUTUBE","DUCKDUCKGO"
 	SafeSearchApps []string `json:"safeSearchApps,omitempty"`
+
+	// A Boolean value indicating if Zvelo database lookup is disabled.
+	ZveloDbLookupDisabled bool `json:"zveloDbLookupDisabled,omitempty"`
+
+	// A Boolean value indicating if Creative Commons search results are enabled.
+	EnableCreativeCommonsSearchResults bool `json:"enableCreativeCommonsSearchResults,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
