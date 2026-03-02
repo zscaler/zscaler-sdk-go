@@ -13,10 +13,27 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.24``
+``Last updated: v3.8.25``
 
 ---
 
+# 3.8.25 (March 2, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #416](https://github.com/zscaler/zscaler-sdk-go/pull/416) Added new attributes to ZIA struct `URLAdvancedPolicySettings`
+  - `EnableDeepSeekPrompt`
+  - `EnableWriterPrompt`
+  - `EnableGrokPrompt`
+  - `EnableMistralAIPrompt`
+  - `EnableClaudePrompt`
+  - `EnableGrammarlyPrompt`
+  - `ZveloDbLookupDisabled`
+  - `EnableCreativeCommonsSearchResults`
+  
 # 3.8.24 (February 27, 2026)
 
 ## Notes
