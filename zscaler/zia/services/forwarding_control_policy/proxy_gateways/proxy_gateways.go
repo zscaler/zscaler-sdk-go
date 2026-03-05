@@ -65,7 +65,7 @@ func GetByName(ctx context.Context, service *zscaler.Service, gwName string) (*P
 			return &proxyGW, nil
 		}
 	}
-	return nil, fmt.Errorf("no zpa gateway found with name: %s", gwName)
+	return nil, fmt.Errorf("no proxy gateway found with name: %s", gwName)
 }
 
 func GetLite(ctx context.Context, service *zscaler.Service) ([]ProxyGateways, error) {
