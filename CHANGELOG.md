@@ -1,5 +1,37 @@
 # Changelog
 
+# 3.8.26 (March 5, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #417](https://github.com/zscaler/zscaler-sdk-go/pull/417) Added the following new ZPA Tag Group Controller Endpoints
+  - `POST /tagGroup/search` Gets all configured TagGroup for the specified customer.
+  - `POST /tagGroup` Adds a new TagGroup for the specified customer.
+  - `GET /tagGroup/{tagGroupId}` Gets the TagGroup details for the specified ID.
+  - `PUT /tagGroup/{tagGroupId}` Updates the TagGroup for the specified ID.
+  - `DELETE /tagGroup/{tagGroupId}` Deletes the TagGroup for the specified ID.
+
+- [PR #417](https://github.com/zscaler/zscaler-sdk-go/pull/417) Added the following new ZPA Tag Key Controller Endpoints
+  - `POST /namespace/{namespaceId}/tagKey/search` Gets all configured Tag Keys for the specified customer.
+  - `POST /namespace/{namespaceId}/tagKey` Adds a new Tag Key for a given namespace.
+  - `GET /namespace/{namespaceId}/tagKey/{tagKeyId}` Gets the Tag Key details for the specified ID.
+  - `PUT /namespace/{namespaceId}/tagKey/{tagKeyId}` Updates the Tag Key for the specified ID.
+  - `DELETE /namespace/{namespaceId}/tagKey/{tagKeyId}` Deletes the Tag Key for the specified ID.
+  - `PUT /namespace/{namespaceId}/tagKey/bulkUpdateStatus` Bulk update to enable/disable Tag Keys.
+
+- [PR #417](https://github.com/zscaler/zscaler-sdk-go/pull/417) Added the following new ZPA Tag Namespace Controller Endpoints
+  - `POST /namespace/search` Gets all Namespace for the specified customer based on given filters.
+  - `POST /namespace` Adds a new Namespace for the specified customer.
+  - `GET /namespace/{namespaceId}` Gets the Namespace details for the specified ID.
+  - `PUT /namespace/{namespaceId}` Updates the Namespace for the specified ID.
+  - `DELETE /namespace/{namespaceId}` Deletes the Namespace for the specified ID.
+  - `PUT /namespace/{namespaceId}/status` Enables or disables a predefined Namespace.
+
+- [PR #417](https://github.com/zscaler/zscaler-sdk-go/pull/417) - Added new attribute `dedicatedIPGateway` to ZIA `forwardin_rules` package
+
 # 3.8.25 (March 2, 2026)
 
 ## Notes

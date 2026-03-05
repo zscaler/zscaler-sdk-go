@@ -119,6 +119,9 @@ type ForwardingRules struct {
 	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
 	ProxyGateway *common.IDName `json:"proxyGateway,omitempty"`
 
+	// The proxy gateway for which the rule is applicable. This field is applicable only for the Proxy Chaining forwarding method.
+	DedicatedIPGateway *common.IDName `json:"dedicatedIPGateway,omitempty"`
+
 	// The ZPA Server Group for which this rule is applicable.
 	// Only the Server Groups that are associated with the selected Application Segments are allowed.
 	// This field is applicable only for the ZPA forwarding method.
