@@ -97,38 +97,38 @@ test\:all:
 
 test\:integration\:zcc:
 	@echo "$(COLOR_ZSCALER)Running zcc integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zscaler/zcc/... -parallel 1 -timeout 60m
-	go tool cover -html=zcccoverage.out -o zcccoverage.html
+	GOTOOLCHAIN=local go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zscaler/zcc/... -parallel 1 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=zcccoverage.out -o zcccoverage.html
 
 
 test\:integration\:ztw:
 	@echo "$(COLOR_ZSCALER)Running ztw integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=ztwcoverage.out -covermode=atomic ./zscaler/ztw/... -parallel 20 -timeout 60m
-	go tool cover -html=ztwcoverage.out -o ztwcoverage.html
+	GOTOOLCHAIN=local go test -v -race -cover -coverprofile=ztwcoverage.out -covermode=atomic ./zscaler/ztw/... -parallel 20 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=ztwcoverage.out -o ztwcoverage.html
 
 test\:integration\:zdx:
-	@echo "$(COLOR_ZSCALER)Running ztw integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zscaler/zdx/... -parallel 4 -timeout 60m
-	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
-	@go tool cover -func zdxcoverage.out | grep total:
+	@echo "$(COLOR_ZSCALER)Running zdx integration tests...$(COLOR_NONE)"
+	GOTOOLCHAIN=local go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zscaler/zdx/... -parallel 4 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	@GOTOOLCHAIN=local go tool cover -func zdxcoverage.out | grep total:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zscaler/zpa/... -parallel 10 -timeout 60m
-	go tool cover -html=zpacoverage.out -o zpacoverage.html
-	@go tool cover -func zpacoverage.out | grep total:
+	GOTOOLCHAIN=local go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zscaler/zpa/... -parallel 10 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=zpacoverage.out -o zpacoverage.html
+	@GOTOOLCHAIN=local go tool cover -func zpacoverage.out | grep total:
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zscaler/zia/... ./zscaler/zia/activation_cli/... -parallel 10 -timeout 60m
-	go tool cover -html=ziacoverage.out -o ziacoverage.html
-	@go tool cover -func ziacoverage.out | grep total:
+	GOTOOLCHAIN=local go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zscaler/zia/... ./zscaler/zia/activation_cli/... -parallel 10 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=ziacoverage.out -o ziacoverage.html
+	@GOTOOLCHAIN=local go tool cover -func ziacoverage.out | grep total:
 
 test\:integration\:zid:
 	@echo "$(COLOR_ZSCALER)Running zid integration tests...$(COLOR_NONE)"
-	go test -v -failfast -race -cover -coverprofile=zidcoverage.out -covermode=atomic ./zscaler/zid/... -parallel 10 -timeout 60m
-	go tool cover -html=zidcoverage.out -o zidcoverage.html
-	@go tool cover -func zidcoverage.out | grep total:
+	GOTOOLCHAIN=local go test -v -failfast -race -cover -coverprofile=zidcoverage.out -covermode=atomic ./zscaler/zid/... -parallel 10 -timeout 60m
+	GOTOOLCHAIN=local go tool cover -html=zidcoverage.out -o zidcoverage.html
+	@GOTOOLCHAIN=local go tool cover -func zidcoverage.out | grep total:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running all unit tests...$(COLOR_NONE)"
