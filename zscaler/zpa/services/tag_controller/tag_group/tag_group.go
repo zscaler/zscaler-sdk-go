@@ -22,7 +22,7 @@ type TagGroup struct {
 	Description     string `json:"description,omitempty"`
 	MicroTenantID   string `json:"microtenantId,omitempty"`
 	MicroTenantName string `json:"microtenantName,omitempty"`
-	Tags            []Tag  `json:"tags,omitempty"`
+	Tags            []Tag  `json:"tags"`
 }
 
 type Tag struct {
@@ -67,15 +67,21 @@ func GetByName(ctx context.Context, service *zscaler.Service, tagGroupName strin
 				{
 					Filters: []common.SearchFilterItem{
 						{
-							FilterName: "name",
-							Operator:   "EQ",
-							Value:      tagGroupName,
+							CommaSepValues: tagGroupName,
+							FilterName:     "name",
+							Operator:       "EQ",
+							Value:          tagGroupName,
+							Values:         []string{tagGroupName},
 						},
 					},
 					Operator: "AND",
 				},
 			},
 			Operator: "AND",
+		},
+		SortBy: &common.SearchSortBy{
+			SortName:  "name",
+			SortOrder: "ASC",
 		},
 	}
 	list, resp, err := common.GetAllPagesGenericWithPostSearch[TagGroup](ctx, service.Client, relativeURL, searchRequest, common.Filter{MicroTenantID: service.MicroTenantID()})
@@ -92,7 +98,12 @@ func GetByName(ctx context.Context, service *zscaler.Service, tagGroupName strin
 
 func Create(ctx context.Context, service *zscaler.Service, tagGroup TagGroup) (*TagGroup, *http.Response, error) {
 	v := new(TagGroup)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+tagGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, tagGroup, &v)
+	// API requires tags in the payload even when empty; ensure it's never nil
+	payload := tagGroup
+	if payload.Tags == nil {
+		payload.Tags = []Tag{}
+	}
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+tagGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, payload, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,7 +112,12 @@ func Create(ctx context.Context, service *zscaler.Service, tagGroup TagGroup) (*
 
 func Update(ctx context.Context, service *zscaler.Service, tagGroupID string, tagGroup *TagGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+tagGroupEndpoint, tagGroupID)
-	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, tagGroup, nil)
+	// API requires tags in the payload even when empty; ensure it's never nil
+	payload := *tagGroup
+	if payload.Tags == nil {
+		payload.Tags = []Tag{}
+	}
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, &payload, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +135,13 @@ func Delete(ctx context.Context, service *zscaler.Service, tagGroupID string) (*
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]TagGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + tagGroupSearchEndpoint
-	list, resp, err := common.GetAllPagesGenericWithPostSearch[TagGroup](ctx, service.Client, relativeURL, common.SearchRequest{}, common.Filter{MicroTenantID: service.MicroTenantID()})
+	searchRequest := common.SearchRequest{
+		SortBy: &common.SearchSortBy{
+			SortName:  "name",
+			SortOrder: "ASC",
+		},
+	}
+	list, resp, err := common.GetAllPagesGenericWithPostSearch[TagGroup](ctx, service.Client, relativeURL, searchRequest, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

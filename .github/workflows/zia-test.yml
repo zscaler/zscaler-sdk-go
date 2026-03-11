@@ -80,4 +80,3 @@ jobs:
           files: ./ziacoverage.out
           flags: zia
           fail_ci_if_error: false
-

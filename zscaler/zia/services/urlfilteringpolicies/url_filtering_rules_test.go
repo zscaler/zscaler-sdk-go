@@ -114,7 +114,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -231,7 +231,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		return
 	}
 
-	_, _, err = Update(context.Background(), service, 0, &URLFilteringRule{})
+	_, err = Update(context.Background(), service, 0, &URLFilteringRule{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

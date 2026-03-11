@@ -52,15 +52,21 @@ func GetByName(ctx context.Context, service *zscaler.Service, namespaceName stri
 				{
 					Filters: []common.SearchFilterItem{
 						{
-							FilterName: "name",
-							Operator:   "EQ",
-							Value:      namespaceName,
+							CommaSepValues: namespaceName,
+							FilterName:     "name",
+							Operator:       "EQ",
+							Value:          namespaceName,
+							Values:         []string{namespaceName},
 						},
 					},
 					Operator: "AND",
 				},
 			},
 			Operator: "AND",
+		},
+		SortBy: &common.SearchSortBy{
+			SortName:  "name",
+			SortOrder: "ASC",
 		},
 	}
 	list, resp, err := common.GetAllPagesGenericWithPostSearch[Namespace](ctx, service.Client, relativeURL, searchRequest, common.Filter{MicroTenantID: service.MicroTenantID()})
@@ -104,7 +110,13 @@ func Delete(ctx context.Context, service *zscaler.Service, namespaceID string) (
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]Namespace, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.GetCustomerID() + namespaceSearchEndpoint
-	list, resp, err := common.GetAllPagesGenericWithPostSearch[Namespace](ctx, service.Client, relativeURL, common.SearchRequest{}, common.Filter{MicroTenantID: service.MicroTenantID()})
+	searchRequest := common.SearchRequest{
+		SortBy: &common.SearchSortBy{
+			SortName:  "name",
+			SortOrder: "ASC",
+		},
+	}
+	list, resp, err := common.GetAllPagesGenericWithPostSearch[Namespace](ctx, service.Client, relativeURL, searchRequest, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

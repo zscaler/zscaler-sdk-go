@@ -136,15 +136,15 @@ type URLFilteringRule struct {
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   *CBIProfile `json:"cbiProfile"`
-	CBIProfileID int         `json:"cbiProfileId"`
+	CBIProfile   *CBIProfile `json:"cbiProfile,omitempty"`
+	CBIProfileID int         `json:"cbiProfileId,omitempty"`
 }
 
 type CBIProfile struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	URL        string `json:"url"`
-	ProfileSeq int    `json:"profileSeq"`
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	URL        string `json:"url,omitempty"`
+	ProfileSeq int    `json:"profileSeq,omitempty"`
 }
 
 type URLAdvancedPolicySettings struct {
@@ -244,6 +244,22 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteri
 		return nil, err
 	}
 
+	// API bug workaround: GET by ID does not return the cbiProfile object for ISOLATE rules,
+	// but GetAll does. Fall back to GetAll to populate the missing field.
+	if rule.Action == "ISOLATE" && rule.CBIProfile == nil && rule.CBIProfileID != 0 {
+		service.Client.GetLogger().Printf("[DEBUG] GET by ID did not return cbiProfile for ISOLATE rule %d (cbiProfileId=%d), falling back to GetAll", ruleID, rule.CBIProfileID)
+		allRules, getAllErr := GetAll(ctx, service)
+		if getAllErr == nil {
+			for i := range allRules {
+				if allRules[i].ID == ruleID && allRules[i].CBIProfile != nil {
+					rule.CBIProfile = allRules[i].CBIProfile
+					service.Client.GetLogger().Printf("[DEBUG] Populated cbiProfile from GetAll for rule %d: %+v", ruleID, rule.CBIProfile)
+					break
+				}
+			}
+		}
+	}
+
 	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", rule.ID)
 	return &rule, nil
 }
@@ -277,27 +293,14 @@ func Create(ctx context.Context, service *zscaler.Service, ruleID *URLFilteringR
 	return createdURLFilteringRule, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
-	// Add debug log to print the rule object
-	service.Client.GetLogger().Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
-
-	// Check if CBIProfile is nil or has empty ID, or if CBIProfileID is 0
-	if rule.CBIProfile == nil || rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
-		// If CBIProfile object is empty, fetch it using Get by ID
-		existingRule, err := Get(ctx, service, ruleID)
-		if err == nil && existingRule != nil {
-			rule.CBIProfile = existingRule.CBIProfile
-			rule.CBIProfileID = existingRule.CBIProfileID
-		}
-	}
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *URLFilteringRule) (*URLFilteringRule, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rules)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
-
-	service.Client.GetLogger().Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
-	return updatedURLFilteringRule, nil, nil
+	updatedRules, _ := resp.(*URLFilteringRule)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
+	return updatedRules, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
