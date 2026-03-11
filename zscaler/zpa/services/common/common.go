@@ -544,10 +544,10 @@ type SearchFilterItem struct {
 }
 
 type SearchPageBy struct {
-	Page          string `json:"page,omitempty"`
-	PageSize      string `json:"pageSize,omitempty"`
-	ValidPage     int    `json:"validPage,omitempty"`
-	ValidPageSize int    `json:"validPageSize,omitempty"`
+	Page          int `json:"page,omitempty"`
+	PageSize      int `json:"pageSize,omitempty"`
+	ValidPage     int `json:"validPage,omitempty"`
+	ValidPageSize int `json:"validPageSize,omitempty"`
 }
 
 type SearchSortBy struct {
@@ -568,8 +568,10 @@ func GetAllPagesGenericWithPostSearch[T any](ctx context.Context, client *zscale
 
 	for {
 		searchRequest.PageBy = &SearchPageBy{
-			Page:     fmt.Sprintf("%d", page),
-			PageSize: fmt.Sprintf("%d", pageSize),
+			Page:          page,
+			PageSize:      pageSize,
+			ValidPage:     0,
+			ValidPageSize: 0,
 		}
 
 		var paged struct {

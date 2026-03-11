@@ -175,8 +175,7 @@ func TestTagNamespace_UpdateStatus_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	resp, err := tag_namespace.UpdateStatus(context.Background(), service, namespaceID, tag_namespace.UpdateStatusRequest{
-		Enabled:     false,
-		NamespaceID: namespaceID,
+		Enabled: false,
 	})
 
 	require.NoError(t, err)

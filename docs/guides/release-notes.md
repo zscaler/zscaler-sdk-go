@@ -13,7 +13,24 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.26``
+``Last updated: v3.8.27``
+
+---
+
+# 3.8.27 (March 11, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #419](https://github.com/zscaler/zscaler-sdk-go/pull/419) Fixed ZPA tag controller POST search payload format for tag group, tag namespace, and tag key: added `commaSepValues`, `values`, and `sortBy` to filter items; changed `pageBy` to use integer `page`/`pageSize`; added `validPage`/`validPageSize` to satisfy API requirements.
+
+- [PR #419](https://github.com/zscaler/zscaler-sdk-go/pull/419) Fixed ZPA tag group: ensure `tags` is always sent in Create/Update payload (never nil) as required by the API.
+
+- [PR #419](https://github.com/zscaler/zscaler-sdk-go/pull/419) Fixed ZPA tag key: ensure `tagValues` is always sent in Create/Update payload (never nil); integration tests now create namespace first, then tag key within it.
+
+- [PR #419](https://github.com/zscaler/zscaler-sdk-go/pull/419) Fixed ZPA tag namespace test: UpdateStatus payload sends only `enabled` (namespaceId in path); skip subtest when API returns resource.not.found.
 
 ---
 

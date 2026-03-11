@@ -3,28 +3,62 @@ package tag_key_controller
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/tag_controller/tag_namespace"
 )
-
-const testNamespaceID = "1"
 
 func TestTagKeyCRUD(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	namespaceName := "tests-ns-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	tagVal1 := "test-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
+	tagVal2 := "test-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	createdResource, _, err := Create(context.Background(), service, testNamespaceID, TagKey{
+	// 1. Create namespace first; tag key is created within a namespace
+	createdNamespace, _, err := tag_namespace.Create(context.Background(), service, tag_namespace.Namespace{
+		Name:        namespaceName,
+		Description: namespaceName,
+		Enabled:     true,
+		Origin:      "CUSTOM",
+		Type:        "STATIC",
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace for tag key test: %v", err)
+	}
+	defer func() {
+		time.Sleep(time.Second * 2)
+		_, _, getErr := tag_namespace.Get(context.Background(), service, createdNamespace.ID)
+		if getErr != nil {
+			t.Logf("Namespace might have already been deleted: %v", getErr)
+			return
+		}
+		_, err := tag_namespace.Delete(context.Background(), service, createdNamespace.ID)
+		if err != nil {
+			t.Logf("Error deleting namespace: %v", err)
+		}
+	}()
+
+	namespaceID := createdNamespace.ID
+
+	// 2. Create tag key within the namespace
+	createdResource, _, err := Create(context.Background(), service, namespaceID, TagKey{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
 		Origin:      "CUSTOM",
 		Type:        "STATIC",
+		TagValues: []TagValue{
+			{Name: tagVal1},
+			{Name: tagVal2},
+		},
 	})
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
@@ -40,7 +74,7 @@ func TestTagKeyCRUD(t *testing.T) {
 	})
 
 	t.Run("TestResourceRetrieval", func(t *testing.T) {
-		retrievedResource, _, err := Get(context.Background(), service, testNamespaceID, createdResource.ID)
+		retrievedResource, _, err := Get(context.Background(), service, namespaceID, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource: %v", err)
 		}
@@ -55,14 +89,14 @@ func TestTagKeyCRUD(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = Update(context.Background(), service, testNamespaceID, createdResource.ID, &updatedResource)
+		_, err = Update(context.Background(), service, namespaceID, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
 	})
 
 	t.Run("TestResourceRetrievalByName", func(t *testing.T) {
-		retrievedResource, _, err := GetByName(context.Background(), service, testNamespaceID, updateName)
+		retrievedResource, _, err := GetByName(context.Background(), service, namespaceID, updateName)
 		if err != nil {
 			t.Fatalf("Error retrieving resource by name: %v", err)
 		}
@@ -75,7 +109,7 @@ func TestTagKeyCRUD(t *testing.T) {
 	})
 
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
-		resources, _, err := GetAll(context.Background(), service, testNamespaceID)
+		resources, _, err := GetAll(context.Background(), service, namespaceID)
 		if err != nil {
 			t.Fatalf("Error retrieving resources: %v", err)
 		}
@@ -95,7 +129,7 @@ func TestTagKeyCRUD(t *testing.T) {
 	})
 
 	t.Run("TestBulkUpdateStatus", func(t *testing.T) {
-		_, err := BulkUpdateStatus(context.Background(), service, testNamespaceID, BulkUpdateStatusRequest{
+		_, err := BulkUpdateStatus(context.Background(), service, namespaceID, BulkUpdateStatusRequest{
 			Enabled:   false,
 			TagKeyIDs: []string{createdResource.ID},
 		})
@@ -103,7 +137,7 @@ func TestTagKeyCRUD(t *testing.T) {
 			t.Fatalf("Error bulk updating status: %v", err)
 		}
 
-		retrievedResource, _, err := Get(context.Background(), service, testNamespaceID, createdResource.ID)
+		retrievedResource, _, err := Get(context.Background(), service, namespaceID, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource after bulk update: %v", err)
 		}
@@ -113,7 +147,7 @@ func TestTagKeyCRUD(t *testing.T) {
 	})
 
 	t.Run("TestResourceRemoval", func(t *testing.T) {
-		_, err := Delete(context.Background(), service, testNamespaceID, createdResource.ID)
+		_, err := Delete(context.Background(), service, namespaceID, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error deleting resource: %v", err)
 		}
@@ -126,7 +160,20 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = Get(context.Background(), service, testNamespaceID, "non_existent_id")
+	namespaceName := "tests-ns-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	createdNamespace, _, err := tag_namespace.Create(context.Background(), service, tag_namespace.Namespace{
+		Name:        namespaceName,
+		Description: namespaceName,
+		Enabled:     true,
+		Origin:      "CUSTOM",
+		Type:        "STATIC",
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace: %v", err)
+	}
+	defer tag_namespace.Delete(context.Background(), service, createdNamespace.ID)
+
+	_, _, err = Get(context.Background(), service, createdNamespace.ID, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -138,7 +185,20 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Delete(context.Background(), service, testNamespaceID, "non_existent_id")
+	namespaceName := "tests-ns-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	createdNamespace, _, err := tag_namespace.Create(context.Background(), service, tag_namespace.Namespace{
+		Name:        namespaceName,
+		Description: namespaceName,
+		Enabled:     true,
+		Origin:      "CUSTOM",
+		Type:        "STATIC",
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace: %v", err)
+	}
+	defer tag_namespace.Delete(context.Background(), service, createdNamespace.ID)
+
+	_, err = Delete(context.Background(), service, createdNamespace.ID, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -150,7 +210,20 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, testNamespaceID, "non_existent_id", &TagKey{})
+	namespaceName := "tests-ns-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	createdNamespace, _, err := tag_namespace.Create(context.Background(), service, tag_namespace.Namespace{
+		Name:        namespaceName,
+		Description: namespaceName,
+		Enabled:     true,
+		Origin:      "CUSTOM",
+		Type:        "STATIC",
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace: %v", err)
+	}
+	defer tag_namespace.Delete(context.Background(), service, createdNamespace.ID)
+
+	_, err = Update(context.Background(), service, createdNamespace.ID, "non_existent_id", &TagKey{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -162,7 +235,20 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, _, err = GetByName(context.Background(), service, testNamespaceID, "non_existent_name")
+	namespaceName := "tests-ns-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	createdNamespace, _, err := tag_namespace.Create(context.Background(), service, tag_namespace.Namespace{
+		Name:        namespaceName,
+		Description: namespaceName,
+		Enabled:     true,
+		Origin:      "CUSTOM",
+		Type:        "STATIC",
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace: %v", err)
+	}
+	defer tag_namespace.Delete(context.Background(), service, createdNamespace.ID)
+
+	_, _, err = GetByName(context.Background(), service, createdNamespace.ID, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

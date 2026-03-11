@@ -87,10 +87,11 @@ func TestTagKey_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	result, _, err := tag_key.Create(context.Background(), service, testNamespaceID, tag_key.TagKey{
-		Name:    "New Tag Key",
-		Enabled: true,
-		Origin:  "CUSTOM",
-		Type:    "STATIC",
+		Name:      "New Tag Key",
+		Enabled:   true,
+		Origin:    "CUSTOM",
+		Type:      "STATIC",
+		TagValues: []tag_key.TagValue{{Name: "value1"}, {Name: "value2"}},
 	})
 
 	require.NoError(t, err)
@@ -112,8 +113,9 @@ func TestTagKey_Update_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	resp, err := tag_key.Update(context.Background(), service, testNamespaceID, tagKeyID, &tag_key.TagKey{
-		ID:   tagKeyID,
-		Name: "Updated Tag Key",
+		ID:         tagKeyID,
+		Name:       "Updated Tag Key",
+		TagValues:  []tag_key.TagValue{},
 	})
 
 	require.NoError(t, err)

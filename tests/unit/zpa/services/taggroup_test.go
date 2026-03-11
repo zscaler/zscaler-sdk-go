@@ -81,6 +81,7 @@ func TestTagGroup_Create_SDK(t *testing.T) {
 	result, _, err := tag_group.Create(context.Background(), service, tag_group.TagGroup{
 		Name:        "New Tag Group",
 		Description: "Created via unit test",
+		Tags:        []tag_group.Tag{},
 	})
 
 	require.NoError(t, err)
@@ -105,6 +106,7 @@ func TestTagGroup_Update_SDK(t *testing.T) {
 		ID:          tagGroupID,
 		Name:        "Updated Tag Group",
 		Description: "Updated description",
+		Tags:        []tag_group.Tag{},
 	})
 
 	require.NoError(t, err)

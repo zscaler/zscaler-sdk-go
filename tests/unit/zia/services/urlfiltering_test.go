@@ -133,7 +133,7 @@ func TestURLFilteringRules_Update_SDK(t *testing.T) {
 		Name: "Updated URL Rule",
 	}
 
-	result, _, err := urlfilteringpolicies.Update(context.Background(), service, ruleID, updateRule)
+	result, err := urlfilteringpolicies.Update(context.Background(), service, ruleID, updateRule)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -220,7 +220,7 @@ func TestURLFilteringRules_UpdateUrlAndAppSettings_ValidationError(t *testing.T)
 
 	// Test validation error when EnableCIPACompliance is set with incompatible options
 	settings := urlfilteringpolicies.URLAdvancedPolicySettings{
-		EnableCIPACompliance:      true,
+		EnableCIPACompliance:         true,
 		EnableNewlyRegisteredDomains: true, // This should fail validation
 	}
 
@@ -366,4 +366,3 @@ func TestURLFilteringPolicies_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "CAUTION", rules[2].Action)
 	})
 }
-
