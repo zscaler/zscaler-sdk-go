@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.28 (March 18, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #422](https://github.com/zscaler/zscaler-sdk-go/pull/422) - Fixed `IsSessionInvalidError` to detect the newer API error variant `getAttributeNames: Session already invalidated` in addition to the legacy `getAttribute: Session already invalidated`; added broad `Session already invalidated` match to handle future method name changes
+
 # 3.8.27 (March 11, 2026)
 
 ## Notes
