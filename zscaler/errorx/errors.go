@@ -182,9 +182,11 @@ func IsSessionInvalidError(res *http.Response) bool {
 	// Only check for error messages we know for certain are returned by the API
 	// The API may return different formats depending on the service/endpoint
 	knownSessionInvalidMessages := []string{
-		"SESSION_NOT_VALID",                         // Legacy/direct error code
-		"getAttribute: Session already invalidated", // Java exception message format
-		"Resource Access Blocked",                   // Occurs under high concurrency/load - API returns 401 instead of 429
+		"SESSION_NOT_VALID",                              // Legacy/direct error code
+		"getAttribute: Session already invalidated",      // Java exception message format (legacy)
+		"getAttributeNames: Session already invalidated", // Java exception message format (newer API variant)
+		"Session already invalidated",                    // Broad match for any future method name variants
+		"Resource Access Blocked",                        // Occurs under high concurrency/load - API returns 401 instead of 429
 	}
 
 	for _, msg := range knownSessionInvalidMessages {
