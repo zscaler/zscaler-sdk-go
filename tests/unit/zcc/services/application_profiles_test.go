@@ -276,7 +276,7 @@ func TestApplicationProfiles_Structure(t *testing.T) {
 			RuleOrder:   1,
 			LogMode:     3,
 			LogFileSize: 100,
-			GroupAll:     1,
+			GroupAll:    1,
 			Ipv6Mode:    4,
 		}
 
@@ -432,6 +432,48 @@ func TestApplicationProfiles_Structure(t *testing.T) {
 		assert.Equal(t, 1, response.Policies[0].Active)
 		assert.Equal(t, "Custom", response.Policies[1].Name)
 		assert.Equal(t, 0, response.Policies[1].Active)
+	})
+
+	t.Run("API list response with groups, users, string groupIds", func(t *testing.T) {
+		jsonData := `{
+			"totalCount": 1,
+			"policies": [{
+				"deviceType": "DEVICE_TYPE_ANDROID",
+				"id": 171803,
+				"name": "AndroidPolicy01",
+				"active": 0,
+				"groups": [
+					{"id": 62718389, "name": "A001", "authType": "SAFECHANNEL_DIR", "active": 1, "lastModification": "1691828147"}
+				],
+				"users": [
+					{"id": "5807211", "loginName": "user@example.com", "lastModification": "2026-02-19 00:49:32.0", "active": 1, "companyId": "4543"}
+				],
+				"groupIds": ["62718389"],
+				"userIds": ["5807211", "35129345"],
+				"forwardingProfileId": null,
+				"reauth_period": "12",
+				"uninstall_password": null
+			}]
+		}`
+
+		var response application_profiles.ApplicationProfilesResponse
+		err := json.Unmarshal([]byte(jsonData), &response)
+		require.NoError(t, err)
+
+		require.Len(t, response.Policies, 1)
+		p := response.Policies[0]
+		require.Len(t, p.Groups, 1)
+		assert.Equal(t, int64(62718389), p.Groups[0].ID)
+		assert.Equal(t, "A001", p.Groups[0].Name)
+		require.Len(t, p.Users, 1)
+		assert.Equal(t, "5807211", p.Users[0].ID)
+		assert.Equal(t, "user@example.com", p.Users[0].LoginName)
+		assert.Equal(t, []string{"62718389"}, p.GroupIds)
+		assert.Equal(t, []string{"5807211", "35129345"}, p.UserIds)
+		assert.Nil(t, p.ForwardingProfileId)
+		require.NotNil(t, p.ReauthPeriod)
+		assert.Equal(t, "12", *p.ReauthPeriod)
+		assert.Nil(t, p.UninstallPassword)
 	})
 
 	t.Run("Full payload JSON unmarshaling", func(t *testing.T) {

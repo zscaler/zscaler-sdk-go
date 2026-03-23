@@ -20,53 +20,71 @@ type ApplicationProfilesResponse struct {
 	Policies   []ApplicationProfile `json:"policies"`
 }
 
+// ApplicationPolicyGroup is a single entry in policies[].groups or policies[].deviceGroups.
+type ApplicationPolicyGroup struct {
+	ID               int64  `json:"id"`
+	Name             string `json:"name,omitempty"`
+	AuthType         string `json:"authType,omitempty"`
+	Active           int    `json:"active,omitempty"`
+	LastModification string `json:"lastModification,omitempty"`
+}
+
+// ApplicationPolicyUser is a single entry in policies[].users.
+type ApplicationPolicyUser struct {
+	ID               string `json:"id"`
+	LoginName        string `json:"loginName,omitempty"`
+	LastModification string `json:"lastModification,omitempty"`
+	Active           int    `json:"active,omitempty"`
+	CompanyID        string `json:"companyId,omitempty"`
+}
+
 type ApplicationProfile struct {
-	DeviceType                   string           `json:"deviceType,omitempty"`
-	ID                           int              `json:"id,omitempty"`
-	Name                         string           `json:"name,omitempty"`
-	Description                  string           `json:"description,omitempty"`
-	PacURL                       string           `json:"pac_url,omitempty"`
-	Active                       int              `json:"active"`
-	RuleOrder                    int              `json:"ruleOrder,omitempty"`
-	LogMode                      int              `json:"logMode,omitempty"`
-	LogLevel                     int              `json:"logLevel,omitempty"`
-	LogFileSize                  int              `json:"logFileSize,omitempty"`
-	ReauthPeriod                 string           `json:"reauth_period,omitempty"`
-	ReactivateWebSecurityMinutes string           `json:"reactivateWebSecurityMinutes,omitempty"`
-	HighlightActiveControl       int              `json:"highlightActiveControl,omitempty"`
-	SendDisableServiceReason     int              `json:"sendDisableServiceReason,omitempty"`
-	RefreshKerberosToken         int              `json:"refreshKerberosToken,omitempty"`
-	EnableDeviceGroups           int              `json:"enableDeviceGroups,omitempty"`
-	Groups                       []int            `json:"groups,omitempty"`
-	DeviceGroups                 []int            `json:"deviceGroups,omitempty"`
-	OnNetPolicy                  interface{}      `json:"onNetPolicy,omitempty"`
-	NotificationTemplateContract interface{}      `json:"notificationTemplateContract,omitempty"`
-	NotificationTemplateId       int              `json:"notificationTemplateId,omitempty"`
-	ForwardingProfileId          int              `json:"forwardingProfileId,omitempty"`
-	ZiaPostureConfigId           int              `json:"ziaPostureConfigId,omitempty"`
-	PolicyToken                  string           `json:"policyToken,omitempty"`
-	TunnelZappTraffic            int              `json:"tunnelZappTraffic,omitempty"`
-	GroupAll                     int              `json:"groupAll,omitempty"`
-	Users                        []int            `json:"users,omitempty"`
-	PolicyExtension              PolicyExtension  `json:"policyExtension,omitempty"`
-	DisasterRecovery             DisasterRecovery `json:"disasterRecovery,omitempty"`
-	ZiaPostureConfig             interface{}      `json:"ziaPostureConfig,omitempty"`
-	GroupIds                     []int            `json:"groupIds,omitempty"`
-	DeviceGroupIds               []int            `json:"deviceGroupIds,omitempty"`
-	UserIds                      []int            `json:"userIds,omitempty"`
-	BypassAppIds                 []int            `json:"bypassAppIds,omitempty"`
-	AppServiceIds                []string         `json:"appServiceIds,omitempty"`
-	BypassCustomAppIds           []int            `json:"bypassCustomAppIds,omitempty"`
-	BypassApps                   interface{}      `json:"bypassApps,omitempty"`
-	BypassCustomApps             interface{}      `json:"bypassCustomApps,omitempty"`
-	AppServices                  []AppService     `json:"appServices,omitempty"`
-	Passcode                     string           `json:"passcode,omitempty"`
-	LogoutPassword               string           `json:"logout_password,omitempty"`
-	DisablePassword              string           `json:"disable_password,omitempty"`
-	UninstallPassword            string           `json:"uninstall_password,omitempty"`
-	ShowVPNTunNotification       int              `json:"showVPNTunNotification,omitempty"`
-	UseTunnelSDK4_3              int              `json:"useTunnelSDK4_3,omitempty"`
-	Ipv6Mode                     int              `json:"ipv6Mode,omitempty"`
+	DeviceType                   string                   `json:"deviceType,omitempty"`
+	ID                           int                      `json:"id,omitempty"`
+	Name                         string                   `json:"name,omitempty"`
+	Description                  string                   `json:"description,omitempty"`
+	PacURL                       string                   `json:"pac_url,omitempty"`
+	Active                       int                      `json:"active"`
+	RuleOrder                    int                      `json:"ruleOrder,omitempty"`
+	LogMode                      int                      `json:"logMode,omitempty"`
+	LogLevel                     int                      `json:"logLevel,omitempty"`
+	LogFileSize                  int                      `json:"logFileSize,omitempty"`
+	ReauthPeriod                 *string                  `json:"reauth_period,omitempty"`
+	ReactivateWebSecurityMinutes string                   `json:"reactivateWebSecurityMinutes,omitempty"`
+	HighlightActiveControl       int                      `json:"highlightActiveControl,omitempty"`
+	SendDisableServiceReason     int                      `json:"sendDisableServiceReason,omitempty"`
+	RefreshKerberosToken         int                      `json:"refreshKerberosToken,omitempty"`
+	EnableDeviceGroups           int                      `json:"enableDeviceGroups,omitempty"`
+	Groups                       []ApplicationPolicyGroup `json:"groups,omitempty"`
+	DeviceGroups                 []ApplicationPolicyGroup `json:"deviceGroups,omitempty"`
+	OnNetPolicy                  interface{}              `json:"onNetPolicy,omitempty"`
+	NotificationTemplateContract interface{}              `json:"notificationTemplateContract,omitempty"`
+	NotificationTemplateId       int                      `json:"notificationTemplateId,omitempty"`
+	ForwardingProfileId          *int                     `json:"forwardingProfileId,omitempty"`
+	ZiaPostureConfigId           *int                     `json:"ziaPostureConfigId,omitempty"`
+	PolicyToken                  string                   `json:"policyToken,omitempty"`
+	TunnelZappTraffic            int                      `json:"tunnelZappTraffic,omitempty"`
+	GroupAll                     int                      `json:"groupAll,omitempty"`
+	Users                        []ApplicationPolicyUser  `json:"users,omitempty"`
+	PolicyExtension              PolicyExtension          `json:"policyExtension,omitempty"`
+	DisasterRecovery             DisasterRecovery         `json:"disasterRecovery,omitempty"`
+	ZiaPostureConfig             interface{}              `json:"ziaPostureConfig,omitempty"`
+	GroupIds                     []string                 `json:"groupIds,omitempty"`
+	DeviceGroupIds               []string                 `json:"deviceGroupIds,omitempty"`
+	UserIds                      []string                 `json:"userIds,omitempty"`
+	BypassAppIds                 []string                 `json:"bypassAppIds,omitempty"`
+	AppServiceIds                []string                 `json:"appServiceIds,omitempty"`
+	BypassCustomAppIds           []string                 `json:"bypassCustomAppIds,omitempty"`
+	BypassApps                   interface{}              `json:"bypassApps,omitempty"`
+	BypassCustomApps             interface{}              `json:"bypassCustomApps,omitempty"`
+	AppServices                  []AppService             `json:"appServices,omitempty"`
+	Passcode                     string                   `json:"passcode,omitempty"`
+	LogoutPassword               string                   `json:"logout_password,omitempty"`
+	DisablePassword              string                   `json:"disable_password,omitempty"`
+	UninstallPassword            *string                  `json:"uninstall_password,omitempty"`
+	ShowVPNTunNotification       int                      `json:"showVPNTunNotification,omitempty"`
+	UseTunnelSDK4_3              int                      `json:"useTunnelSDK4_3,omitempty"`
+	Ipv6Mode                     int                      `json:"ipv6Mode,omitempty"`
 }
 
 type PolicyExtension struct {
@@ -168,6 +186,7 @@ type LocationPolicy struct {
 }
 
 type GenerateCliPasswordContract struct {
+	PolicyID                       int  `json:"policyId,omitempty"`
 	EnableCli                      bool `json:"enableCli"`
 	AllowZpaDisableWithoutPassword bool `json:"allowZpaDisableWithoutPassword"`
 	AllowZiaDisableWithoutPassword bool `json:"allowZiaDisableWithoutPassword"`
@@ -175,6 +194,7 @@ type GenerateCliPasswordContract struct {
 }
 
 type DisasterRecovery struct {
+	PolicyID         string `json:"policyId,omitempty"`
 	EnableZiaDR      bool   `json:"enableZiaDR"`
 	EnableZpaDR      bool   `json:"enableZpaDR"`
 	ZiaDRMethod      int    `json:"ziaDRMethod,omitempty"`
