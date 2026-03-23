@@ -38,22 +38,17 @@ type GetDevices struct {
 	PolicyName              string `json:"policyName"`
 	RegistrationState       string `json:"registrationState"`
 	RegistrationTime        string `json:"registration_time"`
-	State                   int    `json:"state"`
+	State                   string `json:"state"`
 	TunnelVersion           string `json:"tunnelVersion"`
-	Type                    int    `json:"type"`
+	Type                    string `json:"type"`
 	Udid                    string `json:"udid"`
 	UpmVersion              string `json:"upmVersion"`
 	User                    string `json:"user"`
-	VpnState                int    `json:"vpnState"`
+	VpnState                string `json:"vpnState"`
 	ZappArch                string `json:"zappArch"`
 }
 
-type GetDevicesQueryParams struct {
-	Username string `url:"username,omitempty"`
-	OsType   string `url:"osType,omitempty"`
-	Page     int    `url:"page,omitempty"`
-	PageSize int    `url:"pageSize,omitempty"`
-}
+type GetDevicesQueryParams = common.QueryParams
 
 type DeviceCleanupInfo struct {
 	ID                    string `json:"id"`
@@ -98,11 +93,11 @@ type DeviceDetails struct {
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service, username, osType string) ([]GetDevices, error) {
-	queryParams := GetDevicesQueryParams{
+	params := common.QueryParams{
 		Username: username,
 		OsType:   osType,
 	}
-	return common.ReadAllPages[GetDevices](ctx, service.Client, getDevicesEndpoint, queryParams, 1000)
+	return common.ReadAllPages[GetDevices](ctx, service.Client, getDevicesEndpoint, params, 1000)
 }
 
 func GetDeviceCleanupInfo(ctx context.Context, service *zscaler.Service) (*DeviceCleanupInfo, error) {

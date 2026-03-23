@@ -16,90 +16,120 @@ const (
 )
 
 type ForwardingProfile struct {
+	ID                          IntOrString                  `json:"id,omitempty"`
 	Active                      string                       `json:"active"`
-	ConditionType               int                          `json:"conditionType"`
-	DnsSearchDomains            string                       `json:"dnsSearchDomains"`
-	DnsServers                  string                       `json:"dnsServers"`
-	EnableLWFDriver             string                       `json:"enableLWFDriver"`
-	EnableSplitVpnTN            int                          `json:"enableSplitVpnTN"`
-	EvaluateTrustedNetwork      int                          `json:"evaluateTrustedNetwork"`
-	ForwardingProfileActions    []ForwardingProfileAction    `json:"forwardingProfileActions"`
-	ForwardingProfileZpaActions []ForwardingProfileZpaAction `json:"forwardingProfileZpaActions"`
-	Hostname                    string                       `json:"hostname"`
-	ID                          IntOrString                  `json:"id"`
 	Name                        string                       `json:"name"`
-	PredefinedTnAll             bool                         `json:"predefinedTnAll"`
-	PredefinedTrustedNetworks   bool                         `json:"predefinedTrustedNetworks"`
+	ConditionType               int                          `json:"conditionType"`
+	DnsServers                  string                       `json:"dnsServers"`
+	DnsSearchDomains            string                       `json:"dnsSearchDomains"`
+	EnableLWFDriver             string                       `json:"enableLWFDriver"`
+	Hostname                    string                       `json:"hostname"`
 	ResolvedIpsForHostname      string                       `json:"resolvedIpsForHostname"`
-	SkipTrustedCriteriaMatch    int                          `json:"skipTrustedCriteriaMatch"`
+	TrustedSubnets              string                       `json:"trustedSubnets"`
+	TrustedGateways             string                       `json:"trustedGateways"`
 	TrustedDhcpServers          string                       `json:"trustedDhcpServers"`
 	TrustedEgressIps            string                       `json:"trustedEgressIps"`
-	TrustedGateways             string                       `json:"trustedGateways"`
+	PredefinedTrustedNetworks   bool                         `json:"predefinedTrustedNetworks"`
+	PredefinedTnAll             bool                         `json:"predefinedTnAll"`
+	ForwardingProfileActions    []ForwardingProfileAction    `json:"forwardingProfileActions"`
+	ForwardingProfileZpaActions []ForwardingProfileZpaAction `json:"forwardingProfileZpaActions"`
+	EnableUnifiedTunnel         int                          `json:"enableUnifiedTunnel"`
+	UnifiedTunnel               []UnifiedTunnel              `json:"unifiedTunnel"`
+	EnableAllDefaultAdaptersTN  int                          `json:"enableAllDefaultAdaptersTN"`
+	EnableSplitVpnTN            int                          `json:"enableSplitVpnTN"`
+	EvaluateTrustedNetwork      int                          `json:"evaluateTrustedNetwork"`
+	SkipTrustedCriteriaMatch    int                          `json:"skipTrustedCriteriaMatch"`
 	TrustedNetworkIds           []int                        `json:"trustedNetworkIds"`
 	TrustedNetworks             []string                     `json:"trustedNetworks"`
-	TrustedSubnets              string                       `json:"trustedSubnets"`
+	TrustedNetworkIdsSelected   []int                        `json:"trustedNetworkIdsSelected"`
 }
 
 type ForwardingProfileAction struct {
-	DTLSTimeout                    int             `json:"DTLSTimeout"`
-	TLSTimeout                     int             `json:"TLSTimeout"`
-	UDPTimeout                     int             `json:"UDPTimeout"`
-	ActionType                     int             `json:"actionType"`
-	AllowTLSFallback               int             `json:"allowTLSFallback"`
-	BlockUnreachableDomainsTraffic int             `json:"blockUnreachableDomainsTraffic"`
-	CustomPac                      string          `json:"customPac"`
-	DropIpv6IncludeTrafficInT2     int             `json:"dropIpv6IncludeTrafficInT2"`
-	DropIpv6Traffic                int             `json:"dropIpv6Traffic"`
-	DropIpv6TrafficInIpv6Network   int             `json:"dropIpv6TrafficInIpv6Network"`
-	EnablePacketTunnel             int             `json:"enablePacketTunnel"`
-	LatencyBasedZenEnablement      int             `json:"latencyBasedZenEnablement"`
-	MtuForZadapter                 int             `json:"mtuForZadapter"`
-	NetworkType                    int             `json:"networkType"`
-	PathMtuDiscovery               int             `json:"pathMtuDiscovery"`
-	PrimaryTransport               int             `json:"primaryTransport"`
-	RedirectWebTraffic             int             `json:"redirectWebTraffic"`
-	SystemProxy                    int             `json:"systemProxy"`
-	SystemProxyData                SystemProxyData `json:"systemProxyData"`
-	Tunnel2FallbackType            int             `json:"tunnel2FallbackType"`
-	UseTunnel2ForProxiedWebTraffic int             `json:"useTunnel2ForProxiedWebTraffic"`
-	ZenProbeInterval               int             `json:"zenProbeInterval"`
-	ZenProbeSampleSize             int             `json:"zenProbeSampleSize"`
-	ZenThresholdLimit              int             `json:"zenThresholdLimit"`
+	NetworkType                        int             `json:"networkType"`
+	ActionType                         int             `json:"actionType"`
+	SystemProxy                        int             `json:"systemProxy"`
+	CustomPac                          string          `json:"customPac"`
+	EnablePacketTunnel                 int             `json:"enablePacketTunnel"`
+	SystemProxyData                    SystemProxyData `json:"systemProxyData"`
+	PrimaryTransport                   int             `json:"primaryTransport"`
+	DTLSTimeout                        int             `json:"DTLSTimeout"`
+	UDPTimeout                         int             `json:"UDPTimeout"`
+	TLSTimeout                         int             `json:"TLSTimeout"`
+	MtuForZadapter                     int             `json:"mtuForZadapter"`
+	BlockUnreachableDomainsTraffic     int             `json:"blockUnreachableDomainsTraffic"`
+	AllowTLSFallback                   int             `json:"allowTLSFallback"`
+	Tunnel2FallbackType                int             `json:"tunnel2FallbackType"`
+	SendAllDNSToTrustedServer          int             `json:"sendAllDNSToTrustedServer"`
+	DropIpv6Traffic                    int             `json:"dropIpv6Traffic"`
+	RedirectWebTraffic                 int             `json:"redirectWebTraffic"`
+	DropIpv6IncludeTrafficInT2         int             `json:"dropIpv6IncludeTrafficInT2"`
+	UseTunnel2ForProxiedWebTraffic     int             `json:"useTunnel2ForProxiedWebTraffic"`
+	UseTunnel2ForUnencryptedWebTraffic int             `json:"useTunnel2ForUnencryptedWebTraffic"`
+	PathMtuDiscovery                   int             `json:"pathMtuDiscovery"`
+	LatencyBasedZenEnablement          int             `json:"latencyBasedZenEnablement"`
+	ZenProbeInterval                   int             `json:"zenProbeInterval"`
+	ZenProbeSampleSize                 int             `json:"zenProbeSampleSize"`
+	ZenThresholdLimit                  int             `json:"zenThresholdLimit"`
+	DropIpv6TrafficInIpv6Network       int             `json:"dropIpv6TrafficInIpv6Network"`
+	OptimiseForUnstableConnections     int             `json:"optimiseForUnstableConnections"`
 }
 
 type SystemProxyData struct {
-	BypassProxyForPrivateIP int    `json:"bypassProxyForPrivateIP"`
+	ProxyAction             int    `json:"proxyAction"`
 	EnableAutoDetect        int    `json:"enableAutoDetect"`
 	EnablePAC               int    `json:"enablePAC"`
-	EnableProxyServer       int    `json:"enableProxyServer"`
-	PacDataPath             string `json:"pacDataPath"`
 	PacURL                  string `json:"pacURL"`
-	PerformGPUpdate         int    `json:"performGPUpdate"`
-	ProxyAction             int    `json:"proxyAction"`
+	EnableProxyServer       int    `json:"enableProxyServer"`
 	ProxyServerAddress      string `json:"proxyServerAddress"`
 	ProxyServerPort         string `json:"proxyServerPort"`
+	BypassProxyForPrivateIP int    `json:"bypassProxyForPrivateIP"`
+	PerformGPUpdate         int    `json:"performGPUpdate"`
+	PacDataPath             string `json:"pacDataPath"`
 }
 
 type ForwardingProfileZpaAction struct {
-	DTLSTimeout                     int         `json:"DTLSTimeout"`
-	TLSTimeout                      int         `json:"TLSTimeout"`
-	ActionType                      int         `json:"actionType"`
-	LatencyBasedServerMTEnablement  int         `json:"latencyBasedServerMTEnablement"`
-	LatencyBasedZpaServerEnablement int         `json:"latencyBasedZpaServerEnablement"`
-	LbsZpaProbeInterval             int         `json:"lbsZpaProbeInterval"`
-	LbsZpaProbeSampleSize           int         `json:"lbsZpaProbeSampleSize"`
-	LbsZpaThresholdLimit            int         `json:"lbsZpaThresholdLimit"`
-	MtuForZadapter                  int         `json:"mtuForZadapter"`
-	NetworkType                     int         `json:"networkType"`
-	PartnerInfo                     PartnerInfo `json:"partnerInfo"`
-	PrimaryTransport                int         `json:"primaryTransport"`
-	SendTrustedNetworkResultToZpa   int         `json:"sendTrustedNetworkResultToZpa"`
+	NetworkType                    int         `json:"networkType"`
+	ActionType                     int         `json:"actionType"`
+	PrimaryTransport               int         `json:"primaryTransport"`
+	DTLSTimeout                    int         `json:"DTLSTimeout"`
+	TLSTimeout                     int         `json:"TLSTimeout"`
+	MtuForZadapter                 int         `json:"mtuForZadapter"`
+	SendTrustedNetworkResultToZpa  int         `json:"sendTrustedNetworkResultToZpa"`
+	PartnerInfo                    PartnerInfo `json:"partnerInfo"`
+	LatencyBasedServerEnablement   int         `json:"latencyBasedZpaServerEnablement"`
+	LbsProbeInterval               int         `json:"lbsZpaProbeInterval"`
+	LbsProbeSampleSize             int         `json:"lbsZpaProbeSampleSize"`
+	LbsThresholdLimit              int         `json:"lbsZpaThresholdLimit"`
+	LatencyBasedServerMTEnablement int         `json:"latencyBasedServerMTEnablement"`
+	IsSameAsOnTrustedNetwork       bool        `json:"isSameAsOnTrustedNetwork"`
 }
 
 type PartnerInfo struct {
+	PrimaryTransport int `json:"primaryTransport"`
 	AllowTlsFallback int `json:"allowTlsFallback"`
 	MtuForZadapter   int `json:"mtuForZadapter"`
-	PrimaryTransport int `json:"primaryTransport"`
+}
+
+type UnifiedTunnel struct {
+	NetworkType                    int             `json:"networkType"`
+	ActionTypeZIA                  int             `json:"actionTypeZIA"`
+	ActionTypeZPA                  int             `json:"actionTypeZPA"`
+	PrimaryTransport               int             `json:"primaryTransport"`
+	DTLSTimeout                    int             `json:"DTLSTimeout"`
+	TLSTimeout                     int             `json:"TLSTimeout"`
+	MtuForZadapter                 int             `json:"mtuForZadapter"`
+	AllowTLSFallback               int             `json:"allowTLSFallback"`
+	PathMtuDiscovery               int             `json:"pathMtuDiscovery"`
+	OptimiseForUnstableConnections int             `json:"optimiseForUnstableConnections"`
+	Tunnel2FallbackType            int             `json:"tunnel2FallbackType"`
+	RedirectWebTraffic             int             `json:"redirectWebTraffic"`
+	DropIpv6Traffic                int             `json:"dropIpv6Traffic"`
+	DropIpv6TrafficInIpv6Network   int             `json:"dropIpv6TrafficInIpv6Network"`
+	BlockUnreachableDomainsTraffic int             `json:"blockUnreachableDomainsTraffic"`
+	DropIpv6IncludeTrafficInT2     int             `json:"dropIpv6IncludeTrafficInT2"`
+	SendAllDNSToTrustedServer      int             `json:"sendAllDNSToTrustedServer"`
+	SystemProxyData                SystemProxyData `json:"systemProxyData"`
+	SameAsOnTrusted                int             `json:"sameAsOnTrusted"`
 }
 
 type IntOrString int
@@ -124,10 +154,8 @@ func (i *IntOrString) UnmarshalJSON(data []byte) error {
 }
 
 func GetForwardingProfileByCompanyID(ctx context.Context, service *zscaler.Service, search string, page, pageSize *int) ([]ForwardingProfile, error) {
-	// Construct the endpoint URL
 	endpoint := fmt.Sprintf("%s/listByCompany", webForwardingProfileEndpoint)
 
-	// Construct query parameters
 	queryParams := struct {
 		Search   string `url:"search,omitempty"`
 		Page     int    `url:"page,omitempty"`
@@ -136,7 +164,6 @@ func GetForwardingProfileByCompanyID(ctx context.Context, service *zscaler.Servi
 		Search: search,
 	}
 
-	// Add optional pagination parameters if provided
 	if page != nil {
 		queryParams.Page = *page
 	}
@@ -144,7 +171,6 @@ func GetForwardingProfileByCompanyID(ctx context.Context, service *zscaler.Servi
 		queryParams.PageSize = *pageSize
 	}
 
-	// Fetch the API response
 	var profiles []ForwardingProfile
 	_, err := service.Client.NewZccRequestDo(ctx, "GET", endpoint, queryParams, nil, &profiles)
 	if err != nil {
@@ -154,32 +180,26 @@ func GetForwardingProfileByCompanyID(ctx context.Context, service *zscaler.Servi
 	return profiles, nil
 }
 
-func CreateForwardingProfile(ctx context.Context, service *zscaler.Service, profile *ForwardingProfile) (*ForwardingProfile, error) {
-	if profile == nil {
-		return nil, errors.New("profile is required")
+func CreateForwardingProfile(ctx context.Context, service *zscaler.Service, request *ForwardingProfileRequest) (*CreateUpdateResponse, error) {
+	if request == nil {
+		return nil, errors.New("request is required")
 	}
 
-	// Construct the URL for the create endpoint
 	url := fmt.Sprintf("%s/edit", webForwardingProfileEndpoint)
 
-	// Initialize a variable to hold the response
-	var createdProfile ForwardingProfile
-
-	// Make the POST request to create the forwarding profile
-	_, err := service.Client.NewZccRequestDo(ctx, "POST", url, nil, profile, &createdProfile)
+	var response CreateUpdateResponse
+	_, err := service.Client.NewZccRequestDo(ctx, "POST", url, nil, request, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create forwarding profile: %w", err)
+		return nil, fmt.Errorf("failed to create/update forwarding profile: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning forwarding profile from create: %+v", createdProfile)
-	return &createdProfile, nil
+	service.Client.GetLogger().Printf("[DEBUG] forwarding profile create/update response: %+v", response)
+	return &response, nil
 }
 
 func DeleteForwardingProfile(ctx context.Context, service *zscaler.Service, profileID int) (*http.Response, error) {
-	// Correct the URL to include /delete
 	endpoint := fmt.Sprintf("%s/%d/delete", webForwardingProfileEndpoint, profileID)
 
-	// Make the DELETE request
 	err := service.Client.Delete(ctx, endpoint)
 	if err != nil {
 		return nil, err

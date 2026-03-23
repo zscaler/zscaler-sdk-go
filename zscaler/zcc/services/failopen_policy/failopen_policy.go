@@ -31,19 +31,25 @@ type WebFailOpenPolicy struct {
 }
 
 func GetFailOpenPolicy(ctx context.Context, service *zscaler.Service, pageSize int) ([]WebFailOpenPolicy, error) {
-	// Construct the URL for the listByCompany endpoint
-	url := fmt.Sprintf("%s/listByCompany", baseFailOpenPolicy)
-
-	// Use an empty map for queryParams to avoid nil issues
-	queryParams := map[string]interface{}{}
-
-	// Fetch the policies
-	policies, err := common.ReadAllPages[WebFailOpenPolicy](ctx, service.Client, url, queryParams, pageSize)
+	endpoint := fmt.Sprintf("%s/listByCompany", baseFailOpenPolicy)
+	policies, err := common.ReadAllPages[WebFailOpenPolicy](ctx, service.Client, endpoint, common.QueryParams{}, pageSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch fail open policies: %w", err)
 	}
-
 	return policies, nil
+}
+
+func GetFailOpenPolicyByID(ctx context.Context, service *zscaler.Service, id string) (*WebFailOpenPolicy, error) {
+	policies, err := GetFailOpenPolicy(ctx, service, 1000)
+	if err != nil {
+		return nil, err
+	}
+	for i := range policies {
+		if policies[i].ID == id {
+			return &policies[i], nil
+		}
+	}
+	return nil, fmt.Errorf("fail open policy with ID %q not found", id)
 }
 
 func UpdateFailOpenPolicy(ctx context.Context, service *zscaler.Service, openPolicy *WebFailOpenPolicy) (*WebFailOpenPolicy, error) {

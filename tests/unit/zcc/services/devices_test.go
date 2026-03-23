@@ -116,8 +116,8 @@ func TestDevices_GetAll_SDK(t *testing.T) {
 			MacAddress:      "00:11:22:33:44:55",
 			OsVersion:       "Windows 10",
 			Owner:           "user@example.com",
-			State:           1,
-			Type:            1,
+			State:           "1",
+			Type:            "1",
 			Udid:            "udid-001",
 		},
 		{
@@ -126,8 +126,8 @@ func TestDevices_GetAll_SDK(t *testing.T) {
 			MacAddress:      "00:11:22:33:44:66",
 			OsVersion:       "macOS 14.0",
 			Owner:           "user2@example.com",
-			State:           1,
-			Type:            2,
+			State:           "1",
+			Type:            "2",
 			Udid:            "udid-002",
 		},
 	}))
@@ -160,10 +160,10 @@ func TestDevices_Structure(t *testing.T) {
 			Owner:             "test.user@example.com",
 			User:              "test.user@example.com",
 			RegistrationState: "REGISTERED",
-			State:             1,
-			Type:              1,
+			State:             "1",
+			Type:              "1",
 			Udid:              "device-udid-123",
-			VpnState:          1,
+			VpnState:          "1",
 			ZappArch:          "x64",
 		}
 
@@ -184,11 +184,11 @@ func TestDevices_Structure(t *testing.T) {
 			"osVersion": "Windows 10",
 			"owner": "test.user@example.com",
 			"registrationState": "REGISTERED",
-			"state": 1,
-			"type": 1,
+			"state": "1",
+			"type": "1",
 			"udid": "device-udid-123",
 			"user": "test.user@example.com",
-			"vpnState": 1,
+			"vpnState": "1",
 			"zappArch": "x64"
 		}`
 
@@ -200,8 +200,8 @@ func TestDevices_Structure(t *testing.T) {
 		assert.Equal(t, "Test Company", device.CompanyName)
 		assert.Equal(t, "test-machine", device.MachineHostname)
 		assert.Equal(t, "00:11:22:33:44:55", device.MacAddress)
-		assert.Equal(t, 1, device.State)
-		assert.Equal(t, 1, device.VpnState)
+		assert.Equal(t, "1", device.State)
+		assert.Equal(t, "1", device.VpnState)
 	})
 
 	t.Run("DeviceDetails JSON marshaling", func(t *testing.T) {
@@ -255,13 +255,13 @@ func TestDevices_ResponseParsing(t *testing.T) {
 			{
 				"agentVersion": "4.2.0.100",
 				"machineHostname": "device-1",
-				"state": 1,
+				"state": "1",
 				"udid": "udid-001"
 			},
 			{
 				"agentVersion": "4.2.0.101",
 				"machineHostname": "device-2",
-				"state": 0,
+				"state": "0",
 				"udid": "udid-002"
 			}
 		]`
@@ -273,8 +273,8 @@ func TestDevices_ResponseParsing(t *testing.T) {
 		assert.Len(t, devicesList, 2)
 		assert.Equal(t, "device-1", devicesList[0].MachineHostname)
 		assert.Equal(t, "device-2", devicesList[1].MachineHostname)
-		assert.Equal(t, 1, devicesList[0].State)
-		assert.Equal(t, 0, devicesList[1].State)
+		assert.Equal(t, "1", devicesList[0].State)
+		assert.Equal(t, "0", devicesList[1].State)
 	})
 
 	t.Run("Parse device details response", func(t *testing.T) {

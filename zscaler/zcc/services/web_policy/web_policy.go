@@ -57,20 +57,20 @@ type WebPolicy struct {
 }
 
 type AndroidPolicy struct {
-	AllowedApps   string `json:"allowed_apps"`
-	BillingDay    string `json:"billing_day"`
-	BypassApps    string `json:"bypass_android_apps"`
-	BypassMmsApps string `json:"bypass_mms_apps"`
-	CustomText    string `json:"custom_text"`
-	DisablePass   string `json:"disable_password"`
-	EnableVerbose string `json:"enableVerboseLog"`
-	Enforced      string `json:"enforced"`
-	InstallSsl    string `json:"install_ssl_certs"`
-	Limit         string `json:"limit"`
-	LogoutPass    string `json:"logout_password"`
-	QuotaRoaming  string `json:"quota_in_roaming"`
-	UninstallPass string `json:"uninstall_password"`
-	WifiSsid      string `json:"wifi_ssid"`
+	AllowedApps      string `json:"allowedApps"`
+	BillingDay       string `json:"billingDay"`
+	BypassAndroidApp string `json:"bypassAndroidApps"`
+	BypassMmsApps    string `json:"bypassMmsApps"`
+	CustomText       string `json:"customText"`
+	DisablePassword  string `json:"disablePassword"`
+	EnableVerboseLog string `json:"enableVerboseLog"`
+	Enforced         string `json:"enforced"`
+	InstallCerts     string `json:"installCerts"`
+	Limit            string `json:"limit"`
+	LogoutPassword   string `json:"logoutPassword"`
+	QuotaRoaming     string `json:"quotaRoaming"`
+	UninstallPass    string `json:"uninstallPassword"`
+	WifiSsid         string `json:"wifissid"`
 }
 
 type DisasterRecovery struct {
@@ -93,34 +93,34 @@ type DisasterRecovery struct {
 }
 
 type IosPolicy struct {
-	DisablePassword        string `json:"disable_password"`
+	DisablePassword        string `json:"disablePassword"`
 	Ipv6Mode               string `json:"ipv6Mode"`
-	LogoutPassword         string `json:"logout_password"`
+	LogoutPassword         string `json:"logoutPassword"`
 	Passcode               string `json:"passcode"`
 	ShowVPNTunNotification string `json:"showVPNTunNotification"`
-	UninstallPassword      string `json:"uninstall_password"`
+	UninstallPassword      string `json:"uninstallPassword"`
 }
 
 type LinuxPolicy struct {
-	DisablePassword string `json:"disable_password"`
-	InstallSslCerts string `json:"install_ssl_certs"`
-	LogoutPassword  string `json:"logout_password"`
-	UninstallPass   string `json:"uninstall_password"`
+	DisablePassword   string `json:"disablePassword"`
+	InstallCerts      string `json:"installCerts"`
+	LogoutPassword    string `json:"logoutPassword"`
+	UninstallPassword string `json:"uninstallPassword"`
 }
 
 type MacPolicy struct {
 	AddIfscopeRoute                      string `json:"addIfscopeRoute"`
 	CacheSystemProxy                     string `json:"cacheSystemProxy"`
 	ClearArpCache                        string `json:"clearArpCache"`
-	DisablePassword                      string `json:"disable_password"`
+	DisablePassword                      string `json:"disablePassword"`
 	DnsPriorityOrdering                  string `json:"dnsPriorityOrdering"`
 	DnsPriorityOrderingForTrustedDnsCrit string `json:"dnsPriorityOrderingForTrustedDnsCriteria"`
 	EnableAppBasedBypass                 string `json:"enableApplicationBasedBypass"`
 	EnableZscalerFirewall                string `json:"enableZscalerFirewall"`
-	InstallSslCerts                      string `json:"install_ssl_certs"`
-	LogoutPassword                       string `json:"logout_password"`
+	InstallCerts                         string `json:"installCerts"`
+	LogoutPassword                       string `json:"logoutPassword"`
 	PersistentZscalerFirewall            string `json:"persistentZscalerFirewall"`
-	UninstallPassword                    string `json:"uninstall_password"`
+	UninstallPassword                    string `json:"uninstallPassword"`
 }
 
 type PolicyExtension struct {
@@ -199,12 +199,12 @@ type WindowsPolicy struct {
 	CaptivePortalConfig           string `json:"captivePortalConfig"`
 	DisableLoopBackRestriction    int    `json:"disableLoopBackRestriction"`
 	DisableParallelIpv4andIpv6    string `json:"disableParallelIpv4andIpv6"`
-	DisablePassword               string `json:"disable_password"`
+	DisablePassword               string `json:"disablePassword"`
 	FlowLoggerConfig              string `json:"flowLoggerConfig"`
 	ForceLocationRefreshSccm      int    `json:"forceLocationRefreshSccm"`
 	InstallWindowsFirewallInbound int    `json:"installWindowsFirewallInboundRule"`
-	InstallSslCerts               string `json:"install_ssl_certs"`
-	LogoutPassword                string `json:"logout_password"`
+	InstallCerts                  string `json:"installCerts"`
+	LogoutPassword                string `json:"logoutPassword"`
 	OverrideWPAD                  int    `json:"overrideWPAD"`
 	PacDataPath                   string `json:"pacDataPath"`
 	PacType                       int    `json:"pacType"`
@@ -212,7 +212,7 @@ type WindowsPolicy struct {
 	RemoveExemptedContainers      int    `json:"removeExemptedContainers"`
 	RestartWinHttpSvc             int    `json:"restartWinHttpSvc"`
 	TriggerDomainProfleDetection  int    `json:"triggerDomainProfleDetection"`
-	UninstallPassword             string `json:"uninstall_password"`
+	UninstallPassword             string `json:"uninstallPassword"`
 	WfpDriver                     int    `json:"wfpDriver"`
 }
 
@@ -306,30 +306,4 @@ func DeleteWebPolicy(ctx context.Context, service *zscaler.Service, policyID int
 	}
 
 	return nil, nil
-}
-
-func GetWebAppServiceInfoByCompanyID(ctx context.Context, service *zscaler.Service, page, pageSize *int, search, searchType *string, deviceType *int) ([]map[string]interface{}, error) {
-	// Construct the URL for the listByCompany endpoint
-	url := fmt.Sprintf("%s/listByCompany", baseWebAppServiceEndpoint)
-
-	// Construct query parameters dynamically
-	queryParams := common.QueryParams{}
-	if page != nil {
-		queryParams.Page = *page
-	}
-	if pageSize != nil {
-		queryParams.PageSize = *pageSize
-	}
-	if search != nil && *search != "" {
-		queryParams.Search = *search
-	}
-
-	// Fetch the API response
-	var policies []map[string]interface{}
-	_, err := service.Client.NewZccRequestDo(ctx, "GET", url, queryParams, nil, &policies)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve policy list: %w", err)
-	}
-
-	return policies, nil
 }

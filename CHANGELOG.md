@@ -1,5 +1,24 @@
 # Changelog
 
+# 3.8.29 (March 23, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZCC `forwarding_profile`: added `forwarding_profile_request.go` with POST `/edit` types (`ForwardingProfileRequest`, `ForwardingProfileActionRequest`, `ForwardingProfileZpaActionRequest`, `UnifiedTunnelRequest`, `SystemProxyDataRequest`, `PartnerInfoRequest`, `CreateUpdateResponse`) so create/update payloads match API field names and types that differ from GET responses.
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZCC `forwarding_profile`: `CreateForwardingProfile` now takes `*ForwardingProfileRequest` and returns `*CreateUpdateResponse` (`success`, `id`) instead of unmarshaling a full `ForwardingProfile` from the create response.
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZCC `ForwardingProfile` and nested structs: aligned fields and JSON tags with list/get responses (e.g. `enableAllDefaultAdaptersTN`, `trustedNetworkIdsSelected`, ZPA latency fields using `latencyBasedZpaServerEnablement` / `lbsZpa*` keys where returned by GET).
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZCC `forwarding_profile` unit tests: updated mocks for `listByCompany`, `/edit`, and `/delete` paths; `CreateForwardingProfile` and JSON structure tests for request/response types.
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZIA DLP `dlp_web_rules`: `WebDLPRules.SubRules` is now `[]WebDLPRules` (full rule objects) so nested `subRules` from the API deserialize with all fields (e.g. `parentRule`, criteria) instead of a placeholder type.
+
+- [PR #423](https://github.com/zscaler/zscaler-sdk-go/pull/423) ZIA DLP `dlp_web_rules`: `GetByName` now resolves exception/sub-rules by name by iterating each parent’s `SubRules`, not only top-level rules (supports Terraform import and lookups by sub-rule name).
+
 # 3.8.28 (March 18, 2026)
 
 ## Notes
