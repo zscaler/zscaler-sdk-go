@@ -63,14 +63,10 @@ type GroupListItem struct {
 }
 
 func GetZdxGroupEntitlements(ctx context.Context, service *zscaler.Service, search string, pageSize int) ([]ZdxGroupEntitlements, error) {
-	// Construct query parameters dynamically
-	queryParams := map[string]interface{}{}
-	if search != "" {
-		queryParams["search"] = search
+	params := common.QueryParams{
+		Search: search,
 	}
-
-	// Leverage ReadAllPages to handle pagination
-	return common.ReadAllPages[ZdxGroupEntitlements](ctx, service.Client, getZdxGroupEndpoint, queryParams, pageSize)
+	return common.ReadAllPages[ZdxGroupEntitlements](ctx, service.Client, getZdxGroupEndpoint, params, pageSize)
 }
 
 func UpdateZdxGroupEntitlements(ctx context.Context, service *zscaler.Service, updateZdxGroup *ZdxGroupEntitlements) (*ZdxGroupEntitlements, error) {
@@ -107,14 +103,10 @@ func UpdateZdxGroupEntitlements(ctx context.Context, service *zscaler.Service, u
 }
 
 func GetZpaGroupEntitlements(ctx context.Context, service *zscaler.Service, search string, pageSize int) ([]ZpaGroupEntitlements, error) {
-	// Construct query parameters dynamically
-	queryParams := map[string]interface{}{}
-	if search != "" {
-		queryParams["search"] = search
+	params := common.QueryParams{
+		Search: search,
 	}
-
-	// Leverage ReadAllPages to handle pagination
-	return common.ReadAllPages[ZpaGroupEntitlements](ctx, service.Client, getZpaGroupEndpoint, queryParams, pageSize)
+	return common.ReadAllPages[ZpaGroupEntitlements](ctx, service.Client, getZpaGroupEndpoint, params, pageSize)
 }
 
 func UpdateZpaGroupEntitlements(ctx context.Context, service *zscaler.Service, updateZpaGroup *ZpaGroupEntitlements) (*ZpaGroupEntitlements, error) {

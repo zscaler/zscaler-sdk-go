@@ -151,6 +151,7 @@ func TestDevices_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("GetDevices JSON marshaling", func(t *testing.T) {
+		zapp := "x64"
 		device := devices.GetDevices{
 			AgentVersion:      "4.2.0.100",
 			CompanyName:       "Test Company",
@@ -164,7 +165,7 @@ func TestDevices_Structure(t *testing.T) {
 			Type:              1,
 			Udid:              "device-udid-123",
 			VpnState:          1,
-			ZappArch:          "x64",
+			ZappArch:          &zapp,
 		}
 
 		data, err := json.Marshal(device)
@@ -202,6 +203,8 @@ func TestDevices_Structure(t *testing.T) {
 		assert.Equal(t, "00:11:22:33:44:55", device.MacAddress)
 		assert.Equal(t, 1, device.State)
 		assert.Equal(t, 1, device.VpnState)
+		require.NotNil(t, device.ZappArch)
+		assert.Equal(t, "x64", *device.ZappArch)
 	})
 
 	t.Run("DeviceDetails JSON marshaling", func(t *testing.T) {
@@ -256,12 +259,14 @@ func TestDevices_ResponseParsing(t *testing.T) {
 				"agentVersion": "4.2.0.100",
 				"machineHostname": "device-1",
 				"state": 1,
+				"type": 3,
 				"udid": "udid-001"
 			},
 			{
 				"agentVersion": "4.2.0.101",
 				"machineHostname": "device-2",
 				"state": 0,
+				"type": 4,
 				"udid": "udid-002"
 			}
 		]`
@@ -275,6 +280,45 @@ func TestDevices_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "device-2", devicesList[1].MachineHostname)
 		assert.Equal(t, 1, devicesList[0].State)
 		assert.Equal(t, 0, devicesList[1].State)
+		assert.Equal(t, 3, devicesList[0].Type)
+		assert.Equal(t, 4, devicesList[1].Type)
+	})
+
+	t.Run("Parse getDevices API shape (numeric type/state/vpnState, null zappArch)", func(t *testing.T) {
+		jsonResponse := `{
+			"type": 4,
+			"state": 2,
+			"udid": "053AF529-6506-5BF4-974E-A78C00AA51BD:501",
+			"vpnState": 0,
+			"tunnelVersion": "20:1",
+			"zappArch": null
+		}`
+		var d devices.GetDevices
+		err := json.Unmarshal([]byte(jsonResponse), &d)
+		require.NoError(t, err)
+		assert.Equal(t, 4, d.Type)
+		assert.Equal(t, 2, d.State)
+		assert.Equal(t, 0, d.VpnState)
+		require.NotNil(t, d.TunnelVersion)
+		assert.Equal(t, "20:1", *d.TunnelVersion)
+		assert.Nil(t, d.ZappArch)
+	})
+
+	t.Run("Parse getDevices with null tunnelVersion", func(t *testing.T) {
+		jsonResponse := `{
+			"type": 3,
+			"state": 3,
+			"udid": "test-udid",
+			"vpnState": 0,
+			"tunnelVersion": null,
+			"zappArch": "x64"
+		}`
+		var d devices.GetDevices
+		err := json.Unmarshal([]byte(jsonResponse), &d)
+		require.NoError(t, err)
+		assert.Nil(t, d.TunnelVersion)
+		require.NotNil(t, d.ZappArch)
+		assert.Equal(t, "x64", *d.ZappArch)
 	})
 
 	t.Run("Parse device details response", func(t *testing.T) {

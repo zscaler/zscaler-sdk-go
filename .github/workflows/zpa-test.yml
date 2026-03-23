@@ -55,7 +55,7 @@ jobs:
       - name: Run tests with retry
         uses: nick-fields/retry@v3
         with:
-          max_attempts: 2
+          max_attempts: 1
           timeout_minutes: 20
           command: |
             make sweep:zpa

@@ -53,15 +53,9 @@ type AdminRole struct {
 }
 
 func GetAdminRoles(ctx context.Context, service *zscaler.Service, pageSize ...int) ([]AdminRole, error) {
-	// Determine the pageSize to use (default if not provided)
-	effectivePageSize := 0 // Default to let `NewPagination` handle it
+	effectivePageSize := 0
 	if len(pageSize) > 0 && pageSize[0] > 0 {
 		effectivePageSize = pageSize[0]
 	}
-
-	// Construct empty query parameters (no userType required)
-	queryParams := struct{}{}
-
-	// Leverage ReadAllPages to handle pagination
-	return common.ReadAllPages[AdminRole](ctx, service.Client, adminRolesEndpoint, queryParams, effectivePageSize)
+	return common.ReadAllPages[AdminRole](ctx, service.Client, adminRolesEndpoint, common.QueryParams{}, effectivePageSize)
 }

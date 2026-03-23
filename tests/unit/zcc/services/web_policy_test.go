@@ -107,26 +107,6 @@ func TestWebPolicy_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestWebPolicy_GetAppService_SDK(t *testing.T) {
-	server := common.NewTestServer()
-	defer server.Close()
-
-	path := "/zcc/papi/public/v1/webAppService/listByCompany"
-
-	server.On("GET", path, common.SuccessResponse([]map[string]interface{}{
-		{"id": 1, "serviceName": "Service 1", "active": true},
-		{"id": 2, "serviceName": "Service 2", "active": true},
-	}))
-
-	service, err := common.CreateTestService(context.Background(), server, "123456")
-	require.NoError(t, err)
-
-	result, err := web_policy.GetWebAppServiceInfoByCompanyID(context.Background(), service, nil, nil, nil, nil, nil)
-
-	require.NoError(t, err)
-	assert.Len(t, result, 2)
-}
-
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

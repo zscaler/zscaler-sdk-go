@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/downloaddevices"
+	downloaddevices "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/download_devices"
 )
 
 // =====================================================

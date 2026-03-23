@@ -82,21 +82,15 @@ type SyncZiaZdxZpaAdminUsers struct {
 }
 
 func GetAdminUsers(ctx context.Context, service *zscaler.Service, userType string, pageSize ...int) ([]AdminUser, error) {
-	// Determine the pageSize to use (default if not provided)
-	effectivePageSize := 0 // Default to let `NewPagination` handle it
+	effectivePageSize := 0
 	if len(pageSize) > 0 && pageSize[0] > 0 {
 		effectivePageSize = pageSize[0]
 	}
 
-	// Construct query parameters with optional userType
-	queryParams := struct {
-		UserType string `url:"userType,omitempty"`
-	}{
+	params := common.QueryParams{
 		UserType: userType,
 	}
-
-	// Leverage ReadAllPages to handle pagination
-	return common.ReadAllPages[AdminUser](ctx, service.Client, getAdminUserEndpoint, queryParams, effectivePageSize)
+	return common.ReadAllPages[AdminUser](ctx, service.Client, getAdminUserEndpoint, params, effectivePageSize)
 }
 
 func UpdateAdminUser(ctx context.Context, service *zscaler.Service, adminUser *AdminUser) (*AdminUser, error) {

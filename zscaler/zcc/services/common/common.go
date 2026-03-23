@@ -2,34 +2,89 @@ package common
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
-	DefaultPageSize = 30
+	DefaultPageSize = 50
 	MaxPageSize     = 5000
 )
+
+const (
+	DeviceTypeIOS     = 1
+	DeviceTypeAndroid = 2
+	DeviceTypeWindows = 3
+	DeviceTypeMacOS   = 4
+	DeviceTypeLinux   = 5
+)
+
+var deviceTypeNameToID = map[string]int{
+	"ios":     DeviceTypeIOS,
+	"android": DeviceTypeAndroid,
+	"windows": DeviceTypeWindows,
+	"macos":   DeviceTypeMacOS,
+	"linux":   DeviceTypeLinux,
+}
+
+var deviceTypeIDToName = map[int]string{
+	DeviceTypeIOS:     "iOS",
+	DeviceTypeAndroid: "Android",
+	DeviceTypeWindows: "Windows",
+	DeviceTypeMacOS:   "macOS",
+	DeviceTypeLinux:   "Linux",
+}
+
+// GetDeviceTypeByName converts a device type name (e.g., "windows", "macOS")
+// to its corresponding API integer value. It also accepts numeric strings
+// (e.g., "3") for pass-through. Returns 0 and nil for empty input.
+func GetDeviceTypeByName(name string) (int, error) {
+	if name == "" {
+		return 0, nil
+	}
+	if val, ok := deviceTypeNameToID[strings.ToLower(name)]; ok {
+		return val, nil
+	}
+	if val, err := strconv.Atoi(name); err == nil {
+		if _, ok := deviceTypeIDToName[val]; ok {
+			return val, nil
+		}
+		return 0, fmt.Errorf("invalid device type ID: %d. Valid IDs: 1 (iOS), 2 (Android), 3 (Windows), 4 (macOS), 5 (Linux)", val)
+	}
+	return 0, fmt.Errorf("invalid device type: %q. Valid values: ios, android, windows, macos, linux (or 1-5)", name)
+}
+
+// GetDeviceTypeName converts a device type integer to its display name.
+func GetDeviceTypeName(id int) string {
+	if name, ok := deviceTypeIDToName[id]; ok {
+		return name
+	}
+	return ""
+}
 
 type Pagination struct {
 	PageSize int `json:"pagesize,omitempty" url:"pagesize,omitempty"`
 	Page     int `json:"page,omitempty" url:"page,omitempty"`
 }
 
+// QueryParams is the unified query parameter struct for all ZCC GET list
+// endpoints. Fields are serialized via go-querystring url tags; zero-value
+// fields are omitted automatically.
 type QueryParams struct {
 	Page       int    `url:"page,omitempty"`
 	PageSize   int    `url:"pageSize,omitempty"`
 	Search     string `url:"search,omitempty"`
 	SearchType string `url:"searchType,omitempty"`
 	DeviceType int    `url:"deviceType,omitempty"`
+	Username   string `url:"username,omitempty"`
+	OsType     string `url:"osType,omitempty"`
+	UserType   string `url:"userType,omitempty"`
 }
 
-// NewPagination creates a new Pagination struct with provided page size
-// If page size is less than or equal to 0, it uses the default page size
-// If page size is greater than the max page size, it uses the max page size
+// NewPagination creates a Pagination with bounded page size.
 func NewPagination(pageSize int) Pagination {
 	if pageSize <= 0 {
 		pageSize = DefaultPageSize
@@ -40,111 +95,56 @@ func NewPagination(pageSize int) Pagination {
 	return Pagination{PageSize: pageSize}
 }
 
-func queryParamsToURLValues(params interface{}) (url.Values, error) {
-	values := url.Values{}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return nil, err
+func clampPageSize(pageSize int) int {
+	if pageSize <= 0 {
+		return DefaultPageSize
 	}
-	var mapParams map[string]interface{}
-	if err := json.Unmarshal(data, &mapParams); err != nil {
-		return nil, err
+	if pageSize > MaxPageSize {
+		return MaxPageSize
 	}
-	for key, value := range mapParams {
-		if value != nil {
-			values.Set(key, fmt.Sprintf("%v", value))
-		}
-	}
-	return values, nil
+	return pageSize
 }
 
-// func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, queryParams interface{}, pageSize int) ([]T, error) {
-// 	pagination := NewPagination(pageSize)
-// 	var allResults []T
-// 	page := 1
+// ReadAllPages iterates through all pages of a paginated ZCC GET endpoint
+// and returns the aggregated results. The QueryParams struct is passed
+// directly to NewZccRequestDo so go-querystring handles serialization.
+func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, params QueryParams, pageSize int) ([]T, error) {
+	pageSize = clampPageSize(pageSize)
+	params.PageSize = pageSize
+	params.Page = 1
 
-// 	for {
-// 		var pageResults []T
-
-// 		// Update the query parameters with pagination details
-// 		q := url.Values{}
-// 		if queryParams != nil {
-// 			// Convert queryParams to URL values if needed
-// 			queryString, err := queryParamsToURLValues(queryParams)
-// 			if err != nil {
-// 				return nil, fmt.Errorf("failed to parse query params: %w", err)
-// 			}
-// 			q = queryString
-// 		}
-
-// 		// Add pagination parameters
-// 		q.Set("pageSize", fmt.Sprintf("%d", pagination.PageSize))
-// 		q.Set("page", fmt.Sprintf("%d", page))
-
-// 		// Include the optional `search` parameter if present in queryParams
-// 		if searchValue, ok := queryParams.(map[string]interface{})["search"]; ok {
-// 			q.Set("search", fmt.Sprintf("%v", searchValue))
-// 		}
-
-// 		// Build the final endpoint URL
-// 		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
-
-// 		// Fetch the current page
-// 		_, err := client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		allResults = append(allResults, pageResults...)
-
-// 		// Break if the number of results is less than the page size (last page)
-// 		if len(pageResults) < pagination.PageSize {
-// 			break
-// 		}
-// 		page++
-// 	}
-
-// 	return allResults, nil
-// }
-
-func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, queryParams interface{}, pageSize int) ([]T, error) {
-	pagination := NewPagination(pageSize)
 	var allResults []T
-	page := 1
-
 	for {
 		var pageResults []T
-
-		q := url.Values{}
-		if queryParams != nil {
-			// Safely convert struct -> url.Values
-			queryString, err := queryParamsToURLValues(queryParams)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse query params: %w", err)
-			}
-			q = queryString
-		}
-
-		q.Set("pageSize", fmt.Sprintf("%d", pagination.PageSize))
-		q.Set("page", fmt.Sprintf("%d", page))
-
-		// The old map[string]interface{} check can be removed
-		// since we rely on queryParamsToURLValues to handle "search" or any extra fields.
-
-		fullURL := fmt.Sprintf("%s?%s", endpoint, q.Encode())
-
-		_, err := client.NewZccRequestDo(ctx, "GET", fullURL, nil, nil, &pageResults)
+		_, err := client.NewZccRequestDo(ctx, "GET", endpoint, params, nil, &pageResults)
 		if err != nil {
 			return nil, err
 		}
 
 		allResults = append(allResults, pageResults...)
 
-		if len(pageResults) < pagination.PageSize {
+		if len(pageResults) < pageSize {
 			break
 		}
-		page++
+		params.Page++
+	}
+	return allResults, nil
+}
+
+// ReadPage fetches a single page from a paginated ZCC GET endpoint.
+// Useful when the caller manages pagination externally or only needs one page.
+func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, params QueryParams) ([]T, error) {
+	if params.PageSize <= 0 {
+		params.PageSize = DefaultPageSize
+	}
+	if params.Page <= 0 {
+		params.Page = 1
 	}
 
-	return allResults, nil
+	var results []T
+	_, err := client.NewZccRequestDo(ctx, "GET", endpoint, params, nil, &results)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }

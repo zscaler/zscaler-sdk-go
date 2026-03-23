@@ -94,13 +94,10 @@ func TestTrustedNetwork_Create_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	// Mock the create endpoint
+	// Mock the create endpoint (POST returns success envelope only, not the contract)
 	createPath := "/zcc/papi/public/v1/webTrustedNetwork/create"
-	server.On("POST", createPath, common.SuccessResponse(trusted_network.TrustedNetwork{
-		ID:          "tn-new",
-		NetworkName: "New Network",
-		Active:      true,
-		CompanyID:   "company-123",
+	server.On("POST", createPath, common.SuccessResponse(trusted_network.TrustedNetworkMutationResponse{
+		Success: "true", ErrorCode: "0",
 	}))
 
 	// Mock the listByCompany endpoint (called after create to verify)
@@ -132,12 +129,10 @@ func TestTrustedNetwork_Update_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	// Mock the edit endpoint
+	// Mock the edit endpoint (PUT returns success envelope only)
 	editPath := "/zcc/papi/public/v1/webTrustedNetwork/edit"
-	server.On("PUT", editPath, common.SuccessResponse(trusted_network.TrustedNetwork{
-		ID:          "tn-001",
-		NetworkName: "Updated Network",
-		Active:      true,
+	server.On("PUT", editPath, common.SuccessResponse(trusted_network.TrustedNetworkMutationResponse{
+		Success: "true", ErrorCode: "0",
 	}))
 
 	// Mock the listByCompany endpoint (called after update to verify)
@@ -163,6 +158,85 @@ func TestTrustedNetwork_Update_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "Updated Network", result.NetworkName)
+}
+
+// TestTrustedNetwork_Update_SDK_MutationEnvelopeThenRefresh documents PUT success envelope + GetTrustedNetworkByID refresh.
+func TestTrustedNetwork_Update_SDK_MutationEnvelopeThenRefresh(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	editPath := "/zcc/papi/public/v1/webTrustedNetwork/edit"
+	server.On("PUT", editPath, common.SuccessResponse(trusted_network.TrustedNetworkMutationResponse{
+		Success: "true", ErrorCode: "0",
+	}))
+
+	listPath := "/zcc/papi/public/v1/webTrustedNetwork/listByCompany"
+	server.On("GET", listPath, common.SuccessResponse(trusted_network.TrustedNetworksResponse{
+		TotalCount: 1,
+		TrustedNetworkContracts: []trusted_network.TrustedNetwork{
+			{
+				ID:               "95363",
+				NetworkName:      "BDTrustedNetwork_Dev100_Update",
+				Active:           true,
+				ConditionType:    1,
+				DnsServers:       "10.11.12.13",
+				DnsSearchDomains: "acme.com",
+				Hostnames:        "www.acme.com",
+				TrustedSubnets:   "10.0.0.0/8",
+				TrustedGateways:  "10.0.0.1",
+				TrustedDhcpServers: "10.0.0.2",
+			},
+		},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateNetwork := &trusted_network.TrustedNetwork{
+		ID:               "95363",
+		NetworkName:      "BDTrustedNetwork_Dev100_Update",
+		Active:           true,
+		ConditionType:    1,
+		DnsServers:       "10.11.12.13",
+		DnsSearchDomains: "acme.com",
+		Hostnames:        "www.acme.com",
+		TrustedSubnets:   "10.0.0.0/8",
+		TrustedGateways:  "10.0.0.1",
+		TrustedDhcpServers: "10.0.0.2",
+	}
+
+	result, _, err := trusted_network.UpdateTrustedNetwork(context.Background(), service, updateNetwork)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "95363", result.ID)
+	assert.Equal(t, "BDTrustedNetwork_Dev100_Update", result.NetworkName)
+	assert.True(t, result.Active)
+	assert.Equal(t, "acme.com", result.DnsSearchDomains)
+	assert.Equal(t, "10.11.12.13", result.DnsServers)
+}
+
+func TestTrustedNetwork_Update_SDK_MutationErrorCode(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	editPath := "/zcc/papi/public/v1/webTrustedNetwork/edit"
+	server.On("PUT", editPath, common.SuccessResponse(trusted_network.TrustedNetworkMutationResponse{
+		Success: "false", ErrorCode: "42",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	updateNetwork := &trusted_network.TrustedNetwork{
+		ID:          "tn-001",
+		NetworkName: "X",
+		Active:      true,
+	}
+
+	_, _, err = trusted_network.UpdateTrustedNetwork(context.Background(), service, updateNetwork)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "mutation failed")
+	assert.Contains(t, err.Error(), "42")
 }
 
 func TestTrustedNetwork_Delete_SDK(t *testing.T) {
@@ -213,6 +287,7 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 		assert.Contains(t, string(data), `"id":"tn-123"`)
 		assert.Contains(t, string(data), `"networkName":"Corporate Network"`)
 		assert.Contains(t, string(data), `"active":true`)
+		assert.Contains(t, string(data), `"conditionType":1`)
 		assert.Contains(t, string(data), `"trustedSubnets":"192.168.0.0/16,10.0.0.0/8"`)
 	})
 
@@ -236,6 +311,7 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 		assert.Equal(t, "tn-456", tn.ID)
 		assert.Equal(t, "Branch Office", tn.NetworkName)
 		assert.False(t, tn.Active)
+		assert.Equal(t, 2, tn.ConditionType)
 		assert.Equal(t, "1.1.1.1", tn.DnsServers)
 	})
 
@@ -255,5 +331,14 @@ func TestTrustedNetwork_Structure(t *testing.T) {
 
 		assert.Equal(t, 3, response.TotalCount)
 		assert.Len(t, response.TrustedNetworkContracts, 3)
+	})
+
+	t.Run("TrustedNetworkMutationResponse JSON unmarshaling", func(t *testing.T) {
+		jsonData := `{"success":"true","errorCode":"0"}`
+		var m trusted_network.TrustedNetworkMutationResponse
+		err := json.Unmarshal([]byte(jsonData), &m)
+		require.NoError(t, err)
+		assert.Equal(t, "true", m.Success)
+		assert.Equal(t, "0", m.ErrorCode)
 	})
 }
