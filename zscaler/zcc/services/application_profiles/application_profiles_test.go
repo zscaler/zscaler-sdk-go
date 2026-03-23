@@ -32,9 +32,7 @@ func TestGetApplicationProfiles(t *testing.T) {
 
 	for i, p := range result.Policies {
 		t.Logf("Profile %d: ID=%d, Name=%s, DeviceType=%s, Active=%d", i, p.ID, p.Name, p.DeviceType, p.Active)
-		if p.ID == 0 {
-			t.Errorf("Expected non-zero ID for profile at index %d", i)
-		}
+		// ID 0 is valid in list responses (e.g. default policy); GET-by-id for 0 is not supported by the API.
 		if p.Name == "" {
 			t.Errorf("Expected non-empty Name for profile at index %d", i)
 		}
@@ -106,7 +104,18 @@ func TestGetApplicationProfileByID(t *testing.T) {
 		return
 	}
 
-	firstProfile := listResult.Policies[0]
+	var firstProfile *application_profiles.ApplicationProfile
+	for i := range listResult.Policies {
+		if listResult.Policies[i].ID != 0 {
+			firstProfile = &listResult.Policies[i]
+			break
+		}
+	}
+	if firstProfile == nil {
+		t.Log("No application profile with non-zero ID (GET-by-id is not supported for id 0). Skipping.")
+		return
+	}
+
 	profileID := fmt.Sprintf("%d", firstProfile.ID)
 
 	result, _, err := application_profiles.GetByProfileID(context.Background(), service, profileID)
