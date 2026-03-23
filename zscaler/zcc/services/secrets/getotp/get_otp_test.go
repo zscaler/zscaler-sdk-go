@@ -1,6 +1,5 @@
 package getotp
 
-/*
 import (
 	"context"
 	"fmt"
@@ -63,4 +62,3 @@ func TestGetOtp(t *testing.T) {
 		})
 	}
 }
-*/

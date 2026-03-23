@@ -36,16 +36,16 @@ type GetDevices struct {
 	OsVersion               string `json:"osVersion"`
 	Owner                   string `json:"owner"`
 	PolicyName              string `json:"policyName"`
-	RegistrationState       string `json:"registrationState"`
-	RegistrationTime        string `json:"registration_time"`
-	State                   string `json:"state"`
-	TunnelVersion           string `json:"tunnelVersion"`
-	Type                    string `json:"type"`
-	Udid                    string `json:"udid"`
-	UpmVersion              string `json:"upmVersion"`
-	User                    string `json:"user"`
-	VpnState                string `json:"vpnState"`
-	ZappArch                string `json:"zappArch"`
+	RegistrationState       string  `json:"registrationState"`
+	RegistrationTime        string  `json:"registration_time"`
+	State                   int     `json:"state"`
+	TunnelVersion           *string `json:"tunnelVersion,omitempty"`
+	Type                    int     `json:"type"`
+	Udid                    string  `json:"udid"`
+	UpmVersion              string  `json:"upmVersion"`
+	User                    string  `json:"user"`
+	VpnState                int     `json:"vpnState"`
+	ZappArch                *string `json:"zappArch,omitempty"`
 }
 
 type GetDevicesQueryParams = common.QueryParams
