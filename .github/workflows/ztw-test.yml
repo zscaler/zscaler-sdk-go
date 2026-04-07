@@ -50,7 +50,7 @@ jobs:
         continue-on-error: false
 
       - name: Run tests with retry
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: 1
           timeout_minutes: 20
