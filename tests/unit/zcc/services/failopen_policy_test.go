@@ -42,13 +42,19 @@ func TestFailOpenPolicy_Update_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/webFailOpenPolicy"
+	basePath := "/zcc/papi/public/v1/webFailOpenPolicy"
 
-	server.On("PUT", path, common.SuccessResponse(failopen_policy.WebFailOpenPolicy{
-		ID:             "policy-001",
-		Active:         "false",
-		CompanyID:      "company-123",
-		EnableFailOpen: 0,
+	server.On("PUT", basePath+"/edit", common.SuccessResponse(struct {
+		Success string `json:"success"`
+	}{Success: "true"}))
+
+	server.On("GET", basePath+"/listByCompany", common.SuccessResponse([]failopen_policy.WebFailOpenPolicy{
+		{
+			ID:             "policy-001",
+			Active:         "false",
+			CompanyID:      "company-123",
+			EnableFailOpen: 0,
+		},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
