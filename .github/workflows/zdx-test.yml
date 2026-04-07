@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.24"]
+        goVersion: ["1.25"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
