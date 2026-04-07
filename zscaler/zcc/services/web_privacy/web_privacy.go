@@ -17,29 +17,29 @@ const (
 type WebPrivacyInfo struct {
 	ID                            string `json:"id"`
 	Active                        string `json:"active"`
-	CollectMachineHostname        string `json:"collectMachineHostname"`
 	CollectUserInfo               string `json:"collectUserInfo"`
+	CollectMachineHostname        string `json:"collectMachineHostname"`
 	CollectZdxLocation            string `json:"collectZdxLocation"`
-	DisableCrashlytics            string `json:"disableCrashlytics"`
 	EnablePacketCapture           string `json:"enablePacketCapture"`
-	ExportLogsForNonAdmin         string `json:"exportLogsForNonAdmin"`
-	GrantAccessToZscalerLogFolder string `json:"grantAccessToZscalerLogFolder"`
+	DisableCrashlytics            string `json:"disableCrashlytics"`
 	OverrideT2ProtocolSetting     string `json:"overrideT2ProtocolSetting"`
 	RestrictRemotePacketCapture   string `json:"restrictRemotePacketCapture"`
+	GrantAccessToZscalerLogFolder string `json:"grantAccessToZscalerLogFolder"`
+	ExportLogsForNonAdmin         string `json:"exportLogsForNonAdmin"`
+	EnableAutoLogSnippet          string `json:"enableAutoLogSnippet"`
+	EnforceSecurePacUrls          string `json:"enforceSecurePacUrls"`
+	EnableFQDNMatchForVpnBypasses string `json:"enableFQDNMatchForVpnBypasses"`
 }
 
 func GetWebPrivacyInfo(ctx context.Context, service *zscaler.Service) (*WebPrivacyInfo, error) {
-	// Initialize a variable to hold the response
 	var privacyInfo WebPrivacyInfo
 
-	// Make the GET request
 	resp, err := service.Client.NewZccRequestDo(ctx, "GET", getWebPrivacyInfoEndpoint, nil, nil, &privacyInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve web privacy: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Handle non-200 HTTP response codes
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to retrieve web privacy info: received status code %d", resp.StatusCode)
 	}
@@ -47,23 +47,15 @@ func GetWebPrivacyInfo(ctx context.Context, service *zscaler.Service) (*WebPriva
 	return &privacyInfo, nil
 }
 
-func UpdatePrivacyInfo(ctx context.Context, service *zscaler.Service, info *WebPrivacyInfo) (*WebPrivacyInfo, error) {
+func UpdateWebPrivacyInfo(ctx context.Context, service *zscaler.Service, info *WebPrivacyInfo) (*WebPrivacyInfo, error) {
 	if info == nil {
-		return nil, errors.New("web policy is required")
+		return nil, errors.New("web privacy info is required")
 	}
 
-	// Construct the URL for the update endpoint
-	url := setWebPrivacyInfoEndpoint
-
-	// Initialize a variable to hold the response
-	var updatedPrivacyInfo WebPrivacyInfo
-
-	// Make the PUT request to update the web privacy info
-	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, info, &updatedPrivacyInfo)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", setWebPrivacyInfoEndpoint, nil, info, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web privacy info: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning web privacy info from update: %s", updatedPrivacyInfo)
-	return &updatedPrivacyInfo, nil
+	return GetWebPrivacyInfo(ctx, service)
 }

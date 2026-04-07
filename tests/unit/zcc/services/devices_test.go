@@ -23,14 +23,12 @@ func TestDevices_GetDeviceCleanupInfo_SDK(t *testing.T) {
 	path := "/zcc/papi/public/v1/getDeviceCleanupInfo"
 
 	server.On("GET", path, common.SuccessResponse(devices.DeviceCleanupInfo{
-		ID:                    "cleanup-001",
-		Active:                "true",
-		AutoPurgeDays:         "30",
-		AutoRemovalDays:       "60",
-		CompanyID:             "company-123",
-		DeviceExceedLimit:     "100",
-		ForceRemoveType:       "1",
-		ForceRemoveTypeString: "IMMEDIATE",
+		ID:                "cleanup-001",
+		Active:            "1",
+		AutoPurgeDays:     "30",
+		AutoRemovalDays:   "60",
+		DeviceExceedLimit: "100",
+		ForceRemoveType:   "1",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -41,7 +39,7 @@ func TestDevices_GetDeviceCleanupInfo_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "cleanup-001", result.ID)
-	assert.Equal(t, "true", result.Active)
+	assert.Equal(t, "1", result.Active)
 	assert.Equal(t, "30", result.AutoPurgeDays)
 }
 
@@ -49,11 +47,13 @@ func TestDevices_SetDeviceCleanupInfo_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/setDeviceCleanupInfo"
+	putPath := "/zcc/papi/public/v1/setDeviceCleanupInfo"
+	getPath := "/zcc/papi/public/v1/getDeviceCleanupInfo"
 
-	server.On("PUT", path, common.SuccessResponse(devices.DeviceCleanupInfo{
+	server.On("PUT", putPath, common.SuccessResponse(nil))
+	server.On("GET", getPath, common.SuccessResponse(devices.DeviceCleanupInfo{
 		ID:              "cleanup-001",
-		Active:          "true",
+		Active:          "1",
 		AutoPurgeDays:   "45",
 		AutoRemovalDays: "90",
 	}))
@@ -63,7 +63,7 @@ func TestDevices_SetDeviceCleanupInfo_SDK(t *testing.T) {
 
 	cleanupInfo := &devices.DeviceCleanupInfo{
 		ID:              "cleanup-001",
-		Active:          "true",
+		Active:          "1",
 		AutoPurgeDays:   "45",
 		AutoRemovalDays: "90",
 	}
@@ -231,21 +231,19 @@ func TestDevices_Structure(t *testing.T) {
 
 	t.Run("DeviceCleanupInfo JSON marshaling", func(t *testing.T) {
 		cleanup := devices.DeviceCleanupInfo{
-			ID:                    "cleanup-123",
-			Active:                "true",
-			AutoPurgeDays:         "30",
-			AutoRemovalDays:       "60",
-			CompanyID:             "company-456",
-			DeviceExceedLimit:     "100",
-			ForceRemoveType:       "1",
-			ForceRemoveTypeString: "IMMEDIATE",
+			ID:                "cleanup-123",
+			Active:            "1",
+			AutoPurgeDays:     "30",
+			AutoRemovalDays:   "60",
+			DeviceExceedLimit: "100",
+			ForceRemoveType:   "1",
 		}
 
 		data, err := json.Marshal(cleanup)
 		require.NoError(t, err)
 
 		assert.Contains(t, string(data), `"id":"cleanup-123"`)
-		assert.Contains(t, string(data), `"active":"true"`)
+		assert.Contains(t, string(data), `"active":"1"`)
 		assert.Contains(t, string(data), `"autoPurgeDays":"30"`)
 	})
 }

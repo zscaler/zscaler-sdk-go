@@ -185,7 +185,12 @@ func ReadAllPagesWithPagination[T any](ctx context.Context, client *zscaler.Clie
 		currentOffset += len(response.Records)
 	}
 
-	return allRecords, nil
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, allRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	return filtered, nil
 }
 
 // ReadPageWithPagination reads a single page using the standard zidentity pagination response format
@@ -250,7 +255,12 @@ func ReadAllPagesWithCursor[T any](ctx context.Context, client *zscaler.Client, 
 		currentURL = response.NextLink
 	}
 
-	return allRecords, nil
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, allRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	return filtered, nil
 }
 
 // BuildEndpointWithParams builds an endpoint URL with query parameters

@@ -16,9 +16,9 @@ const (
 type WebFailOpenPolicy struct {
 	Active                            string `json:"active"`
 	CaptivePortalWebSecDisableMinutes int    `json:"captivePortalWebSecDisableMinutes"`
-	CompanyID                         string `json:"companyId"`
-	CreatedBy                         string `json:"createdBy"`
-	EditedBy                          string `json:"editedBy"`
+	CompanyID                         string `json:"companyId,omitempty"`
+	CreatedBy                         string `json:"createdBy,omitempty"`
+	EditedBy                          string `json:"editedBy,omitempty"`
 	EnableCaptivePortalDetection      int    `json:"enableCaptivePortalDetection"`
 	EnableFailOpen                    int    `json:"enableFailOpen"`
 	EnableStrictEnforcementPrompt     int    `json:"enableStrictEnforcementPrompt"`
@@ -28,6 +28,11 @@ type WebFailOpenPolicy struct {
 	StrictEnforcementPromptDelayMins  int    `json:"strictEnforcementPromptDelayMinutes"`
 	StrictEnforcementPromptMessage    string `json:"strictEnforcementPromptMessage"`
 	TunnelFailureRetryCount           int    `json:"tunnelFailureRetryCount"`
+}
+
+type updateResponse struct {
+	Success   string `json:"success"`
+	ErrorCode string `json:"errorCode,omitempty"`
 }
 
 func GetFailOpenPolicy(ctx context.Context, service *zscaler.Service, pageSize int) ([]WebFailOpenPolicy, error) {
@@ -57,18 +62,24 @@ func UpdateFailOpenPolicy(ctx context.Context, service *zscaler.Service, openPol
 		return nil, errors.New("open policy is required")
 	}
 
-	// Construct the URL for the update endpoint
 	url := fmt.Sprintf("%s/edit", baseFailOpenPolicy)
 
-	// Initialize a variable to hold the response
-	var updatedPolicy WebFailOpenPolicy
-
-	// Make the PUT request to update the web policy
-	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, openPolicy, &updatedPolicy)
+	var resp updateResponse
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, openPolicy, &resp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web policy: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning web policy from update: %+v", updatedPolicy)
-	return &updatedPolicy, nil
+	if resp.Success != "true" {
+		return nil, fmt.Errorf("API rejected fail open policy update (errorCode: %s)", resp.ErrorCode)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] fail open policy update success, re-reading via GET")
+
+	policy, err := GetFailOpenPolicyByID(ctx, service, openPolicy.ID)
+	if err != nil {
+		return nil, fmt.Errorf("fail open policy updated, but failed to re-read: %w", err)
+	}
+
+	return policy, nil
 }

@@ -282,6 +282,11 @@ func GetAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, rela
 		result = append(result, l...)
 	}
 
+	result, err = zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, resp, err
+	}
+
 	return result, resp, nil
 }
 
@@ -383,6 +388,11 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 			return nil, resp, err
 		}
 		result = append(result, l...)
+	}
+
+	result, err = zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, resp, err
 	}
 
 	return result, resp, nil
@@ -594,6 +604,11 @@ func GetAllPagesGenericWithPostSearch[T any](ctx context.Context, client *zscale
 			break
 		}
 		page++
+	}
+
+	result, err := zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, lastResp, err
 	}
 
 	return result, lastResp, nil
