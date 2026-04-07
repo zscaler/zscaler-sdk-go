@@ -128,7 +128,13 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 		}
 		params.Page++
 	}
-	return allResults, nil
+
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, allResults)
+	if err != nil {
+		return nil, err
+	}
+
+	return filtered, nil
 }
 
 // ReadPage fetches a single page from a paginated ZCC GET endpoint.

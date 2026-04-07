@@ -100,6 +100,7 @@ type ForwardingProfileZpaActionRequest struct {
 
 type PartnerInfoRequest struct {
 	PrimaryTransport int `json:"primaryTransport"`
+	AllowTlsFallback int `json:"allowTlsFallback"`
 	MtuForZadapter   int `json:"mtuForZadapter"`
 }
 

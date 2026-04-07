@@ -55,23 +55,29 @@ type ForwardingProfileAction struct {
 	DTLSTimeout                        int             `json:"DTLSTimeout"`
 	UDPTimeout                         int             `json:"UDPTimeout"`
 	TLSTimeout                         int             `json:"TLSTimeout"`
-	MtuForZadapter                     int             `json:"mtuForZadapter"`
-	BlockUnreachableDomainsTraffic     int             `json:"blockUnreachableDomainsTraffic"`
+	MtuForZadapter                     IntOrString     `json:"mtuForZadapter"`
+	BlockUnreachableDomainsTraffic     IntOrString     `json:"blockUnreachableDomainsTraffic"`
 	AllowTLSFallback                   int             `json:"allowTLSFallback"`
 	Tunnel2FallbackType                int             `json:"tunnel2FallbackType"`
 	SendAllDNSToTrustedServer          int             `json:"sendAllDNSToTrustedServer"`
-	DropIpv6Traffic                    int             `json:"dropIpv6Traffic"`
-	RedirectWebTraffic                 int             `json:"redirectWebTraffic"`
-	DropIpv6IncludeTrafficInT2         int             `json:"dropIpv6IncludeTrafficInT2"`
+	DropIpv6Traffic                    IntOrString     `json:"dropIpv6Traffic"`
+	RedirectWebTraffic                 IntOrString     `json:"redirectWebTraffic"`
+	DropIpv6IncludeTrafficInT2         IntOrString     `json:"dropIpv6IncludeTrafficInT2"`
 	UseTunnel2ForProxiedWebTraffic     int             `json:"useTunnel2ForProxiedWebTraffic"`
 	UseTunnel2ForUnencryptedWebTraffic int             `json:"useTunnel2ForUnencryptedWebTraffic"`
 	PathMtuDiscovery                   int             `json:"pathMtuDiscovery"`
-	LatencyBasedZenEnablement          int             `json:"latencyBasedZenEnablement"`
+	LatencyBasedZenEnablement          IntOrString     `json:"latencyBasedZenEnablement"`
 	ZenProbeInterval                   int             `json:"zenProbeInterval"`
 	ZenProbeSampleSize                 int             `json:"zenProbeSampleSize"`
 	ZenThresholdLimit                  int             `json:"zenThresholdLimit"`
-	DropIpv6TrafficInIpv6Network       int             `json:"dropIpv6TrafficInIpv6Network"`
+	DropIpv6TrafficInIpv6Network       IntOrString     `json:"dropIpv6TrafficInIpv6Network"`
 	OptimiseForUnstableConnections     int             `json:"optimiseForUnstableConnections"`
+	LatencyBasedServerEnablement       int             `json:"latencyBasedServerEnablement,omitempty"`
+	LbsProbeInterval                   int             `json:"lbsProbeInterval,omitempty"`
+	LbsProbeSampleSize                 int             `json:"lbsProbeSampleSize,omitempty"`
+	LbsThresholdLimit                  int             `json:"lbsThresholdLimit,omitempty"`
+	LatencyBasedServerMTEnablement     int             `json:"latencyBasedServerMTEnablement,omitempty"`
+	IsSameAsOnTrustedNetwork           bool            `json:"isSameAsOnTrustedNetwork,omitempty"`
 }
 
 type SystemProxyData struct {

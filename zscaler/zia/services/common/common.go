@@ -165,6 +165,13 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 		}
 		page++
 	}
+
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, *list)
+	if err != nil {
+		return err
+	}
+	*list = filtered
+
 	return nil
 }
 

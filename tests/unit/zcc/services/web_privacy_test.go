@@ -1,4 +1,3 @@
-// Package services provides unit tests for ZCC services
 package services
 
 import (
@@ -12,10 +11,6 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/web_privacy"
 )
 
-// =====================================================
-// SDK Function Tests - Exercise actual SDK code paths
-// =====================================================
-
 func TestWebPrivacy_Get_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
@@ -23,15 +18,18 @@ func TestWebPrivacy_Get_SDK(t *testing.T) {
 	path := "/zcc/papi/public/v1/getWebPrivacyInfo"
 
 	server.On("GET", path, common.SuccessResponse(web_privacy.WebPrivacyInfo{
-		ID:                            "privacy-001",
-		Active:                        "true",
-		CollectMachineHostname:        "true",
-		CollectUserInfo:               "true",
-		CollectZdxLocation:            "true",
-		DisableCrashlytics:            "false",
-		EnablePacketCapture:           "true",
-		ExportLogsForNonAdmin:         "false",
-		GrantAccessToZscalerLogFolder: "true",
+		ID:                            "7777",
+		Active:                        "1",
+		CollectUserInfo:               "1",
+		CollectMachineHostname:        "1",
+		CollectZdxLocation:            "1",
+		EnablePacketCapture:           "1",
+		DisableCrashlytics:            "1",
+		OverrideT2ProtocolSetting:     "1",
+		RestrictRemotePacketCapture:   "1",
+		GrantAccessToZscalerLogFolder: "1",
+		ExportLogsForNonAdmin:         "1",
+		EnableAutoLogSnippet:          "1",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -41,88 +39,108 @@ func TestWebPrivacy_Get_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, "privacy-001", result.ID)
-	assert.Equal(t, "true", result.Active)
+	assert.Equal(t, "7777", result.ID)
+	assert.Equal(t, "1", result.Active)
+	assert.Equal(t, "1", result.DisableCrashlytics)
 }
 
 func TestWebPrivacy_Update_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/setWebPrivacyInfo"
+	putPath := "/zcc/papi/public/v1/setWebPrivacyInfo"
+	getPath := "/zcc/papi/public/v1/getWebPrivacyInfo"
 
-	server.On("PUT", path, common.SuccessResponse(web_privacy.WebPrivacyInfo{
-		ID:                     "privacy-001",
-		Active:                 "false",
-		CollectMachineHostname: "false",
-		CollectUserInfo:        "false",
+	server.On("PUT", putPath, common.SuccessResponse(nil))
+	server.On("GET", getPath, common.SuccessResponse(web_privacy.WebPrivacyInfo{
+		ID:                            "7777",
+		Active:                        "0",
+		CollectMachineHostname:        "0",
+		CollectUserInfo:               "0",
+		DisableCrashlytics:            "0",
+		EnableFQDNMatchForVpnBypasses: "1",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
 	updateInfo := &web_privacy.WebPrivacyInfo{
-		ID:                     "privacy-001",
-		Active:                 "false",
-		CollectMachineHostname: "false",
+		ID:                            "7777",
+		Active:                        "0",
+		CollectMachineHostname:        "0",
+		DisableCrashlytics:            "0",
+		EnableFQDNMatchForVpnBypasses: "1",
 	}
 
-	result, err := web_privacy.UpdatePrivacyInfo(context.Background(), service, updateInfo)
+	result, err := web_privacy.UpdateWebPrivacyInfo(context.Background(), service, updateInfo)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, "false", result.Active)
+	assert.Equal(t, "0", result.Active)
+	assert.Equal(t, "0", result.DisableCrashlytics)
+	assert.Equal(t, "1", result.EnableFQDNMatchForVpnBypasses)
 }
-
-// =====================================================
-// Structure Tests - JSON marshaling/unmarshaling
-// =====================================================
 
 func TestWebPrivacy_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("WebPrivacyInfo JSON marshaling", func(t *testing.T) {
 		privacy := web_privacy.WebPrivacyInfo{
-			ID:                            "privacy-123",
-			Active:                        "true",
-			CollectMachineHostname:        "true",
-			CollectUserInfo:               "true",
-			CollectZdxLocation:            "true",
-			DisableCrashlytics:            "false",
-			EnablePacketCapture:           "true",
-			ExportLogsForNonAdmin:         "false",
-			GrantAccessToZscalerLogFolder: "true",
-			OverrideT2ProtocolSetting:     "false",
-			RestrictRemotePacketCapture:   "true",
+			ID:                            "7777",
+			Active:                        "1",
+			CollectUserInfo:               "1",
+			CollectMachineHostname:        "1",
+			CollectZdxLocation:            "1",
+			EnablePacketCapture:           "1",
+			DisableCrashlytics:            "1",
+			OverrideT2ProtocolSetting:     "1",
+			RestrictRemotePacketCapture:   "1",
+			GrantAccessToZscalerLogFolder: "1",
+			ExportLogsForNonAdmin:         "1",
+			EnableAutoLogSnippet:          "1",
+			EnforceSecurePacUrls:          "1",
+			EnableFQDNMatchForVpnBypasses: "0",
 		}
 
 		data, err := json.Marshal(privacy)
 		require.NoError(t, err)
 
-		assert.Contains(t, string(data), `"id":"privacy-123"`)
-		assert.Contains(t, string(data), `"active":"true"`)
-		assert.Contains(t, string(data), `"collectMachineHostname":"true"`)
-		assert.Contains(t, string(data), `"collectUserInfo":"true"`)
+		assert.Contains(t, string(data), `"id":"7777"`)
+		assert.Contains(t, string(data), `"active":"1"`)
+		assert.Contains(t, string(data), `"collectMachineHostname":"1"`)
+		assert.Contains(t, string(data), `"disableCrashlytics":"1"`)
+		assert.Contains(t, string(data), `"enableAutoLogSnippet":"1"`)
+		assert.Contains(t, string(data), `"enforceSecurePacUrls":"1"`)
+		assert.Contains(t, string(data), `"enableFQDNMatchForVpnBypasses":"0"`)
 	})
 
 	t.Run("WebPrivacyInfo JSON unmarshaling", func(t *testing.T) {
 		jsonData := `{
-			"id": "privacy-789",
-			"active": "false",
-			"collectMachineHostname": "false",
-			"collectUserInfo": "false",
-			"collectZdxLocation": "true",
-			"disableCrashlytics": "true",
-			"enablePacketCapture": "false"
+			"id": "7777",
+			"active": "1",
+			"collectUserInfo": "1",
+			"collectMachineHostname": "1",
+			"collectZdxLocation": "1",
+			"enablePacketCapture": "1",
+			"disableCrashlytics": "1",
+			"overrideT2ProtocolSetting": "1",
+			"restrictRemotePacketCapture": "1",
+			"grantAccessToZscalerLogFolder": "1",
+			"exportLogsForNonAdmin": "1",
+			"enableAutoLogSnippet": "1"
 		}`
 
 		var privacy web_privacy.WebPrivacyInfo
 		err := json.Unmarshal([]byte(jsonData), &privacy)
 		require.NoError(t, err)
 
-		assert.Equal(t, "privacy-789", privacy.ID)
-		assert.Equal(t, "false", privacy.Active)
-		assert.Equal(t, "false", privacy.CollectMachineHostname)
-		assert.Equal(t, "true", privacy.DisableCrashlytics)
+		assert.Equal(t, "7777", privacy.ID)
+		assert.Equal(t, "1", privacy.Active)
+		assert.Equal(t, "1", privacy.CollectUserInfo)
+		assert.Equal(t, "1", privacy.DisableCrashlytics)
+		assert.Equal(t, "1", privacy.OverrideT2ProtocolSetting)
+		assert.Equal(t, "1", privacy.RestrictRemotePacketCapture)
+		assert.Equal(t, "1", privacy.GrantAccessToZscalerLogFolder)
+		assert.Equal(t, "1", privacy.EnableAutoLogSnippet)
 	})
 }

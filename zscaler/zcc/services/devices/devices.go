@@ -1,7 +1,6 @@
 package devices
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -21,21 +20,21 @@ const (
 )
 
 type GetDevices struct {
-	AgentVersion            string `json:"agentVersion"`
-	CompanyName             string `json:"companyName"`
-	ConfigDownloadTime      string `json:"config_download_time"`
-	DeregistrationTimestamp string `json:"deregistrationTimestamp"`
-	Detail                  string `json:"detail"`
-	DownloadCount           int    `json:"download_count"`
-	HardwareFingerprint     string `json:"hardwareFingerprint"`
-	KeepAliveTime           string `json:"keepAliveTime"`
-	LastSeenTime            string `json:"last_seen_time"`
-	MacAddress              string `json:"macAddress"`
-	MachineHostname         string `json:"machineHostname"`
-	Manufacturer            string `json:"manufacturer"`
-	OsVersion               string `json:"osVersion"`
-	Owner                   string `json:"owner"`
-	PolicyName              string `json:"policyName"`
+	AgentVersion            string  `json:"agentVersion"`
+	CompanyName             string  `json:"companyName"`
+	ConfigDownloadTime      string  `json:"config_download_time"`
+	DeregistrationTimestamp string  `json:"deregistrationTimestamp"`
+	Detail                  string  `json:"detail"`
+	DownloadCount           int     `json:"download_count"`
+	HardwareFingerprint     string  `json:"hardwareFingerprint"`
+	KeepAliveTime           string  `json:"keepAliveTime"`
+	LastSeenTime            string  `json:"last_seen_time"`
+	MacAddress              string  `json:"macAddress"`
+	MachineHostname         string  `json:"machineHostname"`
+	Manufacturer            string  `json:"manufacturer"`
+	OsVersion               string  `json:"osVersion"`
+	Owner                   string  `json:"owner"`
+	PolicyName              string  `json:"policyName"`
 	RegistrationState       string  `json:"registrationState"`
 	RegistrationTime        string  `json:"registration_time"`
 	State                   int     `json:"state"`
@@ -51,16 +50,12 @@ type GetDevices struct {
 type GetDevicesQueryParams = common.QueryParams
 
 type DeviceCleanupInfo struct {
-	ID                    string `json:"id"`
-	Active                string `json:"active"`
-	AutoPurgeDays         string `json:"autoPurgeDays"`
-	AutoRemovalDays       string `json:"autoRemovalDays"`
-	CompanyID             string `json:"companyId"`
-	CreatedBy             string `json:"createdBy"`
-	DeviceExceedLimit     string `json:"deviceExceedLimit"`
-	EditedBy              string `json:"editedBy"`
-	ForceRemoveType       string `json:"forceRemoveType"`
-	ForceRemoveTypeString string `json:"forceRemoveTypeString"`
+	ID                string `json:"id"`
+	Active            string `json:"active"`
+	ForceRemoveType   string `json:"forceRemoveType"`
+	DeviceExceedLimit string `json:"deviceExceedLimit"`
+	AutoRemovalDays   string `json:"autoRemovalDays"`
+	AutoPurgeDays     string `json:"autoPurgeDays"`
 }
 
 type DeviceDetails struct {
@@ -154,30 +149,10 @@ func SetDeviceCleanupInfo(ctx context.Context, service *zscaler.Service, cleanup
 		return nil, errors.New("cleanupInfo is required")
 	}
 
-	// Marshal the DeviceCleanupInfo struct into JSON
-	body, err := json.Marshal(cleanupInfo)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal device cleanup info request: %w", err)
-	}
-
-	// Make the PUT request
-	resp, err := service.Client.NewZccRequestDo(ctx, "PUT", setDeviceCleanupEndpoint, nil, bytes.NewBuffer(body), nil)
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", setDeviceCleanupEndpoint, nil, cleanupInfo, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set device cleanup info: %w", err)
 	}
-	defer resp.Body.Close()
 
-	// Handle non-200 HTTP response codes
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to set device cleanup info: received status code %d", resp.StatusCode)
-	}
-
-	// Decode the response body into a DeviceCleanupInfo struct
-	var response DeviceCleanupInfo
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &response, nil
+	return GetDeviceCleanupInfo(ctx, service)
 }

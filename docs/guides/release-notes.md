@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.29``
+``Last updated: v3.8.30``
 
 ---
+
+# 3.8.30 (April 7, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #425](https://github.com/zscaler/zscaler-sdk-go/pull/425) - Implemented support for local search via [JMESPath](https://jmespath.org/) expression applied after pagination completes, enabling advanced filtering (e.g., `contains`, equality, boolean, nested field access) before local name/ID matching. Fully backward compatible — omitting `search` preserves existing behavior.
+- [PR #425](https://github.com/zscaler/zscaler-sdk-go/pull/425) - Upgraded SDK to GO v1.25.x
+- [PR #425](https://github.com/zscaler/zscaler-sdk-go/pull/425) - Upgraded go-jose library from v3 to v4
 
 # 3.8.29 (March 23, 2026)
 
