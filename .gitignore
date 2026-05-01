@@ -30,4 +30,5 @@ ziacoverage.txt
 zpacoverage.html
 ziacoverage.html
 output.log
+*.log
 openapi
