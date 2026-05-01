@@ -94,9 +94,6 @@ type AdvancedSettings struct {
 	// A Boolean value indicating whether non-HTTP Traffic on HTTP and HTTPS ports are allowed or blocked
 	BlockNonHttpOnHttpPortEnabled bool `json:"blockNonHttpOnHttpPortEnabled,omitempty"`
 
-	// Specifies the login session timeout for admins accessing the ZIA Admin Portal
-	UISessionTimeout int `json:"uiSessionTimeout,omitempty"`
-
 	// The ECS prefix that must be used in DNS queries when the ECS option is enabled
 	EcsObject common.IDNameExternalID `json:"ecsObject,omitempty"`
 
@@ -161,6 +158,12 @@ type AdvancedSettings struct {
 
 	// URL categories that are excluded from the preferSniOverConnHost setting (i.e., prefer SSL/TLS client hello SNI for DNS resolution instead of the CONNECT host for forward proxy connections)
 	SniDnsOptimizationBypassUrlCategories []string `json:"sniDnsOptimizationBypassUrlCategories,omitempty"`
+
+	// Specifies the login session timeout for admins accessing the ZIA Admin Portal
+	UISessionTimeout int `json:"uiSessionTimeout,omitempty"`
+
+	// API Session Timeout Duration (In Minutes)
+	APISessionTimeout int `json:"apiSessionTimeout,omitempty"`
 }
 
 func GetAdvancedSettings(ctx context.Context, service *zscaler.Service) (*AdvancedSettings, error) {

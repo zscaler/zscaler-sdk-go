@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.30``
+``Last updated: v3.8.31``
 
 ---
+
+# 3.8.31 (May 1, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #428](https://github.com/zscaler/zscaler-sdk-go/pull/428) - Fixed ZCC Web Policy struct types and new attributes
+- [PR #428](https://github.com/zscaler/zscaler-sdk-go/pull/428) - A new field, apiSessionTimeout, is available for the AdvancedSettings model in the /advancedSettings APIs. The timeout duration can range from 5 to 20 minutes.
 
 # 3.8.30 (April 7, 2026)
 

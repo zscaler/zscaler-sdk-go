@@ -68,11 +68,11 @@ func TestWebPolicy_Update_SDK(t *testing.T) {
 
 	path := "/zcc/papi/public/v1/web/policy/edit"
 
-	server.On("PUT", path, common.SuccessResponse(web_policy.WebPolicy{
-		ID:          "123",
-		Name:        "Updated Policy",
-		Active:      "true",
-		Description: "Updated policy description",
+	// The /edit endpoint returns a bare {success, id} envelope, with id as
+	// an unquoted JSON number. The struct response models that exactly.
+	server.On("PUT", path, common.SuccessResponse(map[string]interface{}{
+		"success": "true",
+		"id":      205241,
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -88,7 +88,8 @@ func TestWebPolicy_Update_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, "Updated Policy", result.Name)
+	assert.Equal(t, "true", result.Success)
+	assert.Equal(t, "205241", result.ID.String())
 }
 
 func TestWebPolicy_Delete_SDK(t *testing.T) {

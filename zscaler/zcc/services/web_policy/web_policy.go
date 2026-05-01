@@ -2,6 +2,7 @@ package web_policy
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,7 +19,6 @@ const (
 type WebPolicy struct {
 	Active                    string           `json:"active"`
 	AllowUnreachablePac       bool             `json:"allowUnreachablePac"`
-	AndroidPolicy             AndroidPolicy    `json:"androidPolicy"`
 	AppIdentityNames          []string         `json:"appIdentityNames"`
 	AppServiceIds             []int            `json:"appServiceIds"`
 	AppServiceNames           []string         `json:"appServiceNames"`
@@ -36,12 +36,9 @@ type WebPolicy struct {
 	GroupNames                []string         `json:"groupNames"`
 	HighlightActiveControl    string           `json:"highlightActiveControl"`
 	ID                        string           `json:"id"`
-	IosPolicy                 IosPolicy        `json:"iosPolicy"`
-	LinuxPolicy               LinuxPolicy      `json:"linuxPolicy"`
 	LogFileSize               string           `json:"logFileSize"`
 	LogLevel                  string           `json:"logLevel"`
 	LogMode                   string           `json:"logMode"`
-	MacPolicy                 MacPolicy        `json:"macPolicy"`
 	Name                      string           `json:"name"`
 	PacURL                    string           `json:"pac_url"`
 	PolicyExtension           PolicyExtension  `json:"policyExtension"`
@@ -52,6 +49,10 @@ type WebPolicy struct {
 	TunnelZappTraffic         string           `json:"tunnelZappTraffic"`
 	UserIds                   []int            `json:"userIds"`
 	UserNames                 []string         `json:"userNames"`
+	AndroidPolicy             AndroidPolicy    `json:"androidPolicy"`
+	IosPolicy                 IosPolicy        `json:"iosPolicy"`
+	LinuxPolicy               LinuxPolicy      `json:"linuxPolicy"`
+	MacPolicy                 MacPolicy        `json:"macPolicy"`
 	WindowsPolicy             WindowsPolicy    `json:"windowsPolicy"`
 	ZiaPostureConfigId        int              `json:"ziaPostureConfigId"`
 }
@@ -71,25 +72,6 @@ type AndroidPolicy struct {
 	QuotaRoaming     string `json:"quotaRoaming"`
 	UninstallPass    string `json:"uninstallPassword"`
 	WifiSsid         string `json:"wifissid"`
-}
-
-type DisasterRecovery struct {
-	AllowZiaTest        bool   `json:"allowZiaTest"`
-	AllowZpaTest        bool   `json:"allowZpaTest"`
-	EnableZiaDR         bool   `json:"enableZiaDR"`
-	EnableZpaDR         bool   `json:"enableZpaDR"`
-	PolicyId            string `json:"policyId"`
-	UseZiaGlobalDb      bool   `json:"useZiaGlobalDb"`
-	ZiaDRRecoveryMethod int    `json:"ziaDRRecoveryMethod"`
-	ZiaDomainName       string `json:"ziaDomainName"`
-	ZiaGlobalDbURL      string `json:"ziaGlobalDbUrl"`
-	ZiaGlobalDbURLV2    string `json:"ziaGlobalDbUrlv2"`
-	ZiaPacURL           string `json:"ziaPacUrl"`
-	ZiaSecretKeyData    string `json:"ziaSecretKeyData"`
-	ZiaSecretKeyName    string `json:"ziaSecretKeyName"`
-	ZpaDomainName       string `json:"zpaDomainName"`
-	ZpaSecretKeyData    string `json:"zpaSecretKeyData"`
-	ZpaSecretKeyName    string `json:"zpaSecretKeyName"`
 }
 
 type IosPolicy struct {
@@ -121,6 +103,47 @@ type MacPolicy struct {
 	LogoutPassword                       string `json:"logoutPassword"`
 	PersistentZscalerFirewall            string `json:"persistentZscalerFirewall"`
 	UninstallPassword                    string `json:"uninstallPassword"`
+}
+
+type WindowsPolicy struct {
+	CacheSystemProxy              int    `json:"cacheSystemProxy"`
+	CaptivePortalConfig           string `json:"captivePortalConfig"`
+	DisableLoopBackRestriction    int    `json:"disableLoopBackRestriction"`
+	DisableParallelIpv4andIpv6    string `json:"disableParallelIpv4andIpv6"`
+	DisablePassword               string `json:"disablePassword"`
+	FlowLoggerConfig              string `json:"flowLoggerConfig"`
+	ForceLocationRefreshSccm      int    `json:"forceLocationRefreshSccm"`
+	InstallWindowsFirewallInbound int    `json:"installWindowsFirewallInboundRule"`
+	InstallCerts                  string `json:"installCerts"`
+	LogoutPassword                string `json:"logoutPassword"`
+	OverrideWPAD                  int    `json:"overrideWPAD"`
+	PacDataPath                   string `json:"pacDataPath"`
+	PacType                       int    `json:"pacType"`
+	PrioritizeIPv4                int    `json:"prioritizeIPv4"`
+	RemoveExemptedContainers      int    `json:"removeExemptedContainers"`
+	RestartWinHttpSvc             int    `json:"restartWinHttpSvc"`
+	TriggerDomainProfleDetection  int    `json:"triggerDomainProfleDetection"`
+	UninstallPassword             string `json:"uninstallPassword"`
+	WfpDriver                     int    `json:"wfpDriver"`
+}
+
+type DisasterRecovery struct {
+	AllowZiaTest        bool   `json:"allowZiaTest"`
+	AllowZpaTest        bool   `json:"allowZpaTest"`
+	EnableZiaDR         bool   `json:"enableZiaDR"`
+	EnableZpaDR         bool   `json:"enableZpaDR"`
+	PolicyId            string `json:"policyId"`
+	UseZiaGlobalDb      bool   `json:"useZiaGlobalDb"`
+	ZiaDRRecoveryMethod int    `json:"ziaDRRecoveryMethod"`
+	ZiaDomainName       string `json:"ziaDomainName"`
+	ZiaGlobalDbURL      string `json:"ziaGlobalDbUrl"`
+	ZiaGlobalDbURLV2    string `json:"ziaGlobalDbUrlv2"`
+	ZiaPacURL           string `json:"ziaPacUrl"`
+	ZiaSecretKeyData    string `json:"ziaSecretKeyData"`
+	ZiaSecretKeyName    string `json:"ziaSecretKeyName"`
+	ZpaDomainName       string `json:"zpaDomainName"`
+	ZpaSecretKeyData    string `json:"zpaSecretKeyData"`
+	ZpaSecretKeyName    string `json:"zpaSecretKeyName"`
 }
 
 type PolicyExtension struct {
@@ -193,32 +216,65 @@ type GenerateCliPasswordContract struct {
 	EnableCli                      bool `json:"enableCli"`
 	PolicyId                       int  `json:"policyId"`
 }
-
-type WindowsPolicy struct {
-	CacheSystemProxy              int    `json:"cacheSystemProxy"`
-	CaptivePortalConfig           string `json:"captivePortalConfig"`
-	DisableLoopBackRestriction    int    `json:"disableLoopBackRestriction"`
-	DisableParallelIpv4andIpv6    string `json:"disableParallelIpv4andIpv6"`
-	DisablePassword               string `json:"disablePassword"`
-	FlowLoggerConfig              string `json:"flowLoggerConfig"`
-	ForceLocationRefreshSccm      int    `json:"forceLocationRefreshSccm"`
-	InstallWindowsFirewallInbound int    `json:"installWindowsFirewallInboundRule"`
-	InstallCerts                  string `json:"installCerts"`
-	LogoutPassword                string `json:"logoutPassword"`
-	OverrideWPAD                  int    `json:"overrideWPAD"`
-	PacDataPath                   string `json:"pacDataPath"`
-	PacType                       int    `json:"pacType"`
-	PrioritizeIPv4                int    `json:"prioritizeIPv4"`
-	RemoveExemptedContainers      int    `json:"removeExemptedContainers"`
-	RestartWinHttpSvc             int    `json:"restartWinHttpSvc"`
-	TriggerDomainProfleDetection  int    `json:"triggerDomainProfleDetection"`
-	UninstallPassword             string `json:"uninstallPassword"`
-	WfpDriver                     int    `json:"wfpDriver"`
-}
-
 type WebPolicyActivation struct {
 	DeviceType int `json:"deviceType"`
 	PolicyId   int `json:"policyId"`
+}
+
+// UnmarshalJSON allows WebPolicy.ID to be decoded from either a JSON string
+// ("123") or a JSON number (123). The /edit endpoint returns the id as an
+// unquoted integer ({"success":"true","id":205241}), while the listByCompany
+// endpoint typically returns it as a string. The custom unmarshaler bridges
+// both shapes so the typed struct is always populated correctly.
+func (w *WebPolicy) UnmarshalJSON(data []byte) error {
+	type alias WebPolicy
+	aux := &struct {
+		ID json.Number `json:"id"`
+		*alias
+	}{alias: (*alias)(w)}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	w.ID = aux.ID.String()
+	return nil
+}
+
+// EditResponse models the bare response returned by PUT /edit, which is of
+// the form {"success":"true","id":205241}. The id is captured as a
+// json.Number so it survives both quoted and unquoted JSON.
+type EditResponse struct {
+	Success string      `json:"success"`
+	ID      json.Number `json:"id"`
+}
+
+// GetWebPolicyByID fetches a single web policy filtered by its id within a
+// device type. The underlying listByCompany endpoint returns untyped maps,
+// so this helper JSON round-trips each entry into a typed WebPolicy and
+// returns the matching record. deviceType uses the integer convention
+// defined in common (1=iOS, 2=Android, 3=Windows, 4=macOS, 5=Linux).
+func GetWebPolicyByID(ctx context.Context, service *zscaler.Service, id string, deviceType int) (*WebPolicy, error) {
+	if id == "" {
+		return nil, errors.New("id is required")
+	}
+	dt := deviceType
+	raw, err := GetPolicyListByCompanyID(ctx, service, nil, nil, nil, nil, &dt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list web policies (deviceType=%d): %w", deviceType, err)
+	}
+	for _, m := range raw {
+		bytes, err := json.Marshal(m)
+		if err != nil {
+			continue
+		}
+		var policy WebPolicy
+		if err := json.Unmarshal(bytes, &policy); err != nil {
+			continue
+		}
+		if policy.ID == id {
+			return &policy, nil
+		}
+	}
+	return nil, fmt.Errorf("web policy with id %q (deviceType=%d) not found", id, deviceType)
 }
 
 func GetPolicyListByCompanyID(ctx context.Context, service *zscaler.Service, page, pageSize *int, search, searchType *string, deviceType *int) ([]map[string]interface{}, error) {
@@ -274,25 +330,31 @@ func ActivateWebPolicy(ctx context.Context, service *zscaler.Service, activation
 	return &updatedActivation, nil
 }
 
-func UpdateWebPolicy(ctx context.Context, service *zscaler.Service, webPolicy *WebPolicy) (*WebPolicy, error) {
+// UpdateWebPolicy creates or updates a ZCC web policy. The /edit endpoint
+// is used for both operations — supplying an empty/zero id creates a new
+// policy, while a populated id updates the existing record. The API
+// response is of the form {"success":"true","id":205241}; callers should
+// use the returned EditResponse.ID combined with the policy's deviceType
+// to refetch the full record via GetWebPolicyByID.
+func UpdateWebPolicy(ctx context.Context, service *zscaler.Service, webPolicy *WebPolicy) (*EditResponse, error) {
 	if webPolicy == nil {
 		return nil, errors.New("web policy is required")
 	}
 
-	// Construct the URL for the update endpoint
 	url := fmt.Sprintf("%s/edit", baseWebPolicyEndpoint)
 
-	// Initialize a variable to hold the response
-	var updatedWebPolicy WebPolicy
-
-	// Make the PUT request to update the web policy
-	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, webPolicy, &updatedWebPolicy)
+	var resp EditResponse
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", url, nil, webPolicy, &resp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update web policy: %w", err)
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] returning web policy from update: %s", updatedWebPolicy)
-	return &updatedWebPolicy, nil
+	if resp.Success != "true" {
+		return nil, fmt.Errorf("API rejected web policy update (success=%q)", resp.Success)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] web policy /edit response: success=%s id=%s", resp.Success, resp.ID.String())
+	return &resp, nil
 }
 
 func DeleteWebPolicy(ctx context.Context, service *zscaler.Service, policyID int) (*http.Response, error) {

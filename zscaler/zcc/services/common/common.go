@@ -84,6 +84,11 @@ type QueryParams struct {
 	UserType   string `url:"userType,omitempty"`
 }
 
+type ZCCResponse struct {
+	Success string `json:"success"`
+	Error   string `json:"error,omitempty"`
+}
+
 // NewPagination creates a Pagination with bounded page size.
 func NewPagination(pageSize int) Pagination {
 	if pageSize <= 0 {
