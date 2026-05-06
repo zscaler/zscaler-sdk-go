@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.32 (May 5, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #429](https://github.com/zscaler/zscaler-sdk-go/pull/429) - Fixed Cache Manager Invalidation parent collection on non-GET requests.
+
 # 3.8.31 (May 1, 2026)
 
 ## Notes
