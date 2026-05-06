@@ -502,7 +502,20 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	} else if method != http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
 		// For non-GET requests, invalidate cache
 		c.oauth2Credentials.CacheManager.Delete(key)
-		c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+		baseKey := strings.Split(key, "?")[0]
+		c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(baseKey)
+		// Also invalidate the parent collection endpoint so that list
+		// responses (e.g. /sslInspectionRules) are cleared when a child
+		// resource (e.g. /sslInspectionRules/123) is mutated. Without
+		// this, a GET on the collection is served stale from cache for
+		// up to the TTL after a child PUT/POST/DELETE, which breaks
+		// any client logic that mutates and immediately re-reads
+		// (e.g. terraform-provider-zia rule reordering — SUP-3988).
+		// Mirrors the legacy v2 ZIA client (zia/v2_client.go).
+		if idx := strings.LastIndex(baseKey, "/"); idx > 0 {
+			parentKey := baseKey[:idx]
+			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(parentKey)
+		}
 	}
 
 	var resp *http.Response
