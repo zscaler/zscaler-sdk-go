@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.32``
+``Last updated: v3.8.33``
 
 ---
+
+# 3.8.33 (May 7, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #430](https://github.com/zscaler/zscaler-sdk-go/pull/430) - OneAPI client: 429/503/401 retries now honour `Retry-After` as a floor, grow exponentially across consecutive retries on the same call (capped at `RetryWaitMax`), and apply ±25% jitter to break parallel-goroutine stampedes against per-endpoint rate limiters.
+- [PR #430](https://github.com/zscaler/zscaler-sdk-go/pull/430) - OneAPI client: lowered default `MaxNumOfRetries` from 100 to 10 so stuck calls fail fast instead of monopolising a goroutine; override with `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`.
 
 # 3.8.32 (May 5, 2026)
 
