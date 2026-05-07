@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -25,14 +26,40 @@ import (
 )
 
 const (
-	maxIdleConnections  int = 40
-	requestTimeout      int = 60
-	contentTypeJSON         = "application/json"
-	MaxNumOfRetries         = 100
-	RetryWaitMaxSeconds     = 10
-	RetryWaitMinSeconds     = 2
-	loggerPrefix            = "oneapi-logger: "
+	maxIdleConnections int = 40
+	requestTimeout     int = 60
+	contentTypeJSON        = "application/json"
+	// MaxNumOfRetries is the default cap for both the retryablehttp inner loop
+	// and the ExecuteRequest outer loop. Was 100; lowered to 10 because in
+	// practice 429-driven retries on a single call rarely exceed 6–7 attempts
+	// before the per-endpoint limiter drains. A budget of 10 fails fast on
+	// truly stuck calls so terraform can surface a clean error and the user
+	// can re-apply, instead of monopolising a goroutine for ~100s.
+	// Override via ZSCALER_CLIENT_MAX_RETRIES (cfg.Zscaler.Client.RateLimit.MaxRetries).
+	MaxNumOfRetries     = 10
+	RetryWaitMaxSeconds = 10
+	RetryWaitMinSeconds = 2
+	// retryJitterFraction is the ±fraction applied to every backoff sleep so
+	// that parallel goroutines that all received the same Retry-After do not
+	// wake at the same instant and stampede the per-endpoint limiter again.
+	retryJitterFraction = 0.25
+	loggerPrefix        = "oneapi-logger: "
 )
+
+// jitter returns d perturbed by ±frac (e.g. frac=0.25 → ±25%). Negative or
+// zero d short-circuits to d unchanged. Uses math/rand which is sufficient
+// for de-synchronising retries; not a security primitive.
+func jitter(d time.Duration, frac float64) time.Duration {
+	if d <= 0 || frac <= 0 {
+		return d
+	}
+	delta := (rand.Float64()*2 - 1) * frac // [-frac, +frac]
+	out := time.Duration(float64(d) * (1 + delta))
+	if out < 0 {
+		return 0
+	}
+	return out
+}
 
 // inFlightRequest represents a request that's currently being processed
 type inFlightRequest struct {
@@ -138,24 +165,46 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		retryableClient.RetryMax = MaxNumOfRetries // Default to 100
 	}
 
-	// Configure backoff and retry policies for retryablehttp
+	// Configure backoff and retry policies for retryablehttp.
+	//
+	// For 429 / 503 / 401 we honour the API's Retry-After as the FLOOR for the
+	// first retry, then grow exponentially on each subsequent retry of the
+	// SAME call (capped at RetryWaitMax) and add ±retryJitterFraction jitter.
+	// The growth matters because the per-endpoint POST limiter on ZIA isn't
+	// reflected in any header — the API just returns Retry-After: 1 every
+	// time — so a fixed 1-second sleep produces a stampede where N parallel
+	// goroutines all wake together and re-trigger the same 429.
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
-			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
-				retryAfter := getRetryAfter(resp, cfg)
-				if retryAfter > 0 {
-					return retryAfter
+			switch resp.StatusCode {
+			case http.StatusTooManyRequests, http.StatusServiceUnavailable, http.StatusUnauthorized:
+				base := getRetryAfter(resp, cfg)
+				if base <= 0 {
+					base = min
 				}
+				// attemptNum is 0 for the first retry. Grow base*2^attemptNum,
+				// capped at max, then jitter.
+				shift := uint(attemptNum)
+				if shift > 16 { // guard against absurd shifts
+					shift = 16
+				}
+				grown := base * time.Duration(1<<shift)
+				if grown <= 0 || grown > max { // overflow or above cap
+					grown = max
+				}
+				if grown < base {
+					grown = base
+				}
+				return jitter(grown, retryJitterFraction)
 			}
 		}
-		// Use exponential backoff for all retries
-		// Rate limiting is handled by API's 429 errors + ExecuteRequest logic
+		// Default exponential backoff for non-rate-limit retryable errors.
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
 			sleep = max
 		}
-		return sleep
+		return jitter(sleep, retryJitterFraction)
 	}
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
@@ -613,7 +662,13 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			sessionNotValidRetryCount = 0
 		}
 
-		// Handle rate-limiting (429 or 503)
+		// Handle rate-limiting (429 or 503).
+		//
+		// This is the ExecuteRequest-level fallback that fires when the inner
+		// retryablehttp loop has exhausted its budget and still returned a
+		// 429/503. We mirror the inner Backoff policy: honour Retry-After as
+		// the floor, grow exponentially per outer-loop attempt (capped at
+		// RetryWaitMax), then jitter to break parallel-goroutine stampedes.
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
@@ -623,15 +678,31 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v before retrying. This typically means hourly rate limits (GET: 1000/hr, POST/PUT: 1000/hr, DELETE: 400/hr) have been reached. Please wait before retrying", retryAfter)
 				}
 
+				// Capped exponential growth on consecutive 429s for the same
+				// call (retry is 1-indexed here), bounded by RetryWaitMax.
+				maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
+				shift := uint(retry - 1)
+				if shift > 16 {
+					shift = 16
+				}
+				grown := retryAfter * time.Duration(1<<shift)
+				if grown <= 0 || grown > maxBackoff {
+					grown = maxBackoff
+				}
+				if grown < retryAfter {
+					grown = retryAfter
+				}
+				sleepFor := jitter(grown, retryJitterFraction)
+
 				// Check if context is still valid before sleeping
 				select {
 				case <-ctx.Done():
 					return nil, resp, nil, fmt.Errorf("context cancelled while waiting for rate limit: %w", ctx.Err())
 				default:
-					c.oauth2Credentials.Logger.Printf("[INFO] Rate limit hit, waiting %v before retry (attempt %d)", retryAfter, retry)
+					c.oauth2Credentials.Logger.Printf("[INFO] Rate limit hit, waiting %v (Retry-After=%v, attempt %d) before retry", sleepFor, retryAfter, retry)
 					// Track this wait time so it doesn't count against request timeout
 					beforeWait := time.Now()
-					time.Sleep(retryAfter)
+					time.Sleep(sleepFor)
 					totalWaitTime += time.Since(beforeWait)
 					continue
 				}
