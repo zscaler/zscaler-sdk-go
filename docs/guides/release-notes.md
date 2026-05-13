@@ -24,7 +24,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Enhancements
 
-- [PR #432](https://github.com/zscaler/zscaler-sdk-go/pull/432) - Added the following new ZIA Custom IPS Signature Rules endpoints
+- [PR #432](https://github.com/zscaler/zscaler-sdk-go/pull/432) - Added the following new ZIA IPS Signature Rules endpoints
   - `GET /ipsSignatureRules` Retrieves a list of custom IPS signature rules.
   - `POST /ipsSignatureRules` Adds a new custom IPS signature rule.
   - `GET /ipsSignatureRules/{id}` Retrieves the custom IPS signature rules based on the specified ID
