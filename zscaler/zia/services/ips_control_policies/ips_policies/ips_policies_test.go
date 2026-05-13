@@ -1,4 +1,4 @@
-package firewallipscontrolpolicies
+package ips_policies
 
 import (
 	"context"

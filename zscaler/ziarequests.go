@@ -279,6 +279,87 @@ func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payl
 	}
 }
 
+// ReadRaw sends a GET request and returns the raw response body without
+// attempting to JSON-decode it. Use this for endpoints that return non-JSON
+// payloads such as CSV exports, plain text, or other binary content.
+//
+// The requestContentType argument sets the outgoing request's Content-Type
+// header (not Accept). For ZIA OneAPI file-download GETs that have no body,
+// pass "" so it defaults to application/json — some gateways return 415 if
+// the request advertises text/csv on a body-less GET. For POST uploads of
+// CSV, use CreateWithRawPayloadAndContentType(..., "text/csv") instead.
+//
+// Service packages must use this helper instead of calling ExecuteRequest
+// directly. If the helper does not yet fit the API contract, add a new
+// helper here rather than reaching into ExecuteRequest from a service file.
+func (c *Client) ReadRaw(ctx context.Context, endpoint, acceptContentType string) ([]byte, error) {
+	if acceptContentType == "" {
+		acceptContentType = contentTypeJSON
+	}
+
+	resp, _, _, err := c.ExecuteRequest(ctx, "GET", endpoint, nil, nil, acceptContentType)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// CreateWithRawPayloadAndContentType sends a POST request with an arbitrary
+// raw body and Content-Type. Use this for endpoints that accept non-JSON
+// uploads such as CSV imports or other binary payloads. Returns the raw
+// response body and the underlying *http.Response (useful when callers must
+// inspect the status code directly).
+//
+// Service packages must use this helper instead of calling ExecuteRequest
+// directly. If the helper does not yet fit the API contract, add a new
+// helper here rather than reaching into ExecuteRequest from a service file.
+func (c *Client) CreateWithRawPayloadAndContentType(ctx context.Context, endpoint string, payload []byte, contentType string) ([]byte, *http.Response, error) {
+	if len(payload) == 0 {
+		return nil, nil, errors.New("tried to create with an empty raw payload")
+	}
+	if contentType == "" {
+		contentType = contentTypeJSON
+	}
+
+	respBody, response, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(payload), nil, contentType)
+	if err != nil {
+		return nil, response, err
+	}
+	return respBody, response, nil
+}
+
+// CreateWithJSONResponse sends a POST request whose request and response Go
+// types differ. Marshals payload to JSON and decodes the JSON response into
+// out. Use this for validate/preview/dry-run style endpoints where Create
+// (which decodes the response into the request type) cannot be used.
+//
+// Service packages must use this helper instead of calling ExecuteRequest
+// directly. If the helper does not yet fit the API contract, add a new
+// helper here rather than reaching into ExecuteRequest from a service file.
+func (c *Client) CreateWithJSONResponse(ctx context.Context, endpoint string, payload interface{}, out interface{}) error {
+	if payload == nil {
+		return errors.New("tried to create with a nil payload not a Struct")
+	}
+	if out == nil {
+		return errors.New("CreateWithJSONResponse requires a non-nil out destination")
+	}
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	respBody, _, _, err := c.ExecuteRequest(ctx, "POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
+	if err != nil {
+		return err
+	}
+
+	if len(respBody) == 0 {
+		return nil
+	}
+	return json.Unmarshal(respBody, out)
+}
+
 // CreateWithNoContent handles POST requests that return a 204 No Content response.
 func (c *Client) CreateWithNoContent(ctx context.Context, endpoint string, o interface{}) (*http.Response, error) {
 	if c.oauth2Credentials.UseLegacyClient {
