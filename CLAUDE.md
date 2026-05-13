@@ -148,19 +148,20 @@ If no existing helper fits the API contract, **add a new helper** to the appropr
 | `Client.UpdateWithSlicePayload(ctx, endpoint, slice)` | PUT a JSON array, returns raw bytes |
 | `Client.CreateWithRawPayload(ctx, endpoint, payload string)` | POST a raw string body as `application/json` (e.g. PAC file content) |
 | `Client.CreateWithNoContent(ctx, endpoint, struct)` | POST that returns `204 No Content` (e.g. async export trigger) |
-| `Client.ReadRaw(ctx, endpoint, contentType)` | GET that returns a non-JSON body (CSV, plain text, binary). Returns `[]byte`. |
+| `Client.ReadRaw(ctx, endpoint, requestContentType)` | GET that returns a non-JSON body (CSV, binary). Pass `""` for ZIA OneAPI file downloads — the request defaults to `application/json`; using `text/csv` on a body-less GET can yield 415 from the gateway. |
 | `Client.CreateWithRawPayloadAndContentType(ctx, endpoint, []byte, contentType)` | POST a raw body with a non-JSON Content-Type (e.g. `text/csv` upload) |
 | `Client.CreateWithJSONResponse(ctx, endpoint, requestStruct, &responseStruct)` | POST where the **request and response Go types differ** (e.g. validate / preview / dry-run endpoints). |
 
 ### Reference patterns
 
 ```go
-// ZIA — CSV export (non-JSON GET response)
+// ZIA — CSV export (GET, no body; response is CSV). Request must use
+// application/json (ReadRaw with ""), not text/csv, or OneAPI returns 415.
 func ExportFoo(ctx context.Context, service *zscaler.Service) ([]byte, error) {
-    return service.Client.ReadRaw(ctx, fooExportEndpoint, "text/csv")
+    return service.Client.ReadRaw(ctx, fooExportEndpoint, "")
 }
 
-// ZIA — CSV import (non-JSON POST body)
+// ZIA — CSV import (POST body is CSV; Content-Type must be text/csv)
 func ImportFoo(ctx context.Context, service *zscaler.Service, csv []byte) (*http.Response, error) {
     _, resp, err := service.Client.CreateWithRawPayloadAndContentType(ctx, fooImportEndpoint, csv, "text/csv")
     return resp, err
@@ -188,7 +189,7 @@ func ValidateFoo(ctx context.Context, service *zscaler.Service, body string) (*F
 - ❌ `service.Client.ExecuteRequest(...)` in a service file → add or use a `Client.*` helper instead.
 - ❌ `http.NewRequest(...)` in a service file → add or use a `Client.*` helper instead.
 - ❌ Inline `json.Marshal` of a request body in a service file → the helper handles marshaling.
-- ✅ The only file in `zscaler/<cloud>/...` that calls `ExecuteRequest` is the cloud's request file (`ziarequests.go`, etc.) — and the rare special-case package like `sandbox_submission` which uses non-API endpoints.
+- ✅ The only file in `zscaler/<cloud>/...` that calls `ExecuteRequest` is the cloud's request file (`ziarequests.go`, etc.). The single carve-out is `zscaler/zia/services/sandbox/sandbox_submission` — it talks to a different host (`/zscsb`), needs `url.Values` query params, and computes `Content-Type` from the uploaded filename's extension. None of those concerns fit a generic helper signature, so inline `ExecuteRequest` is acceptable **there only**. Do not cite sandbox as precedent for new services; if a new endpoint needs a one-off behavior, add a new helper to `ziarequests.go` first.
 
 ## Pagination Engines
 

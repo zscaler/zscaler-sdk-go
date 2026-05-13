@@ -281,9 +281,13 @@ func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payl
 
 // ReadRaw sends a GET request and returns the raw response body without
 // attempting to JSON-decode it. Use this for endpoints that return non-JSON
-// payloads such as CSV exports, plain text, or other binary content. The
-// acceptContentType parameter is forwarded as the request's Content-Type
-// header (which doubles as a hint to the upstream service).
+// payloads such as CSV exports, plain text, or other binary content.
+//
+// The requestContentType argument sets the outgoing request's Content-Type
+// header (not Accept). For ZIA OneAPI file-download GETs that have no body,
+// pass "" so it defaults to application/json — some gateways return 415 if
+// the request advertises text/csv on a body-less GET. For POST uploads of
+// CSV, use CreateWithRawPayloadAndContentType(..., "text/csv") instead.
 //
 // Service packages must use this helper instead of calling ExecuteRequest
 // directly. If the helper does not yet fit the API contract, add a new

@@ -1,4 +1,4 @@
-package ips_signatures
+package ips_signature_rules
 
 import (
 	"context"

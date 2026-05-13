@@ -1,4 +1,4 @@
-package ips_signatures
+package ips_signature_rules
 
 import (
 	"context"
@@ -78,73 +78,6 @@ type IPSSignatureCategory struct {
 
 	// Indicates whether the name is a localization tag rather than a literal label
 	IsNameL10nTag bool `json:"isNameL10nTag,omitempty"`
-}
-
-func Get(ctx context.Context, service *zscaler.Service, signatureID int) (*IPSSignatureRules, error) {
-	var ipsSignature IPSSignatureRules
-	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID), &ipsSignature)
-	if err != nil {
-		return nil, err
-	}
-
-	service.Client.GetLogger().Printf("[DEBUG] Returning IPS signature from Get: %d", ipsSignature.ID)
-	return &ipsSignature, nil
-}
-
-func GetByName(ctx context.Context, service *zscaler.Service, signatureName string) (*IPSSignatureRules, error) {
-	// Use GetAll to leverage the single API call and built-in pagination
-	ipsSignatures, err := GetAll(ctx, service)
-	if err != nil {
-		return nil, err
-	}
-	// Search for exact match (case-insensitive)
-	for _, ipsSignature := range ipsSignatures {
-		if strings.EqualFold(ipsSignature.Name, signatureName) {
-			return &ipsSignature, nil
-		}
-	}
-	return nil, fmt.Errorf("no IPS signature found with name: %s", signatureName)
-}
-
-func Create(ctx context.Context, service *zscaler.Service, ipsSignature *IPSSignatureRules) (*IPSSignatureRules, *http.Response, error) {
-	resp, err := service.Client.Create(ctx, ipsSignaturesEndpoint, *ipsSignature)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	createdIPSSignature, ok := resp.(*IPSSignatureRules)
-	if !ok {
-		return nil, nil, errors.New("object returned from api was not an IPS signature pointer")
-	}
-
-	service.Client.GetLogger().Printf("[DEBUG]returning new IPS signature from create: %d", createdIPSSignature.ID)
-	return createdIPSSignature, nil, nil
-}
-
-func Update(ctx context.Context, service *zscaler.Service, signatureID int, ipsSignature *IPSSignatureRules) (*IPSSignatureRules, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID), *ipsSignature)
-	if err != nil {
-		return nil, nil, err
-	}
-	updatedIPSSignature, _ := resp.(*IPSSignatureRules)
-
-	service.Client.GetLogger().Printf("[DEBUG]returning updated IPS signature from update: %d", updatedIPSSignature.ID)
-	return updatedIPSSignature, nil, nil
-}
-
-func Delete(ctx context.Context, service *zscaler.Service, signatureID int) (*http.Response, error) {
-	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID))
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-func GetAll(ctx context.Context, service *zscaler.Service) ([]IPSSignatureRules, error) {
-	var ipsSignatures []IPSSignatureRules
-	err := common.ReadAllPages(ctx, service.Client, ipsSignaturesEndpoint, &ipsSignatures)
-	return ipsSignatures, err
 }
 
 // IPSSignatureRulesImportStatus represents the status of a custom IPS signature
@@ -249,31 +182,89 @@ type IPSSignatureRulesValidation struct {
 	SubIdsMap map[string]interface{} `json:"subIdsMap,omitempty"`
 }
 
-// NOTE: The /ipsSignatureRules/{export,import} endpoints are currently broken
-// upstream (see internal bug tracker). The three functions below are kept as
-// reference for when the backend is fixed, but are commented out so callers
-// cannot accidentally hit the broken endpoints. Re-enable in lockstep with
-// the dev test script at local_test/OneAPI/zia_dev_tests/ips_signature/main.go
-// and the corresponding integration tests.
-
-/*
-// GetImportIPSSignatureRulesStatus retrieves the status of the most recent
-// custom IPS signature rules CSV import (GET /ipsSignatureRules/import).
-func GetImportIPSSignatureRulesStatus(ctx context.Context, service *zscaler.Service) (*IPSSignatureRulesImportStatus, error) {
-	var status IPSSignatureRulesImportStatus
-	if err := service.Client.Read(ctx, ipsSignaturesImportEndpoint, &status); err != nil {
+func Get(ctx context.Context, service *zscaler.Service, signatureID int) (*IPSSignatureRules, error) {
+	var ipsSignature IPSSignatureRules
+	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID), &ipsSignature)
+	if err != nil {
 		return nil, err
 	}
 
-	service.Client.GetLogger().Printf("[DEBUG] Returning custom IPS signature rules import status: %s (%d%%)", status.Status, status.PercentComplete)
-	return &status, nil
+	service.Client.GetLogger().Printf("[DEBUG] Returning IPS signature from Get: %d", ipsSignature.ID)
+	return &ipsSignature, nil
+}
+
+func GetByName(ctx context.Context, service *zscaler.Service, signatureName string) (*IPSSignatureRules, error) {
+	// Use GetAll to leverage the single API call and built-in pagination
+	ipsSignatures, err := GetAll(ctx, service)
+	if err != nil {
+		return nil, err
+	}
+	// Search for exact match (case-insensitive)
+	for _, ipsSignature := range ipsSignatures {
+		if strings.EqualFold(ipsSignature.Name, signatureName) {
+			return &ipsSignature, nil
+		}
+	}
+	return nil, fmt.Errorf("no IPS signature found with name: %s", signatureName)
+}
+
+func Create(ctx context.Context, service *zscaler.Service, ipsSignature *IPSSignatureRules) (*IPSSignatureRules, *http.Response, error) {
+	resp, err := service.Client.Create(ctx, ipsSignaturesEndpoint, *ipsSignature)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	createdIPSSignature, ok := resp.(*IPSSignatureRules)
+	if !ok {
+		return nil, nil, errors.New("object returned from api was not an IPS signature pointer")
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG]returning new IPS signature from create: %d", createdIPSSignature.ID)
+	return createdIPSSignature, nil, nil
+}
+
+func Update(ctx context.Context, service *zscaler.Service, signatureID int, ipsSignature *IPSSignatureRules) (*IPSSignatureRules, *http.Response, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID), *ipsSignature)
+	if err != nil {
+		return nil, nil, err
+	}
+	updatedIPSSignature, _ := resp.(*IPSSignatureRules)
+
+	service.Client.GetLogger().Printf("[DEBUG]returning updated IPS signature from update: %d", updatedIPSSignature.ID)
+	return updatedIPSSignature, nil, nil
+}
+
+func Delete(ctx context.Context, service *zscaler.Service, signatureID int) (*http.Response, error) {
+	err := service.Client.Delete(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service) ([]IPSSignatureRules, error) {
+	var ipsSignatures []IPSSignatureRules
+	err := common.ReadAllPages(ctx, service.Client, ipsSignaturesEndpoint, &ipsSignatures)
+	return ipsSignatures, err
 }
 
 // ExportIPSSignatureRules exports custom IPS signature rules to a CSV file
-// (GET /ipsSignatureRules/export). The raw CSV bytes are returned to the
-// caller, which can then write them to disk or stream them onward.
+// (GET /ipsSignatureRules/export). The endpoint streams the file body with
+// Content-Type: application/octet-stream and Content-Disposition: attachment;
+// the raw bytes are returned to the caller, which can then write them to
+// disk or pipe them onward.
+//
+// Important: the request itself MUST NOT advertise Content-Type: text/csv.
+// The OneAPI gateway rejects that with HTTP 415 Unsupported Media Type for
+// this body-less GET; only application/json (the SDK default for GET) is
+// accepted on the request side. This mirrors the Postman behavior, which
+// sends no Content-Type header on the GET. Do not "helpfully" pass a CSV
+// content type here.
 func ExportIPSSignatureRules(ctx context.Context, service *zscaler.Service) ([]byte, error) {
-	csvBytes, err := service.Client.ReadRaw(ctx, ipsSignaturesExportEndpoint, contentTypeCSV)
+	// Pass "" so ReadRaw falls back to application/json on the request.
+	// The response body is still raw CSV; ReadRaw does not decode it.
+	csvBytes, err := service.Client.ReadRaw(ctx, ipsSignaturesExportEndpoint, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to export custom IPS signature rules: %w", err)
 	}
@@ -281,26 +272,6 @@ func ExportIPSSignatureRules(ctx context.Context, service *zscaler.Service) ([]b
 	service.Client.GetLogger().Printf("[DEBUG] Exported custom IPS signature rules CSV: %d bytes", len(csvBytes))
 	return csvBytes, nil
 }
-
-// ImportIPSSignatureRules uploads a CSV file containing custom IPS signature
-// rules (POST /ipsSignatureRules/import). The CSV must use the same format as
-// the Sample Import CSV file provided by Zscaler. Per the API contract, this
-// POST does not return a structured response body; callers should follow up
-// with GetImportIPSSignatureRulesStatus to track progress.
-func ImportIPSSignatureRules(ctx context.Context, service *zscaler.Service, csvData []byte) (*http.Response, error) {
-	if len(csvData) == 0 {
-		return nil, errors.New("csv data is required to import custom IPS signature rules")
-	}
-
-	_, resp, err := service.Client.CreateWithRawPayloadAndContentType(ctx, ipsSignaturesImportEndpoint, csvData, contentTypeCSV)
-	if err != nil {
-		return nil, fmt.Errorf("failed to import custom IPS signature rules: %w", err)
-	}
-
-	service.Client.GetLogger().Printf("[DEBUG] Imported custom IPS signature rules CSV (%d bytes), status: %d", len(csvData), resp.StatusCode)
-	return resp, nil
-}
-*/
 
 // ValidateIPSSignatureRuleText validates a custom IPS signature rule text
 // (POST /ipsSignatureRules/validateRuleText). The rule text is wrapped in a
@@ -321,3 +292,68 @@ func ValidateIPSSignatureRuleText(ctx context.Context, service *zscaler.Service,
 	service.Client.GetLogger().Printf("[DEBUG] Custom IPS signature rule validation status: %d", validation.Status)
 	return &validation, nil
 }
+
+// NOTE: The /ipsSignatureRules/{export,import} endpoints are currently broken
+// upstream (see internal bug tracker). The three functions below are kept as
+// reference for when the backend is fixed, but are commented out so callers
+// cannot accidentally hit the broken endpoints. Re-enable in lockstep with
+// the dev test script at local_test/OneAPI/zia_dev_tests/ips_signature/main.go
+// and the corresponding integration tests.
+
+/*
+// GetImportIPSSignatureRulesStatus retrieves the status of the most recent
+// custom IPS signature rules CSV import (GET /ipsSignatureRules/import).
+func GetImportIPSSignatureRulesStatus(ctx context.Context, service *zscaler.Service) (*IPSSignatureRulesImportStatus, error) {
+	var status IPSSignatureRulesImportStatus
+	if err := service.Client.Read(ctx, ipsSignaturesImportEndpoint, &status); err != nil {
+		return nil, err
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Returning custom IPS signature rules import status: %s (%d%%)", status.Status, status.PercentComplete)
+	return &status, nil
+}
+
+// ImportIPSSignatureRules uploads a CSV file containing custom IPS signature
+// rules (POST /ipsSignatureRules/import). The CSV must use the same format as
+// the Sample Import CSV file provided by Zscaler:
+//
+//	+, "rule-name", "valid suricata rule text", "ips-category-name", "description", "Enable"
+//	-, "rule-name-to-delete"
+//
+// Inner double quotes inside the rule text column must be escaped using the
+// RFC 4180 doubled-quote convention ("") rather than backslash escapes — the
+// portal's parser rejects \" with "Double quotes not terminated".
+//
+// Per the API contract this POST does not return a structured response body;
+// callers should follow up with GetImportIPSSignatureRulesStatus to track
+// progress.
+//
+// Wire format: the endpoint is the API counterpart of the portal's "Import
+// from CSV" file picker. Both raw text/csv and raw application/json bodies
+// produce HTTP 415, so the request is sent as multipart/form-data with the
+// CSV as a file part named "file" (Content-Type: text/csv on the part
+// itself). The outer Content-Type header carries the multipart boundary and
+// is set automatically from multipart.Writer.FormDataContentType().
+//
+// If the API ever rejects field name "file", common alternates to try are
+// "csvFile", "import", or "uploadFile". Capture the portal's request via
+// the browser's network panel to confirm the field name.
+func ImportIPSSignatureRules(ctx context.Context, service *zscaler.Service, csvData []byte) (*http.Response, error) {
+	if len(csvData) == 0 {
+		return nil, errors.New("csv data is required to import custom IPS signature rules")
+	}
+
+	body, contentType, err := buildIPSSignatureRulesImportBody(csvData, "ips_signature_rules.csv")
+	if err != nil {
+		return nil, fmt.Errorf("failed to build import multipart body: %w", err)
+	}
+
+	_, resp, err := service.Client.CreateWithRawPayloadAndContentType(ctx, ipsSignaturesImportEndpoint, body, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to import custom IPS signature rules: %w", err)
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] Imported custom IPS signature rules CSV (%d bytes via multipart), status: %d", len(csvData), resp.StatusCode)
+	return resp, nil
+}
+*/
