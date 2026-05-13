@@ -24,14 +24,13 @@ type AccountGroups struct {
 }
 
 func GetAccountGroup(ctx context.Context, service *zscaler.Service, awsAccountID int) ([]AccountGroups, error) {
-	var accountGroups []AccountGroups
-	err := common.ReadAllPages(ctx, service.Client, fmt.Sprintf("%s/%d", accountGroupsEndpoint, awsAccountID), &accountGroups)
+	var ag AccountGroups
+	err := service.Client.ReadResource(ctx, fmt.Sprintf("%s/%d", accountGroupsEndpoint, awsAccountID), &ag)
 	if err != nil {
 		return nil, err
 	}
-
-	service.Client.GetLogger().Printf("[DEBUG] Returning account groups from Get: %d items", len(accountGroups))
-	return accountGroups, nil
+	service.Client.GetLogger().Printf("[DEBUG] Returning account groups from Get: id %d", ag.ID)
+	return []AccountGroups{ag}, nil
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, accountGroupsName string) (*AccountGroups, error) {

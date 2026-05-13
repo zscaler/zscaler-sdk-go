@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.35 (May 13, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #433](https://github.com/zscaler/zscaler-sdk-go/pull/433) - Fixed ZTW `account_groups` GET function to proper unmashall API response.
+
 # 3.8.34 (May 12, 2026)
 
 ## Notes
@@ -7,7 +16,7 @@
 
 ### Enhancements
 
-- [PR #432](https://github.com/zscaler/zscaler-sdk-go/pull/433) - Added the following new ZIA Custom IPS Signature Rules endpoints
+- [PR #432](https://github.com/zscaler/zscaler-sdk-go/pull/432) - Added the following new ZIA Custom IPS Signature Rules endpoints
   - `GET /ipsSignatureRules` Retrieves a list of custom IPS signature rules.
   - `POST /ipsSignatureRules` Adds a new custom IPS signature rule.
   - `GET /ipsSignatureRules/{id}` Retrieves the custom IPS signature rules based on the specified ID
