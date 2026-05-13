@@ -13,9 +13,24 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.33``
+``Last updated: v3.8.34``
 
 ---
+
+# 3.8.34 (May 12, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #432](https://github.com/zscaler/zscaler-sdk-go/pull/432) - Added the following new ZIA Custom IPS Signature Rules endpoints
+  - `GET /ipsSignatureRules` Retrieves a list of custom IPS signature rules.
+  - `POST /ipsSignatureRules` Adds a new custom IPS signature rule.
+  - `GET /ipsSignatureRules/{id}` Retrieves the custom IPS signature rules based on the specified ID
+  - `DELETE /ipsSignatureRules/{id}` Deletes the custom IPS signature rules based on the specified ID
+  - `PUT /ipsSignatureRules/{id}` Updates the custom IPS signature rules based on the specified ID
+  - `POST /validateRuleText` Validates a new custom signature rule based on specific predefined conditions, such as syntax errors, duplicate signatures, and more
 
 # 3.8.33 (May 7, 2026)
 

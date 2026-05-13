@@ -128,6 +128,68 @@ Uses `NewZccRequestDo` with manual `resp.Body.Close()` and `json.NewDecoder`. So
 
 Uses `NewRequestDo` like ZPA. Cursor-based pagination via `next_offset` token. Most endpoints are read-only.
 
+## HTTP Method Discipline (do NOT call ExecuteRequest from a service)
+
+**Hard rule:** code under `zscaler/<cloud>/services/**` must perform every HTTP call through a `service.Client.<Helper>` method. Direct calls to `service.Client.ExecuteRequest`, `http.MethodGet`, `http.MethodPost`, etc. inside a service file are forbidden. The helper layer is the contract; services must not bypass it.
+
+If no existing helper fits the API contract, **add a new helper** to the appropriate request file (e.g. `zscaler/ziarequests.go` for ZIA-style endpoints), then call the new helper from the service. Do not inline `ExecuteRequest` in the service "just for this one endpoint".
+
+### ZIA helper catalog (`zscaler/ziarequests.go`)
+
+| Helper | When to use |
+|---|---|
+| `Client.Read(ctx, endpoint, &out)` | GET that returns JSON; decoded into `out` |
+| `Client.Create(ctx, endpoint, struct)` | POST a struct, response decoded into the **same** struct type |
+| `Client.UpdateWithPut(ctx, endpoint, struct)` | PUT a struct |
+| `Client.Update(ctx, endpoint, struct)` | PATCH a struct (`application/merge-patch+json`) |
+| `Client.Delete(ctx, endpoint)` | DELETE, no body |
+| `Client.BulkDelete(ctx, endpoint, payload)` | POST a delete batch |
+| `Client.CreateWithSlicePayload(ctx, endpoint, slice)` | POST a JSON array, returns raw bytes |
+| `Client.UpdateWithSlicePayload(ctx, endpoint, slice)` | PUT a JSON array, returns raw bytes |
+| `Client.CreateWithRawPayload(ctx, endpoint, payload string)` | POST a raw string body as `application/json` (e.g. PAC file content) |
+| `Client.CreateWithNoContent(ctx, endpoint, struct)` | POST that returns `204 No Content` (e.g. async export trigger) |
+| `Client.ReadRaw(ctx, endpoint, contentType)` | GET that returns a non-JSON body (CSV, plain text, binary). Returns `[]byte`. |
+| `Client.CreateWithRawPayloadAndContentType(ctx, endpoint, []byte, contentType)` | POST a raw body with a non-JSON Content-Type (e.g. `text/csv` upload) |
+| `Client.CreateWithJSONResponse(ctx, endpoint, requestStruct, &responseStruct)` | POST where the **request and response Go types differ** (e.g. validate / preview / dry-run endpoints). |
+
+### Reference patterns
+
+```go
+// ZIA — CSV export (non-JSON GET response)
+func ExportFoo(ctx context.Context, service *zscaler.Service) ([]byte, error) {
+    return service.Client.ReadRaw(ctx, fooExportEndpoint, "text/csv")
+}
+
+// ZIA — CSV import (non-JSON POST body)
+func ImportFoo(ctx context.Context, service *zscaler.Service, csv []byte) (*http.Response, error) {
+    _, resp, err := service.Client.CreateWithRawPayloadAndContentType(ctx, fooImportEndpoint, csv, "text/csv")
+    return resp, err
+}
+
+// ZIA — validate / dry-run (request and response types differ)
+func ValidateFoo(ctx context.Context, service *zscaler.Service, body string) (*FooValidation, error) {
+    var v FooValidation
+    err := service.Client.CreateWithJSONResponse(ctx, fooValidateEndpoint, FooValidateRequest{Body: body}, &v)
+    return &v, err
+}
+```
+
+### Other clouds
+
+- **ZPA** — use `service.Client.NewRequestDo(...)`; never inline `http.NewRequest`.
+- **ZCC** — use `service.Client.NewZccRequestDo(...)` or `service.Client.Read(...)`; never inline `http.NewRequest`.
+- **ZDX** — use `service.Client.NewRequestDo(...)`.
+- **ZTW** — use `Resource`-suffixed helpers (`ReadResource`, `CreateResource`, `UpdateWithPutResource`, `DeleteResource`).
+- **ZID** — same helper names as ZIA.
+
+### Code review checklist
+
+- ❌ `http.MethodGet` / `http.MethodPost` / `http.MethodPut` / `http.MethodDelete` literal in a service file → add or use a `Client.*` helper instead.
+- ❌ `service.Client.ExecuteRequest(...)` in a service file → add or use a `Client.*` helper instead.
+- ❌ `http.NewRequest(...)` in a service file → add or use a `Client.*` helper instead.
+- ❌ Inline `json.Marshal` of a request body in a service file → the helper handles marshaling.
+- ✅ The only file in `zscaler/<cloud>/...` that calls `ExecuteRequest` is the cloud's request file (`ziarequests.go`, etc.) — and the rare special-case package like `sandbox_submission` which uses non-API endpoints.
+
 ## Pagination Engines
 
 | Engine | Location | Page Detection | Used By |
@@ -272,17 +334,18 @@ Service functions should NOT catch/wrap these — let them propagate to the call
 
 Automatic, per-cloud:
 - **Rate limiting** — e.g., ZIA: 20 GET/10s, 10 POST/10s
-- **429** — respects `Retry-After` header
-- **401 SESSION_NOT_VALID** — auto-refreshes OAuth2 token
-- **409/412 EDIT_LOCK_NOT_AVAILABLE** — exponential backoff
+- **429 / 503 / 401** — `Retry-After` is honoured as the FLOOR for the first retry, then grown exponentially per consecutive retry of the same call (`base · 2^attempt`, capped at `RetryWaitMax`, default 10s) and perturbed by ±25% jitter so parallel goroutines do not stampede the per-endpoint limiter (v3.8.33+, `oneapiconfig.go` `Backoff` closure + `jitter` helper). The same policy is mirrored in `ExecuteRequest`'s outer 429 fallback.
+- **`MaxNumOfRetries`** — default `10` (v3.8.33+, was `100`). Override via `cfg.Zscaler.Client.RateLimit.MaxRetries` or env `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`. Lowered because a single stuck call no longer needs to monopolise a goroutine for ~100s; ten attempts across a jittered exponential window cover all observed real-world recoveries.
+- **401 SESSION_NOT_VALID** — auto-refreshes OAuth2 token; bounded by `MaxSessionNotValidRetries` (default 3).
+- **409 / 412 EDIT_LOCK_NOT_AVAILABLE / `Failed during enter Org barrier`** — exponential backoff in both the retryablehttp `CheckRetry` (`errorx.IsEditLockError`) and the `ExecuteRequest` outer loop.
 
-Service implementations must NOT implement their own retry logic.
+Service implementations must NOT implement their own retry logic. The retry policy is locked in by `zscaler/oneapiconfig_retry_test.go` (`TestJitter`, `TestRetryBackoffPolicy`, `TestRetryMaxDefault`) — those tests fail loudly if a future change regresses the contract.
 
 ## Caching
 
 When `WithCache(true)`:
 - GET responses cached by URL key
-- POST/PUT/DELETE auto-invalidate related entries
+- POST/PUT/DELETE auto-invalidate related entries via parent-collection invalidation (v3.8.32+ for the OneAPI client; previously only the legacy v2 clients did this, which manifested as stale `GetAll` snapshots in the Terraform provider's rule reorder loop — see SUP-3988).
 - No action needed in service implementations
 
 ## Critical Gotchas

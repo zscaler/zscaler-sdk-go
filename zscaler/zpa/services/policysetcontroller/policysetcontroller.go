@@ -50,6 +50,7 @@ type PolicyRule struct {
 	BypassDefaultRule                       bool                                  `json:"bypassDefaultRule"`
 	CreationTime                            string                                `json:"creationTime,omitempty"`
 	CustomMsg                               string                                `json:"customMsg,omitempty"`
+	AuditMessage                            string                                `json:"auditMessage,omitempty"`
 	DefaultRule                             bool                                  `json:"defaultRule,omitempty"`
 	DefaultRuleName                         string                                `json:"defaultRuleName,omitempty"`
 	ExtranetEnabled                         bool                                  `json:"extranetEnabled,omitempty"`
@@ -59,6 +60,8 @@ type PolicyRule struct {
 	PolicySetID                             string                                `json:"policySetId"`
 	PolicyType                              string                                `json:"policyType,omitempty"`
 	Priority                                string                                `json:"priority,omitempty"`
+	Version                                 string                                `json:"version,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
 	ReauthDefaultRule                       bool                                  `json:"reauthDefaultRule"`
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
@@ -72,6 +75,8 @@ type PolicyRule struct {
 	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
 	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
 	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	BrowserPostureName                      string                                `json:"browserPostureName,omitempty"`
+	BrowserPostureProfileID                 string                                `json:"browserPostureProfileId,omitempty"`
 	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
 	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
 	Conditions                              []Conditions                          `json:"conditions"`

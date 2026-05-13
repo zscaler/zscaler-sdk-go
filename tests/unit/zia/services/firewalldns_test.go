@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/ips_control_policies/ips_policies"
 )
 
 // =====================================================
@@ -170,7 +170,7 @@ func TestFirewallIPS_Get_SDK(t *testing.T) {
 	ruleID := 12345
 	path := "/zia/api/v1/firewallIpsRules/12345"
 
-	server.On("GET", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+	server.On("GET", path, common.SuccessResponse(ips_policies.FirewallIPSRules{
 		ID:     ruleID,
 		Name:   "IPS Rule",
 		Action: "BLOCK",
@@ -179,7 +179,7 @@ func TestFirewallIPS_Get_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	result, err := firewallipscontrolpolicies.Get(context.Background(), service, ruleID)
+	result, err := ips_policies.Get(context.Background(), service, ruleID)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -193,7 +193,7 @@ func TestFirewallIPS_GetByName_SDK(t *testing.T) {
 	ruleName := "IPS Rule"
 	path := "/zia/api/v1/firewallIpsRules"
 
-	server.On("GET", path, common.SuccessResponse([]firewallipscontrolpolicies.FirewallIPSRules{
+	server.On("GET", path, common.SuccessResponse([]ips_policies.FirewallIPSRules{
 		{ID: 1, Name: "Other Rule", Action: "ALLOW"},
 		{ID: 2, Name: ruleName, Action: "BLOCK"},
 	}))
@@ -201,7 +201,7 @@ func TestFirewallIPS_GetByName_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	result, err := firewallipscontrolpolicies.GetByName(context.Background(), service, ruleName)
+	result, err := ips_policies.GetByName(context.Background(), service, ruleName)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -214,7 +214,7 @@ func TestFirewallIPS_Create_SDK(t *testing.T) {
 
 	path := "/zia/api/v1/firewallIpsRules"
 
-	server.On("POST", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+	server.On("POST", path, common.SuccessResponse(ips_policies.FirewallIPSRules{
 		ID:     100,
 		Name:   "New IPS Rule",
 		Action: "BLOCK",
@@ -223,14 +223,14 @@ func TestFirewallIPS_Create_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	newRule := &firewallipscontrolpolicies.FirewallIPSRules{
+	newRule := &ips_policies.FirewallIPSRules{
 		Name:   "New IPS Rule",
 		Action: "BLOCK",
 		State:  "ENABLED",
 		Order:  1,
 	}
 
-	result, err := firewallipscontrolpolicies.Create(context.Background(), service, newRule)
+	result, err := ips_policies.Create(context.Background(), service, newRule)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -244,7 +244,7 @@ func TestFirewallIPS_Update_SDK(t *testing.T) {
 	ruleID := 12345
 	path := "/zia/api/v1/firewallIpsRules/12345"
 
-	server.On("PUT", path, common.SuccessResponse(firewallipscontrolpolicies.FirewallIPSRules{
+	server.On("PUT", path, common.SuccessResponse(ips_policies.FirewallIPSRules{
 		ID:     ruleID,
 		Name:   "Updated IPS Rule",
 		Action: "MONITOR",
@@ -253,7 +253,7 @@ func TestFirewallIPS_Update_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	updateRule := &firewallipscontrolpolicies.FirewallIPSRules{
+	updateRule := &ips_policies.FirewallIPSRules{
 		ID:     ruleID,
 		Name:   "Updated IPS Rule",
 		Action: "MONITOR",
@@ -261,7 +261,7 @@ func TestFirewallIPS_Update_SDK(t *testing.T) {
 		Order:  1,
 	}
 
-	result, err := firewallipscontrolpolicies.Update(context.Background(), service, ruleID, updateRule)
+	result, err := ips_policies.Update(context.Background(), service, ruleID, updateRule)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -280,7 +280,7 @@ func TestFirewallIPS_Delete_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	_, err = firewallipscontrolpolicies.Delete(context.Background(), service, ruleID)
+	_, err = ips_policies.Delete(context.Background(), service, ruleID)
 
 	require.NoError(t, err)
 }
@@ -291,7 +291,7 @@ func TestFirewallIPS_GetAll_SDK(t *testing.T) {
 
 	path := "/zia/api/v1/firewallIpsRules"
 
-	server.On("GET", path, common.SuccessResponse([]firewallipscontrolpolicies.FirewallIPSRules{
+	server.On("GET", path, common.SuccessResponse([]ips_policies.FirewallIPSRules{
 		{ID: 1, Name: "Rule 1", Action: "BLOCK"},
 		{ID: 2, Name: "Rule 2", Action: "MONITOR"},
 	}))
@@ -299,7 +299,7 @@ func TestFirewallIPS_GetAll_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	result, err := firewallipscontrolpolicies.GetAll(context.Background(), service)
+	result, err := ips_policies.GetAll(context.Background(), service)
 
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
@@ -367,7 +367,7 @@ func TestFirewallIPSRules_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("FirewallIPSRules JSON marshaling", func(t *testing.T) {
-		policy := firewallipscontrolpolicies.FirewallIPSRules{
+		policy := ips_policies.FirewallIPSRules{
 			ID:          12345,
 			Name:        "IPS Block High Risk",
 			Order:       1,
@@ -409,7 +409,7 @@ func TestFirewallIPSRules_Structure(t *testing.T) {
 			"protocols": ["TCP_RULE", "UDP_RULE"]
 		}`
 
-		var policy firewallipscontrolpolicies.FirewallIPSRules
+		var policy ips_policies.FirewallIPSRules
 		err := json.Unmarshal([]byte(jsonData), &policy)
 		require.NoError(t, err)
 
@@ -443,7 +443,7 @@ func TestFirewallDNSIPS_ResponseParsing(t *testing.T) {
 			{"id": 3, "name": "IPS Default", "action": "ALLOW", "defaultRule": true}
 		]`
 
-		var policies []firewallipscontrolpolicies.FirewallIPSRules
+		var policies []ips_policies.FirewallIPSRules
 		err := json.Unmarshal([]byte(jsonResponse), &policies)
 		require.NoError(t, err)
 

@@ -64,6 +64,8 @@ type PolicyRuleResource struct {
 	PolicySetID                             string                                `json:"policySetId,omitempty"`
 	PolicyType                              string                                `json:"policyType,omitempty"`
 	Priority                                string                                `json:"priority,omitempty"`
+	Version                                 string                                `json:"version,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
 	RuleOrder                               string                                `json:"ruleOrder,omitempty"`
@@ -74,6 +76,8 @@ type PolicyRuleResource struct {
 	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
 	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
 	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	BrowserPostureName                      string                                `json:"browserPostureName,omitempty"`
+	BrowserPostureProfileID                 string                                `json:"browserPostureProfileId,omitempty"`
 	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
 	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
 	Conditions                              []PolicyRuleResourceConditions        `json:"conditions"`

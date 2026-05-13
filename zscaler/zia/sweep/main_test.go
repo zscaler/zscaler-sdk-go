@@ -23,13 +23,13 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/email_profiles"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/filetypecontrol"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipsourcegroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkapplicationgroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/ips_control_policies/ips_policies"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_rules"
@@ -285,7 +285,7 @@ func sweepFirewallDNSRules(client *zscaler.Client) error {
 
 func sweepFirewallIPSRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := firewallipscontrolpolicies.GetAll(context.Background(), service)
+	resources, err := ips_policies.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall ips rule: %v", err)
 		return err
@@ -296,7 +296,7 @@ func sweepFirewallIPSRules(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := firewallipscontrolpolicies.Delete(context.Background(), service, r.ID)
+		_, err := ips_policies.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete Firewall ips rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
