@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.34``
+``Last updated: v3.8.35``
 
 ---
+
+# 3.8.35 (May 13, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #433](https://github.com/zscaler/zscaler-sdk-go/pull/433) - Fixed ZTW `account_groups` GET function to proper unmashall API response.
+
 
 # 3.8.34 (May 12, 2026)
 
