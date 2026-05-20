@@ -1,5 +1,33 @@
 # Changelog
 
+# 3.8.36 (May 20, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #434](https://github.com/zscaler/zscaler-sdk-go/pull/434) - Added the following new ZCC Trusted Networks V2 Endpoints
+  - `GET v2/trusted-networks` Retrieves a list of trusted networks
+  - `POST v2/trusted-networks` Addes a new Trusted Network
+  - `PUT v2/trusted-networks/{id}` Update an existing Trusted Network
+  - `PATCH v2/trusted-networks/{id}` Partially update an existing Trusted Network
+  - `DELETE v2/trusted-networks/{id}` DELETE existing Trusted Network
+
+- [PR #434](https://github.com/zscaler/zscaler-sdk-go/pull/434) - Added the following new ZCC Notification Templates V2 Endpoints
+  - `GET v2/notification-templates` Retrieves a list of Notification Templates
+  - `POST v2/notification-templates` Addes a new Notification Templates
+  - `PUT v2/notification-templates/{id}` Update an existing Notification Templates
+  - `PATCH v2/notification-templates/{id}` Partially update an existing Notification Templates
+  - `DELETE v2/notification-templates/{id}` DELETE existing Notification Templates
+
+- [PR #434](https://github.com/zscaler/zscaler-sdk-go/pull/434) - Added the following new ZCC ZIA Posture V2 Endpoints
+  - `GET v2/zia-posture-profiles` Retrieves a list of ZIA Posture
+  - `POST v2/zia-posture-profiles` Addes a new ZIA Posture
+  - `PUT v2/zia-posture-profiles/{id}` Update an existing ZIA Posture
+  - `PATCH v2/zia-posture-profiles/{id}` Partially update an existing ZIA Posture
+  - `DELETE v2/zia-posture-profiles/{id}` DELETE existing ZIA Posture
+
 # 3.8.35 (May 13, 2026)
 
 ## Notes

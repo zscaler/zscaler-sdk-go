@@ -34,7 +34,7 @@ zscaler/
 │   ├── v2_client.go
 │   ├── v2_config.go
 │   └── services/
-│       ├── common/common.go  # ReadAllPages[T], ReadPage[T], QueryParams
+│       ├── common/common.go  # ReadAllPages[T] / ReadPage[T] (v1 bare arrays), ReadAllPagesV2[T] / ReadPageV2[T] / PaginatedResponseV2[T] (v2 envelope), QueryParams
 │       └── <service>/
 ├── zdx/
 │   └── services/
@@ -72,7 +72,7 @@ zscaler/
 |-------|---------|---------|-----------------|------------|-----------------|
 | **ZIA** | `zscaler/zia/services/` | `int` | `Read/Create/UpdateWithPut/Delete` | `common.ReadAllPages` (page/pageSize, stop at `len < pageSize`) | `/zia/api/v1/<resource>` |
 | **ZPA** | `zscaler/zpa/services/` | `string` | `NewRequestDo` (6 params) | `common.GetAllPagesGenericWithCustomFilters` (totalPages envelope) | `/zpa/mgmtconfig/v1/admin/customers/<customerID>/<resource>` |
-| **ZCC** | `zscaler/zcc/services/` | varies | `NewZccRequestDo` (manual response) | `common.ReadAllPages[T]` (page/pageSize) | `/zcc/papi/public/v1/<resource>` |
+| **ZCC** | `zscaler/zcc/services/` | varies | `NewZccRequestDo` (manual response) | v1: `common.ReadAllPages[T]` (bare array, page/pageSize) — v2: `common.ReadAllPagesV2[T]` (items envelope with total/offset/limit/count) | `/zcc/papi/public/v1/<resource>` and `/zcc/papi/public/v2/<resource>` |
 | **ZDX** | `zscaler/zdx/services/` | `int` | `NewRequestDo` (same as ZPA) | cursor-based (`next_offset` token) | `/zdx/api/v1/<resource>` |
 | **ZTW** | `zscaler/ztw/services/` | `int` | `ReadResource/CreateResource/UpdateWithPutResource/DeleteResource` | `common.ReadAllPages` (fixed 1000) | `/ztw/api/v1/<resource>` |
 | **ZID** | `zscaler/zid/services/` | `string` | `Read/Create/UpdateWithPut/Delete` (same as ZIA) | `common.ReadAllPagesWithPagination` (offset/limit + `next_link`) | `/admin/api/v1/<resource>` |
@@ -197,7 +197,8 @@ func ValidateFoo(ctx context.Context, service *zscaler.Service, body string) (*F
 |--------|----------|---------------|---------|
 | `ReadAllPages` | `zia/services/common/common.go` | `len(items) < pageSize` | ZIA (configurable pageSize) |
 | `ReadAllPages` | `ztw/services/common/common.go` | `len(items) < pageSize` | ZTW (fixed 1000) |
-| `ReadAllPages[T]` | `zcc/services/common/common.go` | `len(items) < pageSize` | ZCC |
+| `ReadAllPages[T]` | `zcc/services/common/common.go` | `len(items) < pageSize` | ZCC v1 (bare JSON array response) |
+| `ReadAllPagesV2[T]` | `zcc/services/common/common.go` | `len(allResults) >= total` OR `count < limit` OR `count == 0` | ZCC v2 (`{items, total, offset, limit, count}` envelope) |
 | `GetAllPagesGenericWithCustomFilters[T]` | `zpa/services/common/common.go` | `page <= totalPages` from envelope | ZPA |
 | `ReadAllPagesWithPagination` | `zid/services/common/common.go` | `next_link == ""` or `len < limit` | ZID (offset/limit) |
 | `ReadAllPagesWithCursor` | `zid/services/common/common.go` | Chase `next_link` until empty | ZID (cursor) |
@@ -229,6 +230,7 @@ The expression flows through `context.Context` to the pagination engine, which a
 | `GetAllPagesGeneric` | `zpa/services/common` | Yes |
 | `GetAllPagesGenericWithPostSearch` | `zpa/services/common` | Yes |
 | `ReadAllPages` | `zcc/services/common` | Yes |
+| `ReadAllPagesV2` | `zcc/services/common` | Yes |
 | `ReadAllPages` | `ztw/services/common` | Yes |
 | `ReadAllPagesWithPagination` | `zid/services/common` | Yes |
 | `ReadAllPagesWithCursor` | `zid/services/common` | Yes |
