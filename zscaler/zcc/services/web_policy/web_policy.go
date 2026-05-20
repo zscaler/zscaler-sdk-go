@@ -203,7 +203,7 @@ type WebPolicy struct {
 	HighlightActiveControl     common.IntOrString `json:"highlightActiveControl"`
 	SendDisableServiceReason   common.IntOrString `json:"sendDisableServiceReason"`
 	TunnelZappTraffic          common.IntOrString `json:"tunnelZappTraffic"`
-	EnableDeviceGroups         common.IntOrString `json:"enableDeviceGroups,omitempty"`
+	EnableDeviceGroups         common.IntOrString `json:"enableDeviceGroups"`
 	ReactivateWebSecurityMins  common.IntOrString `json:"reactivateWebSecurityMinutes"`
 	ReauthPeriod               common.IntOrString `json:"reauth_period"`
 	ClearArpCacheTop           int                `json:"clearArpCache"`
