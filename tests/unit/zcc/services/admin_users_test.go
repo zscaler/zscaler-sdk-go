@@ -22,9 +22,11 @@ func TestAdminUsers_GetAll_SDK(t *testing.T) {
 
 	path := "/zcc/papi/public/v1/getAdminUsers"
 
+	// ServiceType is a numeric enum returned by /getAdminUsers
+	// (1=ZIA, 2=ZPA, 3=ZID, 4=ZDX). Use real values from that mapping.
 	server.On("GET", path, common.SuccessResponse([]admin_users.AdminUser{
-		{ID: 1, UserName: "admin@company.com", AccountEnabled: "true", ServiceType: "ZCC"},
-		{ID: 2, UserName: "user@company.com", AccountEnabled: "true", ServiceType: "ZIA"},
+		{ID: 1, UserName: "admin@company.com", AccountEnabled: "true", ServiceType: 1},
+		{ID: 2, UserName: "user@company.com", AccountEnabled: "true", ServiceType: 2},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -43,8 +45,12 @@ func TestAdminUsers_GetByUserType_SDK(t *testing.T) {
 
 	path := "/zcc/papi/public/v1/getAdminUsers"
 
+	// The "ZCC" string here is the userType *query-string filter*
+	// the SDK forwards to /getAdminUsers — it's a separate concept from
+	// the response's numeric ServiceType field. The mock returns a ZIA
+	// admin (ServiceType=1) since ZCC has no numeric ServiceType value.
 	server.On("GET", path, common.SuccessResponse([]admin_users.AdminUser{
-		{ID: 1, UserName: "zcc-admin@company.com", ServiceType: "ZCC"},
+		{ID: 1, UserName: "zcc-admin@company.com", ServiceType: 1},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -54,7 +60,7 @@ func TestAdminUsers_GetByUserType_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, result, 1)
-	assert.Equal(t, "ZCC", result[0].ServiceType)
+	assert.Equal(t, "zcc-admin@company.com", result[0].UserName)
 }
 
 func TestAdminUsers_Update_SDK(t *testing.T) {
@@ -160,7 +166,7 @@ func TestAdminUsers_Structure(t *testing.T) {
 			CompanyID:      "company-456",
 			EditEnabled:    "true",
 			IsDefaultAdmin: "false",
-			ServiceType:    "ZCC",
+			ServiceType:    1, // 1 = ZIA per the API enum
 			CompanyRole: admin_users.Role{
 				ID:              "role-789",
 				RoleName:        "Administrator",
@@ -178,6 +184,8 @@ func TestAdminUsers_Structure(t *testing.T) {
 	})
 
 	t.Run("AdminUser JSON unmarshaling", func(t *testing.T) {
+		// serviceType is a JSON number on the wire (1=ZIA per the enum
+		// documented on admin_users.AdminUser.ServiceType).
 		jsonData := `{
 			"id": 456,
 			"userName": "user@company.com",
@@ -185,7 +193,7 @@ func TestAdminUsers_Structure(t *testing.T) {
 			"companyId": "company-123",
 			"editEnabled": "false",
 			"isDefaultAdmin": "true",
-			"serviceType": "ZIA",
+			"serviceType": 1,
 			"companyRole": {
 				"id": "role-001",
 				"roleName": "Read Only",
@@ -200,7 +208,7 @@ func TestAdminUsers_Structure(t *testing.T) {
 
 		assert.Equal(t, 456, user.ID)
 		assert.Equal(t, "user@company.com", user.UserName)
-		assert.Equal(t, "ZIA", user.ServiceType)
+		assert.Equal(t, 1, user.ServiceType)
 		assert.Equal(t, "Read Only", user.CompanyRole.RoleName)
 	})
 
@@ -234,18 +242,22 @@ func TestAdminUsers_ResponseParsing(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Parse admin users list response", func(t *testing.T) {
+		// serviceType values are JSON numbers (1=ZIA, 2=ZPA, 3=ZID,
+		// 4=ZDX). The first record below uses 2 (ZPA) and the second
+		// uses 1 (ZIA) so the second-record assertion has a real value
+		// to check.
 		jsonResponse := `[
 			{
 				"id": 1,
 				"userName": "admin1@company.com",
 				"accountEnabled": "true",
-				"serviceType": "ZCC"
+				"serviceType": 2
 			},
 			{
 				"id": 2,
 				"userName": "admin2@company.com",
 				"accountEnabled": "false",
-				"serviceType": "ZIA"
+				"serviceType": 1
 			}
 		]`
 
@@ -256,6 +268,6 @@ func TestAdminUsers_ResponseParsing(t *testing.T) {
 		assert.Len(t, users, 2)
 		assert.Equal(t, "admin1@company.com", users[0].UserName)
 		assert.Equal(t, "true", users[0].AccountEnabled)
-		assert.Equal(t, "ZIA", users[1].ServiceType)
+		assert.Equal(t, 1, users[1].ServiceType)
 	})
 }

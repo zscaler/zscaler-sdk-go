@@ -419,4 +419,3 @@ func MockSegmentGroupListResponse(groups ...map[string]interface{}) map[string]i
 		"totalPages": 1,
 	}
 }
-

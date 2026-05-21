@@ -136,15 +136,8 @@ type URLFilteringRule struct {
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   *CBIProfile `json:"cbiProfile,omitempty"`
-	CBIProfileID int         `json:"cbiProfileId,omitempty"`
-}
-
-type CBIProfile struct {
-	ID         string `json:"id,omitempty"`
-	Name       string `json:"name,omitempty"`
-	URL        string `json:"url,omitempty"`
-	ProfileSeq int    `json:"profileSeq,omitempty"`
+	CBIProfile   *common.CBIProfile `json:"cbiProfile,omitempty"`
+	CBIProfileID int                `json:"cbiProfileId,omitempty"`
 }
 
 type URLAdvancedPolicySettings struct {

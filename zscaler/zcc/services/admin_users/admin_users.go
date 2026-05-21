@@ -27,8 +27,14 @@ type AdminUser struct {
 	EditEnabled    string `json:"editEnabled"`
 	ID             int    `json:"id"`
 	IsDefaultAdmin string `json:"isDefaultAdmin"`
-	ServiceType    string `json:"serviceType"`
-	UserName       string `json:"userName"`
+	// ServiceType is the numeric service identifier returned by
+	// /getAdminUsers: 1=ZIA, 2=ZPA, 3=ZID, 4=ZDX. The upstream API
+	// emits this field as a JSON number (e.g. `"serviceType": 1`),
+	// not as a quoted string. An earlier `string` type here caused
+	// `json: cannot unmarshal number into Go struct field` decode
+	// failures.
+	ServiceType int    `json:"serviceType"`
+	UserName    string `json:"userName"`
 }
 
 type Role struct {

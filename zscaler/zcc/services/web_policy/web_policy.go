@@ -181,18 +181,18 @@ type WebPolicy struct {
 	Enforced          int    `json:"enforced"`
 
 	// Registry / Windows-ish defaults (still required for macOS bodies — the API echoes them)
-	RegistryPath                      string `json:"registryPath"`
-	RegistryName                      string `json:"registryName"`
+	RegistryPath                      string             `json:"registryPath"`
+	RegistryName                      string             `json:"registryName"`
 	InstallSslCertsTop                common.IntOrString `json:"install_ssl_certs"`
-	DisableLoopBackRestriction        int    `json:"disableLoopBackRestriction"`
-	RemoveExemptedContainers          int    `json:"removeExemptedContainers"`
-	OverrideWPAD                      int    `json:"overrideWPAD"`
-	RestartWinHttpSvc                 int    `json:"restartWinHttpSvc"`
-	InstallWindowsFirewallInboundRule string `json:"installWindowsFirewallInboundRule"`
-	ForceLocationRefreshSccm          int    `json:"forceLocationRefreshSccm"`
-	WfpMtr                            int    `json:"wfpMtr"`
-	EnableLocalPacketCaptureTabValue  int    `json:"enableLocalPacketCaptureTabValue"`
-	RefreshKerberosToken              int    `json:"refreshKerberosToken"`
+	DisableLoopBackRestriction        int                `json:"disableLoopBackRestriction"`
+	RemoveExemptedContainers          int                `json:"removeExemptedContainers"`
+	OverrideWPAD                      int                `json:"overrideWPAD"`
+	RestartWinHttpSvc                 int                `json:"restartWinHttpSvc"`
+	InstallWindowsFirewallInboundRule string             `json:"installWindowsFirewallInboundRule"`
+	ForceLocationRefreshSccm          int                `json:"forceLocationRefreshSccm"`
+	WfpMtr                            int                `json:"wfpMtr"`
+	EnableLocalPacketCaptureTabValue  int                `json:"enableLocalPacketCaptureTabValue"`
+	RefreshKerberosToken              int                `json:"refreshKerberosToken"`
 
 	// Nullable nested configs the UI sends (defaults are JSON null)
 	FlowLoggerConfig             any `json:"flowLoggerConfig"`
@@ -200,36 +200,36 @@ type WebPolicy struct {
 	AllInboundTrafficConfig      any `json:"allInboundTrafficConfig"`
 
 	// Cosmetic / runtime knobs at the top level
-	HighlightActiveControl     common.IntOrString `json:"highlightActiveControl"`
-	SendDisableServiceReason   common.IntOrString `json:"sendDisableServiceReason"`
-	TunnelZappTraffic          common.IntOrString `json:"tunnelZappTraffic"`
-	EnableDeviceGroups         common.IntOrString `json:"enableDeviceGroups"`
-	ReactivateWebSecurityMins  common.IntOrString `json:"reactivateWebSecurityMinutes"`
-	ReauthPeriod               common.IntOrString `json:"reauth_period"`
-	ClearArpCacheTop           int                `json:"clearArpCache"`
-	EnableZscalerFirewallTop   string             `json:"enableZscalerFirewall"`
-	PersistentZscalerFirewallTop int              `json:"persistentZscalerFirewall"`
-	CacheSystemProxyTop        int                `json:"cacheSystemProxy"`
-	DnsPriorityOrderingTop     []string           `json:"dnsPriorityOrdering"`
-	EnableZdpServiceTop        int                `json:"enableZdpService"`
-	DisableParallelIpv4AndIPv6 int                `json:"disableParallelIpv4AndIPv6"`
-	DisableParallelIpv4andIpv6 string             `json:"disableParallelIpv4andIpv6"`
+	HighlightActiveControl       common.IntOrString `json:"highlightActiveControl"`
+	SendDisableServiceReason     common.IntOrString `json:"sendDisableServiceReason"`
+	TunnelZappTraffic            common.IntOrString `json:"tunnelZappTraffic"`
+	EnableDeviceGroups           common.IntOrString `json:"enableDeviceGroups"`
+	ReactivateWebSecurityMins    common.IntOrString `json:"reactivateWebSecurityMinutes"`
+	ReauthPeriod                 common.IntOrString `json:"reauth_period"`
+	ClearArpCacheTop             int                `json:"clearArpCache"`
+	EnableZscalerFirewallTop     string             `json:"enableZscalerFirewall"`
+	PersistentZscalerFirewallTop int                `json:"persistentZscalerFirewall"`
+	CacheSystemProxyTop          int                `json:"cacheSystemProxy"`
+	DnsPriorityOrderingTop       []string           `json:"dnsPriorityOrdering"`
+	EnableZdpServiceTop          int                `json:"enableZdpService"`
+	DisableParallelIpv4AndIPv6   int                `json:"disableParallelIpv4AndIPv6"`
+	DisableParallelIpv4andIpv6   string             `json:"disableParallelIpv4andIpv6"`
 
 	// Top-level "selected" pickers (UI form-state mirrors)
-	RuleOrderSelectedOption    *LabelValuePair  `json:"ruleOrderSelectedOption,omitempty"`
-	BillingDaySelectedOption   *LabelValuePair  `json:"billingDaySelectedOption,omitempty"`
-	Ipv6ModeSelected           *LabelValuePair  `json:"ipv6ModeSelected,omitempty"`
-	ZpaAutoReauthTimeoutTop    []LabelValuePair `json:"zpaAutoReauthTimeout"`
-	PcAdditionalSpaceTop       []LabelValuePair `json:"pcAdditionalSpace"`
-	BrowserAuthTypeTop         *LabelValuePair  `json:"browserAuthType,omitempty"`
+	RuleOrderSelectedOption           *LabelValuePair  `json:"ruleOrderSelectedOption,omitempty"`
+	BillingDaySelectedOption          *LabelValuePair  `json:"billingDaySelectedOption,omitempty"`
+	Ipv6ModeSelected                  *LabelValuePair  `json:"ipv6ModeSelected,omitempty"`
+	ZpaAutoReauthTimeoutTop           []LabelValuePair `json:"zpaAutoReauthTimeout"`
+	PcAdditionalSpaceTop              []LabelValuePair `json:"pcAdditionalSpace"`
+	BrowserAuthTypeTop                *LabelValuePair  `json:"browserAuthType,omitempty"`
 	ClientConnectorUiLanguageSelected []LabelValuePair `json:"clientConnectorUiLanguageSelected"`
 
 	// Machine token / ZPA reauth scheduling
-	MachineTokenOption                            int    `json:"machineTokenOption"`
-	MachineTokenSelectedOption                    int    `json:"machineTokenSelectedOption"`
-	ZpaAuthExpSessionLockStateMinTimeInSecondTop  string `json:"zpaAuthExpSessionLockStateMinTimeInSecond"`
-	ForceZpaAuthenticationToExpire                []any  `json:"forceZpaAuthenticationToExpire"`
-	ZpaReauthConfigTop                            []any  `json:"zpaReauthConfig"`
+	MachineTokenOption                           int    `json:"machineTokenOption"`
+	MachineTokenSelectedOption                   int    `json:"machineTokenSelectedOption"`
+	ZpaAuthExpSessionLockStateMinTimeInSecondTop string `json:"zpaAuthExpSessionLockStateMinTimeInSecond"`
+	ForceZpaAuthenticationToExpire               []any  `json:"forceZpaAuthenticationToExpire"`
+	ZpaReauthConfigTop                           []any  `json:"zpaReauthConfig"`
 
 	// DR mirrors of the disasterRecovery block (top-level form-state)
 	ZiaDRMethodTop *LabelValuePair `json:"ziaDRMethod,omitempty"`
@@ -240,35 +240,35 @@ type WebPolicy struct {
 	AllowZdxDisableWithoutPasswordTop bool `json:"allowZdxDisableWithoutPassword"`
 
 	// Top-level DNS / split-tunnel flags (these duplicate PolicyExtension entries with different types)
-	UseDefaultAdapterForDNSTop  string `json:"useDefaultAdapterForDNS"`
-	UpdateDnsSearchOrderTop     string `json:"updateDnsSearchOrder"`
-	EnforceSplitDNSTop          string `json:"enforceSplitDNS"`
-	DisableDNSRouteExclusionTop string `json:"disableDNSRouteExclusion"`
-	EnableSetProxyOnVPNAdaptersTop int `json:"enableSetProxyOnVPNAdapters"`
-	DropQuicTrafficTop          string `json:"dropQuicTraffic"`
-	FollowRoutingTableTop       string `json:"followRoutingTable"`
+	UseDefaultAdapterForDNSTop     string `json:"useDefaultAdapterForDNS"`
+	UpdateDnsSearchOrderTop        string `json:"updateDnsSearchOrder"`
+	EnforceSplitDNSTop             string `json:"enforceSplitDNS"`
+	DisableDNSRouteExclusionTop    string `json:"disableDNSRouteExclusion"`
+	EnableSetProxyOnVPNAdaptersTop int    `json:"enableSetProxyOnVPNAdapters"`
+	DropQuicTrafficTop             string `json:"dropQuicTraffic"`
+	FollowRoutingTableTop          string `json:"followRoutingTable"`
 
 	// Top-level partner / fail-close / packet capture / packet tunnel mirrors
-	VpnGatewaysTop                                  []any    `json:"vpnGateways"`
-	PartnerDomainsTop                               []any    `json:"partnerDomains"`
-	ZccFailCloseSettingsIpBypassesTop               []any    `json:"zccFailCloseSettingsIpBypasses"`
-	ZccFailCloseSettingsLockdownOnTunnelProcessExitTop int   `json:"zccFailCloseSettingsLockdownOnTunnelProcessExit"`
-	ZccFailCloseSettingsExitUninstallPasswordTop    string   `json:"zccFailCloseSettingsExitUninstallPassword"`
-	UserAllowedToAddPartnerTop                      int      `json:"userAllowedToAddPartner"`
-	FollowGlobalForPartnerLoginTop                  string   `json:"followGlobalForPartnerLogin"`
-	FollowGlobalForZpaReauthTop                     string   `json:"followGlobalForZpaReauth"`
-	FollowGlobalForPacketCaptureTop                 string   `json:"followGlobalForPacketCapture"`
-	EnableLocalPacketCaptureTop                     string   `json:"enableLocalPacketCapture"`
-	EnableLocalPacketCaptureV2Top                   []any    `json:"enableLocalPacketCaptureV2"`
-	PacketTunnelIncludeListTop                      []string `json:"packetTunnelIncludeList"`
-	PacketTunnelExcludeListTop                      []string `json:"packetTunnelExcludeList"`
-	PacketTunnelIncludeListForIPv6Top               []string `json:"packetTunnelIncludeListForIPv6"`
-	PacketTunnelExcludeListForIPv6Top               []string `json:"packetTunnelExcludeListForIPv6"`
-	PacketTunnelDnsIncludeListTop                   []string `json:"packetTunnelDnsIncludeList"`
-	PacketTunnelDnsExcludeListTop                   []string `json:"packetTunnelDnsExcludeList"`
-	SourcePortBasedBypassesTop                      []string `json:"sourcePortBasedBypasses"`
-	UseV8JsEngineTop                                string   `json:"useV8JsEngine"`
-	PrioritizeDnsExclusionsTop                      string   `json:"prioritizeDnsExclusions"`
+	VpnGatewaysTop                                     []any    `json:"vpnGateways"`
+	PartnerDomainsTop                                  []any    `json:"partnerDomains"`
+	ZccFailCloseSettingsIpBypassesTop                  []any    `json:"zccFailCloseSettingsIpBypasses"`
+	ZccFailCloseSettingsLockdownOnTunnelProcessExitTop int      `json:"zccFailCloseSettingsLockdownOnTunnelProcessExit"`
+	ZccFailCloseSettingsExitUninstallPasswordTop       string   `json:"zccFailCloseSettingsExitUninstallPassword"`
+	UserAllowedToAddPartnerTop                         int      `json:"userAllowedToAddPartner"`
+	FollowGlobalForPartnerLoginTop                     string   `json:"followGlobalForPartnerLogin"`
+	FollowGlobalForZpaReauthTop                        string   `json:"followGlobalForZpaReauth"`
+	FollowGlobalForPacketCaptureTop                    string   `json:"followGlobalForPacketCapture"`
+	EnableLocalPacketCaptureTop                        string   `json:"enableLocalPacketCapture"`
+	EnableLocalPacketCaptureV2Top                      []any    `json:"enableLocalPacketCaptureV2"`
+	PacketTunnelIncludeListTop                         []string `json:"packetTunnelIncludeList"`
+	PacketTunnelExcludeListTop                         []string `json:"packetTunnelExcludeList"`
+	PacketTunnelIncludeListForIPv6Top                  []string `json:"packetTunnelIncludeListForIPv6"`
+	PacketTunnelExcludeListForIPv6Top                  []string `json:"packetTunnelExcludeListForIPv6"`
+	PacketTunnelDnsIncludeListTop                      []string `json:"packetTunnelDnsIncludeList"`
+	PacketTunnelDnsExcludeListTop                      []string `json:"packetTunnelDnsExcludeList"`
+	SourcePortBasedBypassesTop                         []string `json:"sourcePortBasedBypasses"`
+	UseV8JsEngineTop                                   string   `json:"useV8JsEngine"`
+	PrioritizeDnsExclusionsTop                         string   `json:"prioritizeDnsExclusions"`
 
 	// Trusted-network buckets the UI mirrors at the top level (empty lists by default)
 	VpnTrusted      []any `json:"vpnTrusted"`
@@ -301,6 +301,29 @@ type WebPolicy struct {
 	// Browser auth defaults (int form, sits next to the BrowserAuthTypeTop picker object)
 	UseDefaultBrowserTop int `json:"useDefaultBrowser"`
 
+	// =========================================================================
+	// iOS-specific top-level fields. These keys appear in the iOS UI
+	// capture (payload-ios.json) at the WebPolicy root, IN ADDITION to
+	// their counterparts inside the iosPolicy block. Every field is
+	// `omitempty` so a fresh macOS / Windows / Linux / Android payload
+	// (whose UI capture omits these keys entirely) never accidentally
+	// includes them.
+	//
+	// Note on the legacy "useTunnelSDK4_3" key: the top-level form is
+	// emitted as a JSON number (`0`) while the same name inside
+	// iosPolicy is a quoted string ("0"). The SDK mirrors both wire
+	// shapes faithfully — top is `int`, inside the block is `string`.
+	// =========================================================================
+	Ipv6ModeTop                        int                           `json:"ipv6Mode,omitempty"`
+	ShowVPNTunNotificationTop          string                        `json:"showVPNTunNotification,omitempty"`
+	UseTunnelSDK43Top                  int                           `json:"useTunnelSDK4_3,omitempty"`
+	NotificationTemplateContract       *NotificationTemplateContract `json:"notificationTemplateContract,omitempty"`
+	NotificationTemplateId             int                           `json:"notificationTemplateId,omitempty"`
+	MachineTokenSelected               string                        `json:"machineTokenSelected,omitempty"`
+	DeviceTypeAlt                      int                           `json:"deviceType,omitempty"`
+	UseZscalerNotificationFrameworkTop string                        `json:"useZscalerNotificationFramework,omitempty"`
+	SwitchFocusToNotificationTop       string                        `json:"switchFocusToNotification,omitempty"`
+
 	// Per-OS embedded policy blocks (only one is non-nil at a time)
 	AndroidPolicy *AndroidPolicy `json:"androidPolicy,omitempty"`
 	IosPolicy     *IosPolicy     `json:"iosPolicy,omitempty"`
@@ -330,13 +353,26 @@ type AndroidPolicy struct {
 	WifiSsid         string `json:"wifissid"`
 }
 
+// IosPolicy models the iosPolicy block of a ZCC web policy. JSON tags
+// follow the wire shape captured from a working UI-generated request body
+// (local_dev/Backup_Config_Future/payload-ios.json):
+//
+//   - disable_password / logout_password / uninstall_password / passcode
+//     are serialized in snake_case (matching the API verbatim);
+//   - ipv6Mode and showVPNTunNotification travel on the wire as JSON
+//     numbers (`3`, `0`), so they are typed as `int`;
+//   - useTunnelSDK4_3 is the legacy iOS toggle the UI persists as a
+//     QUOTED string ("0" / "1") even though the same key at the top
+//     level of the WebPolicy body is a JSON number — the wire shapes
+//     diverge intentionally, so the struct mirrors them faithfully.
 type IosPolicy struct {
 	DisablePassword        string `json:"disablePassword"`
-	Ipv6Mode               string `json:"ipv6Mode"`
+	Ipv6Mode               int    `json:"ipv6Mode"`
 	LogoutPassword         string `json:"logoutPassword"`
 	Passcode               string `json:"passcode"`
 	ShowVPNTunNotification string `json:"showVPNTunNotification"`
 	UninstallPassword      string `json:"uninstallPassword"`
+	UseTunnelSDK43         string `json:"useTunnelSDK4_3"`
 }
 
 type LinuxPolicy struct {
@@ -374,6 +410,47 @@ type MacPolicy struct {
 	PersistentZscalerFirewall            string             `json:"persistentZscalerFirewall"`
 	UninstallPassword                    string             `json:"uninstall_password"`
 	UseDefaultBrowser                    int                `json:"useDefaultBrowser"`
+}
+
+// NotificationTemplateContract models the notificationTemplateContract
+// block the iOS web policy carries at the WebPolicy root. The UI capture
+// shipped this block verbatim as part of a successful PUT (see
+// local_dev/Backup_Config_Future/payload-ios.json), and every toggle is
+// modeled with its observed wire shape:
+//
+//   - the 0/1 flags are quoted strings (`"0"` / `"1"`), not JSON
+//     numbers, so they keep their `string` Go type;
+//   - the four counters (id, zpaReauthNotificationTime, customTimer,
+//     delayPostureFailureNotificationSeconds) are JSON numbers;
+//   - createdBy / editedBy are quoted-string user ids.
+//
+// The macOS UI capture does not include this block, so the field is
+// pointer-typed with `omitempty` on the WebPolicy parent — only iOS
+// payloads emit the key.
+type NotificationTemplateContract struct {
+	ID                                     int    `json:"id"`
+	TemplateName                           string `json:"templateName"`
+	DefaultTemplate                        string `json:"defaultTemplate"`
+	EnableClientNotification               string `json:"enableClientNotification"`
+	EnableZiaNotification                  string `json:"enableZiaNotification"`
+	EnableAppUpdatesNotification           string `json:"enableAppUpdatesNotification"`
+	EnableServiceStatusNotification        string `json:"enableServiceStatusNotification"`
+	EnableNotificationForZPAReauth         string `json:"enableNotificationForZPAReauth"`
+	ZpaReauthNotificationTime              int    `json:"zpaReauthNotificationTime"`
+	CustomTimer                            int    `json:"customTimer"`
+	ZiaNotificationPersistant              string `json:"ziaNotificationPersistant"`
+	EnablePersistantNotification           string `json:"enablePersistantNotification"`
+	ZiaFirewall                            string `json:"ziaFirewall"`
+	ZiaFirewallPopup                       string `json:"ziaFirewallPopup"`
+	ZiaDNS                                 string `json:"ziaDNS"`
+	ZiaDNSPopup                            string `json:"ziaDNSPopup"`
+	ZiaIPS                                 string `json:"ziaIPS"`
+	ZiaIPSPopup                            string `json:"ziaIPSPopup"`
+	DoNotDisturb                           string `json:"doNotDisturb"`
+	ShowDevicePostureFailureNotification   string `json:"showDevicePostureFailureNotification"`
+	DelayPostureFailureNotificationSeconds int    `json:"delayPostureFailureNotificationSeconds"`
+	CreatedBy                              string `json:"createdBy"`
+	EditedBy                               string `json:"editedBy"`
 }
 
 type WindowsPolicy struct {
@@ -437,23 +514,29 @@ type PolicyExtension struct {
 	GenerateCliPasswordContract GenerateCliPasswordContract `json:"generateCliPasswordContract"`
 
 	// VPN / partner / packet-capture
-	VpnGateways                                     string `json:"vpnGateways"`
-	PartnerDomains                                  string `json:"partnerDomains"`
-	ZccFailCloseSettingsIpBypasses                  string `json:"zccFailCloseSettingsIpBypasses"`
-	ZccFailCloseSettingsLockdownOnTunnelProcessExit string `json:"zccFailCloseSettingsLockdownOnTunnelProcessExit"`
-	ZccFailCloseSettingsExitUninstallPassword       string `json:"zccFailCloseSettingsExitUninstallPassword"`
+	VpnGateways                                     string   `json:"vpnGateways"`
+	PartnerDomains                                  string   `json:"partnerDomains"`
+	ZccFailCloseSettingsIpBypasses                  string   `json:"zccFailCloseSettingsIpBypasses"`
+	ZccFailCloseSettingsLockdownOnTunnelProcessExit string   `json:"zccFailCloseSettingsLockdownOnTunnelProcessExit"`
+	ZccFailCloseSettingsExitUninstallPassword       string   `json:"zccFailCloseSettingsExitUninstallPassword"`
 	ZccFailCloseSettingsAppByPassIds                []int    `json:"zccFailCloseSettingsAppByPassIds"`
 	ZccFailCloseSettingsAppByPassNames              []string `json:"zccFailCloseSettingsAppByPassNames,omitempty"`
 	ZccFailCloseSettingsThumbPrint                  string   `json:"zccFailCloseSettingsThumbPrint,omitempty"`
-	ZccFailCloseSettingsLockdownOnFirewallError     string `json:"zccFailCloseSettingsLockdownOnFirewallError"`
-	ZccFailCloseSettingsLockdownOnDriverError       string `json:"zccFailCloseSettingsLockdownOnDriverError"`
-	UserAllowedToAddPartner                         string `json:"userAllowedToAddPartner"`
-	FollowGlobalForPartnerLogin                     string `json:"followGlobalForPartnerLogin"`
-	FollowGlobalForZpaReauth                        string `json:"followGlobalForZpaReauth"`
-	FollowGlobalForPacketCapture                    string `json:"followGlobalForPacketCapture"`
-	EnableLocalPacketCapture                        string `json:"enableLocalPacketCapture"`
-	EnableLocalPacketCaptureV2                      int    `json:"enableLocalPacketCaptureV2"`
-	EnableFlowBasedTunnel                           string `json:"enableFlowBasedTunnel"`
+	ZccFailCloseSettingsLockdownOnFirewallError     string   `json:"zccFailCloseSettingsLockdownOnFirewallError"`
+	ZccFailCloseSettingsLockdownOnDriverError       string   `json:"zccFailCloseSettingsLockdownOnDriverError"`
+	UserAllowedToAddPartner                         string   `json:"userAllowedToAddPartner"`
+	FollowGlobalForPartnerLogin                     string   `json:"followGlobalForPartnerLogin"`
+	FollowGlobalForZpaReauth                        string   `json:"followGlobalForZpaReauth"`
+	FollowGlobalForPacketCapture                    string   `json:"followGlobalForPacketCapture"`
+	EnableLocalPacketCapture                        string   `json:"enableLocalPacketCapture"`
+	EnableLocalPacketCaptureV2                      int      `json:"enableLocalPacketCaptureV2"`
+	EnableFlowBasedTunnel                           string   `json:"enableFlowBasedTunnel"`
+	// EnableZaisService is the iOS-only ZAIS service toggle the UI emits
+	// inside policyExtension as a JSON number (e.g. `0`). The macOS UI
+	// capture never includes this key, so the iOS default constructor
+	// is responsible for seeding it — `omitempty` keeps it off the wire
+	// for the other device types.
+	EnableZaisService int `json:"enableZaisService,omitempty"`
 
 	// ZPA reauth scheduling. The fields are common.IntOrString because the
 	// upstream API returns some as quoted strings and others as numbers
@@ -472,44 +555,44 @@ type PolicyExtension struct {
 	AdvanceZpaReauthTime              int                `json:"advanceZpaReauthTime,omitempty"`
 
 	// DNS / split-tunnel / packet tunnel CSV strings
-	ExitPassword                    string `json:"exitPassword"`
-	FollowRoutingTable              string `json:"followRoutingTable"`
-	UseDefaultAdapterForDNS         string `json:"useDefaultAdapterForDNS"`
-	UpdateDnsSearchOrder            string `json:"updateDnsSearchOrder"`
-	UseZscalerNotificationFramework string `json:"useZscalerNotificationFramework"`
-	SwitchFocusToNotification       string `json:"switchFocusToNotification"`
-	FallbackToGatewayDomain         string `json:"fallbackToGatewayDomain"`
-	UseProxyPortForT1               string `json:"useProxyPortForT1"`
-	UseProxyPortForT2               string `json:"useProxyPortForT2"`
-	AllowPacExclusionsOnly          string `json:"allowPacExclusionsOnly"`
-	UseWsaPollForZpa                string `json:"useWsaPollForZpa"`
-	EnableZCCRevert                 string `json:"enableZCCRevert"`
-	ZccRevertPassword               string `json:"zccRevertPassword"`
-	EnableSetProxyOnVPNAdapters     string             `json:"enableSetProxyOnVPNAdapters"`
-	DisableDNSRouteExclusion        common.IntOrString `json:"disableDNSRouteExclusion"`
-	PacketTunnelIncludeListForIPv6  string             `json:"packetTunnelIncludeListForIPv6"`
-	InterceptZIATrafficAllAdapters  common.IntOrString `json:"interceptZIATrafficAllAdapters"`
-	EnableAntiTampering             common.IntOrString `json:"enableAntiTampering"`
-	ReactivateAntiTamperingTime     int                `json:"reactivateAntiTamperingTime"`
-	SourcePortBasedBypasses         string             `json:"sourcePortBasedBypasses"`
-	EnforceSplitDNS                 common.IntOrString `json:"enforceSplitDNS"`
-	DropQuicTraffic                 common.IntOrString `json:"dropQuicTraffic"`
-	ZdpDisablePassword              string `json:"zdpDisablePassword"`
-	UseV8JsEngine                   string `json:"useV8JsEngine"`
-	ZdDisablePassword               string `json:"zdDisablePassword"`
-	ZdxDisablePassword              string `json:"zdxDisablePassword"`
-	ZpaDisablePassword              string `json:"zpaDisablePassword"`
-	BypassDNSTrafficUsingUDPProxy   string `json:"bypassDNSTrafficUsingUDPProxy"`
-	ReconnectTunOnWakeup            string `json:"reconnectTunOnWakeup"`
-	EnableCustomTheme               int    `json:"enableCustomTheme"`
-	DeleteDHCPOption121Routes       string `json:"deleteDHCPOption121Routes"`
-	MachineIdpAuth                  bool   `json:"machineIdpAuth"`
-	Nonce                           string `json:"nonce"`
-	PacketTunnelDnsExcludeList      string `json:"packetTunnelDnsExcludeList"`
-	PacketTunnelDnsIncludeList      string `json:"packetTunnelDnsIncludeList"`
-	PacketTunnelExcludeList         string `json:"packetTunnelExcludeList"`
-	PacketTunnelExcludeListForIPv6  string `json:"packetTunnelExcludeListForIPv6"`
-	PacketTunnelIncludeList         string `json:"packetTunnelIncludeList"`
+	ExitPassword                    string                  `json:"exitPassword"`
+	FollowRoutingTable              string                  `json:"followRoutingTable"`
+	UseDefaultAdapterForDNS         string                  `json:"useDefaultAdapterForDNS"`
+	UpdateDnsSearchOrder            string                  `json:"updateDnsSearchOrder"`
+	UseZscalerNotificationFramework string                  `json:"useZscalerNotificationFramework"`
+	SwitchFocusToNotification       string                  `json:"switchFocusToNotification"`
+	FallbackToGatewayDomain         string                  `json:"fallbackToGatewayDomain"`
+	UseProxyPortForT1               string                  `json:"useProxyPortForT1"`
+	UseProxyPortForT2               string                  `json:"useProxyPortForT2"`
+	AllowPacExclusionsOnly          string                  `json:"allowPacExclusionsOnly"`
+	UseWsaPollForZpa                string                  `json:"useWsaPollForZpa"`
+	EnableZCCRevert                 string                  `json:"enableZCCRevert"`
+	ZccRevertPassword               string                  `json:"zccRevertPassword"`
+	EnableSetProxyOnVPNAdapters     string                  `json:"enableSetProxyOnVPNAdapters"`
+	DisableDNSRouteExclusion        common.IntOrString      `json:"disableDNSRouteExclusion"`
+	PacketTunnelIncludeListForIPv6  string                  `json:"packetTunnelIncludeListForIPv6"`
+	InterceptZIATrafficAllAdapters  common.IntOrString      `json:"interceptZIATrafficAllAdapters"`
+	EnableAntiTampering             common.IntOrString      `json:"enableAntiTampering"`
+	ReactivateAntiTamperingTime     int                     `json:"reactivateAntiTamperingTime"`
+	SourcePortBasedBypasses         string                  `json:"sourcePortBasedBypasses"`
+	EnforceSplitDNS                 common.IntOrString      `json:"enforceSplitDNS"`
+	DropQuicTraffic                 common.IntOrString      `json:"dropQuicTraffic"`
+	ZdpDisablePassword              string                  `json:"zdpDisablePassword"`
+	UseV8JsEngine                   string                  `json:"useV8JsEngine"`
+	ZdDisablePassword               string                  `json:"zdDisablePassword"`
+	ZdxDisablePassword              string                  `json:"zdxDisablePassword"`
+	ZpaDisablePassword              string                  `json:"zpaDisablePassword"`
+	BypassDNSTrafficUsingUDPProxy   string                  `json:"bypassDNSTrafficUsingUDPProxy"`
+	ReconnectTunOnWakeup            string                  `json:"reconnectTunOnWakeup"`
+	EnableCustomTheme               int                     `json:"enableCustomTheme"`
+	DeleteDHCPOption121Routes       string                  `json:"deleteDHCPOption121Routes"`
+	MachineIdpAuth                  bool                    `json:"machineIdpAuth"`
+	Nonce                           string                  `json:"nonce"`
+	PacketTunnelDnsExcludeList      string                  `json:"packetTunnelDnsExcludeList"`
+	PacketTunnelDnsIncludeList      string                  `json:"packetTunnelDnsIncludeList"`
+	PacketTunnelExcludeList         string                  `json:"packetTunnelExcludeList"`
+	PacketTunnelExcludeListForIPv6  string                  `json:"packetTunnelExcludeListForIPv6"`
+	PacketTunnelIncludeList         string                  `json:"packetTunnelIncludeList"`
 	TruncateLargeUDPDNSResponse     common.IntOrString      `json:"truncateLargeUDPDNSResponse"`
 	OverrideATCmdByPolicy           common.IntOrString      `json:"overrideATCmdByPolicy"`
 	PurgeKerberosPreferredDCCache   common.IntOrString      `json:"purgeKerberosPreferredDCCache"`
@@ -523,9 +606,9 @@ type PolicyExtension struct {
 	ZccTunnelFailPolicy             common.IntOrString      `json:"zccTunnelFailPolicy"`
 
 	// Certificate caching / device auth / process mapping
-	AllowClientCertCachingForWebView2   string `json:"allowClientCertCachingForWebView2"`
-	ShowConfirmationDialogForCachedCert string `json:"showConfirmationDialogForCachedCert"`
-	OneIdMTDeviceAuthEnabled            string `json:"oneIdMTDeviceAuthEnabled"`
+	AllowClientCertCachingForWebView2   string             `json:"allowClientCertCachingForWebView2"`
+	ShowConfirmationDialogForCachedCert string             `json:"showConfirmationDialogForCachedCert"`
+	OneIdMTDeviceAuthEnabled            string             `json:"oneIdMTDeviceAuthEnabled"`
 	PreventAutoReauthDuringDeviceLock   string             `json:"preventAutoReauthDuringDeviceLock"`
 	ClientConnectorUiLanguage           common.IntOrString `json:"clientConnectorUiLanguage"`
 	EnableNetworkTrafficProcessMapping  common.IntOrString `json:"enableNetworkTrafficProcessMapping"`
@@ -535,7 +618,7 @@ type PolicyExtension struct {
 	BlockPrivateRelay                   string             `json:"blockPrivateRelay"`
 	EnableAutomaticPacketCapture        string             `json:"enableAutomaticPacketCapture"`
 	EnableAPCforCriticalSections        string             `json:"enableAPCforCriticalSections"`
-	EnableAPCforOtherSections            string            `json:"enableAPCforOtherSections"`
+	EnableAPCforOtherSections           string             `json:"enableAPCforOtherSections"`
 	EnablePCAdditionalSpace             string             `json:"enablePCAdditionalSpace"`
 	PcAdditionalSpace                   string             `json:"pcAdditionalSpace"`
 	EnableCustomProxyDetection          string             `json:"enableCustomProxyDetection"`

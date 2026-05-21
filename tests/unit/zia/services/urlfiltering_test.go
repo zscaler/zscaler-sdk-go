@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	ziacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
 )
 
@@ -115,9 +116,11 @@ func TestURLFilteringRules_Update_SDK(t *testing.T) {
 	ruleID := 12345
 	path := "/zia/api/v1/urlFilteringRules/12345"
 
-	// Mock Get call that Update performs to fetch CBIProfile (direct by ID)
+	// Mock Get call that Update performs to fetch CBIProfile (direct by
+	// ID). CBIProfile is a ZIA SDK shared type; the test-helpers package
+	// has nothing to do with it, hence the ziacommon alias.
 	server.On("GET", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
-		ID: ruleID, Name: "Updated URL Rule", CBIProfile: &urlfilteringpolicies.CBIProfile{ID: "cbi-id"},
+		ID: ruleID, Name: "Updated URL Rule", CBIProfile: &ziacommon.CBIProfile{ID: "cbi-id"},
 	}))
 
 	server.On("PUT", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
@@ -311,7 +314,7 @@ func TestURLFilteringPolicies_Structure(t *testing.T) {
 	})
 
 	t.Run("CBIProfile JSON marshaling", func(t *testing.T) {
-		profile := urlfilteringpolicies.CBIProfile{
+		profile := ziacommon.CBIProfile{
 			ID:         "cbi-uuid-12345",
 			Name:       "Isolation Profile",
 			URL:        "https://isolation.zscaler.com",

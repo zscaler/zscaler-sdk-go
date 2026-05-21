@@ -17,8 +17,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  zcc-tests:
-    environment: ZIDENTITY_PRODUCTION
+  zcc-beta-tests:
+    environment: ZIDENTITY_BETA
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

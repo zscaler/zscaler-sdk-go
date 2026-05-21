@@ -133,6 +133,13 @@ type CommonApplication struct {
 	AppCatModified      bool   `json:"appCatModified"`
 }
 
+type CBIProfile struct {
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	URL        string `json:"url,omitempty"`
+	ProfileSeq int    `json:"profileSeq,omitempty"`
+}
+
 // GetPageSize returns the default page size.
 func GetPageSize() int {
 	return defaultPageSize

@@ -102,10 +102,10 @@ type ForwardingProfileZpaAction struct {
 	MtuForZadapter                 int         `json:"mtuForZadapter"`
 	SendTrustedNetworkResultToZpa  int         `json:"sendTrustedNetworkResultToZpa"`
 	PartnerInfo                    PartnerInfo `json:"partnerInfo"`
-	LatencyBasedServerEnablement   int         `json:"latencyBasedZpaServerEnablement"`
-	LbsProbeInterval               int         `json:"lbsZpaProbeInterval"`
-	LbsProbeSampleSize             int         `json:"lbsZpaProbeSampleSize"`
-	LbsThresholdLimit              int         `json:"lbsZpaThresholdLimit"`
+	LatencyBasedServerEnablement   int         `json:"latencyBasedServerEnablement"`
+	LbsProbeInterval               int         `json:"lbsProbeInterval"`
+	LbsProbeSampleSize             int         `json:"lbsProbeSampleSize"`
+	LbsThresholdLimit              int         `json:"lbsThresholdLimit"`
 	LatencyBasedServerMTEnablement int         `json:"latencyBasedServerMTEnablement"`
 	IsSameAsOnTrustedNetwork       bool        `json:"isSameAsOnTrustedNetwork"`
 }
