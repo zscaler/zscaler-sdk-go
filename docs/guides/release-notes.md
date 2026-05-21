@@ -17,12 +17,12 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-# 3.8.36 (May 20, 2026)
+# 3.8.36 (May 21, 2026)
 
 ## Notes
 - Golang: **v1.24**
 
-### Enhancements
+### New ZCC Endpoints
 
 - [PR #434](https://github.com/zscaler/zscaler-sdk-go/pull/434) - Added the following new ZCC Trusted Networks V2 Endpoints
   - `GET v2/trusted-networks` Retrieves a list of trusted networks
@@ -44,6 +44,14 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
   - `PUT v2/zia-posture-profiles/{id}` Update an existing ZIA Posture
   - `PATCH v2/zia-posture-profiles/{id}` Partially update an existing ZIA Posture
   - `DELETE v2/zia-posture-profiles/{id}` DELETE existing ZIA Posture
+
+### New ZIA Endpoints
+
+- [PR #434](https://github.com/zscaler/zscaler-sdk-go/pull/434) - Added the following new ZIA Secure Browsing V2 Endpoints
+  - `GET browserControlSettings/supportedBrowserVersions` Retrieves a list of all supported browsers and their versions.
+  - `PUT browserControlSettings/smartIsolation` Updates the Smart Browser Isolation policy settings.
+  - `GET browserControlSettings` Retrieves the Browser Control status and the list of configured browsers in the Browser Control policy
+  - `PUT browserControlSettings` Updates the Browser Control settings.
 
 # 3.8.35 (May 13, 2026)
 
