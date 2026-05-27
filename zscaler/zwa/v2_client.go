@@ -399,24 +399,44 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 		}
 	}
 
-	// Join the path to the base-url
+	// Join the path to the base-url.
+	//
+	// Callers (e.g. zwa/services/common.ReadAllPages) sometimes pass a
+	// urlPath that already contains a query string (e.g.
+	// "/dlp/v1/customer/audit?page=1&pageSize=1000"). The earlier
+	// implementation stuffed the entire urlPath into u.Path, which made
+	// url.URL.String() percent-encode the literal "?" as "%3F" and break
+	// server-side routing. Split the urlPath up-front so the path and
+	// query land in the right fields of the URL.
 	u := *client.Config.BaseURL
-	unescaped, err := url.PathUnescape(urlPath)
+	pathPart := urlPath
+	queryPart := ""
+	if idx := strings.Index(urlPath, "?"); idx >= 0 {
+		pathPart = urlPath[:idx]
+		queryPart = urlPath[idx+1:]
+	}
+
+	unescaped, err := url.PathUnescape(pathPart)
 	if err != nil {
 		return nil, err
 	}
 
 	// Set the encoded path data
-	u.RawPath = u.Path + urlPath
+	u.RawPath = u.Path + pathPart
 	u.Path = u.Path + unescaped
 
-	// Set the query parameters
+	// Set the query parameters. `options` (a struct decoded with
+	// go-querystring) takes precedence over an inline query string
+	// embedded in urlPath, matching the historical behavior. If neither
+	// is supplied, RawQuery stays empty.
 	if options != nil {
 		q, err := query.Values(options)
 		if err != nil {
 			return nil, err
 		}
 		u.RawQuery = q.Encode()
+	} else if queryPart != "" {
+		u.RawQuery = queryPart
 	}
 
 	req, err := http.NewRequest(method, u.String(), buf)

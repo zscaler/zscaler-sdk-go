@@ -20,7 +20,10 @@ func TestFailOpenPolicy_Get_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/webFailOpenPolicy"
+	// The SDK calls GET on /zcc/papi/public/v1/webFailOpenPolicy/listByCompany
+	// (see zscaler/zcc/services/failopen_policy/failopen_policy.go), not the
+	// bare base path.
+	path := "/zcc/papi/public/v1/webFailOpenPolicy/listByCompany"
 
 	server.On("GET", path, common.SuccessResponse([]failopen_policy.WebFailOpenPolicy{
 		{ID: "policy-001", Active: "true", CompanyID: "company-123", EnableFailOpen: 1},

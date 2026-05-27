@@ -17,11 +17,6 @@ func TestUserPortal(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
 	// Create new resource
 	createdResource, _, err := Create(context.Background(), service, UserPortalController{
 		Name:                    name,
@@ -31,8 +26,8 @@ func TestUserPortal(t *testing.T) {
 		UserNotificationEnabled: true,
 		ManagedByZS:             true,
 		ExtLabel:                "portal01",
-		ExtDomainName:           "-securitygeek-io.b.zscalerportal.net",
-		ExtDomain:               "securitygeek.io",
+		ExtDomainName:           "public-api-sdk-testing-com.q.zscalerportal.net",
+		ExtDomain:               "144124980601290752.zpa-customer.com",
 	})
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
@@ -109,71 +104,3 @@ func TestUserPortal(t *testing.T) {
 		}
 	})
 }
-
-// func TestRetrieveNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, _, err = Get(context.Background(), service, "non_existent_id")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestDeleteNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, err = Delete(context.Background(), service, "non_existent_id")
-// 	if err == nil {
-// 		t.Error("Expected error deleting non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestUpdateNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, err = Update(context.Background(), service, "non_existent_id", &UserPortalController{})
-// 	if err == nil {
-// 		t.Error("Expected error updating non-existent resource, but got nil")
-// 	}
-// }
-
-// func TestGetByNameNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Fatalf("Error creating client: %v", err)
-// 	}
-
-// 	// service, err := tests.NewZPAClient()
-// 	// if err != nil {
-// 	// 	t.Fatalf("Error creating client: %v", err)
-// 	// }
-
-// 	_, _, err = GetByName(context.Background(), service, "non_existent_name")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-// 	}
-// }

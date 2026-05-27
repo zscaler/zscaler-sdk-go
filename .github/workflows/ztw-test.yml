@@ -1,15 +1,15 @@
 name: ZTW Test
 on:
-  pull_request:
-    types: [opened, synchronize]
-  merge_group:
-    types: [checks_requested]
-  push:
-    branches:
-      - master
-  schedule:
-    # Weekly integration tests on Sunday at 6:00 AM PST (14:00 UTC)
-    - cron: "0 14 * * 0"
+  # Integration tests run against live ZTW (Cloud / Branch Connector)
+  # tenants — they consume real API quota, depend on long-lived
+  # credentials stored as repo secrets, and flake on transient infra
+  # issues. For all PR / merge / push / scheduled validation we rely
+  # exclusively on the OneAPI-mocked unit suite
+  # (.github/workflows/unit-tests.yml).
+  #
+  # This workflow is on-demand only: fire it from the Actions tab when
+  # you are actively developing a resource that genuinely requires
+  # end-to-end verification against a real tenant.
   workflow_dispatch:
 
 permissions:

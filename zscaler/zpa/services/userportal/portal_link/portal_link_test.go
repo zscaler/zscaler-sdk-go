@@ -18,10 +18,6 @@ func TestUserPortalLink(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
 	userPortal, _, err := portal_controller.Create(context.Background(), service, portal_controller.UserPortalController{
 		Name:                    name,
 		Description:             name,
@@ -30,8 +26,8 @@ func TestUserPortalLink(t *testing.T) {
 		UserNotificationEnabled: true,
 		ManagedByZS:             true,
 		ExtLabel:                "portal01",
-		ExtDomainName:           "-securitygeek-io.b.zscalerportal.net",
-		ExtDomain:               "securitygeek.io",
+		ExtDomainName:           "public-api-sdk-testing-com.q.zscalerportal.net",
+		ExtDomain:               "144124980601290752.zpa-customer.com",
 	})
 	// Check if the request was successful
 	if err != nil {

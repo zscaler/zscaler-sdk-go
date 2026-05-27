@@ -72,21 +72,36 @@ func TestLocationManagement_Create_SDK(t *testing.T) {
 	path := "/zia/api/v1/locations"
 
 	server.On("POST", path, common.SuccessResponse(locationmanagement.Locations{
-		ID:          99999,
-		Name:        "New Office",
-		Description: "New branch office",
-		Country:     "US",
-		State:       "NY",
+		ID:                99999,
+		Name:              "tests-location",
+		Description:       "tests-location",
+		Country:           "UNITED_STATES",
+		TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
+		AuthRequired:      true,
+		SurrogateIP:       true,
+		XFFForwardEnabled: true,
+		OFWEnabled:        true,
+		IPSControl:        true,
+		Profile:           "CORPORATE",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
 	newLocation := &locationmanagement.Locations{
-		Name:        "New Office",
-		Description: "New branch office",
-		Country:     "US",
-		State:       "NY",
+		Name:              "tests-location",
+		Description:       "tests-location",
+		Country:           "UNITED_STATES",
+		TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
+		AuthRequired:      true,
+		IdleTimeInMinutes: 720,
+		DisplayTimeUnit:   "HOUR",
+		SurrogateIP:       true,
+		XFFForwardEnabled: true,
+		OFWEnabled:        true,
+		IPSControl:        true,
+		Profile:           "CORPORATE",
+		IPAddresses:       []string{"104.239.245.10"},
 	}
 
 	result, err := locationmanagement.Create(context.Background(), service, newLocation)
@@ -94,7 +109,8 @@ func TestLocationManagement_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, 99999, result.ID)
-	assert.Equal(t, "New Office", result.Name)
+	assert.Equal(t, "tests-location", result.Name)
+	assert.Equal(t, "CORPORATE", result.Profile)
 }
 
 func TestLocationManagement_Update_SDK(t *testing.T) {

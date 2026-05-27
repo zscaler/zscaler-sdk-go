@@ -53,7 +53,20 @@ func TestPassword(length int) string {
 	return string(result)
 }
 
+// NewOneAPIClient returns a *zscaler.Service for integration tests.
+// By default it uses the OneAPI framework. Set the ZSCALER_SDK_TEST_CLIENT
+// environment variable to switch:
+//
+//	"zpa_legacy" → uses legacy ZPA client (requires ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID, ZPA_CLOUD)
+//
+// Example:
+//
+//	ZSCALER_SDK_TEST_CLIENT=zpa_legacy go test ./zscaler/zpa/services/... -v
 func NewOneAPIClient() (*zscaler.Service, error) {
+	if strings.EqualFold(os.Getenv("ZSCALER_SDK_TEST_CLIENT"), "zpa_legacy") {
+		return NewZPAClient()
+	}
+
 	// Fetch credentials directly from environment variables
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")

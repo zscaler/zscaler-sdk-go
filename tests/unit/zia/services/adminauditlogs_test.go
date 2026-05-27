@@ -76,7 +76,62 @@ func TestAdminAuditLogs_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Note: GetAdminAuditLogsDownload test omitted due to raw byte response handling
+// Note: GetAdminAuditLogsDownload uses Client.Read with []byte destination.
+
+func TestAdminAuditLogs_GetAdminAuditLogsDownload_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport/download"
+	csvPayload, err := json.Marshal([]byte("admin,action\nadmin@company.com,CREATE"))
+	require.NoError(t, err)
+
+	server.On("GET", path, common.RawResponse(csvPayload, 200, map[string]string{
+		"Content-Type": "application/json",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := adminauditlogs.GetAdminAuditLogsDownload(context.Background(), service)
+	require.NoError(t, err)
+	assert.Contains(t, string(result), "admin@company.com")
+}
+
+func TestAdminAuditLogs_GetAdminAuditLogsDownload_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport/download"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := adminauditlogs.GetAdminAuditLogsDownload(context.Background(), service)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestAdminAuditLogs_CreateAdminAuditLogsExport_UnexpectedStatus_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/auditlogEntryReport"
+	server.On("POST", path, common.SuccessResponse(adminauditlogs.AuditLogEntryReportTaskInfo{
+		Status: "COMPLETE",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = adminauditlogs.CreateAdminAuditLogsExport(context.Background(), service, adminauditlogs.AuditLogEntryRequest{
+		StartTime: 1699000000,
+		EndTime:   1699999999,
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unexpected response code")
+}
 
 // =====================================================
 // Structure Tests

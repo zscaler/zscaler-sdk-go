@@ -3,6 +3,8 @@ package unit
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,4 +181,54 @@ func TestApplicationSegmentPRA_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestApplicationSegmentPRA_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "application")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]applicationsegmentpra.AppSegmentPRA{
+		{ID: "p1", Name: "Alpha", PRAApps: []applicationsegmentpra.PRAApps{{ID: "s1"}}},
+	})))
+
+	result, _, err := applicationsegmentpra.GetByName(context.Background(), api.Service, "Omega")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestApplicationSegmentPRA_Update_AppsConfigAndDeletedPra_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	appID := "pra-parent"
+	path := common.ZPAPath(api.CustomerID, "application", appID)
+
+	api.On("GET", path, common.SuccessResponse(applicationsegmentpra.AppSegmentPRA{
+		ID:   appID,
+		Name: "PRA Parent",
+		PRAApps: []applicationsegmentpra.PRAApps{
+			{ID: "pra-keep-id", Name: "KeepMe"},
+			{ID: "pra-drop-id", Name: "DropMe"},
+		},
+	}))
+	api.OnFunc("PUT", path, func(_ *http.Request, body []byte) common.MockResponse {
+		var raw struct {
+			CommonAppsDTO struct {
+				DeletedPraApps []string `json:"deletedPraApps"`
+			} `json:"commonAppsDto"`
+		}
+		require.NoError(t, json.Unmarshal(body, &raw))
+		assert.Contains(t, raw.CommonAppsDTO.DeletedPraApps, "pra-drop-id")
+		return common.NoContentResponse()
+	})
+
+	upd := &applicationsegmentpra.AppSegmentPRA{
+		CommonAppsDto: applicationsegmentpra.CommonAppsDto{
+			AppsConfig: []applicationsegmentpra.AppsConfig{
+				{Name: "KeepMe", Enabled: true},
+			},
+		},
+	}
+
+	resp, err := applicationsegmentpra.Update(context.Background(), api.Service, appID, upd)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
 }

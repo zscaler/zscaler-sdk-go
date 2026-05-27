@@ -50,3 +50,16 @@ func TestCBIRegions_GetByName_SDK(t *testing.T) {
 	assert.Equal(t, "region-001", result.ID)
 	assert.Equal(t, regionName, result.Name)
 }
+
+func TestCBIRegions_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/regions"
+	api.On("GET", path, common.SuccessResponse([]cbiregions.CBIRegions{
+		{ID: "r1", Name: "EU-West"},
+	}))
+
+	got, _, err := cbiregions.GetByName(context.Background(), api.Service, "Antarctica-1")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "Antarctica-1")
+}

@@ -118,3 +118,78 @@ func TestCBICertificateController_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestCBICertificateController_GetByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/certificates"
+	wantName := "Issued-To-Apps"
+	api.On("GET", base, common.SuccessResponse([]cbicertificatecontroller.CBICertificate{
+		{ID: "c-other", Name: "Other Cert"},
+		{ID: "c-target", Name: wantName, PEM: "-----BEGIN CERT-----\nMIIB\n-----END CERTIFICATE-----"},
+	}))
+
+	got, _, err := cbicertificatecontroller.GetByName(context.Background(), api.Service, wantName)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "c-target", got.ID)
+	assert.Equal(t, wantName, got.Name)
+}
+
+func TestCBICertificateController_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/certificates"
+	api.On("GET", base, common.SuccessResponse([]cbicertificatecontroller.CBICertificate{
+		{ID: "c1", Name: "Only"},
+	}))
+
+	got, _, err := cbicertificatecontroller.GetByName(context.Background(), api.Service, "nope")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "nope")
+}
+
+func TestCBICertificateController_GetByNameOrID_ByID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/certificates"
+	certID := "cert-from-list"
+	api.On("GET", base,
+		common.SuccessResponse([]cbicertificatecontroller.CBICertificate{{ID: certID, Name: "Listed Cert"}}))
+	api.On("GET", base+"/"+certID, common.SuccessResponse(cbicertificatecontroller.CBICertificate{
+		ID: certID, Name: "Full Cert",
+	}))
+
+	got, _, err := cbicertificatecontroller.GetByNameOrID(context.Background(), api.Service, certID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "Full Cert", got.Name)
+}
+
+func TestCBICertificateController_GetByNameOrID_ByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/certificates"
+	wantName := "Edge TLS"
+	certID := "cert-name-path"
+	api.On("GET", base,
+		common.SuccessResponse([]cbicertificatecontroller.CBICertificate{{ID: certID, Name: wantName}}))
+	api.On("GET", base+"/"+certID, common.SuccessResponse(cbicertificatecontroller.CBICertificate{
+		ID: certID, Name: wantName,
+	}))
+
+	got, _, err := cbicertificatecontroller.GetByNameOrID(context.Background(), api.Service, wantName)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, certID, got.ID)
+}
+
+func TestCBICertificateController_GetByNameOrID_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/certificates"
+	api.On("GET", base, common.SuccessResponse([]cbicertificatecontroller.CBICertificate{
+		{ID: "x", Name: "Y"},
+	}))
+
+	got, _, err := cbicertificatecontroller.GetByNameOrID(context.Background(), api.Service, "ghost")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "ghost")
+}

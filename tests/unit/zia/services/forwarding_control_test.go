@@ -1,247 +1,525 @@
-// Package services provides unit tests for ZIA services
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/forwarding_control_policy/forwarding_rules"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/forwarding_control_policy/proxies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/forwarding_control_policy/proxy_gateways"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/forwarding_control_policy/zpa_gateways"
 )
 
-// ForwardingRule represents a forwarding control rule
-type ForwardingRule struct {
-	ID              int      `json:"id,omitempty"`
-	Name            string   `json:"name,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	Order           int      `json:"order,omitempty"`
-	Rank            int      `json:"rank,omitempty"`
-	State           string   `json:"state,omitempty"`
-	Type            string   `json:"type,omitempty"`
-	ForwardMethod   string   `json:"forwardMethod,omitempty"`
-	SrcIps          []string `json:"srcIps,omitempty"`
-	DestAddresses   []string `json:"destAddresses,omitempty"`
-	DestCountries   []string `json:"destCountries,omitempty"`
-	DestIpCategories []string `json:"destIpCategories,omitempty"`
-	NwApplications  []string `json:"nwApplications,omitempty"`
+const forwardingRulesPath = "/zia/api/v1/forwardingRules"
+const proxiesPath = "/zia/api/v1/proxies"
+const proxiesLitePath = "/zia/api/v1/proxies/lite"
+const dedicatedIPGWLitePath = "/zia/api/v1/dedicatedIPGateways/lite"
+const proxyGatewaysPath = "/zia/api/v1/proxyGateways"
+const proxyGatewaysLitePath = "/zia/api/v1/proxyGateways/lite"
+const zpaGatewaysPath = "/zia/api/v1/zpaGateways"
+
+func sampleForwardingRule() forwarding_rules.ForwardingRules {
+	return forwarding_rules.ForwardingRules{
+		Name:          "tests-forwarding-rule",
+		Description:   "tests-forwarding-rule",
+		Order:         1,
+		Rank:          7,
+		State:         "ENABLED",
+		Type:          "FORWARDING",
+		ForwardMethod: "DIRECT",
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		SrcIps:        []string{"192.168.100.10"},
+	}
 }
 
-// ZPAGateway represents a ZPA gateway configuration
-type ZPAGateway struct {
-	ID              int        `json:"id,omitempty"`
-	Name            string     `json:"name,omitempty"`
-	Description     string     `json:"description,omitempty"`
-	Type            string     `json:"type,omitempty"`
-	ZPAServerGroup  *ZPAServerGroup `json:"zpaServerGroup,omitempty"`
-	ZPAAppSegments  []ZPAAppSegment `json:"zpaAppSegments,omitempty"`
-	LastModifiedTime int       `json:"lastModifiedTime,omitempty"`
+func TestForwardingRules_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	rule := sampleForwardingRule()
+	rule.ID = ruleID
+
+	server.On("GET", forwardingRulesPath+"/12345", common.SuccessResponse(rule))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.Get(context.Background(), service, ruleID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "DIRECT", result.ForwardMethod)
 }
 
-// ZPAServerGroup represents a ZPA server group
-type ZPAServerGroup struct {
-	ExternalID string `json:"externalId,omitempty"`
-	Name       string `json:"name,omitempty"`
+func TestForwardingRules_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleName := "tests-forwarding-rule"
+	server.On("GET", forwardingRulesPath, common.SuccessResponse([]forwarding_rules.ForwardingRules{
+		{ID: 1, Name: "Other Rule"},
+		func() forwarding_rules.ForwardingRules {
+			r := sampleForwardingRule()
+			r.ID = 2
+			return r
+		}(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.GetByName(context.Background(), service, ruleName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, ruleName, result.Name)
 }
 
-// ZPAAppSegment represents a ZPA application segment
-type ZPAAppSegment struct {
-	ExternalID string `json:"externalId,omitempty"`
-	Name       string `json:"name,omitempty"`
+func TestForwardingRules_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	created := sampleForwardingRule()
+	created.ID = 99999
+
+	server.On("POST", forwardingRulesPath, common.SuccessResponse(created))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	input := sampleForwardingRule()
+	result, err := forwarding_rules.Create(context.Background(), service, &input)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
 }
 
-// ProxyGateway represents a proxy gateway configuration
-type ProxyGateway struct {
-	ID              int    `json:"id,omitempty"`
-	Name            string `json:"name,omitempty"`
-	Description     string `json:"description,omitempty"`
-	Type            string `json:"type,omitempty"`
-	PrimaryProxy    string `json:"primaryProxy,omitempty"`
-	SecondaryProxy  string `json:"secondaryProxy,omitempty"`
-	PrimaryPort     int    `json:"primaryPort,omitempty"`
-	SecondaryPort   int    `json:"secondaryPort,omitempty"`
-	FailClosed      bool   `json:"failClosed,omitempty"`
+func TestForwardingRules_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	ruleID := 12345
+	updated := sampleForwardingRule()
+	updated.ID = ruleID
+	updated.Name = "updated-forwarding-rule"
+
+	server.On("PUT", forwardingRulesPath+"/12345", common.SuccessResponse(updated))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.Update(context.Background(), service, ruleID, &updated)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "updated-forwarding-rule", result.Name)
 }
 
-func TestForwardingRule_Structure(t *testing.T) {
+func TestForwardingRules_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("DELETE", forwardingRulesPath+"/12345", common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = forwarding_rules.Delete(context.Background(), service, 12345)
+
+	require.NoError(t, err)
+}
+
+func TestForwardingRules_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", forwardingRulesPath, common.SuccessResponse([]forwarding_rules.ForwardingRules{
+		sampleForwardingRule(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := forwarding_rules.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func sampleProxy() proxies.Proxies {
+	return proxies.Proxies{
+		Name:                  "tests-proxy",
+		Description:           "tests-proxy",
+		Type:                  "PROXYCHAIN",
+		Address:               "192.168.1.1",
+		Port:                  5000,
+		InsertXauHeader:       true,
+		Base64EncodeXauHeader: true,
+	}
+}
+
+func TestProxies_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	proxyID := 100
+	proxy := sampleProxy()
+	proxy.ID = proxyID
+
+	server.On("GET", proxiesPath+"/100", common.SuccessResponse(proxy))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxies.Get(context.Background(), service, proxyID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, proxyID, result.ID)
+	assert.Equal(t, "PROXYCHAIN", result.Type)
+}
+
+func TestProxies_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	proxyName := "tests-proxy"
+	server.On("GET", proxiesPath, common.SuccessResponse([]proxies.Proxies{
+		func() proxies.Proxies {
+			p := sampleProxy()
+			p.ID = 100
+			return p
+		}(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxies.GetByName(context.Background(), service, proxyName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, proxyName, result.Name)
+}
+
+func TestProxies_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	created := sampleProxy()
+	created.ID = 99999
+
+	server.On("POST", proxiesPath, common.SuccessResponse(created))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	input := sampleProxy()
+	result, _, err := proxies.Create(context.Background(), service, &input)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestProxies_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	proxyID := 100
+	updated := sampleProxy()
+	updated.ID = proxyID
+	updated.Name = "updated-proxy"
+
+	server.On("PUT", proxiesPath+"/100", common.SuccessResponse(updated))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := proxies.Update(context.Background(), service, proxyID, &updated)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "updated-proxy", result.Name)
+}
+
+func TestProxies_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("DELETE", proxiesPath+"/100", common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = proxies.Delete(context.Background(), service, 100)
+
+	require.NoError(t, err)
+}
+
+func TestProxies_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", proxiesPath, common.SuccessResponse([]proxies.Proxies{
+		sampleProxy(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxies.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestProxies_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", proxiesLitePath, common.SuccessResponse([]proxies.Proxies{
+		{ID: 100, Name: "tests-proxy", Type: "PROXYCHAIN"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxies.GetAllLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestProxies_GetDedicatedIPGWLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", dedicatedIPGWLitePath, common.SuccessResponse([]proxies.DedicatedIPGateways{
+		{Id: 1, Name: "Dedicated GW 1"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxies.GetDedicatedIPGWLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestProxyGateways_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gwName := "Proxy Gateway 1"
+	server.On("GET", proxyGatewaysPath, common.SuccessResponse([]proxy_gateways.ProxyGateways{
+		{ID: 1, Name: gwName, Type: "PROXYCHAIN", FailClosed: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxy_gateways.GetByName(context.Background(), service, gwName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gwName, result.Name)
+}
+
+func TestProxyGateways_GetLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", proxyGatewaysLitePath, common.SuccessResponse([]proxy_gateways.ProxyGateways{
+		{ID: 1, Name: "Proxy Gateway 1", Type: "PROXYCHAIN"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxy_gateways.GetLite(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestProxyGateways_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", proxyGatewaysPath, common.SuccessResponse([]proxy_gateways.ProxyGateways{
+		{ID: 1, Name: "Proxy Gateway 1", Type: "PROXYCHAIN", FailClosed: false},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := proxy_gateways.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func sampleZPAGateway() zpa_gateways.ZPAGateways {
+	return zpa_gateways.ZPAGateways{
+		Name:        "tests-zpa-gateway",
+		Description: "tests-zpa-gateway",
+		Type:        "ZPA",
+		ZPAServerGroup: zpa_gateways.ZPAServerGroup{
+			ExternalID: "zpa-sg-123",
+			Name:       "Server Group 1",
+		},
+		ZPAAppSegments: []zpa_gateways.ZPAAppSegments{
+			{ExternalID: "zpa-app-1", Name: "App Segment 1"},
+		},
+	}
+}
+
+func TestZPAGateways_Get_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gwID := 100
+	gw := sampleZPAGateway()
+	gw.ID = gwID
+
+	server.On("GET", zpaGatewaysPath+"/100", common.SuccessResponse(gw))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zpa_gateways.Get(context.Background(), service, gwID)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gwID, result.ID)
+	assert.Equal(t, "ZPA", result.Type)
+}
+
+func TestZPAGateways_GetByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gwName := "tests-zpa-gateway"
+	server.On("GET", zpaGatewaysPath, common.SuccessResponse([]zpa_gateways.ZPAGateways{
+		func() zpa_gateways.ZPAGateways {
+			g := sampleZPAGateway()
+			g.ID = 100
+			return g
+		}(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zpa_gateways.GetByName(context.Background(), service, gwName)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, gwName, result.Name)
+}
+
+func TestZPAGateways_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	created := sampleZPAGateway()
+	created.ID = 99999
+
+	server.On("POST", zpaGatewaysPath, common.SuccessResponse(created))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	input := sampleZPAGateway()
+	result, err := zpa_gateways.Create(context.Background(), service, &input)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestZPAGateways_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	gwID := 100
+	updated := sampleZPAGateway()
+	updated.ID = gwID
+	updated.Name = "updated-zpa-gateway"
+
+	server.On("PUT", zpaGatewaysPath+"/100", common.SuccessResponse(updated))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zpa_gateways.Update(context.Background(), service, gwID, &updated)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "updated-zpa-gateway", result.Name)
+}
+
+func TestZPAGateways_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("DELETE", zpaGatewaysPath+"/100", common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = zpa_gateways.Delete(context.Background(), service, 100)
+
+	require.NoError(t, err)
+}
+
+func TestZPAGateways_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", zpaGatewaysPath, common.SuccessResponse([]zpa_gateways.ZPAGateways{
+		sampleZPAGateway(),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := zpa_gateways.GetAll(context.Background(), service)
+
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestForwardingControl_Structure(t *testing.T) {
 	t.Parallel()
 
-	t.Run("ForwardingRule JSON marshaling", func(t *testing.T) {
-		rule := ForwardingRule{
-			ID:            12345,
-			Name:          "Forward to ZPA",
-			Description:   "Forward internal traffic to ZPA",
-			Order:         1,
-			Rank:          7,
-			State:         "ENABLED",
-			Type:          "FORWARDING",
-			ForwardMethod: "ZPA",
-			SrcIps:        []string{"10.0.0.0/8"},
-			DestAddresses: []string{"192.168.1.0/24"},
-			DestCountries: []string{"US"},
-		}
+	t.Run("ForwardingRules JSON marshaling", func(t *testing.T) {
+		rule := sampleForwardingRule()
+		rule.ID = 12345
 
 		data, err := json.Marshal(rule)
 		require.NoError(t, err)
 
-		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"forwardMethod":"ZPA"`)
+		assert.Contains(t, string(data), `"forwardMethod":"DIRECT"`)
+		assert.Contains(t, string(data), `"COUNTRY_US"`)
 	})
 
-	t.Run("ForwardingRule JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": 54321,
-			"name": "Direct Traffic",
-			"description": "Allow direct traffic",
-			"order": 2,
-			"rank": 5,
-			"state": "ENABLED",
-			"type": "FORWARDING",
-			"forwardMethod": "DIRECT",
-			"srcIps": ["172.16.0.0/12"],
-			"destAddresses": ["8.8.8.8"],
-			"destCountries": ["US", "CA"],
-			"destIpCategories": ["DNS"],
-			"nwApplications": ["DNS"]
-		}`
-
-		var rule ForwardingRule
-		err := json.Unmarshal([]byte(jsonData), &rule)
-		require.NoError(t, err)
-
-		assert.Equal(t, 54321, rule.ID)
-		assert.Equal(t, "DIRECT", rule.ForwardMethod)
-		assert.Len(t, rule.DestCountries, 2)
-	})
-}
-
-func TestZPAGateway_Structure(t *testing.T) {
-	t.Parallel()
-
-	t.Run("ZPAGateway JSON marshaling", func(t *testing.T) {
-		gateway := ZPAGateway{
-			ID:          12345,
-			Name:        "ZPA Gateway 1",
-			Description: "Primary ZPA gateway",
-			Type:        "ZPA",
-			ZPAServerGroup: &ZPAServerGroup{
-				ExternalID: "zpa-sg-123",
-				Name:       "Server Group 1",
-			},
-			ZPAAppSegments: []ZPAAppSegment{
-				{ExternalID: "zpa-app-1", Name: "App 1"},
-				{ExternalID: "zpa-app-2", Name: "App 2"},
-			},
-		}
-
-		data, err := json.Marshal(gateway)
-		require.NoError(t, err)
-
-		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"zpaServerGroup"`)
-		assert.Contains(t, string(data), `"zpaAppSegments"`)
-	})
-
-	t.Run("ZPAGateway JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": 54321,
-			"name": "ZPA Gateway 2",
-			"type": "ZPA",
-			"zpaServerGroup": {
-				"externalId": "zpa-sg-456",
-				"name": "Server Group 2"
-			},
-			"zpaAppSegments": [
-				{"externalId": "zpa-app-3", "name": "App 3"}
-			],
-			"lastModifiedTime": 1699000000
-		}`
-
-		var gateway ZPAGateway
-		err := json.Unmarshal([]byte(jsonData), &gateway)
-		require.NoError(t, err)
-
-		assert.Equal(t, 54321, gateway.ID)
-		assert.NotNil(t, gateway.ZPAServerGroup)
-		assert.Len(t, gateway.ZPAAppSegments, 1)
-	})
-}
-
-func TestProxyGateway_Structure(t *testing.T) {
-	t.Parallel()
-
-	t.Run("ProxyGateway JSON marshaling", func(t *testing.T) {
-		proxy := ProxyGateway{
-			ID:             12345,
-			Name:           "Proxy Gateway 1",
-			Description:    "Primary proxy gateway",
-			Type:           "PROXYCHAIN",
-			PrimaryProxy:   "proxy1.company.com",
-			SecondaryProxy: "proxy2.company.com",
-			PrimaryPort:    8080,
-			SecondaryPort:  8081,
-			FailClosed:     true,
-		}
+	t.Run("Proxies JSON marshaling", func(t *testing.T) {
+		proxy := sampleProxy()
+		proxy.ID = 100
 
 		data, err := json.Marshal(proxy)
 		require.NoError(t, err)
 
-		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"primaryProxy":"proxy1.company.com"`)
-		assert.Contains(t, string(data), `"failClosed":true`)
-	})
-
-	t.Run("ProxyGateway JSON unmarshaling", func(t *testing.T) {
-		jsonData := `{
-			"id": 54321,
-			"name": "Proxy Gateway 2",
-			"type": "PROXYCHAIN",
-			"primaryProxy": "proxy-a.company.com",
-			"secondaryProxy": "proxy-b.company.com",
-			"primaryPort": 3128,
-			"secondaryPort": 3129,
-			"failClosed": false
-		}`
-
-		var proxy ProxyGateway
-		err := json.Unmarshal([]byte(jsonData), &proxy)
-		require.NoError(t, err)
-
-		assert.Equal(t, 54321, proxy.ID)
-		assert.Equal(t, 3128, proxy.PrimaryPort)
-		assert.False(t, proxy.FailClosed)
+		assert.Contains(t, string(data), `"insertXauHeader":true`)
 	})
 }
-
-func TestForwardingControl_ResponseParsing(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Parse forwarding rules list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "Rule 1", "forwardMethod": "ZPA", "state": "ENABLED"},
-			{"id": 2, "name": "Rule 2", "forwardMethod": "DIRECT", "state": "ENABLED"},
-			{"id": 3, "name": "Rule 3", "forwardMethod": "PROXYCHAIN", "state": "DISABLED"}
-		]`
-
-		var rules []ForwardingRule
-		err := json.Unmarshal([]byte(jsonResponse), &rules)
-		require.NoError(t, err)
-
-		assert.Len(t, rules, 3)
-		assert.Equal(t, "ZPA", rules[0].ForwardMethod)
-		assert.Equal(t, "DISABLED", rules[2].State)
-	})
-
-	t.Run("Parse ZPA gateways list", func(t *testing.T) {
-		jsonResponse := `[
-			{"id": 1, "name": "Gateway 1", "type": "ZPA"},
-			{"id": 2, "name": "Gateway 2", "type": "ZPA"}
-		]`
-
-		var gateways []ZPAGateway
-		err := json.Unmarshal([]byte(jsonResponse), &gateways)
-		require.NoError(t, err)
-
-		assert.Len(t, gateways, 2)
-	})
-}
-

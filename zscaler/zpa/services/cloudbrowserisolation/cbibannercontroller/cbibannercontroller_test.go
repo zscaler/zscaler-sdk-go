@@ -16,11 +16,6 @@ func TestCBIBannerController(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
-
 	banner := CBIBannerController{
 		Name:              name,
 		PrimaryColor:      "#0076BE",

@@ -56,8 +56,10 @@ func TestCBIProfileController_Create_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	// Create uses singular endpoint "/profile"
-	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profile"
+	// CBI profile Create hits the same plural endpoint as List:
+	// /zpa/cbiconfig/cbi/api/customers/{customerId}/profiles
+	// (see cbiProfileEndpoint = "/profiles" in cbiprofilecontroller.go).
+	path := "/zpa/cbiconfig/cbi/api/customers/" + testCustomerID + "/profiles"
 
 	server.On("POST", path, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
 		ID:   "new-profile-123",
@@ -117,4 +119,51 @@ func TestCBIProfileController_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestCBIProfileController_GetByNameOrID_ByID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	cbiProfiles := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/profiles"
+	profileID := "profile-xyz"
+	api.On("GET", cbiProfiles,
+		common.SuccessResponse([]cbiprofilecontroller.IsolationProfile{{ID: profileID, Name: "Listed Name"}}))
+	api.On("GET", cbiProfiles+"/"+profileID, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
+		ID: profileID, Name: "Fetched Name",
+	}))
+
+	got, _, err := cbiprofilecontroller.GetByNameOrID(context.Background(), api.Service, profileID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, profileID, got.ID)
+	assert.Equal(t, "Fetched Name", got.Name)
+}
+
+func TestCBIProfileController_GetByNameOrID_ByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	cbiProfiles := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/profiles"
+	wantName := "CI Profile Gamma"
+	profileID := "profile-by-name"
+	api.On("GET", cbiProfiles,
+		common.SuccessResponse([]cbiprofilecontroller.IsolationProfile{{ID: profileID, Name: wantName}}))
+	api.On("GET", cbiProfiles+"/"+profileID, common.SuccessResponse(cbiprofilecontroller.IsolationProfile{
+		ID: profileID, Name: wantName,
+	}))
+
+	got, _, err := cbiprofilecontroller.GetByNameOrID(context.Background(), api.Service, wantName)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, profileID, got.ID)
+}
+
+func TestCBIProfileController_GetByNameOrID_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	cbiProfiles := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/profiles"
+	api.On("GET", cbiProfiles, common.SuccessResponse([]cbiprofilecontroller.IsolationProfile{
+		{ID: "other", Name: "Other"},
+	}))
+
+	got, _, err := cbiprofilecontroller.GetByNameOrID(context.Background(), api.Service, "does-not-exist")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "does-not-exist")
 }

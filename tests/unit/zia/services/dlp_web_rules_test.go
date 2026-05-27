@@ -24,12 +24,18 @@ func TestDLPWebRules_Get_SDK(t *testing.T) {
 	path := "/zia/api/v1/webDlpRules/12345"
 
 	server.On("GET", path, common.SuccessResponse(dlp_web_rules.WebDLPRules{
-		ID:          ruleID,
-		Name:        "Block SSN Uploads",
-		Description: "Block uploads containing SSN",
-		Action:      "BLOCK",
-		State:       "ENABLED",
-		Order:       1,
+		ID:                      ruleID,
+		Name:                    "tests-dlp-web-rule",
+		Description:             "tests-dlp-web-rule",
+		Order:                   1,
+		Rank:                    7,
+		State:                   "ENABLED",
+		Action:                  "BLOCK",
+		ZscalerIncidentReceiver: true,
+		Severity:                "RULE_SEVERITY_HIGH",
+		Protocols:               []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:       []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels:     []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -40,7 +46,10 @@ func TestDLPWebRules_Get_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, ruleID, result.ID)
-	assert.Equal(t, "Block SSN Uploads", result.Name)
+	assert.Equal(t, "tests-dlp-web-rule", result.Name)
+	assert.Equal(t, "BLOCK", result.Action)
+	assert.True(t, result.ZscalerIncidentReceiver)
+	assert.Equal(t, "RULE_SEVERITY_HIGH", result.Severity)
 }
 
 func TestDLPWebRules_GetAll_SDK(t *testing.T) {
@@ -70,19 +79,34 @@ func TestDLPWebRules_Create_SDK(t *testing.T) {
 	path := "/zia/api/v1/webDlpRules"
 
 	server.On("POST", path, common.SuccessResponse(dlp_web_rules.WebDLPRules{
-		ID:     99999,
-		Name:   "New DLP Rule",
-		Action: "BLOCK",
-		State:  "ENABLED",
+		ID:                      99999,
+		Name:                    "tests-dlp-web-rule",
+		Action:                  "BLOCK",
+		State:                   "ENABLED",
+		Order:                   1,
+		Rank:                    7,
+		ZscalerIncidentReceiver: true,
+		Severity:                "RULE_SEVERITY_HIGH",
+		Protocols:               []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:       []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels:     []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
 	newRule := &dlp_web_rules.WebDLPRules{
-		Name:   "New DLP Rule",
-		Action: "BLOCK",
-		State:  "ENABLED",
+		Name:                    "tests-dlp-web-rule",
+		Description:             "tests-dlp-web-rule",
+		Action:                  "BLOCK",
+		State:                   "ENABLED",
+		Order:                   1,
+		Rank:                    7,
+		ZscalerIncidentReceiver: true,
+		Severity:                "RULE_SEVERITY_HIGH",
+		Protocols:               []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:       []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels:     []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 	}
 
 	result, err := dlp_web_rules.Create(context.Background(), service, newRule)
@@ -140,7 +164,7 @@ func TestDLPWebRules_GetByName_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	ruleName := "Block SSN Uploads"
+	ruleName := "tests-dlp-web-rule"
 	path := "/zia/api/v1/webDlpRules"
 
 	server.On("GET", path, common.SuccessResponse([]dlp_web_rules.WebDLPRules{
@@ -167,19 +191,25 @@ func TestDLPWebRules_Structure(t *testing.T) {
 
 	t.Run("WebDLPRules JSON marshaling", func(t *testing.T) {
 		rule := dlp_web_rules.WebDLPRules{
-			ID:          12345,
-			Name:        "Block Credit Cards",
-			Description: "Block uploads containing credit card numbers",
-			Action:      "BLOCK",
-			State:       "ENABLED",
-			Order:       1,
+			ID:                      12345,
+			Name:                    "tests-dlp-web-rule",
+			Description:             "tests-dlp-web-rule",
+			Action:                  "BLOCK",
+			State:                   "ENABLED",
+			Order:                   1,
+			Rank:                    7,
+			ZscalerIncidentReceiver: true,
+			Severity:                "RULE_SEVERITY_HIGH",
+			Protocols:               []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+			CloudApplications:       []string{"WINDOWS_LIVE_HOTMAIL"},
+			UserRiskScoreLevels:     []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 		}
 
 		data, err := json.Marshal(rule)
 		require.NoError(t, err)
 
 		assert.Contains(t, string(data), `"id":12345`)
-		assert.Contains(t, string(data), `"name":"Block Credit Cards"`)
+		assert.Contains(t, string(data), `"name":"tests-dlp-web-rule"`)
 		assert.Contains(t, string(data), `"action":"BLOCK"`)
 	})
 

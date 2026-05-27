@@ -180,3 +180,47 @@ func TestApplicationSegmentBrowserAccess_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestApplicationSegmentBrowserAccess_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "application")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]applicationsegmentbrowseraccess.BrowserAccess{
+		{
+			ID:   "ba-1",
+			Name: "Gamma",
+			ClientlessApps: []applicationsegmentbrowseraccess.ClientlessApps{{ID: "c1"}},
+		},
+	})))
+
+	result, _, err := applicationsegmentbrowseraccess.GetByName(context.Background(), api.Service, "Delta")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestApplicationSegmentBrowserAccess_Update_ClientlessAppsIDBackfill_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	appID := "ba-parent"
+	path := common.ZPAPath(api.CustomerID, "application", appID)
+
+	api.On("GET", path, common.SuccessResponse(applicationsegmentbrowseraccess.BrowserAccess{
+		ID:   appID,
+		Name: "BA Parent",
+		ClientlessApps: []applicationsegmentbrowseraccess.ClientlessApps{
+			{ID: "persist-aa", Name: "First"},
+			{ID: "persist-bb", Name: "Second"},
+		},
+	}))
+	api.On("PUT", path, common.NoContentResponse())
+
+	upd := &applicationsegmentbrowseraccess.BrowserAccess{
+		ClientlessApps: []applicationsegmentbrowseraccess.ClientlessApps{
+			{Name: "First Renamed"},                 // blank ID fills from existing[0]
+			{ID: "explicit-id", Name: "Second Alias"}, // keeps explicit ID
+		},
+	}
+
+	resp, err := applicationsegmentbrowseraccess.Update(context.Background(), api.Service, appID, upd)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}

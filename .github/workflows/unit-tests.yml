@@ -1,5 +1,10 @@
 name: Unit Tests
 
+# This is the only required CI gate on pull requests. The per-product
+# integration workflows (zpa-test, zia-test, …) hit live tenants and are
+# now scheduled / on-demand only — see their `on:` blocks for rationale.
+# Treat this file as the contract: if it goes red, the PR can't merge.
+
 on:
   pull_request:
     types: [opened, synchronize]
@@ -9,7 +14,9 @@ on:
     branches:
       - master
   schedule:
-    # Run daily at 6 AM UTC
+    # Run daily at 6 AM UTC — gives an early-warning signal if a
+    # dependency or runtime change breaks the suite outside of PR
+    # traffic.
     - cron: "0 6 * * *"
   workflow_dispatch:
 
@@ -41,6 +48,13 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
 
+      - name: Setup Python
+        # Needed for scripts/coverage_summary.py, which renders the
+        # per-product coverage table.
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Set Go env
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -54,8 +68,12 @@ jobs:
 
       - name: Run all unit tests with coverage
         run: |
-          # Run unit tests with -coverpkg to track coverage on actual SDK packages
-          # This ensures we measure coverage on the source code, not test files
+          # -coverpkg points the cover instrumentation at the SDK source
+          # tree (and the small set of supporting packages cache/logger/
+          # ratelimiter that the tests exercise indirectly). Without
+          # -coverpkg, `go test ./tests/unit/...` only instruments the
+          # test packages themselves, which have no production statements
+          # and would report "coverage: [no statements]".
           gotestsum --junitfile junit.xml --format testname -- \
             -v -race -cover \
             -coverprofile=coverage.out \
@@ -66,6 +84,18 @@ jobs:
           echo ""
           echo "=== Coverage Summary ==="
           go tool cover -func coverage.out | tail -20
+
+      - name: Per-product coverage table
+        if: always()
+        run: |
+          # Same per-product table you see locally after `make
+          # test:unit:coverage`. The script parses coverage.out
+          # directly so it doesn't re-run any tests.
+          if [ -f coverage.out ]; then
+            python3 scripts/coverage_summary.py coverage.out
+          else
+            echo "coverage.out not found — skipping per-product table"
+          fi
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

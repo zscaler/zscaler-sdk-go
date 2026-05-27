@@ -267,6 +267,69 @@ func TestURLCategories_CreateURLReview_SDK(t *testing.T) {
 	assert.Equal(t, "newsite.com", result[0].URL)
 }
 
+func TestURLCategories_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories/UNKNOWN"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.Get(context.Background(), service, "UNKNOWN")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestURLCategories_UpdateURLReview_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories/review/domains"
+	server.On("PUT", path, common.RawResponse(nil, 204, nil))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	err = urlcategories.UpdateURLReview(context.Background(), service, []urlcategories.URLReview{
+		{URL: "example.com", DomainType: "FULL_DOMAIN"},
+	})
+	require.NoError(t, err)
+}
+
+func TestURLCategories_GetAll_WithFilters_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories"
+	server.On("GET", path, common.SuccessResponse([]urlcategories.URLCategory{
+		{ID: "CUSTOM_01", ConfiguredName: "Blocked Sites", CustomCategory: true},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetAll(context.Background(), service, true, true, "URL_CATEGORY")
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestURLCategories_GetCustomURLCategories_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlCategories/CUSTOM_MISSING"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlcategories.GetCustomURLCategories(context.Background(), service, "CUSTOM_MISSING", false, false, "")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

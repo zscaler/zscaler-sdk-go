@@ -25,7 +25,8 @@ func TestFTPControlPolicy_Get_SDK(t *testing.T) {
 	server.On("GET", path, common.SuccessResponse(ftp_control_policy.FTPControlPolicy{
 		FtpOverHttpEnabled: true,
 		FtpEnabled:         true,
-		UrlCategories:      []string{"BUSINESS", "FINANCE"},
+		UrlCategories:      []string{"ADULT_THEMES", "ADULT_SEX_EDUCATION"},
+		Urls:               []string{"zscaler.com", "zscaler.net"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -37,6 +38,8 @@ func TestFTPControlPolicy_Get_SDK(t *testing.T) {
 	require.NotNil(t, result)
 	assert.True(t, result.FtpOverHttpEnabled)
 	assert.True(t, result.FtpEnabled)
+	assert.Equal(t, []string{"ADULT_THEMES", "ADULT_SEX_EDUCATION"}, result.UrlCategories)
+	assert.Equal(t, []string{"zscaler.com", "zscaler.net"}, result.Urls)
 }
 
 func TestFTPControlPolicy_Update_SDK(t *testing.T) {
@@ -46,23 +49,28 @@ func TestFTPControlPolicy_Update_SDK(t *testing.T) {
 	path := "/zia/api/v1/ftpSettings"
 
 	server.On("PUT", path, common.SuccessResponse(ftp_control_policy.FTPControlPolicy{
-		FtpOverHttpEnabled: false,
+		FtpOverHttpEnabled: true,
 		FtpEnabled:         true,
+		UrlCategories:      []string{"ADULT_THEMES", "ADULT_SEX_EDUCATION"},
+		Urls:               []string{"zscaler.com", "zscaler.net"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
 	updatePolicy := &ftp_control_policy.FTPControlPolicy{
-		FtpOverHttpEnabled: false,
+		FtpOverHttpEnabled: true,
 		FtpEnabled:         true,
+		UrlCategories:      []string{"ADULT_THEMES", "ADULT_SEX_EDUCATION"},
+		Urls:               []string{"zscaler.com", "zscaler.net"},
 	}
 
 	result, _, err := ftp_control_policy.UpdateFTPControlPolicy(context.Background(), service, updatePolicy)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.False(t, result.FtpOverHttpEnabled)
+	assert.True(t, result.FtpOverHttpEnabled)
+	assert.True(t, result.FtpEnabled)
 }
 
 // =====================================================

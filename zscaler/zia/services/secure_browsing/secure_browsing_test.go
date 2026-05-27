@@ -1,4 +1,4 @@
-package securebrowsing
+package secure_browsing
 
 import (
 	"context"

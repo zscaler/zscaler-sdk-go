@@ -203,6 +203,21 @@ func TestTimeIntervals_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestTimeIntervals_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/timeIntervals/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := time_intervals.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

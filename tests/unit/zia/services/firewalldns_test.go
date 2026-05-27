@@ -78,10 +78,14 @@ func TestFirewallDNS_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newRule := &firewalldnscontrolpolicies.FirewallDNSRules{
-		Name:   "New DNS Rule",
-		Action: "BLOCK",
-		State:  "ENABLED",
-		Order:  1,
+		Name:          "tests-dns-rule",
+		Description:   "tests-dns-rule",
+		Action:        "ALLOW",
+		State:         "ENABLED",
+		Order:         10,
+		Rank:          7,
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		Protocols:     []string{"ANY_RULE"},
 	}
 
 	result, err := firewalldnscontrolpolicies.Create(context.Background(), service, newRule)
@@ -171,9 +175,13 @@ func TestFirewallIPS_Get_SDK(t *testing.T) {
 	path := "/zia/api/v1/firewallIpsRules/12345"
 
 	server.On("GET", path, common.SuccessResponse(ips_policies.FirewallIPSRules{
-		ID:     ruleID,
-		Name:   "IPS Rule",
-		Action: "BLOCK",
+		ID:            ruleID,
+		Name:          "tests-ips-rule",
+		Description:   "tests-ips-rule",
+		Action:        "ALLOW",
+		Order:         1,
+		Rank:          7,
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -224,10 +232,13 @@ func TestFirewallIPS_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newRule := &ips_policies.FirewallIPSRules{
-		Name:   "New IPS Rule",
-		Action: "BLOCK",
-		State:  "ENABLED",
-		Order:  1,
+		Name:          "tests-ips-rule",
+		Description:   "tests-ips-rule",
+		Action:        "ALLOW",
+		State:         "ENABLED",
+		Order:         1,
+		Rank:          7,
+		DestCountries: []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
 	}
 
 	result, err := ips_policies.Create(context.Background(), service, newRule)

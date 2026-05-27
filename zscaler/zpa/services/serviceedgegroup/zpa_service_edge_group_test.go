@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
 )
 
 func TestServiceEdgeGroup_Create(t *testing.T) {
@@ -16,10 +17,15 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	enrollmentCertList, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
+	if err != nil {
+		t.Errorf("Error getting enrollment certificates: %v", err)
+		return
+	}
+	if enrollmentCertList == nil {
+		t.Skip("No enrollment certificates retrieved, skipping test as it requires at least one enrollment certificate")
+		return
+	}
 
 	// Create new resource
 	createdResource, _, err := Create(context.Background(), service, ServiceEdgeGroup{
@@ -38,6 +44,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 		GraceDistanceEnabled:   true,
 		GraceDistanceValue:     "10",
 		GraceDistanceValueUnit: "MILES",
+		EnrollmentCertID:       enrollmentCertList.ID,
 	})
 	if err != nil {
 		t.Fatalf("Error creating resource: %v", err)
