@@ -120,3 +120,31 @@ func TestInspectionCustomControls_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestInspectionCustomControls_GetByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "inspectionControls", "custom")
+	wantName := "Block Host Header"
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]inspection_custom_controls.InspectionCustomControl{
+		{ID: "c1", Name: "Other"},
+		{ID: "c2", Name: wantName, ControlRuleJson: "[]"},
+	})))
+
+	got, _, err := inspection_custom_controls.GetByName(context.Background(), api.Service, wantName)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "c2", got.ID)
+}
+
+func TestInspectionCustomControls_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "inspectionControls", "custom")
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]inspection_custom_controls.InspectionCustomControl{
+		{ID: "only", Name: "Sole Control", ControlRuleJson: "[]"},
+	})))
+
+	got, _, err := inspection_custom_controls.GetByName(context.Background(), api.Service, "missing-control")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "missing-control")
+}

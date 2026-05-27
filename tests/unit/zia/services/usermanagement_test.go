@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/departments"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/groups"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/users"
 )
 
@@ -321,4 +323,295 @@ func TestUsers_Structure(t *testing.T) {
 		assert.Equal(t, 54321, user.ID)
 		assert.Equal(t, "Jane Smith", user.Name)
 	})
+}
+
+// =====================================================
+// groups
+// =====================================================
+
+func TestGroups_GetGroups_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	groupID := 12345
+	path := "/zia/api/v1/groups/12345"
+	server.On("GET", path, common.SuccessResponse(groups.Groups{
+		ID: groupID, Name: "Engineering", Comments: "Engineering team",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.GetGroups(context.Background(), service, groupID)
+	require.NoError(t, err)
+	assert.Equal(t, "Engineering", result.Name)
+}
+
+func TestGroups_GetAllGroups_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/groups"
+	server.On("GET", path, common.SuccessResponse([]groups.Groups{
+		{ID: 1, Name: "Admins"},
+		{ID: 2, Name: "Engineering"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.GetAllGroups(context.Background(), service, nil)
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestGroups_GetGroupByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	name := "Engineering"
+	path := "/zia/api/v1/groups"
+	server.On("GET", path, common.SuccessResponse([]groups.Groups{
+		{ID: 1, Name: name},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.GetGroupByName(context.Background(), service, name)
+	require.NoError(t, err)
+	assert.Equal(t, name, result.Name)
+}
+
+func TestGroups_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/groups/lite"
+	server.On("GET", path, common.SuccessResponse([]groups.Groups{
+		{ID: 1, Name: "Admins"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.GetAllLite(context.Background(), service)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+// =====================================================
+// departments
+// =====================================================
+
+func TestDepartments_GetDepartments_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	deptID := 12345
+	path := "/zia/api/v1/departments/12345"
+	server.On("GET", path, common.SuccessResponse(departments.Department{
+		ID: deptID, Name: "Product", Comments: "Product department",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := departments.GetDepartments(context.Background(), service, deptID)
+	require.NoError(t, err)
+	assert.Equal(t, "Product", result.Name)
+}
+
+func TestDepartments_GetAll_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments"
+	server.On("GET", path, common.SuccessResponse([]departments.Department{
+		{ID: 1, Name: "Engineering"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := departments.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestDepartments_GetDepartmentsByName_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	name := "Engineering"
+	path := "/zia/api/v1/departments"
+	server.On("GET", path, common.SuccessResponse([]departments.Department{
+		{ID: 1, Name: name},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := departments.GetDepartmentsByName(context.Background(), service, name)
+	require.NoError(t, err)
+	assert.Equal(t, name, result.Name)
+}
+
+func TestUsers_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/users/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestUsers_BulkDelete_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/users/bulkDelete"
+	server.On("POST", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.BulkDelete(context.Background(), service, []int{1, 2})
+	require.Error(t, err)
+}
+
+func TestDepartments_GetDepartmentLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments/lite/12345"
+	server.On("GET", path, common.SuccessResponse(departments.Department{
+		ID: 12345, Name: "Engineering",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := departments.GetDepartmentLite(context.Background(), service, 12345)
+	require.NoError(t, err)
+	assert.Equal(t, "Engineering", result.Name)
+}
+
+func TestDepartments_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments"
+	server.On("POST", path, common.SuccessResponse(departments.Department{
+		ID: 99999, Name: "New Department",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := departments.Create(context.Background(), service, &departments.Department{Name: "New Department"})
+	require.NoError(t, err)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestDepartments_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments/12345"
+	server.On("PUT", path, common.SuccessResponse(departments.Department{
+		ID: 12345, Name: "Updated Department",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := departments.Update(context.Background(), service, 12345, &departments.Department{Name: "Updated Department"})
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Department", result.Name)
+}
+
+func TestDepartments_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments/12345"
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = departments.Delete(context.Background(), service, 12345)
+	require.NoError(t, err)
+}
+
+func TestDepartments_GetAllLite_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/departments/lite"
+	server.On("GET", path, common.SuccessResponse([]departments.Department{
+		{ID: 1, Name: "Engineering"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := departments.GetAllLite(context.Background(), service)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestGroups_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/groups"
+	server.On("POST", path, common.SuccessResponse(groups.Groups{
+		ID: 99999, Name: "New Group",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Create(context.Background(), service, &groups.Groups{Name: "New Group"})
+	require.NoError(t, err)
+	assert.Equal(t, 99999, result.ID)
+}
+
+func TestGroups_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/groups/12345"
+	server.On("PUT", path, common.SuccessResponse(groups.Groups{
+		ID: 12345, Name: "Updated Group",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := groups.Update(context.Background(), service, 12345, &groups.Groups{Name: "Updated Group"})
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Group", result.Name)
+}
+
+func TestGroups_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/groups/12345"
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = groups.Delete(context.Background(), service, 12345)
+	require.NoError(t, err)
 }

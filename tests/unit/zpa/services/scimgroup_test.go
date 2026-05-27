@@ -53,3 +53,34 @@ func TestScimGroup_GetAllByIdpId_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestScimGroup_GetByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-777"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	wantName := "Engineering SCIM"
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Other"},
+		{ID: 2, Name: wantName},
+	})))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, wantName, idpID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(2), got.ID)
+	assert.Equal(t, wantName, got.Name)
+}
+
+func TestScimGroup_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-888"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Only Group"},
+	})))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, "missing-group", idpID)
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "missing-group")
+}

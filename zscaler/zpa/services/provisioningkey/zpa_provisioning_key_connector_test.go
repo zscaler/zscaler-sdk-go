@@ -23,10 +23,15 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// service, err := tests.NewZPAClient()
-	// if err != nil {
-	// 	t.Fatalf("Error creating client: %v", err)
-	// }
+	enrollmentCertList, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
+	if err != nil {
+		t.Errorf("Error getting enrollment certificates: %v", err)
+		return
+	}
+	if enrollmentCertList == nil {
+		t.Skip("No enrollment certificates retrieved, skipping test as it requires at least one enrollment certificate")
+		return
+	}
 
 	appGroup := appconnectorgroup.AppConnectorGroup{
 		Name:                     appConnGroupName,
@@ -47,6 +52,7 @@ func TestProvisioningKeyConnectorGroup(t *testing.T) {
 		TCPQuickAckApp:           true,
 		TCPQuickAckAssistant:     true,
 		TCPQuickAckReadAssistant: true,
+		EnrollmentCertID:         enrollmentCertList.ID,
 	}
 
 	createdAppConnGroup, _, err := appconnectorgroup.Create(context.Background(), service, appGroup)

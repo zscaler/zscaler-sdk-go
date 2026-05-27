@@ -201,3 +201,20 @@ func TestMicrotenants_Get_NotFound_SDK(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+func TestMicrotenants_GetMicrotenantByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	mtName := "Search MT"
+	path := common.ZPAPath(api.CustomerID, "microtenants", "search")
+
+	api.OnFunc("POST", path, func(_ *http.Request, _ []byte) common.MockResponse {
+		return common.SuccessResponse(common.ZPAListPaged([]microtenants.MicroTenant{
+			{ID: "mt-search", Name: mtName, Enabled: true},
+		}, 1))
+	})
+
+	result, _, err := microtenants.GetMicrotenantByName(context.Background(), api.Service, mtName)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, mtName, result.Name)
+}

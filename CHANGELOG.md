@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.38 (May 27, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### New ZIA Endpoints
+
+- [PR #436](https://github.com/zscaler/zscaler-sdk-go/pull/436) - Enhanced and increased ZPA and ZIA Unit Test coverage.
+
 # 3.8.37 (May 21, 2026)
 
 ## Notes

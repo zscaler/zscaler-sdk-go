@@ -381,3 +381,18 @@ func TestApplicationSegment_ApplicationValidation_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 }
+
+func TestApplicationSegment_GetApplicationExport_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "application", "export")
+
+	api.OnFunc("GET", path, func(r *http.Request, _ []byte) common.MockResponse {
+		assert.Equal(t, "true", r.URL.Query().Get("single"))
+		assert.Equal(t, "Test", r.URL.Query().Get("search"))
+		return common.CSVResponse("id,name\napp-1,Test App\n")
+	})
+
+	tmpFile := t.TempDir() + "/apps.csv"
+	_, err := applicationsegment.GetApplicationExport(context.Background(), api.Service, "Test", true, tmpFile)
+	require.NoError(t, err)
+}

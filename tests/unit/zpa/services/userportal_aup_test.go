@@ -144,3 +144,17 @@ func TestUserPortalAUP_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestUserPortalAUP_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "userportal", "aup")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]aup.UserPortalAup{
+		{ID: "a-1", Name: "Compliance"},
+	})))
+
+	result, _, err := aup.GetByName(context.Background(), api.Service, "Training")
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no application named 'Training' was found")
+}

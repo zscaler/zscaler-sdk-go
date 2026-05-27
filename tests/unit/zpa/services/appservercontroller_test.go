@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appservercontroller"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 func TestAppServerController_Get_SDK(t *testing.T) {
@@ -203,4 +204,16 @@ func TestAppServerController_Get_NotFound_SDK(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
+}
+
+func TestAppServerController_GetServerSummary_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "server", "summary")
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]zpacommon.CommonSummary{
+		{ID: "server-001", Name: "Server 1", Enabled: true},
+	})))
+
+	result, _, err := appservercontroller.GetServerSummary(context.Background(), api.Service)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
 }

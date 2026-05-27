@@ -119,3 +119,49 @@ func TestCBIBannerController_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestCBIBannerController_GetByNameOrID_ByID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/banners"
+	bannerID := "banner-find-by-id"
+	api.On("GET", base,
+		common.SuccessResponse([]cbibannercontroller.CBIBannerController{{ID: bannerID, Name: "Listed"}}))
+	api.On("GET", base+"/"+bannerID, common.SuccessResponse(cbibannercontroller.CBIBannerController{
+		ID: bannerID, Name: "Full Banner",
+	}))
+
+	got, _, err := cbibannercontroller.GetByNameOrID(context.Background(), api.Service, bannerID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "Full Banner", got.Name)
+}
+
+func TestCBIBannerController_GetByNameOrID_ByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/banners"
+	bannerID := "banner-find-by-name"
+	wantName := "Production Banner"
+	api.On("GET", base,
+		common.SuccessResponse([]cbibannercontroller.CBIBannerController{{ID: bannerID, Name: wantName}}))
+	api.On("GET", base+"/"+bannerID, common.SuccessResponse(cbibannercontroller.CBIBannerController{
+		ID: bannerID, Name: wantName,
+	}))
+
+	got, _, err := cbibannercontroller.GetByNameOrID(context.Background(), api.Service, wantName)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, bannerID, got.ID)
+}
+
+func TestCBIBannerController_GetByNameOrID_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	base := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/banners"
+	api.On("GET", base, common.SuccessResponse([]cbibannercontroller.CBIBannerController{
+		{ID: "b1", Name: "Only Banner"},
+	}))
+
+	got, _, err := cbibannercontroller.GetByNameOrID(context.Background(), api.Service, "missing")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "missing")
+}

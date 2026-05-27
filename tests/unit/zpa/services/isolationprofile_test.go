@@ -51,3 +51,16 @@ func TestIsolationProfile_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestIsolationProfile_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "isolation", "profiles")
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]isolationprofile.IsolationProfile{
+		{ID: "iso-aaa", Name: "Alpha Profile"},
+	})))
+
+	got, _, err := isolationprofile.GetByName(context.Background(), api.Service, "Beta Profile")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "Beta Profile")
+}

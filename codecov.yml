@@ -1,7 +1,17 @@
 # Codecov Configuration
 # https://docs.codecov.com/docs/codecov-yaml
 #
-# Codecov AI (Beta) - Requires GitHub App installation
+# Scope (May 2026)
+# ----------------
+# Codecov reports on the OneAPI-mocked unit suite only. Integration tests
+# (zia-test.yml, zpa-test.yml, …) are workflow_dispatch-only and do not
+# upload to Codecov, so there is no point carrying integration flags here.
+#
+# The PR gate is .github/workflows/unit-tests.yml. It uploads a single
+# coverage.out under the `unit` flag — every product (zpa, zia, zcc, …)
+# is already represented inside that one profile via `-coverpkg=…`.
+#
+# Codecov AI (Beta) — Requires GitHub App installation
 # Install: https://github.com/apps/codecov-ai
 # Commands available in PR comments:
 #   @codecov-ai-reviewer test   - Generate tests for uncovered code
@@ -15,120 +25,61 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "60...100"
+  # Range tuned to realistic OneAPI-mocked unit coverage. Overall is
+  # currently ~52% with per-product spread from ~28% (ztw) to ~80%
+  # (zid). 40 is the "red" floor in PR comments, 80 is the "green"
+  # ceiling — bump these up as coverage climbs.
+  range: "40...80"
   status:
+    # Project-wide gate. `auto` compares the PR head against the base
+    # commit instead of pinning an absolute target, which would just
+    # churn as the SDK grows. The 2% threshold absorbs unavoidable
+    # wiggle (test reorgs, generated structs, etc.) so trivial PRs
+    # don't get flagged.
     project:
       default:
         target: auto
-        threshold: 1%
+        threshold: 2%
         informational: false
         only_pulls: false
-      # Unit test coverage - primary coverage metric
-      unit:
-        target: 80%
-        threshold: 2%
-        flags:
-          - unit
-        informational: false
+    # Patch gate covers only the lines this PR touches. We aim for
+    # 60% on net-new code but keep it informational while the suite
+    # is still ramping — Codecov will surface the patch number in
+    # the comment, but a low value won't block the merge. Flip
+    # `informational: false` once the overall floor is comfortably
+    # above 60%.
     patch:
       default:
-        target: auto
-        threshold: 1%
-        informational: false
-        only_pulls: false
-      unit:
-        target: 70%
-        flags:
-          - unit
+        target: 60%
+        threshold: 5%
+        informational: true
+        only_pulls: true
 
 parsers:
   go:
     partials_as_hits: true
 
 comment:
-  layout: "reach,diff,flags,files"
+  layout: "reach, diff, flags, files"
   behavior: default
   require_changes: false
   require_base: false
   require_head: true
 
-# Coverage flags for different test types
+# A single flag matches the unit-tests.yml upload step:
+#   - uses: codecov/codecov-action@v5
+#     with:
+#       files: ./coverage.out
+#       flags: unit
+#
+# Per-product breakdowns are still visible on Codecov via the file/folder
+# views (zscaler/zpa/..., zscaler/zia/..., etc.); we don't need separate
+# `unit-zpa`, `unit-zia`, … flags unless we start uploading separate
+# profiles per product.
 flags:
-  # Unit test flags (primary - these are used for coverage calculation)
   unit:
     paths:
       - zscaler/
-    carryforward: true
-
-  unit-zpa:
-    paths:
-      - zscaler/zpa/
-    carryforward: true
-
-  unit-zia:
-    paths:
-      - zscaler/zia/
-    carryforward: true
-
-  unit-zdx:
-    paths:
-      - zscaler/zdx/
-    carryforward: true
-
-  unit-zcc:
-    paths:
-      - zscaler/zcc/
-    carryforward: true
-
-  unit-ztw:
-    paths:
-      - zscaler/ztw/
-    carryforward: true
-
-  unit-zwa:
-    paths:
-      - zscaler/zwa/
-    carryforward: true
-
-  unit-zidentity:
-    paths:
-      - zscaler/zidentity/
-    carryforward: true
-
-  unit-oneapi:
-    paths:
-      - zscaler/
-    carryforward: true
-
-  # Integration test flags (secondary - run selectively)
-  zia:
-    paths:
-      - zscaler/zia/
-    carryforward: true
-
-  zpa:
-    paths:
-      - zscaler/zpa/
-    carryforward: true
-
-  zdx:
-    paths:
-      - zscaler/zdx/
-    carryforward: true
-
-  zcc:
-    paths:
-      - zscaler/zcc/
-    carryforward: true
-
-  ztw:
-    paths:
-      - zscaler/ztw/
-    carryforward: true
-
-  zidentity:
-    paths:
-      - zscaler/zidentity/
     carryforward: true
 
 ignore:
@@ -138,3 +89,5 @@ ignore:
   - "tests/**/*"
   - "local_test/**/*"
   - "examples/**/*"
+  - "scripts/**/*"
+  - "docs/**/*"

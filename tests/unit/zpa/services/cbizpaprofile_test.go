@@ -52,3 +52,44 @@ func TestCBIZPAProfile_GetAll_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
 }
+
+func TestCBIZPAProfile_GetByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/zpaprofiles"
+	name := "Default ZPA CBI Mapping"
+	api.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{
+		{ID: "zpa-other", Name: "Other"},
+		{ID: "zpa-match", Name: name},
+	}))
+
+	got, _, err := cbizpaprofile.GetByName(context.Background(), api.Service, name)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "zpa-match", got.ID)
+}
+
+func TestCBIZPAProfile_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/zpaprofiles"
+	api.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{
+		{ID: "only", Name: "Sole Profile"},
+	}))
+
+	got, _, err := cbizpaprofile.GetByName(context.Background(), api.Service, "missing-profile")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "missing-profile")
+}
+
+func TestCBIZPAProfile_Get_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/zpaprofiles"
+	api.On("GET", path, common.SuccessResponse([]cbizpaprofile.ZPAProfiles{
+		{ID: "exist", Name: "Exists"},
+	}))
+
+	got, _, err := cbizpaprofile.Get(context.Background(), api.Service, "no-such-id")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "no-such-id")
+}

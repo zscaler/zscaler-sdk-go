@@ -158,6 +158,21 @@ func TestWorkloadGroups_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestWorkloadGroups_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/workloadGroups/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := workloadgroups.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // =====================================================
 // Structure Tests
 // =====================================================

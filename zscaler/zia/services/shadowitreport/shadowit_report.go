@@ -189,7 +189,7 @@ func CreateCloudApplicationsExportCSV(ctx context.Context, service *zscaler.Serv
 	// Create the endpoint with the entity
 	endpoint := fmt.Sprintf(appExportCsvEndpointTemplate, entity)
 
-	resp, err := service.Client.Create(ctx, endpoint, appExport)
+	resp, err := service.Client.Create(ctx, endpoint, *appExport)
 	if err != nil {
 		return nil, nil, err
 	}

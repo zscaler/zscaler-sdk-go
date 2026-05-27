@@ -151,6 +151,36 @@ func TestRuleLabels_GetByName_SDK(t *testing.T) {
 	assert.Equal(t, labelName, result.Name)
 }
 
+func TestRuleLabels_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/ruleLabels/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := rule_labels.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRuleLabels_GetRuleLabelByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/ruleLabels"
+	server.On("GET", path, common.SuccessResponse([]rule_labels.RuleLabels{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := rule_labels.GetRuleLabelByName(context.Background(), service, "nonexistent-label")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // =====================================================
 // Structure Tests - JSON marshaling/unmarshaling
 // =====================================================

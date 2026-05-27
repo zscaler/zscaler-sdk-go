@@ -24,12 +24,16 @@ func TestFirewallFilteringRules_Get_SDK(t *testing.T) {
 	path := "/zia/api/v1/firewallFilteringRules/12345"
 
 	server.On("GET", path, common.SuccessResponse(filteringrules.FirewallFilteringRules{
-		ID:          ruleID,
-		Name:        "Block Malicious IPs",
-		Description: "Block known malicious IP addresses",
-		Action:      "BLOCK",
-		State:       "ENABLED",
-		Order:       1,
+		ID:                ruleID,
+		Name:              "tests-firewall-rule",
+		Description:       "tests-firewall-rule",
+		Action:            "ALLOW",
+		State:             "ENABLED",
+		Order:             1,
+		Rank:              7,
+		DestCountries:     []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications:    []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
+		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -40,8 +44,9 @@ func TestFirewallFilteringRules_Get_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, ruleID, result.ID)
-	assert.Equal(t, "Block Malicious IPs", result.Name)
-	assert.Equal(t, "BLOCK", result.Action)
+	assert.Equal(t, "tests-firewall-rule", result.Name)
+	assert.Equal(t, "ALLOW", result.Action)
+	assert.Contains(t, result.DestCountries, "COUNTRY_US")
 }
 
 func TestFirewallFilteringRules_GetAll_SDK(t *testing.T) {
@@ -81,9 +86,15 @@ func TestFirewallFilteringRules_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newRule := filteringrules.FirewallFilteringRules{
-		Name:   "New Rule",
-		Action: "ALLOW",
-		State:  "ENABLED",
+		Name:              "tests-firewall-rule",
+		Description:       "tests-firewall-rule",
+		Action:            "ALLOW",
+		State:             "ENABLED",
+		Order:             1,
+		Rank:              7,
+		DestCountries:     []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications:    []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
+		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
 	}
 
 	result, err := filteringrules.Create(context.Background(), service, &newRule)
@@ -177,6 +188,78 @@ func TestFirewallFilteringRules_GetFilteringRuleCount_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, 15, result)
+}
+
+func TestFirewallFilteringRules_GetAll_WithFilters_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules"
+	server.On("GET", path, common.SuccessResponse([]filteringrules.FirewallFilteringRules{
+		{ID: 1, Name: "Filtered Rule", Action: "BLOCK"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.GetAll(context.Background(), service, &filteringrules.GetAllFilterOptions{
+		RuleName:   "Filtered",
+		RuleAction: "BLOCK",
+		Location:   "HQ",
+	})
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestFirewallFilteringRules_GetFirewallFilteringRuleCount_WithFilters_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules/count"
+	server.On("GET", path, common.SuccessResponse(3))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	count, err := filteringrules.GetFirewallFilteringRuleCount(context.Background(), service, &filteringrules.GetAllFilterOptions{
+		RuleName:            "Block",
+		PredefinedRuleCount: true,
+		RuleLabel:           "Default",
+		RuleLabelId:         1,
+		Department:          "Engineering",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, 3, count)
+}
+
+func TestFirewallFilteringRules_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestFirewallFilteringRules_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/firewallFilteringRules"
+	server.On("GET", path, common.SuccessResponse([]filteringrules.FirewallFilteringRules{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := filteringrules.GetByName(context.Background(), service, "missing-rule")
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =====================================================

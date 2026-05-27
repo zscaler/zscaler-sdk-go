@@ -180,3 +180,65 @@ func TestApplicationSegmentInspection_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestApplicationSegmentInspection_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "application")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]applicationsegmentinspection.AppSegmentInspection{
+		{ID: "x", Name: "Other", InspectionAppDto: []applicationsegmentinspection.InspectionAppDto{{ID: "d", Name: "D"}}},
+	})))
+
+	result, _, err := applicationsegmentinspection.GetByName(context.Background(), api.Service, "Unknown")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestApplicationSegmentInspection_Update_AppsConfigInjection_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	appID := "insp-parent"
+	path := common.ZPAPath(api.CustomerID, "application", appID)
+
+	api.On("GET", path, common.SuccessResponse(applicationsegmentinspection.AppSegmentInspection{
+		ID:   appID,
+		Name: "Parent",
+		InspectionAppDto: []applicationsegmentinspection.InspectionAppDto{
+			{ID: "inspect-child-77", Name: "Child Inspect"},
+		},
+	}))
+	api.On("PUT", path, common.NoContentResponse())
+
+	upd := &applicationsegmentinspection.AppSegmentInspection{
+		CommonAppsDto: applicationsegmentinspection.CommonAppsDto{
+			AppsConfig: []applicationsegmentinspection.AppsConfig{
+				{Name: "Child Inspect", Enabled: true, InspectAppID: "will-be-overwritten"},
+			},
+		},
+	}
+
+	resp, err := applicationsegmentinspection.Update(context.Background(), api.Service, appID, upd)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestApplicationSegmentInspection_Update_ClearsEmptyAppsConfig_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	appID := "insp-clear"
+	path := common.ZPAPath(api.CustomerID, "application", appID)
+
+	api.On("GET", path, common.SuccessResponse(applicationsegmentinspection.AppSegmentInspection{
+		ID:   appID,
+		Name: "Parent",
+		InspectionAppDto: []applicationsegmentinspection.InspectionAppDto{
+			{ID: "i1", Name: "X"},
+		},
+	}))
+	api.On("PUT", path, common.NoContentResponse())
+
+	resp, err := applicationsegmentinspection.Update(context.Background(), api.Service, appID,
+		&applicationsegmentinspection.AppSegmentInspection{
+			CommonAppsDto: applicationsegmentinspection.CommonAppsDto{},
+		})
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}

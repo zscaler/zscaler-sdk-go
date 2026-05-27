@@ -81,8 +81,16 @@ func TestDLPDictionaries_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newDict := &dlpdictionaries.DlpDictionary{
-		Name:           "New Dictionary",
-		DictionaryType: "PATTERNS_AND_PHRASES",
+		Name:                  "tests-dlp-dictionary",
+		Description:           "tests-dlp-dictionary",
+		DictionaryType:        "PATTERNS_AND_PHRASES",
+		CustomPhraseMatchType: "MATCH_ALL_CUSTOM_PHRASE_PATTERN_DICTIONARY",
+		Phrases: []dlpdictionaries.Phrases{
+			{Action: "PHRASE_COUNT_TYPE_ALL", Phrase: "YourPhrase"},
+		},
+		Patterns: []dlpdictionaries.Patterns{
+			{Action: "PATTERN_COUNT_TYPE_UNIQUE", Pattern: "YourPattern"},
+		},
 	}
 
 	result, _, err := dlpdictionaries.Create(context.Background(), service, newDict)

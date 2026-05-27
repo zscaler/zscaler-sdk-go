@@ -10,26 +10,59 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
 )
 
 func TestAppConnectorGroup_Get_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	// Mock the enrollment-cert lookup the test uses to derive
+	// EnrollmentCertID — without this the SDK call would 404 against
+	// the in-process mock. Returning a one-element list whose Name
+	// matches the search term ensures GetByName succeeds.
+	enrollmentCertSearchPath := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/enrollmentCert"
+	server.On("GET", enrollmentCertSearchPath, common.SuccessResponse(map[string]interface{}{
+		"list": []enrollmentcert.EnrollmentCert{
+			{ID: "ec-001", Name: "Connector"},
+		},
+		"totalPages": 1,
+	}))
+
+	enrollmentCertList, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
+	require.NoError(t, err)
+	require.NotNil(t, enrollmentCertList)
+
 	groupID := "acg-12345"
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/appConnectorGroup/" + groupID
 
 	server.On("GET", path, common.SuccessResponse(appconnectorgroup.AppConnectorGroup{
-		ID:          groupID,
-		Name:        "Test Connector Group",
-		Description: "Test description",
-		Enabled:     true,
-		Latitude:    "37.7749",
-		Longitude:   "-122.4194",
+		ID:                       groupID,
+		Name:                     "Test Connector Group",
+		Description:              "Test description",
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.33874",
+		Longitude:                "-121.8852525",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              false,
+		UseInDrMode:              false,
+		LSSAppConnectorGroup:     false,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
+		EnrollmentCertID:         enrollmentCertList.ID,
 	}))
-
-	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
-	require.NoError(t, err)
 
 	result, resp, err := appconnectorgroup.Get(context.Background(), service, groupID)
 

@@ -24,9 +24,14 @@ func TestNatControlPolicies_Get_SDK(t *testing.T) {
 	path := "/zia/api/v1/dnatRules/12345"
 
 	server.On("GET", path, common.SuccessResponse(nat_control_policies.NatControlPolicies{
-		ID:    ruleID,
-		Name:  "NAT Policy 1",
-		State: "ENABLED",
+		ID:           ruleID,
+		Name:         "tests-nat-rule",
+		Description:  "tests-nat-rule",
+		State:        "ENABLED",
+		Order:        1,
+		Rank:         7,
+		RedirectPort: 2000,
+		RedirectIp:   "1.1.1.1",
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -37,6 +42,9 @@ func TestNatControlPolicies_Get_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, ruleID, result.ID)
+	assert.Equal(t, "tests-nat-rule", result.Name)
+	assert.Equal(t, 2000, result.RedirectPort)
+	assert.Equal(t, "1.1.1.1", result.RedirectIp)
 }
 
 func TestNatControlPolicies_GetByName_SDK(t *testing.T) {
@@ -77,9 +85,13 @@ func TestNatControlPolicies_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newPolicy := &nat_control_policies.NatControlPolicies{
-		Name:  "New NAT Policy",
-		State: "ENABLED",
-		Order: 1,
+		Name:         "tests-nat-rule",
+		Description:  "tests-nat-rule",
+		Order:        1,
+		Rank:         7,
+		RedirectPort: 2000,
+		RedirectIp:   "1.1.1.1",
+		State:        "ENABLED",
 	}
 
 	result, err := nat_control_policies.Create(context.Background(), service, newPolicy)

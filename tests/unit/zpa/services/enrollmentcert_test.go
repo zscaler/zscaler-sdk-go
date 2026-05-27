@@ -182,7 +182,7 @@ func TestEnrollmentCert_GenerateCSR_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/csr"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/csr/generate"
 
 	server.On("POST", path, common.SuccessResponse(enrollmentcert.GenerateEnrollmentCSR{
 		Name: "CSR Request",
@@ -207,7 +207,7 @@ func TestEnrollmentCert_GenerateSelfSigned_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/selfsigned"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/selfsigned/generate"
 
 	server.On("POST", path, common.SuccessResponse(enrollmentcert.GenerateSelfSignedCert{
 		Name:        "Self-Signed Certificate",

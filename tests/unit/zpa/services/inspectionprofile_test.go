@@ -167,3 +167,46 @@ func TestInspectionProfile_Patch_SDK(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }
+
+func TestInspectionProfile_PutAssociate_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	profileID := "insp-profile-associate"
+	path := common.ZPAPath(api.CustomerID, "inspectionProfile", profileID, "associateAllPredefinedControls")
+	api.On("PUT", path, common.NoContentResponse())
+
+	prof := &inspection_profile.InspectionProfile{
+		ID:                        profileID,
+		PredefinedControlsVersion: "OWASP_CRS/3.3.0",
+	}
+	resp, err := inspection_profile.PutAssociate(context.Background(), api.Service, profileID, prof)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestInspectionProfile_PutDeassociate_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	profileID := "insp-profile-deassociate"
+	path := common.ZPAPath(api.CustomerID, "inspectionProfile", profileID, "deAssociateAllPredefinedControls")
+	api.On("PUT", path, common.NoContentResponse())
+
+	prof := &inspection_profile.InspectionProfile{
+		ID:                        profileID,
+		PredefinedControlsVersion: "OWASP_CRS/3.3.0",
+	}
+	resp, err := inspection_profile.PutDeassociate(context.Background(), api.Service, profileID, prof)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
+func TestInspectionProfile_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "inspectionProfile")
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]inspection_profile.InspectionProfile{
+		{ID: "p1", Name: "Existing Only"},
+	})))
+
+	got, _, err := inspection_profile.GetByName(context.Background(), api.Service, "Not Here")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "Not Here")
+}

@@ -15,7 +15,9 @@ func TestManagedBrowser_GetAll_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowser"
+	// SDK hits /managedBrowserProfile/search (see managed_browser.go,
+	// managedBrowserEndpoint constant), not /managedBrowser.
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowserProfile/search"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list": []managed_browser.ManagedBrowserProfile{
@@ -39,7 +41,7 @@ func TestManagedBrowser_GetByName_SDK(t *testing.T) {
 	defer server.Close()
 
 	browserName := "Production Browser"
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowser"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowserProfile/search"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list": []managed_browser.ManagedBrowserProfile{
@@ -64,7 +66,7 @@ func TestManagedBrowser_GetByName_NotFound_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowser"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/managedBrowserProfile/search"
 
 	server.On("GET", path, common.SuccessResponse(map[string]interface{}{
 		"list":       []managed_browser.ManagedBrowserProfile{},

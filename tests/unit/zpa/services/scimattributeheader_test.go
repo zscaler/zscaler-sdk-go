@@ -3,6 +3,7 @@ package unit
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,4 +81,42 @@ func TestScimAttributeHeader_GetByName_SDK(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "attr-002", result.ID)
 	assert.Equal(t, attrName, result.Name)
+}
+
+func TestScimAttributeHeader_GetValues_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-values"
+	attrID := "attr-collect"
+	path := fmt.Sprintf("/zpa/userconfig/v1/customers/%s/scimattribute/idpId/%s/attributeId/%s", api.CustomerID, idpID, attrID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]string{"alice", "bob"})))
+
+	got, err := scimattributeheader.GetValues(context.Background(), api.Service, idpID, attrID)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"alice", "bob"}, got)
+}
+
+func TestScimAttributeHeader_SearchValues_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-search"
+	attrID := "attr-search"
+	path := fmt.Sprintf("/zpa/userconfig/v1/customers/%s/scimattribute/idpId/%s/attributeId/%s", api.CustomerID, idpID, attrID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]string{"jdoe", "jane"})))
+
+	got, err := scimattributeheader.SearchValues(context.Background(), api.Service, idpID, attrID, "jdoe@example.com")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"jdoe", "jane"}, got)
+}
+
+func TestScimAttributeHeader_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-404-attrs"
+	path := common.ZPAPath(api.CustomerID, "idp", idpID, "scimattribute")
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimattributeheader.ScimAttributeHeader{
+		{ID: "a1", Name: "department"},
+	})))
+
+	got, _, err := scimattributeheader.GetByName(context.Background(), api.Service, "costCenter", idpID)
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "costCenter")
 }

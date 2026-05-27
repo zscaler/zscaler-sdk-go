@@ -278,6 +278,50 @@ func TestIntermediateCA_Delete_SDK(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestIntermediateCA_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate"
+	server.On("GET", path, common.SuccessResponse([]intermediatecacertificates.IntermediateCACertificate{}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetByName(context.Background(), service, "missing-ca")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIntermediateCA_GetCertificate_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := intermediatecacertificates.GetCertificate(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIntermediateCA_Delete_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/intermediateCaCertificate/99999"
+	server.On("DELETE", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = intermediatecacertificates.Delete(context.Background(), service, 99999)
+	require.Error(t, err)
+}
+
 func TestIntermediateCA_UpdateMakeDefault_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
