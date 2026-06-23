@@ -35,6 +35,36 @@ func TestDetectServiceTypeUnknown(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestGetAPIBaseURL(t *testing.T) {
+	// Production / empty -> default commercial gateway
+	require.Equal(t, "https://api.zsapi.net", GetAPIBaseURL(""))
+	require.Equal(t, "https://api.zsapi.net", GetAPIBaseURL("PRODUCTION"))
+
+	// Non-production commercial cloud keeps the api.{cloud}.zsapi.net pattern
+	require.Equal(t, "https://api.beta.zsapi.net", GetAPIBaseURL("beta"))
+
+	// Government (FedRAMP) clouds resolve to dedicated gateways, case-insensitive
+	require.Equal(t, "https://api.zscalergov.net", GetAPIBaseURL("gov"))
+	require.Equal(t, "https://api.zscalergov.net", GetAPIBaseURL("GOV"))
+	require.Equal(t, "https://api.zscalergov.us", GetAPIBaseURL("govus"))
+	require.Equal(t, "https://api.zscalergov.us", GetAPIBaseURL("GOVUS"))
+}
+
+func TestGetAuthURL(t *testing.T) {
+	// Production / empty -> commercial identity provider
+	require.Equal(t, "https://testcompany.zslogin.net/oauth2/v1/token", getAuthURL("testcompany", ""))
+	require.Equal(t, "https://testcompany.zslogin.net/oauth2/v1/token", getAuthURL("testcompany", "PRODUCTION"))
+
+	// Government (FedRAMP) clouds use the dedicated Zidentity identity providers
+	require.Equal(t, "https://zsgovlab-net.zidentitygov.net/oauth2/v1/token", getAuthURL("zsgovlab-net", "gov"))
+	require.Equal(t, "https://zsgovlab-net.zidentitygov.net/oauth2/v1/token", getAuthURL("zsgovlab-net", "GOV"))
+	require.Equal(t, "https://zsgovlab-us.zidentitygovus.net/oauth2/v1/token", getAuthURL("zsgovlab-us", "govus"))
+	require.Equal(t, "https://zsgovlab-us.zidentitygovus.net/oauth2/v1/token", getAuthURL("zsgovlab-us", "GOVUS"))
+
+	// Other non-production commercial clouds keep the legacy zslogin{cloud} pattern
+	require.Equal(t, "https://testcompany.zsloginbeta.net/oauth2/v1/token", getAuthURL("testcompany", "beta"))
+}
+
 func TestGetServiceHTTPClientUnknown(t *testing.T) {
 	cfg, err := NewConfiguration()
 	require.NoError(t, err)

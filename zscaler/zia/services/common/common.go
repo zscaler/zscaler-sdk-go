@@ -120,19 +120,6 @@ type DataConsumed struct {
 	Max int `json:"max,omitempty"`
 }
 
-type CommonApplication struct {
-	Val                 int    `json:"val"`
-	WebApplicationClass string `json:"webApplicationClass"`
-	BackendName         string `json:"backendName"`
-	OriginalName        string `json:"originalName"`
-	Name                string `json:"name"`
-	Deprecated          bool   `json:"deprecated"`
-	Misc                bool   `json:"misc"`
-	AppNotReady         bool   `json:"appNotReady"`
-	UnderMigration      bool   `json:"underMigration"`
-	AppCatModified      bool   `json:"appCatModified"`
-}
-
 type CBIProfile struct {
 	ID         string `json:"id,omitempty"`
 	Name       string `json:"name,omitempty"`

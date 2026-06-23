@@ -1,5 +1,63 @@
 # Changelog
 
+# 3.8.39 (June 23, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Enhancements
+
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) - Added OneAPI (Zidentity) support for the government (FedRAMP) clouds. Setting `cloud=gov` or `cloud=govus` on `ZscalerClient` now routes OAuth to the correct Zidentity identity provider (`https://{vanityDomain}.zidentitygov.net` / `https://{vanityDomain}.zidentitygovus.net`) and API calls to the correct gateway (`https://api.zscalergov.net` / `https://api.zscalergov.us`). Previously these clouds produced non-resolvable hostnames and failed on every call.
+
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) - Added the following new ZIA Endpoints
+  - `GET /adaptiveAccessProfiles` Retrieves a list of all Adaptive Access profiles
+  - `GET /adaptiveAccessProfiles/profiles/rules` Retrieves the Adaptive Access profile rules
+
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) - Added the following new ZIA Devices
+  - `GET /devices` Retrieves a list of all the devices registered with Zscaler.
+  - `GET /devices/{id}` Retrieves information about the registered device based on the device ID
+
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) Added the following new ZIA partner integration endpoints:
+  - `GET /integrationPartners` Retrieves a list of partners and services integrated with the Zscaler service
+  - `GET /integrationPartners/crowdStrike/endpoints` Retrieves the list of CrowdStrike endpoints based on the indicator of compromise (IOC) query, with pagination support
+  - `POST /integrationPartners/crowdStrike/endpoints` Accepts a list of CrowdStrike endpoint or device IDs in the request body and fetches detailed endpoint or device data for those IDs
+  - `GET /integrationPartners/crowdStrike/whitelistedBaseUrls` Retrieves a list of CrowdStrike configured whitelisted base URLs (allowist URLs).
+  - `POST /integrationPartners/microsoftDefender/endpoints` Configures the integration of Microsoft Defender for Endpoint APIs with Zscaler.
+  - `GET /integrationPartners/sandbox/report/{md5}` Retrieves the MD5 hash of the file required to view the Sandbox Detail Report.
+
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) Added the following new ZIA Security & UEBA Alerts endpoints:
+
+  - `GET /alertDefinitions` Retrieves a list of all configured alert definitions for the organization
+  - `POST /alertDefinitions/{id}` Adds an alert definition.
+  - `GET /alertDefinitions/{id}` Retrieves the alert definition information based on the specified ID
+  - `PUT /alertDefinitions/{id}` Updates an existing alert definition based on the specified ID
+  - `DELETE /alertDefinitions/{id}` Deletes an alert definition based on the specified ID
+
+  - `GET /alertRuleConfiguration/rules` Retrieves a list of all configured Security alert rules for the organization
+  - `POST /alertRuleConfiguration/rules/{id}` Adds a new Security alert rule.
+  - `GET /alertRuleConfiguration/rules/{id}` Retrieves the Security alert rule information based on the specified ID
+  - `PUT /alertRuleConfiguration/rules/{id}` Updates an existing Security alert rule based on the specified ID
+  - `DELETE /alertRuleConfiguration/rules/{id}` Deletes a Security alert rule based on the specified ID
+  - `GET /alertRuleConfiguration/rules/rulestatus` Retrieves the statuses of all alert rules for an organization
+
+  - `GET /alertRuleConfiguration/uebaRules` Retrieves a list of all configured User and Entity Behavior Analytics (UEBA) alert rules.
+  - `POST /alertRuleConfiguration/uebaRules` Adds a new UEBA alert rule.
+  - `GET /alertRuleConfiguration/uebaRules/{id}` Retrieves information about UEBA alert rule based on the specified ID
+  - `PUT /alertRuleConfiguration/uebaRules/{id}` Updates an existing UEBA alert rule based on the specified ID
+  - `DELETE /alertRuleConfiguration/uebaRules/{id}` Deletes a UEBA alert rule based on the specified ID
+
+  - `GET /alertRuleConfiguration/webhooks` Retrieves a list of all configured webhooks for an organization.
+  - `POST /alertRuleConfiguration/webhooks` Adds a new webhook for alert notifications.
+  - `GET /alertRuleConfiguration/webhooks/{id}` Retrieves information about UEBA alert rule based on the specified ID
+  - `PUT /alertRuleConfiguration/webhooks/{id}` Updates an existing webhook based on the specified ID
+  - `DELETE /alertRuleConfiguration/webhooks/{id}` Deletes a UEBA alert rule based on the specified ID
+  - `POST /alertRuleConfiguration/webhooks/test` Tests a webhook configuration by sending a sample notification. Any non-2xx HTTP response from this webhook endpoint is treated as a failure, and redirects are not followed.
+
+  - `GET /isolationVotiroCdr/policies` Retrieves Votiro CDR policies configured for a tenant. 
+  - `GET /isolationVotiroCdr/tokenConfig` Retrieves the Votiro CDR authentication credentials.
+  - `PUT /isolationVotiroCdr/tokenConfig` Configures or updates the Votiro CDR authentication credentials.
+  - `DELETE /isolationVotiroCdr/tokenConfig` Deletes the Votiro CDR authentication credentials
+
 # 3.8.38 (May 27, 2026)
 
 ## Notes
