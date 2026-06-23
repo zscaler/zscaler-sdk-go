@@ -138,6 +138,47 @@ export ZSCALER_CLOUD="beta"
 
 **Note**: By default this SDK will send the authentication request and subsequent API calls to the default base URL.
 
+### OneAPI Government (FedRAMP) Cloud Environments
+
+OneAPI supports the Zscaler government (FedRAMP) clouds. These are FedRAMP-isolated environments served by a dedicated Zidentity identity provider and API gateway. To authenticate, set the `cloud` attribute (or `ZSCALER_CLOUD` environment variable) to one of the supported government values:
+
+| `cloud` value | OAuth token endpoint | API base URL |
+|---------------|----------------------|--------------|
+| `gov`         | `https://<vanity_domain>.zidentitygov.net/oauth2/v1/token`   | `https://api.zscalergov.net` |
+| `govus`       | `https://<vanity_domain>.zidentitygovus.net/oauth2/v1/token` | `https://api.zscalergov.us`  |
+
+For example, authenticating to the GOV environment:
+
+```sh
+export ZSCALER_VANITY_DOMAIN="acme"
+export ZSCALER_CLOUD="gov"
+```
+
+Or inline in the client configuration:
+
+```go
+import (
+ "fmt"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+)
+
+func main() {
+  config, err := zscaler.NewConfiguration(
+    zscaler.WithClientID(""),
+    zscaler.WithClientSecret(""),
+    zscaler.WithVanityDomain("acme"),
+    zscaler.WithZscalerCloud("gov"), // or "govus"
+  )
+  if err != nil {
+    fmt.Printf("Error: %v\n", err)
+  }
+  service, err := zscaler.NewOneAPIClient(config)
+  _ = service
+}
+```
+
+**Note**: The `cloud` value is case-insensitive (`gov`, `GOV`, `govus`, `GOVUS` are all accepted). The `vanityDomain` is still required and is used as the host prefix for the government identity provider.
+
 ### Authenticating to Zscaler Private Access (ZPA)
 
 The authentication to Zscaler Private Access (ZPA) via the OneAPI framework, requires the extra attribute called `customerId` and optionally the attribute `microtenantId`.

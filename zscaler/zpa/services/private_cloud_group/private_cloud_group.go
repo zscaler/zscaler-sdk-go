@@ -43,6 +43,7 @@ type PrivateCloudGroup struct {
 	CreationTime           string `json:"creationTime,omitempty"`
 	ModifiedBy             string `json:"modifiedBy,omitempty"`
 	ModifiedTime           string `json:"modifiedTime,omitempty"`
+	EnrollmentCertID       string `json:"enrollmentCertId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, groupID string) (*PrivateCloudGroup, *http.Response, error) {

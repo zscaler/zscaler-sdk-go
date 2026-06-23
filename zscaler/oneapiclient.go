@@ -246,12 +246,7 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 	}
 
 	// Determine the OAuth2 provider URL based on the cloud parameter.
-	var authUrl string
-	if creds.Cloud == "" || strings.EqualFold(creds.Cloud, "PRODUCTION") {
-		authUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", creds.VanityDomain)
-	} else {
-		authUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", creds.VanityDomain, strings.ToLower(creds.Cloud))
-	}
+	authUrl := getAuthURL(creds.VanityDomain, creds.Cloud)
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
@@ -336,12 +331,7 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	}
 
 	// Determine the OAuth2 provider URL based on the cloud parameter.
-	var authUrl string
-	if creds.Cloud == "" || strings.EqualFold(creds.Cloud, "PRODUCTION") {
-		authUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", creds.VanityDomain)
-	} else {
-		authUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", creds.VanityDomain, strings.ToLower(creds.Cloud))
-	}
+	authUrl := getAuthURL(creds.VanityDomain, creds.Cloud)
 
 	// Make the POST request.
 	resp, err := cfg.HTTPClient.PostForm(authUrl, formData)
@@ -411,8 +401,43 @@ func detectServiceType(endpoint string) (string, error) {
 	return "", fmt.Errorf("unsupported service")
 }
 
+// OneAPI (Zidentity) government (FedRAMP) cloud endpoints.
+//
+// These environments are FedRAMP-isolated and use a completely different
+// identity provider and API gateway than the commercial clouds. The OneAPI
+// client selects them via the (case-insensitive) "cloud" parameter
+// ("gov"/"govus"). Keyed on the lowercased cloud value.
+var oneAPIGovAuthDomains = map[string]string{
+	"gov":   "zidentitygov.net",
+	"govus": "zidentitygov.us",
+}
+
+var oneAPIGovAPIBaseURLs = map[string]string{
+	"gov":   "https://api.zscalergov.net",
+	"govus": "https://api.zscalergov.us",
+}
+
+// getAuthURL determines the OAuth2 token endpoint based on the vanity domain
+// and cloud. Government (FedRAMP) clouds use a dedicated Zidentity identity
+// provider rather than the commercial zslogin{cloud}.net family.
+func getAuthURL(vanityDomain, cloud string) string {
+	if cloud == "" || strings.EqualFold(cloud, "PRODUCTION") {
+		return fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	}
+	if govAuthDomain, ok := oneAPIGovAuthDomains[strings.ToLower(cloud)]; ok {
+		return fmt.Sprintf("https://%s.%s/oauth2/v1/token", vanityDomain, govAuthDomain)
+	}
+	return fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(cloud))
+}
+
 // GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
 func GetAPIBaseURL(cloud string) string {
+	// Government (FedRAMP) clouds are isolated environments served by dedicated
+	// gateways and do not follow the commercial api.{cloud}.zsapi.net pattern.
+	if govBaseURL, ok := oneAPIGovAPIBaseURLs[strings.ToLower(cloud)]; ok {
+		return govBaseURL
+	}
+
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
 		baseURL = fmt.Sprintf("https://api.%s.zsapi.net", strings.ToLower(cloud))
