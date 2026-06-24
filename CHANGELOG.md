@@ -53,10 +53,20 @@
   - `DELETE /alertRuleConfiguration/webhooks/{id}` Deletes a UEBA alert rule based on the specified ID
   - `POST /alertRuleConfiguration/webhooks/test` Tests a webhook configuration by sending a sample notification. Any non-2xx HTTP response from this webhook endpoint is treated as a failure, and redirects are not followed.
 
+- [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438) - Added Votiro CDR endpoints
+
   - `GET /isolationVotiroCdr/policies` Retrieves Votiro CDR policies configured for a tenant. 
   - `GET /isolationVotiroCdr/tokenConfig` Retrieves the Votiro CDR authentication credentials.
   - `PUT /isolationVotiroCdr/tokenConfig` Configures or updates the Votiro CDR authentication credentials.
   - `DELETE /isolationVotiroCdr/tokenConfig` Deletes the Votiro CDR authentication credentials
+
+- [PR #439](https://github.com/zscaler/zscaler-sdk-go/pull/439) - Added ZPA Private Cloud Resource endpoints
+
+  - `GET /privateCloud` Retrieves all configured Private clouds for the specified customer.
+  - `GET /privateCloud` Retrieves Private cloud details for the specified ID.
+  - `POST /privateCloud` Adds a new Private cloud for the specified customer.
+  - `PUT /privateCloud` Updates the Private cloud for the specified ID.
+  - `DELETE /privateCloud` Deletes the Private cloud for the specified ID.
 
 # 3.8.38 (May 27, 2026)
 
