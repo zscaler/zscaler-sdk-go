@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
@@ -24,14 +25,14 @@ type HttpHeaderProfile struct {
 }
 
 type HttpHeaderProfileCriteria struct {
-	Id               int              `json:"id,omitempty"`
-	Header           string           `json:"header,omitempty"`
-	Operator         string           `json:"operator,omitempty"`
-	CategoryBitmap   []CategoryBitmap `json:"categoryBitmap,omitempty"`
-	CloudAppBitmap   []CloudAppBitmap `json:"cloudAppBitmap,omitempty"`
-	UserAgent        string           `json:"userAgent,omitempty"`
-	UserAgentBitmap  string           `json:"userAgentBitmap,omitempty"`
-	UserAgentVersion string           `json:"userAgentVersion,omitempty"`
+	Id               int      `json:"id,omitempty"`
+	Header           string   `json:"header,omitempty"`
+	Operator         string   `json:"operator,omitempty"`
+	CategoryBitmap   []string `json:"categoryBitmap,omitempty"`
+	CloudAppBitmap   []string `json:"cloudAppBitmap,omitempty"`
+	UserAgent        string   `json:"userAgent,omitempty"`
+	UserAgentBitmap  string   `json:"userAgentBitmap,omitempty"`
+	UserAgentVersion string   `json:"userAgentVersion,omitempty"`
 }
 
 type CategoryBitmap struct {
@@ -89,6 +90,20 @@ func Delete(ctx context.Context, service *zscaler.Service, profileID int) (*http
 	}
 
 	return nil, nil
+}
+
+func GetByName(ctx context.Context, service *zscaler.Service, profileName string) (*HttpHeaderProfile, error) {
+	headerProfiles, err := GetAll(ctx, service)
+	if err != nil {
+		return nil, err
+	}
+	// Search for exact match (case-insensitive)
+	for _, headerProfile := range headerProfiles {
+		if strings.EqualFold(headerProfile.Name, profileName) {
+			return &headerProfile, nil
+		}
+	}
+	return nil, fmt.Errorf("no header profile found with name: %s", profileName)
 }
 
 // GetAll retrieves all HTTP header profiles.

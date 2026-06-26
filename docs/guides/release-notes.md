@@ -17,6 +17,15 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
+# 3.8.40 (June 26, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Bug Fixes
+
+- [PR #441](https://github.com/zscaler/zscaler-sdk-go/pull/441) - Fixed ZIA HTTP Header Control struct and types.
+
 # 3.8.39 (June 23, 2026)
 
 ## Notes
