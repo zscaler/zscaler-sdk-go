@@ -536,3 +536,39 @@ func TestZIACommon_GetAllPagesScimPostWithSearch(t *testing.T) {
 	})
 }
 
+func TestZIACommon_EndPointApplicationsMarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("emits only writable identifier fields", func(t *testing.T) {
+		app := &ziacommon.EndPointApplications{
+			ResourceID:      42,
+			ZappID:          "zapp-123",
+			ApplicationName: "should be omitted",
+			OsType:          "WINDOWS_OS",
+			Version:         ziacommon.Version{Version: "1.0"},
+		}
+
+		data, err := json.Marshal(app)
+		require.NoError(t, err)
+
+		var out map[string]interface{}
+		require.NoError(t, json.Unmarshal(data, &out))
+
+		assert.Equal(t, float64(42), out["resourceId"])
+		assert.Equal(t, "zapp-123", out["zappId"])
+		// Read-only fields must be stripped on marshal.
+		assert.NotContains(t, out, "applicationName")
+		assert.NotContains(t, out, "osType")
+		assert.NotContains(t, out, "version")
+		assert.NotContains(t, out, "versions")
+	})
+
+	t.Run("empty identifiers produce empty object", func(t *testing.T) {
+		app := &ziacommon.EndPointApplications{}
+
+		data, err := json.Marshal(app)
+		require.NoError(t, err)
+		assert.JSONEq(t, "{}", string(data))
+	})
+}
+

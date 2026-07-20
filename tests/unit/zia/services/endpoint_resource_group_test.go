@@ -261,3 +261,118 @@ func TestEndpointResourceGroup_UpdateDlpResourcesByTag_Error_SDK(t *testing.T) {
 
 	require.Error(t, err)
 }
+
+// =====================================================
+// Create / Update / Delete
+// =====================================================
+
+func TestEndpointResourceGroup_Create_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.OnFunc("POST", dlpEndpointResourceGroupsBasePath, func(_ *http.Request, body []byte) common.MockResponse {
+		assert.Contains(t, string(body), "Finance Group")
+		return common.SuccessResponse(endpoint_resource_group.DlpEndpointResourceGroups{
+			ID:      301,
+			Name:    "Finance Group",
+			Channel: "PRINTING",
+		})
+	})
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := endpoint_resource_group.Create(context.Background(), service, &endpoint_resource_group.DlpEndpointResourceGroups{
+		Name:    "Finance Group",
+		Channel: "PRINTING",
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 301, result.ID)
+}
+
+func TestEndpointResourceGroup_Create_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("POST", dlpEndpointResourceGroupsBasePath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := endpoint_resource_group.Create(context.Background(), service, &endpoint_resource_group.DlpEndpointResourceGroups{
+		Name: "Finance Group",
+	})
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestEndpointResourceGroup_Update_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := dlpEndpointResourceGroupsBasePath + "/301"
+
+	server.On("PUT", path, common.SuccessResponse(endpoint_resource_group.DlpEndpointResourceGroups{
+		ID:   301,
+		Name: "Updated Group",
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := endpoint_resource_group.Update(context.Background(), service, 301, &endpoint_resource_group.DlpEndpointResourceGroups{
+		ID:   301,
+		Name: "Updated Group",
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated Group", result.Name)
+}
+
+func TestEndpointResourceGroup_Update_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("PUT", dlpEndpointResourceGroupsBasePath+"/301", common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := endpoint_resource_group.Update(context.Background(), service, 301, &endpoint_resource_group.DlpEndpointResourceGroups{ID: 301})
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestEndpointResourceGroup_Delete_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := dlpEndpointResourceGroupsBasePath + "/301"
+	server.On("DELETE", path, common.NoContentResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = endpoint_resource_group.Delete(context.Background(), service, 301)
+
+	require.NoError(t, err)
+}
+
+func TestEndpointResourceGroup_Delete_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("DELETE", dlpEndpointResourceGroupsBasePath+"/999", common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = endpoint_resource_group.Delete(context.Background(), service, 999)
+
+	require.Error(t, err)
+}
