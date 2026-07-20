@@ -3,11 +3,30 @@ package errorx
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+// newResponse builds an *http.Response with the given status, content type, and
+// body, plus an associated request so error helpers can read Request fields.
+func newResponse(status int, contentType, body, method, rawURL string) *http.Response {
+	u, _ := url.Parse(rawURL)
+	return &http.Response{
+		StatusCode: status,
+		Status:     fmt.Sprintf("%d", status),
+		Header:     http.Header{"Content-Type": []string{contentType}},
+		Body:       io.NopCloser(strings.NewReader(body)),
+		Request: &http.Request{
+			Method: method,
+			URL:    u,
+		},
+	}
+}
 
 func TestIsLimitExceeded_True(t *testing.T) {
 	errResp := &ErrorResponse{
@@ -126,4 +145,190 @@ func TestAsErrorResponse(t *testing.T) {
 	got, ok = AsErrorResponse(nil)
 	require.False(t, ok)
 	require.Nil(t, got)
+}
+
+// =====================================================
+// Error()
+// =====================================================
+
+func TestError_Parsed(t *testing.T) {
+	errResp := &ErrorResponse{
+		Parsed: &ParsedAPIError{Code: "X", Message: "boom", Status: 400},
+	}
+	out := errResp.Error()
+	require.Contains(t, out, "Error:")
+	require.Contains(t, out, "boom")
+}
+
+func TestError_ResponseOnly(t *testing.T) {
+	errResp := &ErrorResponse{
+		Response: newResponse(http.StatusInternalServerError, "text/plain", "", http.MethodGet, "https://api.example.com/x"),
+		Message:  "server exploded",
+	}
+	out := errResp.Error()
+	require.Contains(t, out, "FAILED")
+	require.Contains(t, out, "server exploded")
+	require.Contains(t, out, "GET")
+}
+
+func TestError_ErrOnly(t *testing.T) {
+	errResp := &ErrorResponse{Err: errors.New("network down")}
+	require.Contains(t, errResp.Error(), "network down")
+}
+
+// =====================================================
+// Unwrap()
+// =====================================================
+
+func TestUnwrap(t *testing.T) {
+	inner := errors.New("root cause")
+	errResp := &ErrorResponse{Err: inner}
+	require.Equal(t, inner, errResp.Unwrap())
+	require.True(t, errors.Is(fmt.Errorf("wrap: %w", errResp), inner))
+
+	var nilResp *ErrorResponse
+	require.Nil(t, nilResp.Unwrap())
+}
+
+// =====================================================
+// CheckErrorInResponse()
+// =====================================================
+
+func TestCheckErrorInResponse_Success(t *testing.T) {
+	sentinel := errors.New("passthrough")
+	res := newResponse(http.StatusOK, "application/json", "{}", http.MethodGet, "https://api.example.com/x")
+	require.Equal(t, sentinel, CheckErrorInResponse(res, sentinel))
+}
+
+func TestCheckErrorInResponse_JSONError(t *testing.T) {
+	body := `{"code":"BAD","message":"invalid","id":"resource.not.found","reason":"nope","exception":"ex"}`
+	res := newResponse(http.StatusNotFound, "application/json", body, http.MethodPost, "https://api.example.com/x")
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.Equal(t, "invalid", respErr.Parsed.Message)
+	require.Equal(t, "resource.not.found", respErr.Parsed.ID)
+	require.Equal(t, "nope", respErr.Parsed.Reason)
+	require.Equal(t, "ex", respErr.Parsed.Exception)
+	require.True(t, respErr.IsObjectNotFound())
+}
+
+func TestCheckErrorInResponse_InvalidJSON(t *testing.T) {
+	res := newResponse(http.StatusBadRequest, "application/json", "{not-json", http.MethodGet, "https://api.example.com/x")
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.Contains(t, respErr.Parsed.Message, "Failed to parse JSON error body")
+}
+
+func TestCheckErrorInResponse_NonJSONGeneric(t *testing.T) {
+	res := newResponse(http.StatusInternalServerError, "text/plain", "boom", http.MethodGet, "https://api.example.com/x")
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.Equal(t, "boom", respErr.Parsed.Message)
+}
+
+func TestCheckErrorInResponse_OneAPIFallback(t *testing.T) {
+	body := "This resource is accessible only through Zscaler OneAPI"
+	res := newResponse(http.StatusForbidden, "text/html", body, http.MethodGet, "https://api.example.com/zia/api/v1/x")
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.Equal(t, "ONLY_ONEAPI_SUPPORTED", respErr.Parsed.Code)
+	require.Equal(t, http.StatusUnauthorized, respErr.Response.StatusCode)
+}
+
+// =====================================================
+// getBaseURL / NewOneAPIFallbackError / mustParseURL
+// =====================================================
+
+func TestGetBaseURL(t *testing.T) {
+	u, _ := url.Parse("https://api.example.com/zia/api/v1/x?y=1")
+	require.Equal(t, "https://api.example.com", getBaseURL(u))
+}
+
+func TestNewOneAPIFallbackError(t *testing.T) {
+	err := NewOneAPIFallbackError([]byte("  only oneapi  "), http.MethodPost, "/zia/api/v1/x", "https://api.example.com")
+	require.Equal(t, http.StatusUnauthorized, err.Response.StatusCode)
+	require.Equal(t, "https://api.example.com/zia/api/v1/x", err.Parsed.URL)
+	require.Equal(t, "only oneapi", err.Parsed.Message)
+	require.Equal(t, "ONLY_ONEAPI_SUPPORTED", err.Parsed.Code)
+}
+
+func TestMustParseURL(t *testing.T) {
+	u := mustParseURL("https://api.example.com/x")
+	require.Equal(t, "api.example.com", u.Host)
+
+	// A control character forces url.Parse to fail; the helper falls back to a
+	// URL whose Path is the raw string.
+	bad := mustParseURL("http://\x7f")
+	require.Equal(t, "http://\x7f", bad.Path)
+}
+
+// =====================================================
+// IsObjectNotFound remaining branches
+// =====================================================
+
+func TestIsObjectNotFound_NilResponse(t *testing.T) {
+	errResp := &ErrorResponse{Response: nil}
+	require.False(t, errResp.IsObjectNotFound())
+}
+
+func TestIsObjectNotFound_NoMatch(t *testing.T) {
+	errResp := &ErrorResponse{
+		Response: &http.Response{StatusCode: http.StatusBadRequest},
+		Parsed:   &ParsedAPIError{ID: "some.other.error"},
+	}
+	require.False(t, errResp.IsObjectNotFound())
+}
+
+// =====================================================
+// IsSessionInvalidError
+// =====================================================
+
+func TestIsSessionInvalidError_NonUnauthorized(t *testing.T) {
+	res := newResponse(http.StatusOK, "text/plain", "", http.MethodGet, "https://api.example.com/x")
+	require.False(t, IsSessionInvalidError(res))
+}
+
+func TestIsSessionInvalidError_Match(t *testing.T) {
+	res := newResponse(http.StatusUnauthorized, "text/plain", "SESSION_NOT_VALID", http.MethodGet, "https://api.example.com/x")
+	require.True(t, IsSessionInvalidError(res))
+	// Body must be rewound for reuse.
+	body, _ := io.ReadAll(res.Body)
+	require.Equal(t, "SESSION_NOT_VALID", string(body))
+}
+
+func TestIsSessionInvalidError_NoMatch(t *testing.T) {
+	res := newResponse(http.StatusUnauthorized, "text/plain", "some other 401", http.MethodGet, "https://api.example.com/x")
+	require.False(t, IsSessionInvalidError(res))
+}
+
+// =====================================================
+// IsEditLockError
+// =====================================================
+
+func TestIsEditLockError_WrongStatus(t *testing.T) {
+	res := newResponse(http.StatusOK, "text/plain", "EDIT_LOCK_NOT_AVAILABLE", http.MethodGet, "https://api.example.com/x")
+	require.False(t, IsEditLockError(res))
+}
+
+func TestIsEditLockError_Conflict(t *testing.T) {
+	res := newResponse(http.StatusConflict, "text/plain", "EDIT_LOCK_NOT_AVAILABLE", http.MethodGet, "https://api.example.com/x")
+	require.True(t, IsEditLockError(res))
+}
+
+func TestIsEditLockError_PreconditionFailed(t *testing.T) {
+	res := newResponse(http.StatusPreconditionFailed, "text/plain", "Failed during enter Org barrier", http.MethodGet, "https://api.example.com/x")
+	require.True(t, IsEditLockError(res))
+}
+
+func TestIsEditLockError_NoMatch(t *testing.T) {
+	res := newResponse(http.StatusConflict, "text/plain", "some other conflict", http.MethodGet, "https://api.example.com/x")
+	require.False(t, IsEditLockError(res))
 }
