@@ -45,6 +45,8 @@ type FirewallFilteringRules struct {
 	// Additional information about the rule
 	Description string `json:"description,omitempty"`
 
+	ExcludeContextShieldEndPoint bool `json:"excludeContextShieldEndPoint,omitempty"`
+
 	// Timestamp when the rule was last modified. Ignored if the request is POST or PUT. For GET, ignored if or the rule is current version.
 	LastModifiedTime int                      `json:"lastModifiedTime,omitempty"`
 	LastModifiedBy   *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
@@ -77,6 +79,10 @@ type FirewallFilteringRules struct {
 
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined"`
+
+	IsEUNEnabled bool `json:"isEunEnabled,omitempty"`
+
+	EUNTemplateID int `json:"eunTemplateId,omitempty"`
 
 	// The locations to which the Firewall Filtering policy rule applies
 	Locations []common.IDNameExtensions `json:"locations,omitempty"`
@@ -135,6 +141,10 @@ type FirewallFilteringRules struct {
 
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
+
+	EndPointApplications []common.EndPointApplications `json:"endPointApplications,omitempty"`
+
+	EndPointApplicationGroups []common.EndPointApplicationGroups `json:"endPointApplicationGroups,omitempty"`
 }
 
 // GetAllFilterOptions represents optional filter parameters for GetAll

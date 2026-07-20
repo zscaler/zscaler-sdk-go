@@ -16,6 +16,7 @@ const (
 	ipsSignaturesPath         = "/zia/api/v1/ipsSignatureRules"
 	ipsSignaturesExportPath   = "/zia/api/v1/ipsSignatureRules/export"
 	ipsSignaturesValidatePath = "/zia/api/v1/ipsSignatureRules/validateRuleText"
+	ipsCategoriesPath         = "/zia/api/v1/ipsCategories"
 )
 
 const advancedSecurityCategoryID = 64
@@ -195,6 +196,164 @@ func TestIPSSignatureRules_ValidateRuleText_EmptyInput_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	result, err := ips_signature_rules.ValidateIPSSignatureRuleText(context.Background(), service, "")
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_GetIPSCategories_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsCategoriesPath, common.SuccessResponse([]ips_signature_rules.IPSCategories{
+		{Id: 1, Name: "Advanced Security", Predefined: true, IpsSignatureRulesCount: 5},
+		{Id: 2, Name: "Web Attacks"},
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.GetIPSCategories(context.Background(), service)
+
+	require.NoError(t, err)
+	require.Len(t, result, 2)
+	assert.Equal(t, "Advanced Security", result[0].Name)
+	assert.Equal(t, 5, result[0].IpsSignatureRulesCount)
+}
+
+func TestIPSSignatureRules_GetIPSCategories_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsCategoriesPath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.GetIPSCategories(context.Background(), service)
+
+	require.Error(t, err)
+	assert.Empty(t, result)
+}
+
+func TestIPSSignatureRules_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsSignaturesPath+"/999", common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.Get(context.Background(), service, 999)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_GetByName_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsSignaturesPath, common.SuccessResponse([]ips_signature_rules.IPSSignatureRules{
+		sampleIPSSignatureRule(1000001),
+	}))
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.GetByName(context.Background(), service, "does-not-exist")
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_GetByName_ListError_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsSignaturesPath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.GetByName(context.Background(), service, "anything")
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_Update_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("PUT", ipsSignaturesPath+"/999", common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	rule := sampleIPSSignatureRule(1000001)
+	result, _, err := ips_signature_rules.Update(context.Background(), service, 999, &rule)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_Create_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("POST", ipsSignaturesPath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	rule := sampleIPSSignatureRule(1000001)
+	result, _, err := ips_signature_rules.Create(context.Background(), service, &rule)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_Delete_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("DELETE", ipsSignaturesPath+"/999", common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = ips_signature_rules.Delete(context.Background(), service, 999)
+
+	require.Error(t, err)
+}
+
+func TestIPSSignatureRules_Export_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("GET", ipsSignaturesExportPath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.ExportIPSSignatureRules(context.Background(), service)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestIPSSignatureRules_ValidateRuleText_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	server.On("POST", ipsSignaturesValidatePath, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := ips_signature_rules.ValidateIPSSignatureRuleText(context.Background(), service, "some rule text")
 
 	require.Error(t, err)
 	assert.Nil(t, result)

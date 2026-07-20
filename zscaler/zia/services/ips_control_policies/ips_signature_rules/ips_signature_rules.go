@@ -13,6 +13,7 @@ import (
 
 const (
 	ipsSignaturesEndpoint         = "/zia/api/v1/ipsSignatureRules"
+	ipsCategoriesEndpoint         = "/zia/api/v1/ipsCategories"
 	ipsSignaturesExportEndpoint   = "/zia/api/v1/ipsSignatureRules/export"
 	ipsSignaturesImportEndpoint   = "/zia/api/v1/ipsSignatureRules/import"
 	ipsSignaturesValidateEndpoint = "/zia/api/v1/ipsSignatureRules/validateRuleText"
@@ -182,6 +183,16 @@ type IPSSignatureRulesValidation struct {
 	SubIdsMap map[string]interface{} `json:"subIdsMap,omitempty"`
 }
 
+type IPSCategories struct {
+	Id                     int    `json:"id,omitempty"`
+	Name                   string `json:"name,omitempty"`
+	BackEndName            string `json:"backEndName,omitempty"`
+	Description            string `json:"description,omitempty"`
+	Deleted                bool   `json:"deleted,omitempty"`
+	Predefined             bool   `json:"predefined,omitempty"`
+	IpsSignatureRulesCount int    `json:"ipsSignatureRulesCount,omitempty"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, signatureID int) (*IPSSignatureRules, error) {
 	var ipsSignature IPSSignatureRules
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", ipsSignaturesEndpoint, signatureID), &ipsSignature)
@@ -291,6 +302,15 @@ func ValidateIPSSignatureRuleText(ctx context.Context, service *zscaler.Service,
 
 	service.Client.GetLogger().Printf("[DEBUG] Custom IPS signature rule validation status: %d", validation.Status)
 	return &validation, nil
+}
+
+func GetIPSCategories(ctx context.Context, service *zscaler.Service) ([]IPSCategories, error) {
+	var ipsCategories []IPSCategories
+	err := common.ReadAllPages(ctx, service.Client, ipsCategoriesEndpoint, &ipsCategories)
+	if err != nil {
+		return nil, err
+	}
+	return ipsCategories, nil
 }
 
 // NOTE: The /ipsSignatureRules/{export,import} endpoints are currently broken

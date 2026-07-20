@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -125,6 +126,70 @@ type CBIProfile struct {
 	Name       string `json:"name,omitempty"`
 	URL        string `json:"url,omitempty"`
 	ProfileSeq int    `json:"profileSeq,omitempty"`
+}
+
+// EndPointApplications is a struct that represents the applications on the endpoint DLP Rules and SubRules.
+type EndPointApplications struct {
+	ResourceID       int      `json:"resourceId,omitempty"`
+	Description      string   `json:"description,omitempty"`
+	OsType           string   `json:"osType,omitempty"`
+	ApplicationName  string   `json:"applicationName,omitempty"`
+	Bundle           string   `json:"bundleID,omitempty"`
+	Filename         string   `json:"filename,omitempty"`
+	OriginalFileName string   `json:"originalFileName,omitempty"`
+	DigitallySigned  bool     `json:"digitallySigned,omitempty"`
+	ModUId           int      `json:"modUId,omitempty"`
+	LastModifiedTime int      `json:"lastModifiedTime,omitempty"`
+	ApplicationType  string   `json:"applicationType,omitempty"`
+	Version          Version  `json:"version,omitempty"`
+	Versions         Versions `json:"versions,omitempty"`
+	ZappID           string   `json:"zappId,omitempty"`
+	Deleted          bool     `json:"deleted,omitempty"`
+}
+
+// MarshalJSON restricts the request body for endpoint applications to the
+// writable identifier fields only. The API rejects create/update requests when
+// read-only fields such as "version" and "versions" are present (they serialize
+// as empty objects because they are non-pointer structs), so they are stripped
+// here on POST/PUT. Response decoding is unaffected.
+func (e *EndPointApplications) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{}
+	if e.ResourceID != 0 {
+		m["resourceId"] = e.ResourceID
+	}
+	if e.ZappID != "" {
+		m["zappId"] = e.ZappID
+	}
+	return json.Marshal(m)
+}
+
+type EndPointApplicationGroups struct {
+	GroupID              int                    `json:"groupId,omitempty"`
+	Name                 string                 `json:"name,omitempty"`
+	Description          string                 `json:"description,omitempty"`
+	ModUId               int                    `json:"modUId,omitempty"`
+	LastModifiedTime     int                    `json:"lastModifiedTime,omitempty"`
+	EndPointApplications []EndPointApplications `json:"endPointApplications,omitempty"`
+}
+
+type Version struct {
+	Version                      string `json:"version,omitempty"`
+	ZverIDMD32                   int    `json:"z_ver_id_md32,omitempty"`
+	ThreatType                   int    `json:"threat_type,omitempty"`
+	ThreatLevel                  string `json:"threat_level,omitempty"`
+	Bundle                       string `json:"bundleID,omitempty"`
+	CodeSigningCertificateStatus int    `json:"code_signing_certificate_status,omitempty"`
+	ThreatLevelUpdated           bool   `json:"threatLevelUpdated,omitempty"`
+}
+
+type Versions struct {
+	Version                      string `json:"version,omitempty"`
+	ZverIDMD32                   int    `json:"z_ver_id_md32,omitempty"`
+	ThreatType                   int    `json:"threat_type,omitempty"`
+	ThreatLevel                  string `json:"threat_level,omitempty"`
+	Bundle                       string `json:"bundleID,omitempty"`
+	CodeSigningCertificateStatus int    `json:"code_signing_certificate_status,omitempty"`
+	ThreatLevelUpdated           bool   `json:"threatLevelUpdated,omitempty"`
 }
 
 // GetPageSize returns the default page size.

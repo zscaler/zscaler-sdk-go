@@ -91,11 +91,10 @@ type FirewallDNSRules struct {
 	// A Boolean field that indicates that the rule is predefined by using a true value
 	Predefined bool `json:"predefined,omitempty"`
 
-	// If set to true, Web EUN is enabled for the rule
-	IsWebEUNEnabled bool `json:"isWebEunEnabled,omitempty"`
-
 	// If set to true, the default DNS rule name is used for the rule
 	DefaultDNSRuleNameUsed bool `json:"defaultDnsRuleNameUsed,omitempty"`
+
+	ExcludeContextShieldEndPoint bool `json:"excludeContextShieldEndPoint,omitempty"`
 
 	// DNS application groups to which the rule applies
 	ApplicationGroups []common.IDNameExtensions `json:"applicationGroups,omitempty"`
@@ -148,6 +147,17 @@ type FirewallDNSRules struct {
 
 	// Name-ID pairs of devices for which rule must be applied. Specifies devices that are managed using Zscaler Client Connector. If no value is set, this field is ignored during the policy evaluation.
 	Devices []common.IDNameExtensions `json:"devices"`
+
+	EndPointApplications []common.EndPointApplications `json:"endPointApplications,omitempty"`
+
+	EndPointApplicationGroups []common.EndPointApplicationGroups `json:"endPointApplicationGroups,omitempty"`
+
+	// If set to true, Web EUN is enabled for the rule
+	IsWebEUNEnabled bool `json:"isWebEunEnabled,omitempty"`
+
+	IsEUNEnabled bool `json:"isEunEnabled,omitempty"`
+
+	EUNTemplateID int `json:"eunTemplateId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*FirewallDNSRules, error) {
