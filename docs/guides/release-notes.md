@@ -13,9 +13,93 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.39``
+``Last updated: v3.8.41``
 
 ---
+
+# 3.8.41 (July 20, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### New ZIA Endpoints
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoints
+  - `GET /webDlpGlobalOptions` Retrieves the DLP Advanced Settings information
+  - `PUT /webDlpGlobalOptions` Updates the existing DLP Advanced Settings.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Applications endpoints
+  - `GET /endPointApplications` Retrieves the list of endpoint applications.
+  - `GET /endPointApplications/lite` Retrieves a lightweight list of endpoint applications.
+  - `GET /endPointApplications/count` Retrieves the count of all endpoint applications.
+  - `GET /endPointApplications/cloudApps/count` Retrieves the count of well-known and discovered endpoint applications.
+  - `GET /endPointApplications/policies` Retrieves the list of policy rules associated with the specified endpoint applications.
+  - `GET /endPointApplications/getCategoriesWithNonEmptyApps` Retrieves the categories that currently have endpoint applications grouped within them.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Custom Applications endpoints
+  - `GET /endPointApplications/customApps` Retrieves the list of custom endpoint applications.
+  - `GET /endPointApplications/customApp/{id}` Retrieves the custom endpoint application based on the specified ID.
+  - `POST /endPointApplications/customApp` Adds a new custom endpoint application.
+  - `PUT /endPointApplications/customApp/{id}` Updates the custom endpoint application based on the specified ID.
+  - `DELETE /endPointApplications/customApp/{id}` Deletes the custom endpoint application based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Application Groups endpoints
+  - `GET /endPointApplicationGroups` Retrieves the list of application tag groups.
+  - `GET /endPointApplicationGroups/policies` Retrieves the list of policy rules associated with the specified application tag groups.
+  - `POST /endPointApplicationGroups` Adds a new application tag group.
+  - `PUT /endPointApplicationGroups/{id}` Updates the application tag group based on the specified ID.
+  - `PUT /endPointApplicationGroups/{id}/resources` Updates the applications associated with the specified tag group.
+  - `DELETE /endPointApplicationGroups/{id}` Deletes the application tag group based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Resources endpoints
+  - `GET /dlpEndpointResource/{channel}` Retrieves the list of DLP resources configured for the specified channel.
+  - `GET /dlpEndpointResource/{channel}/{id}` Retrieves the DLP resource based on the specified channel and ID.
+  - `GET /dlpEndpointResource/{id}/groups` Retrieves the list of tags to which the specified DLP resource is associated.
+  - `POST /dlpEndpointResource` Adds a new DLP endpoint resource.
+  - `PUT /dlpEndpointResource/{id}` Updates the DLP endpoint resource based on the specified ID.
+  - `DELETE /dlpEndpointResource/{id}` Deletes the DLP endpoint resource based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Resource Groups endpoints
+  - `GET /endPointDlpResourceGroups/{channel}` Retrieves the list of DLP resource tags added for the specified channel.
+  - `GET /endPointDlpResourceGroups/{id}/resources` Retrieves the DLP resources associated with the specified tag group.
+  - `PUT /endPointDlpResourceGroups/{id}/resources` Updates the DLP resources associated with the specified tag group.
+  - `POST /endPointDlpResourceGroups` Adds a new DLP resource tag group.
+  - `PUT /endPointDlpResourceGroups/{id}` Updates the DLP resource tag group based on the specified ID.
+  - `DELETE /endPointDlpResourceGroups/{id}` Deletes the DLP resource tag group based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Rules endpoints
+  - `GET /endPointDlpRules` Retrieves a list of Endpoint DLP rules.
+  - `GET /endPointDlpRules/{id}` Retrieves the Endpoint DLP rule based on the specified ID.
+  - `GET /endPointDlpRules/fileTypeCategories` Retrieves the file type categories supported by Endpoint DLP rules.
+  - `POST /endPointDlpRules` Adds a new Endpoint DLP rule.
+  - `PUT /endPointDlpRules/{id}` Updates the Endpoint DLP rule based on the specified ID.
+  - `DELETE /endPointDlpRules/{id}` Deletes the Endpoint DLP rule based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Endpoint DLP Exception (Sub) Rules endpoints
+  - `POST /endPointDlpRules/{id}/subRule` Adds a new exception (sub) rule to an existing Endpoint DLP rule.
+  - `PUT /endPointDlpRules/{id}/subRule/{subRuleId}` Updates the Endpoint DLP exception (sub) rule based on the specified IDs.
+  - `DELETE /endPointDlpRules/{id}/subRule/{subRuleId}` Deletes the Endpoint DLP exception (sub) rule based on the specified IDs.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA Outbound Email DLP endpoint
+  - `GET /emailDlpRules/actions` Retrieves the supported Outbound Email DLP rule actions for the specified email tenants as a CSV file.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA DNS Application Groups endpoints
+  - `GET /dnsApplicationGroups` Retrieves a list of DNS application groups.
+  - `GET /dnsApplicationGroups/{id}` Retrieves the DNS application group based on the specified ID.
+  - `POST /dnsApplicationGroups` Adds a new DNS application group.
+  - `PUT /dnsApplicationGroups/{id}` Updates the DNS application group based on the specified ID.
+  - `DELETE /dnsApplicationGroups/{id}` Deletes the DNS application group based on the specified ID.
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added the following new ZIA End User Notification endpoints
+  - `GET /eunTemplate/{templateType}/product/{product}` Retrieves the browser-based/ZCC end user notification template for the specified template type and product.
+  - `GET /eunTemplate/{templateType}/featureEnablementStatus` Retrieves the feature enablement status for the specified end user notification template type.
+  - `GET /userConfirmation/product/{product}` Retrieves the user confirmation template by policy for the specified product.
+  - `GET /userConfirmation/globalDefaultTemplates` Retrieves the global default user confirmation templates.
+  - `GET /userConfirmation/{templateType}/featureEnablementStatus` Retrieves the notification enablement feature status for the specified template type.
+
+### Bug Fixes
+
+- [PR #445](https://github.com/zscaler/zscaler-sdk-go/pull/445) - Added pagination support to ZIA `url_filtering_policies` resource
 
 # 3.8.40 (June 26, 2026)
 

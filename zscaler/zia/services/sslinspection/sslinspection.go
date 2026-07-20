@@ -114,6 +114,10 @@ type SSLInspectionRules struct {
 
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined,omitempty"`
+
+	EndPointApplications []common.EndPointApplications `json:"endPointApplications,omitempty"`
+
+	EndPointApplicationGroups []common.EndPointApplicationGroups `json:"endPointApplicationGroups,omitempty"`
 }
 
 type Action struct {

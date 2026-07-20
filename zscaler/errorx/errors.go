@@ -2,6 +2,7 @@ package errorx
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,6 +42,16 @@ func (r *ErrorResponse) Error() string {
 		)
 	}
 	return fmt.Sprintf("FAILED: %v", r.Err)
+}
+
+// Unwrap exposes the underlying error so that *ErrorResponse participates in
+// Go's error chain. This allows callers to use errors.Is / errors.As even when
+// an *ErrorResponse has been wrapped (e.g. via fmt.Errorf("...: %w", err)).
+func (r *ErrorResponse) Unwrap() error {
+	if r == nil {
+		return nil
+	}
+	return r.Err
 }
 
 func CheckErrorInResponse(res *http.Response, respErr error) error {
@@ -145,6 +156,40 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 		return true
 	}
 	return false
+}
+
+// AsErrorResponse safely extracts an *ErrorResponse from an arbitrary error.
+// It returns (nil, false) when the error is not (and does not wrap) an
+// *ErrorResponse — for example a plain *errors.errorString produced by a
+// cancelled or timed-out request. Callers should use this instead of an
+// unguarded type assertion (err.(*ErrorResponse)), which panics when the
+// dynamic type does not match.
+func AsErrorResponse(err error) (*ErrorResponse, bool) {
+	if err == nil {
+		return nil, false
+	}
+	var respErr *ErrorResponse
+	if errors.As(err, &respErr) {
+		return respErr, true
+	}
+	return nil, false
+}
+
+// IsObjectNotFound safely reports whether err represents an object-not-found
+// condition. It never panics regardless of the concrete error type, and it is
+// aware of wrapped errors. This is the preferred way for callers to check for
+// not-found errors.
+func IsObjectNotFound(err error) bool {
+	respErr, ok := AsErrorResponse(err)
+	return ok && respErr.IsObjectNotFound()
+}
+
+// IsLimitExceeded safely reports whether err represents a tenant resource limit
+// exceeded condition. It never panics regardless of the concrete error type,
+// and it is aware of wrapped errors.
+func IsLimitExceeded(err error) bool {
+	respErr, ok := AsErrorResponse(err)
+	return ok && respErr.IsLimitExceeded()
 }
 
 // IsLimitExceeded checks if the response indicates a tenant resource limit has been

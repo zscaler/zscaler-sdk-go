@@ -315,9 +315,7 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
 	var rules []URLFilteringRule
 
-	// Use service.Client.Read directly since the API doesn't support pagination
-	// The API returns all results in a single response
-	err := service.Client.Read(ctx, urlFilteringPoliciesEndpoint, &rules)
+	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &rules)
 	return rules, err
 }
 
