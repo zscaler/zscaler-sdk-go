@@ -98,7 +98,7 @@ func TestEndpointApplications_GetCustomApp_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := endPointApplicationsBasePath + "/customApps/55"
+	path := endPointApplicationsBasePath + "/customApp/55"
 
 	server.On("GET", path, common.SuccessResponse(endpoint_custom_apps.EndpointApplications{
 		ResourceID:      55,
@@ -123,7 +123,7 @@ func TestEndpointApplications_GetCustomApp_NotFound_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := endPointApplicationsBasePath + "/customApps/999"
+	path := endPointApplicationsBasePath + "/customApp/999"
 	server.On("GET", path, common.NotFoundResponse())
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
