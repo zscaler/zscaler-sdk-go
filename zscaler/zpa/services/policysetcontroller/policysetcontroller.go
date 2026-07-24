@@ -78,7 +78,7 @@ type PolicyRule struct {
 	BrowserPostureName                      string                                `json:"browserPostureName,omitempty"`
 	BrowserPostureProfileID                 string                                `json:"browserPostureProfileId,omitempty"`
 	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
-	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
+	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled"`
 	Conditions                              []Conditions                          `json:"conditions"`
 	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`

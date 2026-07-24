@@ -129,7 +129,7 @@ type PolicyRule struct {
 	Description                             string                                `json:"description,omitempty"`
 	Disabled                                string                                `json:"disabled,omitempty"`
 	ExtranetEnabled                         bool                                  `json:"extranetEnabled,omitempty"`
-	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
+	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled"`
 	CreationTime                            string                                `json:"creationTime,omitempty"`
 	ModifiedBy                              string                                `json:"modifiedBy,omitempty"`
 	ModifiedTime                            string                                `json:"modifiedTime,omitempty"`
