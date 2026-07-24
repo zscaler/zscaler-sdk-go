@@ -24,7 +24,7 @@ type BrowserAccess struct {
 	SegmentGroupID            string                    `json:"segmentGroupId,omitempty"`
 	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
 	BypassType                string                    `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth"`
 	ExtranetEnabled           bool                      `json:"extranetEnabled"`
 	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
 	MatchStyle                string                    `json:"matchStyle,omitempty"`

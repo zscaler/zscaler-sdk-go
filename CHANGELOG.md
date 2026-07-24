@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.42 (July 24, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #446](https://github.com/zscaler/zscaler-sdk-go/pull/446) - Removed `omitempty` tag from attribute boolean value `bypassOnReauth` on ZPA `applicationsegment` and `applicationsegmentbrowseraccess`
+
 # 3.8.41 (July 20, 2026)
 
 ## Notes

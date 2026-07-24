@@ -35,7 +35,7 @@ type ApplicationSegmentResource struct {
 	ConfigSpace               string                    `json:"configSpace,omitempty"`
 	Applications              string                    `json:"applications,omitempty"`
 	BypassType                string                    `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth"`
 	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
 	IsCnameEnabled            bool                      `json:"isCnameEnabled"`
 	IpAnchored                bool                      `json:"ipAnchored"`
