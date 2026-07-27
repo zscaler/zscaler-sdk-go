@@ -21,11 +21,15 @@
 
 - [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZTW Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
 
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Corrected the documented OAuth2 token endpoint for the `govus` (FedRAMP) cloud in `README.md`. The table listed `https://<vanity_domain>.zidentitygovus.net/oauth2/v1/token`, which does not resolve. The correct endpoint is `https://<vanity_domain>.zidentitygov.us/oauth2/v1/token`, which is what the client has always produced. This corrects the value published in [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438); no client behaviour changed.
+
 ### Internal Changes
 
 - [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Added `errorx.IsRetryableServerError` to classify `5xx` responses as transient or deterministic. This is shared retry-policy logic and does not change any existing exported behaviour.
 
 - [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The retry budget (`MaxNumOfRetries`) was intentionally left unchanged for ZPA, ZCC, ZDX, ZTW and ZWA. Those clients retry application-level conditions such as the ZPA `db.simultaneous.request` and `api.concurrent.access.error` responses, which can legitimately need many attempts under contention. Because a deterministic failure is no longer retried at all, the large budget no longer causes the stall described in issue #449.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed two pre-existing test failures in the `zscaler` package. `TestGetAuthURL` asserted the incorrect `govus` identity domain described above and had never passed. `TestGetServiceHTTPClientUnknown` constructed its client through `NewOneAPIClient`, which authenticates eagerly and so required live credentials to exercise what is only a configuration lookup; it now builds the client directly and additionally asserts that a recognised service prefix resolves to that service's own HTTP client.
 
 # 3.8.42 (July 24, 2026)
 
