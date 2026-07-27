@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: ⛔ Pull requests are not accepted
+    url: https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md
+    about: This SDK is maintained internally by Zscaler. Do not open a pull request — report bugs and request changes through the issue types above.
+  - name: 📖 Support scope
+    url: https://github.com/zscaler/zscaler-sdk-go/blob/master/SUPPORT.md
+    about: This project is released under an as-is, best-effort support policy. Read this before opening an issue.

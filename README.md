@@ -1493,9 +1493,22 @@ for _, user := range allUsers {
 
 ## Contributing
 
-We're happy to accept contributions and PRs! Please see the [contribution
-guide](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
-structure a contribution.
+**This repository does not accept pull requests.** The SDK is developed and
+maintained internally by Zscaler against internal API specifications and release
+processes, so externally merged changes would be overwritten by the next
+generated release. Pull requests are closed without review.
+
+To request a fix or a change, open a GitHub issue — the only supported channel:
+
+* [🐛 Report a bug](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=bug.yml) — something is broken or behaves contrary to the documentation
+* [🚀 Request a feature](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=feature_request.yml) — a new service, endpoint, field or capability
+
+Accepted issues are implemented by the maintainers and shipped in a subsequent
+release. See the [contribution
+policy](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md)
+for what to include in an issue, and
+[SUPPORT.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/SUPPORT.md)
+for the support scope.
 
 [sdkapiref]: https://pkg.go.dev/github.com/zscaler/zscaler-sdk-go/v3
 
