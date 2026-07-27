@@ -32,9 +32,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZIA Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
 
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Applied the same two fixes to **every** remaining client: OneAPI, ZPA, ZCC, ZDX, ZTW and ZWA. All of them previously discarded the API error payload on retry exhaustion and retried every `5xx` except `501`. Each client now installs the response-preserving `ErrorHandler` and only retries a `5xx` whose body does not carry a deterministic API verdict.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed two additional defects in the OneAPI `ExecuteRequest` outer retry loop. Exhausting the outer loop returned a bare `max retries exceeded` error instead of the API's own status, code and message, and the loop retried every `5xx` unconditionally regardless of whether the failure was permanent.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZTW Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
+
 ### Internal Changes
 
 - [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Added `errorx.IsRetryableServerError` to classify `5xx` responses as transient or deterministic. This is shared retry-policy logic and does not change any existing exported behaviour.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The retry budget (`MaxNumOfRetries`) was intentionally left unchanged for ZPA, ZCC, ZDX, ZTW and ZWA. Those clients retry application-level conditions such as the ZPA `db.simultaneous.request` and `api.concurrent.access.error` responses, which can legitimately need many attempts under contention. Because a deterministic failure is no longer retried at all, the large budget no longer causes the stall described in issue #449.
 
 # 3.8.42 (July 24, 2026)
 

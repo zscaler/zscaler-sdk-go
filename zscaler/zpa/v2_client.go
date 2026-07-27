@@ -122,6 +122,21 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 	retryableClient.CheckRetry = checkRetry
 
+	// When the retry budget is exhausted, retryablehttp's default behaviour is to
+	// drain the body and return a bare "giving up after N attempt(s)" error with a
+	// nil response, which destroys the API's own error payload. Hand the final
+	// response back instead so the request layer can build a structured
+	// errorx.ErrorResponse carrying the API code and message. A nil response means
+	// the request never produced one (e.g. connection refused), in which case the
+	// transport error is the only signal left to report. See issue #449.
+	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		if resp != nil {
+			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
+			return resp, nil
+		}
+		return nil, err
+	}
+
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -248,6 +263,14 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 		}
 	}
+
+	// Only retry a 5xx when the body does not carry a deterministic API verdict.
+	// The upstream policy retries every 5xx except 501, which burns the entire
+	// retry budget on permanent server-side rejections. See issue #449.
+	if err == nil && resp != nil && resp.StatusCode >= 500 {
+		return errorx.IsRetryableServerError(resp), nil
+	}
+
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
