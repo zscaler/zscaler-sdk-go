@@ -3,7 +3,7 @@
 # 3.8.43 (July 27, 2026)
 
 ## Notes
-- Golang: **v1.24**
+- Golang: **v1.25**
 
 ### Bug Fixes
 
