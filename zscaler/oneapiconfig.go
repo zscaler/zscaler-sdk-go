@@ -216,9 +216,18 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// the request never produced one (e.g. connection refused), in which case the
 	// transport error is the only signal left to report. See issue #449.
 	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
-		if resp != nil {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
 			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
 			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
 		}
 		return nil, err
 	}
@@ -734,6 +743,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					beforeWait := time.Now()
 					time.Sleep(sleepFor)
 					totalWaitTime += time.Since(beforeWait)
+
+					// Rebuild the request with a fresh body reader, as the 401 and
+					// 409/412 paths do. The previous attempt consumed req.Body, so
+					// reusing it here would resend a POST/PUT with an empty body.
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
 					continue
 				}
 			}
@@ -792,6 +809,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			beforeWait := time.Now()
 			time.Sleep(backoffDelay)
 			totalWaitTime += time.Since(beforeWait)
+
+			// Rebuild the request with a fresh body reader, as the 401 and
+			// 409/412 paths do. The previous attempt consumed req.Body, so
+			// reusing it here would resend a POST/PUT with an empty body.
+			req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+			if err != nil {
+				return nil, nil, nil, err
+			}
 			continue
 		}
 

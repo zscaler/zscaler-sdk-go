@@ -112,9 +112,18 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// the request never produced one (e.g. connection refused), in which case the
 	// transport error is the only signal left to report. See issue #449.
 	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
-		if resp != nil {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
 			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
 			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
 		}
 		return nil, err
 	}

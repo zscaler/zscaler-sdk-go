@@ -405,6 +405,29 @@ func TestIsRetryableServerError(t *testing.T) {
 			want:   true,
 		},
 		{
+			// 502 / 503 / 504 are emitted by gateways and overload protection,
+			// never by the API's business logic, so a body that happens to parse
+			// as a JSON error must not be read as a deterministic verdict. 503 in
+			// particular is wired into every client's Backoff as a Retry-After
+			// bearing rate-limit signal.
+			name:   "502 with a deterministic code is still retryable",
+			status: http.StatusBadGateway,
+			body:   `{"code":"SOME_PERMANENT_CODE","message":"nope"}`,
+			want:   true,
+		},
+		{
+			name:   "503 with a deterministic code is still retryable",
+			status: http.StatusServiceUnavailable,
+			body:   `{"code":"SERVICE_UNAVAILABLE","message":"try later"}`,
+			want:   true,
+		},
+		{
+			name:   "504 with a deterministic code is still retryable",
+			status: http.StatusGatewayTimeout,
+			body:   `{"code":"GATEWAY_TIMEOUT","message":"upstream timed out"}`,
+			want:   true,
+		},
+		{
 			name:   "501 Not Implemented is not retryable",
 			status: http.StatusNotImplemented,
 			body:   "",
@@ -439,6 +462,14 @@ func TestIsRetryableServerError(t *testing.T) {
 
 func TestIsRetryableServerError_NilResponse(t *testing.T) {
 	require.False(t, IsRetryableServerError(nil))
+}
+
+// A hand-built response with no body must not panic. The transport always sets
+// one, but this function is exported and can be handed anything.
+func TestIsRetryableServerError_NilBody(t *testing.T) {
+	require.True(t, IsRetryableServerError(&http.Response{StatusCode: http.StatusInternalServerError}))
+	require.False(t, IsRetryableServerError(&http.Response{StatusCode: http.StatusNotImplemented}))
+	require.True(t, IsRetryableServerError(&http.Response{StatusCode: http.StatusServiceUnavailable}))
 }
 
 // A preserved 5xx response must still convert into a structured error, which is

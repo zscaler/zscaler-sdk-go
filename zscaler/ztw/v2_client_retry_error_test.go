@@ -63,6 +63,27 @@ func TestZTWCheckRetryOnServerErrors(t *testing.T) {
 			wantRetry: true,
 		},
 		{
+			// Gateway and overload statuses never carry an API verdict, and 503
+			// in particular is wired into Backoff as a Retry-After rate-limit
+			// signal, so a JSON code in the body must not stop the retry.
+			name:      "502 with a deterministic code is still retried",
+			status:    http.StatusBadGateway,
+			body:      `{"code":"SOME_PERMANENT_CODE","message":"nope"}`,
+			wantRetry: true,
+		},
+		{
+			name:      "503 with a deterministic code is still retried",
+			status:    http.StatusServiceUnavailable,
+			body:      `{"code":"SERVICE_UNAVAILABLE","message":"try later"}`,
+			wantRetry: true,
+		},
+		{
+			name:      "504 with a deterministic code is still retried",
+			status:    http.StatusGatewayTimeout,
+			body:      `{"code":"GATEWAY_TIMEOUT","message":"upstream timed out"}`,
+			wantRetry: true,
+		},
+		{
 			name:      "501 is not retried",
 			status:    http.StatusNotImplemented,
 			body:      "",
@@ -141,12 +162,21 @@ func TestZTWErrorHandlerIsWired(t *testing.T) {
 	require.True(t, ok, "expected a retryablehttp RoundTripper")
 	require.NotNil(t, rt.Client.ErrorHandler, "ErrorHandler must be installed (issue #449)")
 
-	t.Run("preserves the response when one exists", func(t *testing.T) {
+	// retryablehttp signals an exhausted budget by calling the handler with a
+	// nil error; any non-nil error is a real failure that must not be masked.
+	t.Run("preserves the response when the retry budget is exhausted", func(t *testing.T) {
 		resp := retryTestResponse(http.StatusInternalServerError, `{"code":"UNEXPECTED_ERROR"}`)
-		got, err := rt.Client.ErrorHandler(resp, errors.New("giving up"), 3)
+		got, err := rt.Client.ErrorHandler(resp, nil, 3)
 		require.NoError(t, err)
 		require.NotNil(t, got)
 		assert.Equal(t, http.StatusInternalServerError, got.StatusCode)
+	})
+
+	t.Run("does not mask a genuine error that arrives with a response", func(t *testing.T) {
+		resp := retryTestResponse(http.StatusInternalServerError, `{"code":"UNEXPECTED_ERROR"}`)
+		got, err := rt.Client.ErrorHandler(resp, context.Canceled, 3)
+		assert.Nil(t, got, "a cancelled context must not be reported as a response")
+		assert.ErrorIs(t, err, context.Canceled)
 	})
 
 	t.Run("reports the transport error when no response exists", func(t *testing.T) {

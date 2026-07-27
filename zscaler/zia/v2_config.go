@@ -29,7 +29,8 @@ const (
 	// to match the OneAPI client (see zscaler/oneapiconfig.go): ten attempts
 	// across the exponential backoff window cover every observed real-world
 	// recovery, while 100 let a single stuck call stall for minutes. Override via
-	// cfg.ZIA.Client.RateLimit.MaxRetries or ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES.
+	// cfg.ZIA.Client.RateLimit.MaxRetries, WithRateLimitMaxRetries, or the
+	// ZIA_CLIENT_RATE_LIMIT_MAX_RETRIES environment variable.
 	MaxNumOfRetries     = 10
 	RetryWaitMaxSeconds = 20
 	RetryWaitMinSeconds = 5

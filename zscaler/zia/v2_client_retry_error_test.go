@@ -3,6 +3,7 @@ package zia
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -89,10 +90,25 @@ func TestCheckRetryOnServerErrors(t *testing.T) {
 			description: "a message with no code is not a deterministic verdict",
 		},
 		{
-			name:      "502 with a deterministic code is not retried",
-			status:    http.StatusBadGateway,
-			body:      `{"code":"SOME_PERMANENT_CODE","message":"nope"}`,
-			wantRetry: false,
+			name:        "502 with a deterministic code is still retried",
+			status:      http.StatusBadGateway,
+			body:        `{"code":"SOME_PERMANENT_CODE","message":"nope"}`,
+			wantRetry:   true,
+			description: "gateway statuses never carry an API verdict",
+		},
+		{
+			name:        "503 with a deterministic code is still retried",
+			status:      http.StatusServiceUnavailable,
+			body:        `{"code":"SERVICE_UNAVAILABLE","message":"try later"}`,
+			wantRetry:   true,
+			description: "503 is wired into Backoff as a Retry-After rate-limit signal",
+		},
+		{
+			name:        "504 with a deterministic code is still retried",
+			status:      http.StatusGatewayTimeout,
+			body:        `{"code":"GATEWAY_TIMEOUT","message":"upstream timed out"}`,
+			wantRetry:   true,
+			description: "gateway statuses never carry an API verdict",
 		},
 		{
 			name:      "501 Not Implemented is never retried",
@@ -170,26 +186,59 @@ func TestMaxNumOfRetriesDefault(t *testing.T) {
 		"raise this assertion deliberately if changing the SDK retry contract")
 }
 
-// newExhaustingClient mirrors the ErrorHandler wiring from getHTTPClient with a
-// small retry budget, so the exhaustion path can be exercised quickly.
+// newExhaustingClient builds the real production client through getHTTPClient
+// with a small retry budget, so the exhaustion path can be exercised quickly.
+// It must not re-implement the ErrorHandler: a copy would keep passing if the
+// production wiring regressed.
 func newExhaustingClient(t *testing.T, retryMax int) *http.Client {
 	t.Helper()
-	l := logger.GetDefaultLogger("zia-test: ")
 
-	rc := retryablehttp.NewClient()
-	rc.RetryMax = retryMax
-	rc.RetryWaitMin = time.Millisecond
-	rc.RetryWaitMax = 2 * time.Millisecond
-	rc.CheckRetry = checkRetry
-	rc.Logger = nil
-	rc.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
-		if resp != nil {
-			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
-			return resp, nil
-		}
-		return nil, err
-	}
-	return rc.StandardClient()
+	cfg := &Configuration{}
+	cfg.ZIA.Client.RateLimit.MaxRetries = int32(retryMax)
+	cfg.ZIA.Client.RateLimit.RetryWaitMin = time.Millisecond
+	cfg.ZIA.Client.RateLimit.RetryWaitMax = 2 * time.Millisecond
+
+	client := getHTTPClient(logger.GetDefaultLogger("zia-test: "), nil, cfg)
+	require.NotNil(t, client)
+
+	rt, ok := client.Transport.(*retryablehttp.RoundTripper)
+	require.True(t, ok, "expected a retryablehttp RoundTripper")
+	require.NotNil(t, rt.Client.ErrorHandler, "ErrorHandler must be installed (issue #449)")
+
+	return client
+}
+
+// TestZIAErrorHandlerSemantics pins the two branches of the installed
+// ErrorHandler, which retryablehttp distinguishes by whether err is nil.
+func TestZIAErrorHandlerSemantics(t *testing.T) {
+	cfg := &Configuration{}
+	cfg.ZIA.Client.RateLimit.MaxRetries = 2
+	cfg.ZIA.Client.RateLimit.RetryWaitMin = time.Millisecond
+	cfg.ZIA.Client.RateLimit.RetryWaitMax = 2 * time.Millisecond
+
+	rt, ok := getHTTPClient(logger.GetDefaultLogger("zia-test: "), nil, cfg).Transport.(*retryablehttp.RoundTripper)
+	require.True(t, ok)
+	require.NotNil(t, rt.Client.ErrorHandler)
+
+	t.Run("preserves the response when the retry budget is exhausted", func(t *testing.T) {
+		got, err := rt.Client.ErrorHandler(newTestResponse(http.StatusInternalServerError, `{"code":"UNEXPECTED_ERROR"}`), nil, 3)
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.Equal(t, http.StatusInternalServerError, got.StatusCode)
+	})
+
+	t.Run("does not mask a genuine error that arrives with a response", func(t *testing.T) {
+		got, err := rt.Client.ErrorHandler(newTestResponse(http.StatusInternalServerError, `{"code":"UNEXPECTED_ERROR"}`), context.Canceled, 3)
+		assert.Nil(t, got, "a cancelled context must not be reported as a response")
+		assert.ErrorIs(t, err, context.Canceled)
+	})
+
+	t.Run("reports the transport error when no response exists", func(t *testing.T) {
+		sentinel := errors.New("connection refused")
+		got, err := rt.Client.ErrorHandler(nil, sentinel, 3)
+		assert.Nil(t, got)
+		assert.ErrorIs(t, err, sentinel)
+	})
 }
 
 // TestErrorHandlerPreservesResponseOnExhaustion is the core regression test for
@@ -274,4 +323,102 @@ func TestDeterministic500StopsAfterOneAttempt(t *testing.T) {
 	assert.Equal(t, int32(1), atomic.LoadInt32(&attempts),
 		"a deterministic API verdict must not be retried at all")
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
+// newGenericRequestTestClient builds a ZIA Client wired to srv with a
+// pre-established session, so GenericRequest can be exercised without the
+// authentication round trip.
+func newGenericRequestTestClient(t *testing.T, srvURL string, retryMax int) *Client {
+	t.Helper()
+
+	cfg := &Configuration{}
+	cfg.ZIA.Client.RateLimit.MaxRetries = int32(retryMax)
+	cfg.ZIA.Client.RateLimit.RetryWaitMin = time.Millisecond
+	cfg.ZIA.Client.RateLimit.RetryWaitMax = 2 * time.Millisecond
+
+	return &Client{
+		URL:              srvURL,
+		HTTPClient:       getHTTPClient(logger.GetDefaultLogger("zia-test: "), nil, cfg),
+		Logger:           logger.GetDefaultLogger("zia-test: "),
+		session:          &Session{JSessionID: "test-session"},
+		sessionRefreshed: time.Now(),
+		sessionTimeout:   time.Hour,
+	}
+}
+
+// TestGenericRequestSurfacesDeterministic500 reproduces issue #449 end to end
+// through the exact call path a caller uses: the API's code and message must
+// reach the caller as an *errorx.ErrorResponse, not an opaque *url.Error.
+func TestGenericRequestSurfacesDeterministic500(t *testing.T) {
+	var attempts int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&attempts, 1)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"code":"UNEXPECTED_ERROR","message":"An unexpected error has occurred, please contact Zscaler's support"}`))
+	}))
+	defer srv.Close()
+
+	c := newGenericRequestTestClient(t, srv.URL, MaxNumOfRetries)
+
+	body, err := c.GenericRequest(context.Background(), srv.URL, "/api/v1/urlFilteringRules",
+		http.MethodPost, bytes.NewBufferString("{}"), nil, contentTypeJSON)
+
+	require.Error(t, err)
+	assert.Nil(t, body)
+	assert.Equal(t, int32(1), atomic.LoadInt32(&attempts),
+		"a deterministic API verdict must not be retried at all")
+
+	var urlErr *url.Error
+	assert.False(t, errors.As(err, &urlErr), "the sanitized *url.Error from issue #449 must be gone")
+
+	respErr, ok := errorx.AsErrorResponse(err)
+	require.True(t, ok, "caller must receive a structured *errorx.ErrorResponse")
+	require.NotNil(t, respErr.Parsed)
+	assert.Equal(t, "UNEXPECTED_ERROR", respErr.Parsed.Code)
+	assert.Equal(t, http.StatusInternalServerError, respErr.Parsed.Status)
+	assert.Contains(t, respErr.Parsed.Message, "An unexpected error has occurred")
+}
+
+// TestGenericRequestSurfacesPersistent401 covers the post-loop guard: a 401 that
+// survives every attempt must not be handed back as a successful body.
+func TestGenericRequestSurfacesPersistent401(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"code":"AUTHENTICATION_FAILED","message":"not authorized"}`))
+	}))
+	defer srv.Close()
+
+	c := newGenericRequestTestClient(t, srv.URL, 1)
+
+	body, err := c.GenericRequest(context.Background(), srv.URL, "/api/v1/urlCategories",
+		http.MethodGet, nil, nil, contentTypeJSON)
+
+	require.Error(t, err, "a persistent 401 must not be reported as success")
+	assert.Nil(t, body)
+
+	respErr, ok := errorx.AsErrorResponse(err)
+	require.True(t, ok)
+	require.NotNil(t, respErr.Parsed)
+	assert.Equal(t, http.StatusUnauthorized, respErr.Parsed.Status)
+	assert.Equal(t, "AUTHENTICATION_FAILED", respErr.Parsed.Code)
+}
+
+// TestGenericRequestSucceeds guards the happy path against the new post-loop
+// guard: a 2xx must still return its body.
+func TestGenericRequestSucceeds(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":42}`))
+	}))
+	defer srv.Close()
+
+	c := newGenericRequestTestClient(t, srv.URL, 1)
+
+	body, err := c.GenericRequest(context.Background(), srv.URL, "/api/v1/urlCategories",
+		http.MethodGet, nil, nil, contentTypeJSON)
+
+	require.NoError(t, err)
+	assert.JSONEq(t, `{"id":42}`, string(body))
 }
