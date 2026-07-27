@@ -328,8 +328,12 @@ type Service struct {
 
 The `errorx` package provides:
 - `ErrorResponse` — wraps HTTP errors with parsed API details
+- `AsErrorResponse(err)` — safely extracts an `*ErrorResponse` from any error, aware of wrapping. Use this instead of an unguarded `err.(*ErrorResponse)` type assertion, which panics on a mismatch.
 - `IsObjectNotFound()` — `true` for 404 / `resource.not.found`
 - `IsLimitExceeded()` — `true` for 403 tenant limit errors
+- `IsSessionInvalidError(resp)` — `true` for a 401 whose body indicates an invalidated session
+- `IsEditLockError(resp)` — `true` for a 409 / 412 transient edit-lock or org-barrier condition
+- `IsRetryableServerError(resp)` — `true` when a `5xx` is transient rather than a deterministic API verdict (see Rate Limiting & Retries)
 
 Service functions should NOT catch/wrap these — let them propagate to the caller.
 
@@ -341,8 +345,19 @@ Automatic, per-cloud:
 - **`MaxNumOfRetries`** — default `10` (v3.8.33+, was `100`). Override via `cfg.Zscaler.Client.RateLimit.MaxRetries` or env `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`. Lowered because a single stuck call no longer needs to monopolise a goroutine for ~100s; ten attempts across a jittered exponential window cover all observed real-world recoveries.
 - **401 SESSION_NOT_VALID** — auto-refreshes OAuth2 token; bounded by `MaxSessionNotValidRetries` (default 3).
 - **409 / 412 EDIT_LOCK_NOT_AVAILABLE / `Failed during enter Org barrier`** — exponential backoff in both the retryablehttp `CheckRetry` (`errorx.IsEditLockError`) and the `ExecuteRequest` outer loop.
+- **5xx** — retried only when the body does NOT carry a deterministic API verdict (v3.8.43+, ZIA legacy). `errorx.IsRetryableServerError` refuses a retry when the body parses as JSON with a non-empty string `code`, because the ZIA API reuses `500 UNEXPECTED_ERROR` for permanent validation failures (e.g. an unknown URL category) that no retry can fix. Recognised transient markers always win, and empty / non-JSON / unparseable bodies (gateway HTML, load balancer errors) are still retried. `501` is never retried.
 
-Service implementations must NOT implement their own retry logic. The retry policy is locked in by `zscaler/oneapiconfig_retry_test.go` (`TestJitter`, `TestRetryBackoffPolicy`, `TestRetryMaxDefault`) — those tests fail loudly if a future change regresses the contract.
+Service implementations must NOT implement their own retry logic. The retry policy is locked in by `zscaler/oneapiconfig_retry_test.go` (`TestJitter`, `TestRetryBackoffPolicy`, `TestRetryMaxDefault`) for OneAPI and `zscaler/zia/v2_client_retry_error_test.go` (`TestCheckRetryOnServerErrors`, `TestCheckRetryPreservesExistingBehaviour`, `TestMaxNumOfRetriesDefault`) for ZIA legacy — those tests fail loudly if a future change regresses the contract.
+
+### Exhausted retries must preserve the API error (ZIA legacy, v3.8.43+)
+
+`retryablehttp`'s default behaviour when the retry budget runs out is to drain the response body and return a bare `giving up after N attempt(s)` error with a **nil** response, which destroys the API's own error payload and reaches the caller as an opaque `*url.Error` (issue #449). Every client that wires `retryablehttp` must therefore set an `ErrorHandler` that returns the final response when one exists, so the request layer can build a structured `errorx.ErrorResponse` via `errorx.CheckErrorInResponse`. Return the transport error only when the response is nil (e.g. connection refused).
+
+`zscaler/zia/v2_client.go` `getHTTPClient` is the reference implementation. **The OneAPI client and the ZPA / ZCC / ZDX / ZTW / ZWA legacy clients still lack this handler and remain affected** — they sanitize the error the same way, just after fewer attempts. Add the same `ErrorHandler` when touching those clients.
+
+### Legacy client retry budgets
+
+`MaxNumOfRetries` per client (constant in each `v2_config.go`): ZIA `10` (v3.8.43+, was `100`), ZCC `50`, ZPA / ZDX / ZTW / ZWA `100`. Only ZIA has been aligned with the OneAPI default of `10`; the rest are candidates for the same reduction.
 
 ## Caching
 

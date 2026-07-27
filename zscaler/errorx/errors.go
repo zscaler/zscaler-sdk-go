@@ -275,3 +275,64 @@ func IsEditLockError(res *http.Response) bool {
 
 	return false
 }
+
+// transientServerErrorMessages are API codes/messages that accompany a 5xx and
+// indicate a genuinely transient server-side condition, which a retry can
+// plausibly resolve. These are distinct from deterministic failures that reuse
+// the same 5xx status.
+var transientServerErrorMessages = []string{
+	"EDIT_LOCK_NOT_AVAILABLE",
+	"Resource Access Blocked",
+	"Failed during enter Org barrier",
+	"Request processing failed, possibly because an expected precondition was not met",
+}
+
+// IsRetryableServerError reports whether a 5xx response is worth retrying.
+//
+// The ZIA API reuses HTTP 500 with code UNEXPECTED_ERROR for permanent request
+// validation failures — for example submitting a URL filtering rule that names a
+// category which does not exist. Retrying those is futile, and because the
+// legacy retry budget is large it turns a single bad request into a long stall
+// that ends with the API's own explanation discarded (see issue #449).
+//
+// The decision is deliberately conservative: a retry is refused only when the
+// body is a well-formed API error carrying a code, which is a deterministic
+// verdict from the application itself. An empty body, an HTML error page from a
+// load balancer, or any payload that does not parse is still treated as a
+// transient infrastructure fault and retried, preserving the previous behaviour
+// for real outages. A recognised transient marker always wins over both rules.
+func IsRetryableServerError(res *http.Response) bool {
+	if res == nil {
+		return false
+	}
+	// 501 Not Implemented is a permanent condition, matching the upstream
+	// retryablehttp policy.
+	if res.StatusCode < 500 || res.StatusCode == http.StatusNotImplemented {
+		return false
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+
+	// Rewind the response body so downstream error parsing still sees it.
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	for _, msg := range transientServerErrorMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	var parsed struct {
+		Code interface{} `json:"code"`
+	}
+	if err := json.Unmarshal(bodyBytes, &parsed); err == nil {
+		if code, ok := parsed.Code.(string); ok && code != "" {
+			return false
+		}
+	}
+
+	return true
+}

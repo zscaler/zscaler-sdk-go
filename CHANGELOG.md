@@ -1,5 +1,24 @@
 # Changelog
 
+# 3.8.43 (July 27, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed [Issue #449](https://github.com/zscaler/zscaler-sdk-go/issues/449). The ZIA Legacy client no longer discards the API error payload when its retry budget is exhausted. Previously the caller received a generic `*url.Error` reading `giving up after 101 attempt(s)`, which hid the HTTP status, API code and API message. The final API response is now surfaced so callers receive a structured `errorx.ErrorResponse`.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The ZIA Legacy client no longer retries HTTP `5xx` responses that carry a deterministic API verdict. The ZIA API reuses HTTP `500` with code `UNEXPECTED_ERROR` for permanent request validation failures, such as submitting a URL filtering rule referencing a non-existent URL category. Those requests now fail immediately instead of consuming the whole retry budget. Genuinely transient conditions (`EDIT_LOCK_NOT_AVAILABLE`, `Resource Access Blocked`, `Failed during enter Org barrier`, precondition failures) plus empty, non-JSON and unparseable bodies continue to be retried.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Reduced the ZIA Legacy client default `MaxNumOfRetries` from `100` to `10` for parity with the OneAPI client. Override via `cfg.ZIA.Client.RateLimit.MaxRetries` or the environment variable `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZIA Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
+
+### Internal Changes
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Added `errorx.IsRetryableServerError` to classify `5xx` responses as transient or deterministic. This is shared retry-policy logic and does not change any existing exported behaviour.
+
 # 3.8.42 (July 24, 2026)
 
 ## Notes

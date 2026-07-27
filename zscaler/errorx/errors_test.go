@@ -332,3 +332,127 @@ func TestIsEditLockError_NoMatch(t *testing.T) {
 	res := newResponse(http.StatusConflict, "text/plain", "some other conflict", http.MethodGet, "https://api.example.com/x")
 	require.False(t, IsEditLockError(res))
 }
+
+// =====================================================
+// IsRetryableServerError
+// =====================================================
+
+func TestIsRetryableServerError(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+		body   string
+		want   bool
+	}{
+		{
+			name:   "deterministic 500 with API code is not retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":"UNEXPECTED_ERROR","message":"An unexpected error has occurred, please contact Zscaler's support"}`,
+			want:   false,
+		},
+		{
+			name:   "500 with org barrier marker is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":"UNEXPECTED_ERROR","message":"Failed during enter Org barrier"}`,
+			want:   true,
+		},
+		{
+			name:   "500 with edit lock marker is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":"EDIT_LOCK_NOT_AVAILABLE"}`,
+			want:   true,
+		},
+		{
+			name:   "500 with resource access blocked marker is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"message":"Resource Access Blocked"}`,
+			want:   true,
+		},
+		{
+			name:   "500 with precondition marker is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":"UNEXPECTED_ERROR","message":"Request processing failed, possibly because an expected precondition was not met"}`,
+			want:   true,
+		},
+		{
+			name:   "empty body is retryable",
+			status: http.StatusInternalServerError,
+			body:   "",
+			want:   true,
+		},
+		{
+			name:   "non JSON gateway body is retryable",
+			status: http.StatusBadGateway,
+			body:   "<html>502 Bad Gateway</html>",
+			want:   true,
+		},
+		{
+			name:   "JSON without a code is retryable",
+			status: http.StatusServiceUnavailable,
+			body:   `{"message":"temporarily unavailable"}`,
+			want:   true,
+		},
+		{
+			name:   "non string code is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":500,"message":"numeric code"}`,
+			want:   true,
+		},
+		{
+			name:   "empty string code is retryable",
+			status: http.StatusInternalServerError,
+			body:   `{"code":"","message":"blank code"}`,
+			want:   true,
+		},
+		{
+			name:   "501 Not Implemented is not retryable",
+			status: http.StatusNotImplemented,
+			body:   "",
+			want:   false,
+		},
+		{
+			name:   "non 5xx status is not retryable",
+			status: http.StatusBadRequest,
+			body:   `{"code":"INVALID_INPUT"}`,
+			want:   false,
+		},
+		{
+			name:   "success status is not retryable",
+			status: http.StatusOK,
+			body:   "{}",
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := newResponse(tt.status, "application/json", tt.body, http.MethodPost, "https://api.example.com/x")
+			require.Equal(t, tt.want, IsRetryableServerError(res))
+
+			// The body must be rewound so downstream parsing still works.
+			remaining, err := io.ReadAll(res.Body)
+			require.NoError(t, err)
+			require.Equal(t, tt.body, string(remaining))
+		})
+	}
+}
+
+func TestIsRetryableServerError_NilResponse(t *testing.T) {
+	require.False(t, IsRetryableServerError(nil))
+}
+
+// A preserved 5xx response must still convert into a structured error, which is
+// the contract the ZIA legacy client relies on after exhausting its retries.
+func TestIsRetryableServerError_ResponseStillParsable(t *testing.T) {
+	body := `{"code":"UNEXPECTED_ERROR","message":"An unexpected error has occurred"}`
+	res := newResponse(http.StatusInternalServerError, "application/json", body, http.MethodPost, "https://api.example.com/urlFilteringRules")
+
+	require.False(t, IsRetryableServerError(res))
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.NotNil(t, respErr.Parsed)
+	require.Equal(t, "UNEXPECTED_ERROR", respErr.Parsed.Code)
+	require.Equal(t, http.StatusInternalServerError, respErr.Parsed.Status)
+}
