@@ -1,10 +1,12 @@
 package zia
 
 import (
+	"context"
 	"bytes"
 	"io"
 	"math"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -12,6 +14,116 @@ import (
 	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 )
+
+// TestZIACheckRetry tests ZIA Retry logic
+func TestZIACheckRetry(t *testing.T) {
+	tests := []struct {
+		name string
+		resp *http.Response
+		err  error
+		want bool
+	}{
+		{
+			name: "retries 429",
+			resp: &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Body:       io.NopCloser(bytes.NewBuffer(nil)),
+			},
+			want: true,
+		},
+		{
+			name: "does not retry generic 500",
+			resp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Body: io.NopCloser(bytes.NewBufferString(
+					`{"code":"UNEXPECTED_ERROR"}`,
+				)),
+			},
+			want: false,
+		},
+		{
+			name: "retries transport error",
+			err:  io.EOF,
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retry, err := checkRetry(
+				context.Background(),
+				tt.resp,
+				tt.err,
+			)
+
+			require.NoError(t, err)
+			require.Equal(t, tt.want, retry)
+		})
+	}
+}
+
+//TestZIARetryBehaviour tests the retry behaviour
+func TestZIARetryBehavior(t *testing.T) {
+	tests := []struct {
+		name         string
+		status       int
+		wantAttempts int
+	}{
+		{
+			name:         "500 returns immediately",
+			status:       http.StatusInternalServerError,
+			wantAttempts: 1,
+		},
+		{
+			name:         "429 preserves response after retry exhaustion",
+			status:       http.StatusTooManyRequests,
+			wantAttempts: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			attempts := make(chan struct{}, 2)
+
+			server := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					attempts <- struct{}{}
+					w.Header().Set("Content-Type", "application/json")
+					if tt.status == http.StatusTooManyRequests {
+						w.Header().Set("Retry-After", "1ms")
+					}
+					w.WriteHeader(tt.status)
+					_, _ = w.Write([]byte(`{"code":"TEST_ERROR"}`))
+				},
+			))
+			defer server.Close()
+
+			l := logger.GetDefaultLogger("zia-retry-test: ")
+			cfg := &Configuration{Logger: l}
+			cfg.ZIA.Client.RateLimit.MaxRetries = 1
+			cfg.ZIA.Client.RateLimit.RetryWaitMin = time.Millisecond
+			cfg.ZIA.Client.RateLimit.RetryWaitMax = time.Millisecond
+			cfg.ZIA.Client.RequestTimeout = 5 * time.Second
+
+			client := getHTTPClient(
+				l,
+				rl.NewRateLimiter(20, 10, 10, 10),
+				cfg,
+			)
+
+			resp, err := client.Get(server.URL)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			require.Equal(t, tt.status, resp.StatusCode)
+			require.Len(t, attempts, tt.wantAttempts)
+
+			body, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			require.JSONEq(t, `{"code":"TEST_ERROR"}`, string(body))
+		})
+	}
+}
 
 // TestZIABackoffLogic tests the ZIA backoff function behavior
 func TestZIABackoffLogic(t *testing.T) {

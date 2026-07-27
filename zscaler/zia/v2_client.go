@@ -394,6 +394,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
+	retryableClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -523,7 +524,12 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 		}
 	}
-	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+	if err != nil {
+	// Preserve retryablehttp's classification of transport failures
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+	}
+	// HTTP response statuses are retryable only when explicitly handled above
+	return false, nil
 }
 
 // validateSession checks if the current session is still valid by making a GET request to /authenticatedSession
