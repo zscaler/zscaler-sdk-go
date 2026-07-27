@@ -162,7 +162,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	if cfg.Zscaler.Client.RateLimit.MaxRetries > 0 {
 		retryableClient.RetryMax = int(cfg.Zscaler.Client.RateLimit.MaxRetries)
 	} else {
-		retryableClient.RetryMax = MaxNumOfRetries // Default to 100
+		retryableClient.RetryMax = MaxNumOfRetries
 	}
 
 	// Configure backoff and retry policies for retryablehttp.
@@ -207,6 +207,31 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		return jitter(sleep, retryJitterFraction)
 	}
 	retryableClient.CheckRetry = checkRetry
+
+	// When the retry budget is exhausted, retryablehttp's default behaviour is to
+	// drain the body and return a bare "giving up after N attempt(s)" error with a
+	// nil response, which destroys the API's own error payload. Hand the final
+	// response back instead so ExecuteRequest can build a structured
+	// errorx.ErrorResponse carrying the API code and message. A nil response means
+	// the request never produced one (e.g. connection refused), in which case the
+	// transport error is the only signal left to report. See issue #449.
+	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
+			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
+			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		return nil, err
+	}
+
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -368,6 +393,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			return true, nil
 		}
 	}
+
+	// Only retry a 5xx when the body does not carry a deterministic API verdict.
+	// The upstream policy retries every 5xx except 501, which makes a permanent
+	// 500 UNEXPECTED_ERROR (e.g. an unknown URL category) burn the entire retry
+	// budget before failing anyway. See issue #449.
+	if err == nil && resp != nil && resp.StatusCode >= 500 {
+		return errorx.IsRetryableServerError(resp), nil
+	}
+
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
@@ -574,6 +608,11 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	for retry := 1; ; retry++ { // Infinite loop for retries if MaxRetries=0
 		// Check MaxRetries if non-zero
 		if c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries > 0 && retry > int(c.oauth2Credentials.Zscaler.Client.RateLimit.MaxRetries) {
+			// Surface the API's own explanation for the last attempt rather than
+			// replacing it with a bare "max retries exceeded". See issue #449.
+			if resp != nil {
+				return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("max retries exceeded"))
+			}
 			return nil, resp, nil, fmt.Errorf("max retries exceeded")
 		}
 
@@ -704,6 +743,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 					beforeWait := time.Now()
 					time.Sleep(sleepFor)
 					totalWaitTime += time.Since(beforeWait)
+
+					// Rebuild the request with a fresh body reader, as the 401 and
+					// 409/412 paths do. The previous attempt consumed req.Body, so
+					// reusing it here would resend a POST/PUT with an empty body.
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
 					continue
 				}
 			}
@@ -747,8 +794,10 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
 		}
 
-		// Handle retryable errors with exponential backoff
-		if resp.StatusCode >= 500 {
+		// Handle retryable errors with exponential backoff. A 5xx whose body
+		// carries a deterministic API verdict is not retried, since the API reuses
+		// 500 UNEXPECTED_ERROR for permanent validation failures. See issue #449.
+		if resp.StatusCode >= 500 && errorx.IsRetryableServerError(resp) {
 			// 5xx server errors are retryable
 			backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
 			maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
@@ -760,6 +809,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			beforeWait := time.Now()
 			time.Sleep(backoffDelay)
 			totalWaitTime += time.Since(beforeWait)
+
+			// Rebuild the request with a fresh body reader, as the 401 and
+			// 409/412 paths do. The previous attempt consumed req.Body, so
+			// reusing it here would resend a POST/PUT with an empty body.
+			req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+			if err != nil {
+				return nil, nil, nil, err
+			}
 			continue
 		}
 

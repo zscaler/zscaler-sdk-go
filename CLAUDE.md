@@ -328,8 +328,12 @@ type Service struct {
 
 The `errorx` package provides:
 - `ErrorResponse` — wraps HTTP errors with parsed API details
+- `AsErrorResponse(err)` — safely extracts an `*ErrorResponse` from any error, aware of wrapping. Use this instead of an unguarded `err.(*ErrorResponse)` type assertion, which panics on a mismatch.
 - `IsObjectNotFound()` — `true` for 404 / `resource.not.found`
 - `IsLimitExceeded()` — `true` for 403 tenant limit errors
+- `IsSessionInvalidError(resp)` — `true` for a 401 whose body indicates an invalidated session
+- `IsEditLockError(resp)` — `true` for a 409 / 412 transient edit-lock or org-barrier condition
+- `IsRetryableServerError(resp)` — `true` when a `5xx` is transient rather than a deterministic API verdict (see Rate Limiting & Retries)
 
 Service functions should NOT catch/wrap these — let them propagate to the caller.
 
@@ -341,8 +345,34 @@ Automatic, per-cloud:
 - **`MaxNumOfRetries`** — default `10` (v3.8.33+, was `100`). Override via `cfg.Zscaler.Client.RateLimit.MaxRetries` or env `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`. Lowered because a single stuck call no longer needs to monopolise a goroutine for ~100s; ten attempts across a jittered exponential window cover all observed real-world recoveries.
 - **401 SESSION_NOT_VALID** — auto-refreshes OAuth2 token; bounded by `MaxSessionNotValidRetries` (default 3).
 - **409 / 412 EDIT_LOCK_NOT_AVAILABLE / `Failed during enter Org barrier`** — exponential backoff in both the retryablehttp `CheckRetry` (`errorx.IsEditLockError`) and the `ExecuteRequest` outer loop.
+- **5xx** — retried only when the body does NOT carry a deterministic API verdict (v3.8.43+, **all clients**). `errorx.IsRetryableServerError` refuses a retry when the body parses as JSON with a non-empty string `code`, because the API reuses `500 UNEXPECTED_ERROR` for permanent validation failures (e.g. an unknown URL category) that no retry can fix. Recognised transient markers always win, and empty / non-JSON / unparseable bodies (gateway HTML, load balancer errors) are still retried. `501` is never retried. **`502` / `503` / `504` are always retried and their bodies are never inspected** — they come from gateways and overload protection, never from business logic, and `503` in particular is wired into every client's `Backoff` closure as a `Retry-After` bearing rate-limit signal, so treating one as deterministic would silently disable that path.
 
-Service implementations must NOT implement their own retry logic. The retry policy is locked in by `zscaler/oneapiconfig_retry_test.go` (`TestJitter`, `TestRetryBackoffPolicy`, `TestRetryMaxDefault`) — those tests fail loudly if a future change regresses the contract.
+Service implementations must NOT implement their own retry logic. The retry policy is locked in by `zscaler/oneapiconfig_retry_test.go` (`TestJitter`, `TestRetryBackoffPolicy`, `TestRetryMaxDefault`) plus a `*_retry_error_test.go` file in every client package (`zscaler/`, `zscaler/zia/`, `zscaler/zpa/`, `zscaler/zcc/`, `zscaler/zdx/`, `zscaler/ztw/`, `zscaler/zwa/`) — those tests fail loudly if a future change regresses the contract.
+
+### Exhausted retries must preserve the API error (all clients, v3.8.43+)
+
+`retryablehttp`'s default behaviour when the retry budget runs out is to drain the response body and return a bare `giving up after N attempt(s)` error with a **nil** response, which destroys the API's own error payload and reaches the caller as an opaque `*url.Error` (issue #449). Every client that wires `retryablehttp` therefore sets an `ErrorHandler` that returns the final response, so the request layer can build a structured `errorx.ErrorResponse` via `errorx.CheckErrorInResponse`.
+
+The handler must discriminate on `err`, not on `resp`. `retryablehttp` invokes `ErrorHandler` for two different reasons, and only one of them is worth rescuing:
+
+| `err` | Meaning | Correct handling |
+|---|---|---|
+| `nil` | The retry budget ran out while `CheckRetry` still wanted to retry. The body is intact — `Do` breaks out of its loop *before* `drainBody`. | Return `(resp, nil)` so the caller sees the API's status, code and message. |
+| non-nil | A genuine failure: transport error (`resp` is nil), or a cancelled / timed-out context that `CheckRetry` reported as `ctx.Err()` (`resp` may be non-nil). | Close `resp.Body` if present and return `(nil, err)`. Returning the response here would mask a real error as a success. |
+
+The naive `if resp != nil { return resp, nil }` form is wrong: it swallows context cancellation.
+
+This is wired in the `getHTTPClient` of every client: `zscaler/oneapiconfig.go`, `zscaler/zia/v2_client.go`, `zscaler/zpa/v2_client.go`, `zscaler/zcc/v2_client.go`, `zscaler/zdx/v2_client.go`, `zscaler/ztw/v2_client.go` and `zscaler/zwa/v2_client.go`. **Any new client must do the same.** Note the ZCC client only builds a retryable client when `cfg.ZCC.Client.RateLimit.BackoffConf` is non-nil and enabled.
+
+Because the handler hands back a non-2xx response where the caller previously received an error, each client's request layer must classify non-2xx responses itself. ZPA / ZCC / ZDX / ZWA call `errorx.CheckErrorInResponse` immediately after `httpClient.Do`, so they are covered. ZIA and ZTW use a `for retry := 1; retry <= 5` loop that skips `401`, so both have an explicit post-loop guard — without it a persistently unauthorized response would be returned to the caller as a success.
+
+### Retry budgets
+
+`MaxNumOfRetries` per client (constant in each `v2_config.go`): OneAPI `10`, ZIA `10` (v3.8.43+, was `100`), ZCC `50`, ZPA / ZDX / ZTW / ZWA `100`.
+
+Each legacy client reads its own env var, **not** the OneAPI one. Only the OneAPI client uses `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`; the legacy clients use `ZIA_`, `ZPA_`, `ZCC_`, `ZDX_`, `ZWA_` and — note the historical prefix — `ZTC_CLIENT_RATE_LIMIT_MAX_RETRIES` for ZTW.
+
+The larger budgets on ZPA / ZDX / ZTW / ZWA are deliberate and should not be reduced casually: ZPA in particular retries application-level contention responses (`db.simultaneous.request`, `api.concurrent.access.error`, `non.restricted.entity.authorization.failed`) that can legitimately need many attempts during bulk policy-rule reordering. Since v3.8.43 a deterministic failure is not retried at all, so a large budget no longer causes the stall from issue #449.
 
 ## Caching
 

@@ -275,3 +275,91 @@ func IsEditLockError(res *http.Response) bool {
 
 	return false
 }
+
+// transientServerErrorMessages are API codes/messages that accompany a 5xx and
+// indicate a genuinely transient server-side condition, which a retry can
+// plausibly resolve. These are distinct from deterministic failures that reuse
+// the same 5xx status.
+var transientServerErrorMessages = []string{
+	"EDIT_LOCK_NOT_AVAILABLE",
+	"Resource Access Blocked",
+	"Failed during enter Org barrier",
+	"Request processing failed, possibly because an expected precondition was not met",
+}
+
+// alwaysRetryableServerStatuses are 5xx codes that never carry an application
+// verdict. They are produced by gateways, load balancers and overload
+// protection rather than by the API's business logic, so a body that happens to
+// parse as a JSON error must not be mistaken for a deterministic failure.
+//
+// 503 matters most: every client's Backoff closure treats it exactly like a 429
+// and honours Retry-After, so it has to stay retryable for that path to be
+// reachable at all.
+var alwaysRetryableServerStatuses = map[int]bool{
+	http.StatusBadGateway:         true, // 502
+	http.StatusServiceUnavailable: true, // 503
+	http.StatusGatewayTimeout:     true, // 504
+}
+
+// IsRetryableServerError reports whether a 5xx response is worth retrying.
+//
+// The ZIA API reuses HTTP 500 with code UNEXPECTED_ERROR for permanent request
+// validation failures — for example submitting a URL filtering rule that names a
+// category which does not exist. Retrying those is futile, and because the
+// legacy retry budget is large it turns a single bad request into a long stall
+// that ends with the API's own explanation discarded (see issue #449).
+//
+// The decision is deliberately conservative: a retry is refused only when the
+// body is a well-formed API error carrying a code, which is a deterministic
+// verdict from the application itself. An empty body, an HTML error page from a
+// load balancer, or any payload that does not parse is still treated as a
+// transient infrastructure fault and retried, preserving the previous behaviour
+// for real outages. A recognised transient marker always wins over both rules,
+// and the body is not inspected at all for the infrastructure statuses in
+// alwaysRetryableServerStatuses.
+func IsRetryableServerError(res *http.Response) bool {
+	if res == nil {
+		return false
+	}
+	// 501 Not Implemented is a permanent condition, matching the upstream
+	// retryablehttp policy.
+	if res.StatusCode < 500 || res.StatusCode == http.StatusNotImplemented {
+		return false
+	}
+	// 502 / 503 / 504 are infrastructure signals, never API verdicts: retry them
+	// unconditionally, exactly as the upstream policy did before this function
+	// existed.
+	if alwaysRetryableServerStatuses[res.StatusCode] {
+		return true
+	}
+	// A 5xx with no body at all carries no verdict, so it stays retryable. This
+	// only happens for hand-built responses; the transport always sets a body.
+	if res.Body == nil {
+		return true
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+
+	// Rewind the response body so downstream error parsing still sees it.
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	for _, msg := range transientServerErrorMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	var parsed struct {
+		Code interface{} `json:"code"`
+	}
+	if err := json.Unmarshal(bodyBytes, &parsed); err == nil {
+		if code, ok := parsed.Code.(string); ok && code != "" {
+			return false
+		}
+	}
+
+	return true
+}

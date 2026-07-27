@@ -1,39 +1,47 @@
-Provide a general summary of your changes in the title above. You should
-remove this overview, any sections and any section descriptions you
-don't need below before submitting. There isn't a strict requirement to
-use this template if you can structure your description and still cover
-these points.
+<!--
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  STOP — this repository does not accept pull requests.               │
+  │  Please close this PR and open a GitHub issue instead.               │
+  └──────────────────────────────────────────────────────────────────────┘
+-->
 
-## Description
+# ⛔ This repository does not accept pull requests
 
-Describe your changes in detail through motivation and context. Why is
-this change required? What problem does it solve? If it fixes an open
-issue, link to the issue using GitHub's closing issues keywords[1].
+**Please do not submit this pull request.** It will be closed without review.
 
-## Has your change been tested?
+The Zscaler SDK for Go is developed and maintained internally by Zscaler against
+internal API specifications and release processes. Externally merged changes
+would be overwritten by the next generated release, so we cannot accept them —
+including bug fixes, new services and endpoints, added fields, documentation
+corrections and dependency updates.
 
-Explain how the change has been tested and what you ran to confirm your
-change affects other parts of the code. Automated tests are generally
-expected and changes without tests should explain why they aren't
-required.
+This is not a judgement on your change. We do want to hear about it.
 
-## Screenshots (if appropriate):
+## ✅ What to do instead
 
-## Types of changes
+Open a GitHub issue — the only supported channel, and the one maintainers work
+from:
 
-What sort of change does your code introduce/modify?
+- 🐛 **[Report a bug](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=bug.yml)** — something is broken or behaves contrary to the documentation
+- 🚀 **[Request a feature](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=feature_request.yml)** — a new service, endpoint, field or capability
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+Describe the **problem or the need**, not the patch. Accepted issues are
+implemented by the maintainers and shipped in a subsequent release, which you
+can track in [CHANGELOG.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/CHANGELOG.md) and the
+[release notes](https://github.com/zscaler/zscaler-sdk-go/blob/master/docs/guides/release-notes.md).
 
-## Checklist:
+To help us reproduce quickly, include your SDK and Go versions, the cloud and
+service involved (ZIA, ZPA, ZCC, ZDX, ZTW, ZID, ZWA) and whether you use the
+OneAPI or a legacy client, a minimal reproduction, and the full error with the
+API's HTTP status, `code` and `message`. **Redact credentials, tokens, customer
+IDs and tenant-identifying data — issues are public.**
 
-- [ ] My code follows the code style of this project.
-- [ ] My change requires a change to the documentation.
-- [ ] I have updated the documentation accordingly.
-- [ ] I have added tests to cover my changes.
-- [ ] All new and existing tests passed.
-- [ ] This change is using publicly documented and stable APIs.
+Found a suspected security vulnerability? Do not open a public issue or PR;
+follow [SUPPORT.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/SUPPORT.md) instead.
 
-[1]: https://help.github.com/articles/closing-issues-using-keywords/
+See [CONTRIBUTING.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md) for the full policy and
+[SUPPORT.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/SUPPORT.md) for the support scope.
+
+---
+
+<sub>Zscaler maintainers only: this notice replaces the previous PR template. Delete it and describe your change as usual.</sub>

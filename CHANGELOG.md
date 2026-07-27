@@ -1,5 +1,44 @@
 # Changelog
 
+# 3.8.43 (July 27, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Bug Fixes
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed [Issue #449](https://github.com/zscaler/zscaler-sdk-go/issues/449). The ZIA Legacy client no longer discards the API error payload when its retry budget is exhausted. Previously the caller received a generic `*url.Error` reading `giving up after 101 attempt(s)`, which hid the HTTP status, API code and API message. The final API response is now surfaced so callers receive a structured `errorx.ErrorResponse`.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The ZIA Legacy client no longer retries HTTP `5xx` responses that carry a deterministic API verdict. The ZIA API reuses HTTP `500` with code `UNEXPECTED_ERROR` for permanent request validation failures, such as submitting a URL filtering rule referencing a non-existent URL category. Those requests now fail immediately instead of consuming the whole retry budget. Genuinely transient conditions (`EDIT_LOCK_NOT_AVAILABLE`, `Resource Access Blocked`, `Failed during enter Org barrier`, precondition failures) plus empty, non-JSON and unparseable bodies continue to be retried. The gateway and overload statuses `502`, `503` and `504` are always retried and their bodies are never inspected, so the existing `Retry-After` handling for `503` is unaffected.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Reduced the ZIA Legacy client default `MaxNumOfRetries` from `100` to `10` for parity with the OneAPI client. Override via `cfg.ZIA.Client.RateLimit.MaxRetries`, `zia.WithRateLimitMaxRetries(n)`, or the environment variable `ZIA_CLIENT_RATE_LIMIT_MAX_RETRIES`.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZIA Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Applied the same two fixes to **every** remaining client: OneAPI, ZPA, ZCC, ZDX, ZTW and ZWA. All of them previously discarded the API error payload on retry exhaustion and retried every `5xx` except `501`. Each client now installs the response-preserving `ErrorHandler` and only retries a `5xx` whose body does not carry a deterministic API verdict.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The response-preserving `ErrorHandler` returns the final response only when the retry budget was exhausted, which `retryablehttp` signals by invoking the handler with a `nil` error. Any genuine error delivered alongside a response — a cancelled or timed-out `context.Context` reported by `CheckRetry`, for instance — is still returned to the caller, and the response body is closed rather than leaked.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed two additional defects in the OneAPI `ExecuteRequest` outer retry loop. Exhausting the outer loop returned a bare `max retries exceeded` error instead of the API's own status, code and message, and the loop retried every `5xx` unconditionally regardless of whether the failure was permanent.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a request-body defect in the OneAPI `ExecuteRequest` outer retry loop that the error-preserving fix made reachable. The `429`/`503` and transient-`5xx` retry paths called `continue` without rebuilding the request, so a retried `POST`/`PUT` would have resent an empty body because the previous attempt had consumed `req.Body`. Both paths now rebuild the request via `buildRequest`, matching the adjacent `401` and `409`/`412` paths. These paths were previously unreachable, because exhausting the inner `retryablehttp` loop returned an error before the outer loop could act on the response.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed a latent issue in the ZTW Legacy client where a `401 Unauthorized` that survived every session refresh attempt was returned to the caller as a successful response body instead of an error.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Corrected the documented OAuth2 token endpoint for the `govus` (FedRAMP) cloud in `README.md`. The table listed `https://<vanity_domain>.zidentitygovus.net/oauth2/v1/token`, which does not resolve. The correct endpoint is `https://<vanity_domain>.zidentitygov.us/oauth2/v1/token`, which is what the client has always produced. This corrects the value published in [PR #438](https://github.com/zscaler/zscaler-sdk-go/pull/438); no client behaviour changed.
+
+### Internal Changes
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Added `errorx.IsRetryableServerError` to classify `5xx` responses as transient or deterministic. This is shared retry-policy logic and does not change any existing exported behaviour.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - `errorx.IsRetryableServerError` no longer panics when handed a response with a `nil` body. The transport always sets one, but the function is exported and can be called with a hand-built `*http.Response`; a body-less `5xx` is now treated as retryable.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The ZIA retry regression test built its own copy of the `ErrorHandler` rather than obtaining the production one from `getHTTPClient`, so it could not have detected a regression in the wiring it existed to guard. It now goes through `getHTTPClient` like the other six client tests. Added end-to-end coverage through `GenericRequest` itself, asserting that a deterministic `500` yields an `*errorx.ErrorResponse` after a single attempt with no `*url.Error` in the chain, that a persistent `401` surfaces as an error, and that a `2xx` still returns its body.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - The retry budget (`MaxNumOfRetries`) was intentionally left unchanged for ZPA, ZCC, ZDX, ZTW and ZWA. Those clients retry application-level conditions such as the ZPA `db.simultaneous.request` and `api.concurrent.access.error` responses, which can legitimately need many attempts under contention. Because a deterministic failure is no longer retried at all, the large budget no longer causes the stall described in issue #449.
+
+- [PR #450](https://github.com/zscaler/zscaler-sdk-go/pull/450) - Fixed two pre-existing test failures in the `zscaler` package. `TestGetAuthURL` asserted the incorrect `govus` identity domain described above and had never passed. `TestGetServiceHTTPClientUnknown` constructed its client through `NewOneAPIClient`, which authenticates eagerly and so required live credentials to exercise what is only a configuration lookup; it now builds the client directly and additionally asserts that a recognised service prefix resolves to that service's own HTTP client.
+
 # 3.8.42 (July 24, 2026)
 
 ## Notes

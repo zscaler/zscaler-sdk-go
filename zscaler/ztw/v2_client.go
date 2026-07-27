@@ -359,6 +359,31 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
+
+	// When the retry budget is exhausted, retryablehttp's default behaviour is to
+	// drain the body and return a bare "giving up after N attempt(s)" error with a
+	// nil response, which destroys the API's own error payload. Hand the final
+	// response back instead so the request layer can build a structured
+	// errorx.ErrorResponse carrying the API code and message. A nil response means
+	// the request never produced one (e.g. connection refused), in which case the
+	// transport error is the only signal left to report. See issue #449.
+	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
+			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
+			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		return nil, err
+	}
+
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -488,6 +513,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 		}
 	}
+
+	// Only retry a 5xx when the body does not carry a deterministic API verdict.
+	// The upstream policy retries every 5xx except 501, which makes a permanent
+	// 500 UNEXPECTED_ERROR burn the entire retry budget before failing anyway.
+	// See issue #449.
+	if err == nil && resp != nil && resp.StatusCode >= 500 {
+		return errorx.IsRetryableServerError(resp), nil
+	}
+
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
@@ -687,6 +721,13 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
 			return nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		}
+	}
+
+	// A 401 that survived every attempt above exits the loop without being
+	// classified. Without this guard the error body would be handed back to the
+	// caller as if the call had succeeded.
+	if resp.StatusCode > 299 {
+		return nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 	}
 
 	bodyResp, err := io.ReadAll(resp.Body)
