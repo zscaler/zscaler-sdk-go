@@ -153,7 +153,7 @@ type FirewallDNSRules struct {
 	EndPointApplicationGroups []common.EndPointApplicationGroups `json:"endPointApplicationGroups,omitempty"`
 
 	// If set to true, Web EUN is enabled for the rule
-	IsWebEUNEnabled bool `json:"isWebEunEnabled,omitempty"`
+	IsWebEUNEnabled bool `json:"isWebEUNEnabled,omitempty"`
 
 	IsEUNEnabled bool `json:"isEunEnabled,omitempty"`
 
