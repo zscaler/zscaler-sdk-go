@@ -1,5 +1,14 @@
 # Changelog
 
+# 3.8.44 (July 31, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Bug Fixes
+
+- [PR #451](https://github.com/zscaler/zscaler-sdk-go/pull/451) - Fixed mispelled attribute `isWebEunEnabled` to the expected API value `isWebEUNEnabled` in firewall dns control policies struct which is non-standard camelCase style to prevent payload error during POST/PUT requests.
+
 # 3.8.43 (July 27, 2026)
 
 ## Notes
