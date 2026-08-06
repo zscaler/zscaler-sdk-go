@@ -54,8 +54,12 @@ type BrowserAccess struct {
 	RestrictionType           string                    `json:"restrictionType,omitempty"`
 	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
 	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
+	HBREnabled                bool                      `json:"hbrEnabled,omitempty"`
+	StickyEntity              string                    `json:"stickyEntity,omitempty"`
+	StickyGroup               string                    `json:"stickyGroup,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
+	GuestDetails              []common.GuestDetails     `json:"guestDetails,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
 	ClientlessApps            []ClientlessApps          `json:"clientlessApps,omitempty"`

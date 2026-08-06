@@ -39,7 +39,7 @@ type IdpController struct {
 	ScimEnabled                 bool           `json:"scimEnabled"`
 	ScimServiceProviderEndpoint string         `json:"scimServiceProviderEndpoint,omitempty"`
 	ScimSharedSecretExists      bool           `json:"scimSharedSecretExists,omitempty"`
-	SignSamlRequest             string         `json:"signSamlRequest,,omitempty"`
+	SignSamlRequest             string         `json:"signSamlRequest,omitempty"`
 	SsoType                     []string       `json:"ssoType,omitempty"`
 	UseCustomSpMetadata         bool           `json:"useCustomSPMetadata"`
 	UserSpSigningCertID         string         `json:"userSpSigningCertId,omitempty"`

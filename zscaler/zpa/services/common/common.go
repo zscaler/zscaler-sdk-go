@@ -158,6 +158,19 @@ type CommonSummary struct {
 	Enabled bool   `json:"enabled,omitempty"`
 }
 
+type GuestDetails struct {
+	FederationID string      `json:"federationId,omitempty"`
+	PartnerInfo  PartnerInfo `json:"partnerInfo,omitempty"`
+}
+
+type PartnerInfo struct {
+	ApprovalStatus   string `json:"approvalStatus,omitempty"`
+	FederationStatus string `json:"federationStatus,omitempty"`
+	PartnerGid       string `json:"partnerGid,omitempty"`
+	PartnerName      string `json:"partnerName,omitempty"`
+	PartnerScopeName string `json:"partnerScopeName,omitempty"`
+}
+
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
 func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)
