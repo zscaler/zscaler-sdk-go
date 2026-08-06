@@ -48,11 +48,15 @@ type AppSegmentPRA struct {
 	TCPKeepAlive              string                    `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                      `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                      `json:"useInDrMode"`
+	HBREnabled                bool                      `json:"hbrEnabled,omitempty"`
+	StickyEntity              string                    `json:"stickyEntity,omitempty"`
+	StickyGroup               string                    `json:"stickyGroup,omitempty"`
 	MicroTenantID             string                    `json:"microtenantId,omitempty"`
 	MicroTenantName           string                    `json:"microtenantName,omitempty"`
 	ReadOnly                  bool                      `json:"readOnly,omitempty"`
 	RestrictionType           string                    `json:"restrictionType,omitempty"`
 	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	GuestDetails              []common.GuestDetails     `json:"guestDetails,omitempty"`
 	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`

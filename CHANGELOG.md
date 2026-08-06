@@ -1,5 +1,22 @@
 # Changelog
 
+# 3.8.45 (August 6, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Enhancements
+
+- [PR #452](https://github.com/zscaler/zscaler-sdk-go/pull/452) - Added new ZPA Application Segment attributes:
+  - `guestDetails`
+  - `stickyEntity`
+  - `stickyGroup`
+  - `hbrEnabled`
+
+- [PR #452](https://github.com/zscaler/zscaler-sdk-go/pull/452) - Added new ZIA URL Filtering and Cloud App Sdettings attributes:
+  - `enableGoogleAIPrompt` - Indicates whether the use of generative AI prompts with Google AI by users should be categorized and logged
+  - `enableQuillbotAIPrompt` - Indicates whether the use of generative AI prompts with QuillBot by users should be categorized and logged
+
 # 3.8.44 (July 31, 2026)
 
 ## Notes

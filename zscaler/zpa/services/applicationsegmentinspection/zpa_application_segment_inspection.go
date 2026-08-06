@@ -54,7 +54,11 @@ type AppSegmentInspection struct {
 	ReadOnly                  bool                      `json:"readOnly,omitempty"`
 	RestrictionType           string                    `json:"restrictionType,omitempty"`
 	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	HBREnabled                bool                      `json:"hbrEnabled,omitempty"`
+	StickyEntity              string                    `json:"stickyEntity,omitempty"`
+	StickyGroup               string                    `json:"stickyGroup,omitempty"`
 	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
+	GuestDetails              []common.GuestDetails     `json:"guestDetails,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
