@@ -143,8 +143,7 @@ func TestPacFiles_UpdatePacFile_SDK(t *testing.T) {
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	input := samplePACFile()
-	result, err := pacfiles.UpdatePacFile(context.Background(), service, 100, 1, "STAGE", &input, nil)
+	result, err := pacfiles.UpdatePacFile(context.Background(), service, 100, 1, "STAGE", "Staging via unit test", nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)

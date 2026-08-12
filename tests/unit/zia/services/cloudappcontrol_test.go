@@ -339,7 +339,7 @@ func TestCloudAppControl_AllAvailableActions_SDK(t *testing.T) {
 	defer server.Close()
 
 	ruleType := "STREAMING_MEDIA"
-	path := webApplicationRulesBase + "/" + ruleType + "/availableActions"
+	path := webApplicationRulesBase + "/" + ruleType + "/allAvailableActions"
 
 	server.On("POST", path, common.SuccessResponse(dropboxAvailableActions))
 
@@ -362,7 +362,7 @@ func TestCloudAppControl_AllAvailableActions_Error_SDK(t *testing.T) {
 	defer server.Close()
 
 	ruleType := "STREAMING_MEDIA"
-	path := webApplicationRulesBase + "/" + ruleType + "/availableActions"
+	path := webApplicationRulesBase + "/" + ruleType + "/allAvailableActions"
 	server.On("POST", path, common.NotFoundResponse())
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
