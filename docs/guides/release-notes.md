@@ -13,9 +13,22 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.45``
+``Last updated: v3.8.46``
 
 ---
+
+# 3.8.46 (August 12, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Enhancements
+
+- [PR #453](https://github.com/zscaler/zscaler-sdk-go/pull/453) - Introduced new ZIA endpoint for Cloud App Control policy actions `allAvailableActions` to retrieve all available actions for each application type.
+
+### Bug Fixes
+
+- [PR #453](https://github.com/zscaler/zscaler-sdk-go/pull/453) - Fixed ZIA Pac Files update function to send commit message as raw request body.
 
 # 3.8.45 (August 6, 2026)
 

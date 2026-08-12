@@ -163,7 +163,7 @@ func tryRetrieveResource(s *zscaler.Service, ruleType string, id int) (*WebAppli
 	return nil, err
 }
 
-func TestAllAvailableActions(t *testing.T) {
+func TestAvailableActions(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -178,7 +178,7 @@ func TestAllAvailableActions(t *testing.T) {
 	}
 
 	// Call the AllAvailableActions function
-	actions, err := AllAvailableActions(context.Background(), service, ruleType, payload)
+	actions, err := AvailableActions(context.Background(), service, ruleType, payload)
 	time.Sleep(1 * time.Second) // Adding delay
 	if err != nil {
 		t.Fatalf("Error getting available actions: %v", err)
@@ -201,6 +201,59 @@ func TestAllAvailableActions(t *testing.T) {
 		"DENY_FILE_SHARE_RENAME",
 		"DENY_FILE_SHARE_SHARE",
 		"FILE_SHARE_CONDITIONAL_ACCESS",
+	}
+
+	if len(actions) != len(expectedActions) {
+		t.Errorf("Expected %d actions, but got %d", len(expectedActions), len(actions))
+	}
+
+	for i, action := range actions {
+		if action != expectedActions[i] {
+			t.Errorf("Expected action %s, but got %s", expectedActions[i], action)
+		}
+	}
+}
+
+func TestAllAvailableActions(t *testing.T) {
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+	}
+
+	ruleType := "AI_ML" // Adjust as necessary for your specific use case
+
+	// Set up the payload
+	payload := AvailableActionsRequest{
+		CloudApps: []string{"CHATGPT_AI"},
+		Type:      "ANY",
+	}
+
+	// Call the AllAvailableActions function
+	actions, err := AllAvailableActions(context.Background(), service, ruleType, payload)
+	time.Sleep(1 * time.Second) // Adding delay
+	if err != nil {
+		t.Fatalf("Error getting available actions: %v", err)
+	}
+
+	// Verify the response
+	expectedActions := []string{
+		"AI_ML_CONDITIONAL_ACCESS",
+		"ALLOW_AI_ML_CHAT",
+		"ALLOW_AI_ML_DELETE",
+		"ALLOW_AI_ML_DOWNLOAD",
+		"ALLOW_AI_ML_INVITE",
+		"ALLOW_AI_ML_SHARE",
+		"ALLOW_AI_ML_UPLOAD",
+		"ALLOW_AI_ML_WEB_USE",
+		"CAUTION_AI_ML_WEB_USE",
+		"DENY_AI_ML_CHAT",
+		"DENY_AI_ML_DELETE",
+		"DENY_AI_ML_DOWNLOAD",
+		"DENY_AI_ML_INVITE",
+		"DENY_AI_ML_SHARE",
+		"DENY_AI_ML_UPLOAD",
+		"DENY_AI_ML_WEB_USE",
+		"ISOLATE_AI_ML_WEB_USE",
 	}
 
 	if len(actions) != len(expectedActions) {

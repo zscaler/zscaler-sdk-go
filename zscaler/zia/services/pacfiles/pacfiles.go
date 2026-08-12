@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -70,17 +71,10 @@ type PACFileConfig struct {
 	LastModificationTime int64 `json:"lastModificationTime,omitempty"`
 
 	// The username of the admin who last modified the PAC file
-	LastModifiedBy LastModifiedBy `json:"lastModifiedBy,omitempty"`
+	LastModifiedBy *common.IDNameExtensions `json:"lastModifiedBy,omitempty"`
 
 	// The timestamp when the PAC file was created. This value is represented in Unix time.
 	CreateTime int64 `json:"createTime,omitempty"`
-}
-
-type LastModifiedBy struct {
-	ID         int                    `json:"id,omitempty"`
-	Name       string                 `json:"name,omitempty"`
-	ExternalID string                 `json:"externalId,omitempty"`
-	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
 type PacContentRequest struct {
@@ -197,12 +191,15 @@ func CreatePacFile(ctx context.Context, service *zscaler.Service, file *PACFileC
 	return createdPacFiles, nil
 }
 
-// UpdatePacFile updates a PAC file version with a specified action.
+// UpdatePacFile performs an action on a PAC file version and updates the file status.
 // pacID: the PAC file ID
 // pacVersion: the PAC file version
 // pacVersionAction: the action to be performed on the PAC file version (DEPLOY, STAGE, LKG, UNSTAGE, REMOVE_LKG)
+// commitMessage: the commit message for the version. The endpoint expects the
+// commit message as the raw request body (not a JSON object); sending a
+// serialized object corrupts the version's stored commit message.
 // newLKGVer: optional, specify if removing LKG and want to assign a new version
-func UpdatePacFile(ctx context.Context, service *zscaler.Service, pacID, pacVersion int, pacVersionAction string, file *PACFileConfig, newLKGVer *int) (*PACFileConfig, error) {
+func UpdatePacFile(ctx context.Context, service *zscaler.Service, pacID, pacVersion int, pacVersionAction string, commitMessage string, newLKGVer *int) (*PACFileConfig, error) {
 	// Construct the endpoint URL with pacID, pacVersion, and pacVersionAction
 	endpoint := fmt.Sprintf("%s/%d/version/%d/action/%s", pacfileEndpoint, pacID, pacVersion, pacVersionAction)
 
@@ -211,22 +208,29 @@ func UpdatePacFile(ctx context.Context, service *zscaler.Service, pacID, pacVers
 		endpoint = fmt.Sprintf("%s?newLKGVer=%d", endpoint, *newLKGVer)
 	}
 
-	// Send the request with the PACFileConfig payload
-	resp, err := service.Client.UpdateWithPut(ctx, endpoint, *file)
+	// Send the commit message as the raw request body, mirroring the
+	// behaviour of the Admin Portal.
+	var body io.Reader
+	if commitMessage != "" {
+		body = strings.NewReader(commitMessage)
+	}
+	resp, _, _, err := service.Client.ExecuteRequest(ctx, "PUT", endpoint, body, nil, "application/json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to update PAC file version: %w", err)
 	}
 
-	// Parse the response into PACFileConfig
-	updatedPacFile, ok := resp.(*PACFileConfig)
-	if !ok {
-		return nil, errors.New("object returned from API was not a PAC file pointer")
+	// Parse the response into PACFileConfig when a body is returned.
+	var updatedPacFile PACFileConfig
+	if len(resp) > 0 {
+		if err := json.Unmarshal(resp, &updatedPacFile); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal PAC file version response: %w", err)
+		}
 	}
 
 	// Log the result for debugging
 	service.Client.GetLogger().Printf("[DEBUG] Returning updated PAC file: %d", updatedPacFile.ID)
 
-	return updatedPacFile, nil
+	return &updatedPacFile, nil
 }
 
 func DeletePacFile(ctx context.Context, service *zscaler.Service, fileID int) (*http.Response, error) {
