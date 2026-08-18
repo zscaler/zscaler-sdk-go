@@ -12,8 +12,8 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/policycommon"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
@@ -66,6 +66,8 @@ type PolicyRuleResource struct {
 	Priority                                string                                `json:"priority,omitempty"`
 	Version                                 string                                `json:"version,omitempty"`
 	GroupID                                 string                                `json:"groupId,omitempty"`
+	LinkText                                string                                `json:"linkText,omitempty"`
+	URL                                     string                                `json:"url,omitempty"`
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
 	RuleOrder                               string                                `json:"ruleOrder,omitempty"`
@@ -84,7 +86,7 @@ type PolicyRuleResource struct {
 	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups                       []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
-	DesktopPolicyMappings                   []DesktopPolicyMappings               `json:"desktopPolicyMappings,omitempty"`
+	DesktopPolicyMappings                   []policycommon.DesktopPolicyMappings  `json:"desktopPolicyMappings,omitempty"`
 	Credential                              *Credential                           `json:"credential,omitempty"`
 	CredentialPool                          *Credential                           `json:"credentialPool"`
 	PrivilegedCapabilities                  PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
@@ -140,6 +142,9 @@ type PolicyRule struct {
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
 	RuleOrder                               string                                `json:"ruleOrder,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
+	LinkText                                string                                `json:"linkText,omitempty"`
+	URL                                     string                                `json:"url,omitempty"`
 	ZpnIsolationProfileID                   string                                `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID                  string                                `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName                string                                `json:"zpnInspectionProfileName,omitempty"`
@@ -157,6 +162,7 @@ type PolicyRule struct {
 	PrivilegedCapabilities                  PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
 	ExtranetDTO                             common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
 	PrivilegedPortalCapabilities            PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
+	DesktopPolicyMappings                   []policycommon.DesktopPolicyMappings  `json:"desktopPolicyMappings,omitempty"`
 }
 
 type PolicyRuleResourceConditions struct {
@@ -204,16 +210,6 @@ type PrivilegedCapabilities struct {
 type PrivilegedPortalCapabilities struct {
 	Capabilities  []string `json:"capabilities,omitempty"`
 	MicroTenantID string   `json:"microtenantId,omitempty"`
-}
-
-type DesktopPolicyMappings struct {
-	AppSegments  []applicationsegment.ApplicationSegmentResource `json:"appSegments,omitempty"`
-	ID           string                                          `json:"id"`
-	CreationTime string                                          `json:"creationTime,omitempty"`
-	ModifiedBy   string                                          `json:"modifiedBy,omitempty"`
-	ModifiedTime string                                          `json:"modifiedTime,omitempty"`
-	ImageID      string                                          `json:"imageId,omitempty"`
-	ImageName    string                                          `json:"imageName,omitempty"`
 }
 
 func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {

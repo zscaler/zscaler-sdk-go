@@ -19,7 +19,7 @@ type ApplicationServer struct {
 	Address           string   `json:"address"`
 	AppServerGroupIds []string `json:"appServerGroupIds"`
 	ConfigSpace       string   `json:"configSpace,omitempty"`
-	CreationTime      string   `json:"creationTime,"`
+	CreationTime      string   `json:"creationTime"`
 	Description       string   `json:"description"`
 	Enabled           bool     `json:"enabled"`
 	ID                string   `json:"id,omitempty"`
