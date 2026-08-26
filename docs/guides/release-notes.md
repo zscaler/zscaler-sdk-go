@@ -13,9 +13,59 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.46``
+``Last updated: v3.8.48``
 
 ---
+
+# 3.8.48 (August 26, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Enhancements
+
+- [PR #459](https://github.com/zscaler/zscaler-sdk-go/pull/459) - Added new ZIA Cloud App Control Policy attribute:
+  - `promptCaptureEnabled` - Indicates whether the capture of end user prompts for generative AI (Gen AI) applications is allowed or blocked. Note: This field is applicable only when the Gen AI Applications Access field is set to Allow when configuring the rule.
+
+# 3.8.47 (August 17, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### New ZPA Endpoints
+
+[PR #456](https://github.com/zscaler/zscaler-sdk-go/pull/456) - Added the following new ZPA Policy Group Controller Endpoints
+  - `GET /policyGroupSet/{groupSetId}/group/{groupId}` Get a specific Policy Group by ID within a Policy Group Set
+  - `PUT /policyGroupSet/{groupSetId}/group/{groupId}` Update an existing Policy Group.
+  - `DELETE /policyGroupSet/{groupSetId}/group/{groupId}` Delete an existing Policy Group.
+  - `POST /policyGroupSet/{groupSetId}/group/search` Get All Policy Groups within a Policy Group Set with advanced search and pagination.
+  - `POST /policyGroupSet/{groupSetId}/group/{groupId}/reorder/{newOrder}` Update an existing Policy Group Order.
+  - `GET /policyGroupSet/{groupSetId}/group/all` Get All Policy Groups within a Policy Group Set.
+  - `GET /policyGroupSet/{groupSetId}/group` Add a new Policy Group to a Policy Group Set.
+
+[PR #456](https://github.com/zscaler/zscaler-sdk-go/pull/456) - Added the following new ZPA Policy Group Rule Controller Endpoints
+  - `GET /policyGroupSet/{groupSetId}/group/{groupId}/rule/{ruleId}` Get a policy rule within a policy group
+  - `DELETE /policyGroupSet/{groupSetId}/group/{groupId}/rule/{ruleId}` Delete a policy rule within a policy group
+  - `GET /policyGroupSet/{groupSetId}/group/{groupId}/rule` Get All Policy Groups Rules within a Policy Group with advanced search and pagination.
+  - `POST /policyGroupSet/{groupSetId}/group/{groupId}/rule` Add a new policy rule for a given policy group.
+  - `PUT /policyGroupSet/{groupSetId}/group/{groupId}/rule/{ruleId}/reorder/{newOrder}` Update rule order of a rule within policy group
+
+[PR #456](https://github.com/zscaler/zscaler-sdk-go/pull/456) - Added the following new ZPA Policy Group Set Controller Endpoints
+  - `GET /policyGroupSet/{groupSetId}` Get a specific Policy Group Set by ID.
+  - `GET /policyGroupSet` Get all Policy Group Sets for a customer.
+  - `GET /policyGroupSet/policyType/{policyType}/rules` Get paginated rules across groups within a Policy Group Set.
+  - `GET /policyGroupSet/policyType/{policyType}/summary` Get Policy Group Set Summary fo a customer for policy type.
+  - `GET /policyGroupSet/policyType/{policyType}` Get Policy Group Set fo a customer for policy type.
+  - `GET /policyGroupSet/policyType/{policyType}/summaryStats` Get summary stats for groups and rules within a Policy Group Set.
+
+[PR #456](https://github.com/zscaler/zscaler-sdk-go/pull/456) - Added the following new Zscaler Private Access (ZPA) API Endpoints:
+  - Added `GET /application/host/{host_id}` - Get federated applications with search, sorting, and pagination
+  - Added `PUT /application/federate` - Federate an application with guest customers
+  - Added `PUT /policySet/rules/policyType/GLOBAL_POLICY/guest/{guest_id}` - Get policy rules created by partner on federated applications
+
+[PR #456](https://github.com/zscaler/zscaler-sdk-go/pull/456) Added the following new ZPA API Endpoints:
+    - Added `GET /v2/associationtype/{type}/domains` Get domains for a customer
+    - Added `POST /v2/associationtype/{type}/domains` Add or update domains for a customer.
 
 # 3.8.46 (August 12, 2026)
 
