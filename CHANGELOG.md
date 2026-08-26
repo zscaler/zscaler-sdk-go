@@ -1,5 +1,15 @@
 # Changelog
 
+# 3.8.48 (August 26, 2026)
+
+## Notes
+- Golang: **v1.25**
+
+### Enhancements
+
+- [PR #459](https://github.com/zscaler/zscaler-sdk-go/pull/459) - Added new ZIA Cloud App Control Policy attribute:
+  - `promptCaptureEnabled` - Indicates whether the capture of end user prompts for generative AI (Gen AI) applications is allowed or blocked. Note: This field is applicable only when the Gen AI Applications Access field is set to Allow when configuring the rule.
+
 # 3.8.47 (August 17, 2026)
 
 ## Notes

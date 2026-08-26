@@ -40,6 +40,10 @@ type WebApplicationRules struct {
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined,omitempty"`
 
+	// A Boolean value that indicates whether the capture of end user prompts for generative AI (Gen AI) applications is allowed or blocked.
+	// Note: This field is applicable only when the Gen AI Applications Access field is set to Allow when configuring the rule.
+	PromptCaptureEnabled bool `json:"promptCaptureEnabled,omitempty"`
+
 	// If enforceTimeValidity is set to true, the URL Filtering rule is valid starting on this date and time.
 	ValidityStartTime int `json:"validityStartTime,omitempty"`
 
