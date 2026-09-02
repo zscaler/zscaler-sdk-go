@@ -53,7 +53,7 @@
 // What it does NOT do
 //
 //   - Path building → use ZPAPath / ZIAPath / ZCCPath / ZCCv2Path /
-//     ZDXPath / ZTWPath / ZIDPath from paths.go.
+//     ZDXPath / ZTWPath / ZIAMPath from paths.go.
 //   - List envelopes → use ZPAList / ZIAList / ZCCList / ZCCv2List /
 //     ZIDList / ZDXCursorList from envelopes.go.
 //

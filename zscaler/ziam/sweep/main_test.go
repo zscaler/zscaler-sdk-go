@@ -14,7 +14,7 @@ import (
 
 	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/groups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/groups"
 )
 
 func init() {

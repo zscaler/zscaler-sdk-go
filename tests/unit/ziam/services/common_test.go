@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
 )
 
 func TestCommon_Structure(t *testing.T) {
@@ -228,16 +228,16 @@ func TestCommon_ResponseParsing(t *testing.T) {
 		params := common.NewPaginationQueryParams(100)
 		params.WithOffset(50).WithNameFilter("test")
 
-		endpoint := common.BuildEndpointWithParams("/admin/api/v1/users", &params)
+		endpoint := common.BuildEndpointWithParams("/ziam/admin/api/v1/users", &params)
 
-		assert.Contains(t, endpoint, "/admin/api/v1/users")
+		assert.Contains(t, endpoint, "/ziam/admin/api/v1/users")
 		assert.Contains(t, endpoint, "offset=50")
 		assert.Contains(t, endpoint, "limit=100")
 		assert.Contains(t, endpoint, "name%5Blike%5D=test")
 	})
 
 	t.Run("BuildEndpointWithParams with nil params", func(t *testing.T) {
-		endpoint := common.BuildEndpointWithParams("/admin/api/v1/users", nil)
-		assert.Equal(t, "/admin/api/v1/users", endpoint)
+		endpoint := common.BuildEndpointWithParams("/ziam/admin/api/v1/users", nil)
+		assert.Equal(t, "/ziam/admin/api/v1/users", endpoint)
 	})
 }

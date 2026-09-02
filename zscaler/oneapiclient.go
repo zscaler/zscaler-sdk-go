@@ -375,8 +375,8 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 		return client.oauth2Credentials.ZCCHTTPClient
 	case "zdx":
 		return client.oauth2Credentials.ZDXHTTPClient
-	case "admin":
-		return client.oauth2Credentials.HTTPClient // Use default client for admin endpoints
+	case "ziam", "admin":
+		return client.oauth2Credentials.HTTPClient // Use default client for ZIdentity admin endpoints
 	default:
 		return client.oauth2Credentials.HTTPClient
 	}
@@ -384,8 +384,16 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 
 func detectServiceType(endpoint string) (string, error) {
 	path := strings.TrimPrefix(endpoint, "/")
-	// Detect the service type based on the endpoint prefix
-	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
+	// Detect the service type based on the endpoint prefix.
+	//
+	// ZIAM must be checked before ZIA: "ziam/admin/api/v1/..." has "zia" as a
+	// prefix, so the ZIA branch would otherwise claim every identity call and
+	// meter it against ZIA's rate limiter — including ZIA's hourly quotas,
+	// which a paged ZIdentity listing can exhaust on behalf of a service it has
+	// nothing to do with.
+	if strings.HasPrefix(path, "ziam") {
+		return "ziam", nil
+	} else if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
 		return "zia", nil
 	} else if strings.HasPrefix(path, "ztw") {
 		return "ztw", nil

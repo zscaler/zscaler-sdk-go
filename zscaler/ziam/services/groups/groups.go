@@ -10,11 +10,11 @@ import (
 	"encoding/json"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
 )
 
 const (
-	groupsEndpoint = "/admin/api/v1/groups"
+	groupsEndpoint = "/ziam/admin/api/v1/groups"
 )
 
 // Group represents a single group record
@@ -34,7 +34,34 @@ type UserID struct {
 	ID string `json:"id"`
 }
 
+// GroupUser is a member of a group, as returned by GET /groups/{id}/users.
+//
+// It mirrors users.Users field for field, and the duplication is forced rather
+// than chosen: the users package imports this one (for GetGroupsByUser), so
+// groups cannot import users without creating an import cycle.
+//
+// Keeping the field set identical is deliberate. Every field is omitempty, so
+// carrying a field the endpoint does not return costs nothing but a zero value,
+// whereas omitting one it does return drops data silently.
+type GroupUser struct {
+	ID              string                    `json:"id,omitempty"`
+	Source          string                    `json:"source,omitempty"`
+	LoginName       string                    `json:"loginName,omitempty"`
+	DisplayName     string                    `json:"displayName,omitempty"`
+	FirstName       string                    `json:"firstName,omitempty"`
+	LastName        string                    `json:"lastName,omitempty"`
+	PrimaryEmail    string                    `json:"primaryEmail,omitempty"`
+	SecondaryEmail  string                    `json:"secondaryEmail,omitempty"`
+	Status          bool                      `json:"status,omitempty"`
+	Department      *common.IDNameDisplayName `json:"department,omitempty"`
+	IDP             *common.IDNameDisplayName `json:"idp,omitempty"`
+	CustomAttrsInfo map[string]interface{}    `json:"customAttrsInfo,omitempty"`
+}
+
 type GroupsResponse = common.PaginationResponse[Groups]
+
+// GroupUsersResponse is a single page of a group's membership.
+type GroupUsersResponse = common.PaginationResponse[GroupUser]
 
 func Get(ctx context.Context, service *zscaler.Service, groupID string) (*Groups, error) {
 	var group Groups
@@ -88,10 +115,17 @@ func GetByName(ctx context.Context, service *zscaler.Service, name string) ([]Gr
 	return allGroups, nil
 }
 
-// GetUsers retrieves users within a specific group
-func GetUsers(ctx context.Context, service *zscaler.Service, groupID string, queryParams *common.PaginationQueryParams) ([]interface{}, error) {
+// GetUsers retrieves every user that is a member of a group, across all pages.
+func GetUsers(ctx context.Context, service *zscaler.Service, groupID string, queryParams *common.PaginationQueryParams) ([]GroupUser, error) {
 	usersEndpoint := fmt.Sprintf("%s/%s/users", groupsEndpoint, groupID)
-	return common.ReadAllPagesWithPagination[interface{}](ctx, service.Client, usersEndpoint, queryParams)
+	return common.ReadAllPagesWithPagination[GroupUser](ctx, service.Client, usersEndpoint, queryParams)
+}
+
+// GetUsersPage retrieves a single page of a group's membership, along with the
+// pagination metadata. Use GetUsers unless you need to page manually.
+func GetUsersPage(ctx context.Context, service *zscaler.Service, groupID string, queryParams *common.PaginationQueryParams) (*GroupUsersResponse, error) {
+	usersEndpoint := fmt.Sprintf("%s/%s/users", groupsEndpoint, groupID)
+	return common.ReadPageWithPagination[GroupUser](ctx, service.Client, usersEndpoint, queryParams)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, groups *Groups) (*Groups, *http.Response, error) {

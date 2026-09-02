@@ -217,14 +217,14 @@ func NewZTWTestService(t *testing.T) (*TestServer, *zscaler.Service) {
 	return server, service
 }
 
-// NewZIDTestService creates a test service for ZID endpoints.
-func NewZIDTestService(t *testing.T) (*TestServer, *zscaler.Service) {
+// NewZIAMTestService creates a test service for ZIAM (ZIdentity) endpoints.
+func NewZIAMTestService(t *testing.T) (*TestServer, *zscaler.Service) {
 	t.Helper()
 	server := NewTestServer()
 	t.Cleanup(server.Close)
 	service, err := CreateTestService(context.Background(), server, "")
 	if err != nil {
-		t.Fatalf("NewZIDTestService: %v", err)
+		t.Fatalf("NewZIAMTestService: %v", err)
 	}
 	return server, service
 }

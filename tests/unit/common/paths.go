@@ -12,7 +12,7 @@
 //	ZCC  → /zcc/papi/public/v{1,2}/{resource}[/{id}]
 //	ZDX  → /zdx/v1/{resource}[/{id}]
 //	ZTW  → /ztw/api/v1/{resource}[/{id}]
-//	ZID  → /admin/api/v1/{resource}[/{id}]
+//	ZIAM → /ziam/admin/api/v1/{resource}[/{id}]
 package common
 
 import (
@@ -91,11 +91,15 @@ func ZTWPath(parts ...string) string {
 	return joinClean(append([]string{"/ztw/api/v1"}, parts...)...)
 }
 
-// ─── ZID ─────────────────────────────────────────────────────────────────────
+// ─── ZIAM ────────────────────────────────────────────────────────────────────
 
-// ZIDPath builds a /admin/api/v1/... path (the ZIdentity admin API).
-func ZIDPath(parts ...string) string {
-	return joinClean(append([]string{"/admin/api/v1"}, parts...)...)
+// ZIAMPath builds a /ziam/admin/api/v1/... path (the ZIdentity admin API).
+//
+// The /ziam prefix is what routes the call through the OneAPI gateway, the same
+// way /zia and /zpa do for their services. Paths without it are not served by
+// the gateway.
+func ZIAMPath(parts ...string) string {
+	return joinClean(append([]string{"/ziam/admin/api/v1"}, parts...)...)
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
