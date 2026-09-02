@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
 )
 
 const (
-	resourceServerEndpoint = "/admin/api/v1/resource-servers"
+	resourceServerEndpoint = "/ziam/admin/api/v1/resource-servers"
 )
 
 type ResourceServers struct {
@@ -28,12 +28,26 @@ type ServiceScopes struct {
 	Scopes  []Scopes `json:"scopes,omitempty"`
 }
 
+// Service is the Zscaler service a set of scopes belongs to.
+//
+// CloudName and OrgName are absent for services that are not cloud-scoped —
+// ZIAM and ZINSIGHTS are reported without either.
 type Service struct {
 	ID          string `json:"id,omitempty"`
 	Name        string `json:"name,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
 	CloudName   string `json:"cloudName,omitempty"`
 	OrgName     string `json:"orgName,omitempty"`
+
+	// ExternalName is the service's stable programmatic name. It has matched
+	// Name in every response observed, but the API reports both, so both are
+	// carried rather than assuming they cannot diverge.
+	ExternalName string `json:"externalName,omitempty"`
+
+	// ZapsOnboarded is undocumented and has been observed as false for every
+	// service on the tenants examined. It is included for fidelity with the
+	// payload rather than because its meaning is known.
+	ZapsOnboarded bool `json:"zapsOnboarded,omitempty"`
 }
 
 type Scopes struct {

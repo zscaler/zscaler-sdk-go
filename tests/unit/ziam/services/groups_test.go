@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/groups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/groups"
 )
 
 func TestGroups_Structure(t *testing.T) {
@@ -179,8 +179,8 @@ func TestGroups_ResponseParsing(t *testing.T) {
 			"results_total": 250,
 			"pageOffset": 100,
 			"pageSize": 100,
-			"next_link": "/admin/api/v1/groups?offset=200&limit=100",
-			"prev_link": "/admin/api/v1/groups?offset=0&limit=100",
+			"next_link": "/ziam/admin/api/v1/groups?offset=200&limit=100",
+			"prev_link": "/ziam/admin/api/v1/groups?offset=0&limit=100",
 			"records": [
 				{"id": "group-101", "name": "Group 101"},
 				{"id": "group-102", "name": "Group 102"}
@@ -209,7 +209,7 @@ func TestGroups_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "group-12345"
-	path := "/admin/api/v1/groups/" + groupID
+	path := "/ziam/admin/api/v1/groups/" + groupID
 
 	server.On("GET", path, testcommon.SuccessResponse(groups.Groups{
 		ID:                      groupID,
@@ -234,7 +234,7 @@ func TestGroups_GetAll_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/groups"
+	path := "/ziam/admin/api/v1/groups"
 
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
 		ResultsTotal: 2,
@@ -260,7 +260,7 @@ func TestGroups_Create_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/groups"
+	path := "/ziam/admin/api/v1/groups"
 
 	newGroup := &groups.Groups{
 		Name:        "New Group",
@@ -289,7 +289,7 @@ func TestGroups_Delete_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "group-12345"
-	path := "/admin/api/v1/groups/" + groupID
+	path := "/ziam/admin/api/v1/groups/" + groupID
 
 	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
 
@@ -306,7 +306,7 @@ func TestGroups_AddUserToGroup_SDK(t *testing.T) {
 
 	groupID := "group-12345"
 	userID := "user-67890"
-	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users/" + userID
 
 	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, nil))
 
@@ -323,7 +323,7 @@ func TestGroups_DeleteUserFromGroup_SDK(t *testing.T) {
 
 	groupID := "group-12345"
 	userID := "user-67890"
-	path := "/admin/api/v1/groups/" + groupID + "/users/" + userID
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users/" + userID
 
 	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
 
@@ -339,7 +339,7 @@ func TestGroups_Update_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := 12345
-	path := "/admin/api/v1/groups/12345"
+	path := "/ziam/admin/api/v1/groups/12345"
 
 	updateGroup := &groups.Groups{
 		Name:        "Updated Group Name",
@@ -366,15 +366,15 @@ func TestGroups_GetUsers_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "group-12345"
-	path := "/admin/api/v1/groups/" + groupID + "/users"
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users"
 
-	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.GroupUser]{
 		ResultsTotal: 2,
 		PageOffset:   0,
 		PageSize:     100,
-		Records: []interface{}{
-			map[string]interface{}{"id": "user-1", "displayName": "User One"},
-			map[string]interface{}{"id": "user-2", "displayName": "User Two"},
+		Records: []groups.GroupUser{
+			{ID: "user-1", DisplayName: "User One", LoginName: "one@example.com"},
+			{ID: "user-2", DisplayName: "User Two", LoginName: "two@example.com"},
 		},
 	}))
 
@@ -385,6 +385,36 @@ func TestGroups_GetUsers_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, results)
 	assert.Len(t, results, 2)
+	// The typed return is the point: membership can be round-tripped into
+	// caller state without map[string]interface{} key access.
+	assert.Equal(t, "user-1", results[0].ID)
+	assert.Equal(t, "one@example.com", results[0].LoginName)
+}
+
+func TestGroups_GetUsersPage_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	groupID := "group-12345"
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.GroupUser]{
+		ResultsTotal: 1,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.GroupUser{
+			{ID: "user-1", DisplayName: "User One"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := groups.GetUsersPage(context.Background(), service, groupID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result.Records, 1)
+	assert.Equal(t, 1, result.ResultsTotal)
 }
 
 func TestGroups_AddUserListToGroup_SDK(t *testing.T) {
@@ -392,7 +422,7 @@ func TestGroups_AddUserListToGroup_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "group-12345"
-	path := "/admin/api/v1/groups/" + groupID + "/users"
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users"
 
 	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &groups.Groups{
 		ID:   groupID,
@@ -412,7 +442,7 @@ func TestGroups_ReplaceUserListInGroup_SDK(t *testing.T) {
 	defer server.Close()
 
 	groupID := "group-12345"
-	path := "/admin/api/v1/groups/" + groupID + "/users"
+	path := "/ziam/admin/api/v1/groups/" + groupID + "/users"
 
 	server.On("PUT", path, testcommon.SuccessResponse(&groups.Groups{
 		ID:   groupID,
@@ -431,7 +461,7 @@ func TestGroups_GetByName_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/groups"
+	path := "/ziam/admin/api/v1/groups"
 
 	// Mock first page with matching result
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{

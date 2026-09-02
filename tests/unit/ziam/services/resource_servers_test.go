@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
-	resourceservers "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/resource_servers"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	resourceservers "github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/resource_servers"
 )
 
 func TestResourceServers_Structure(t *testing.T) {
@@ -227,6 +227,118 @@ func TestResourceServers_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "service-b", server.ServiceScopes[1].Service.Name)
 		assert.Len(t, server.ServiceScopes[1].Scopes, 1)
 	})
+
+	// This case uses a payload captured from a real tenant rather than a
+	// synthetic one, because two of the properties it pins are not obvious from
+	// the struct: `externalName` and `zapsOnboarded` are reported for every
+	// service, and `cloudName` / `orgName` are absent for services that are not
+	// cloud-scoped. ZIAM is reported without either, ZPA with both.
+	t.Run("Parse the default Zscaler APIs resource server as reported by a tenant", func(t *testing.T) {
+		jsonResponse := `{
+			"id": "jhlm44rd107q7",
+			"name": "Zscaler APIs",
+			"displayName": "Zscaler APIs",
+			"description": "Zscaler APIs endpoint",
+			"primaryAud": "https://api.zscaler.com",
+			"defaultApi": true,
+			"serviceScopes": [
+				{
+					"service": {
+						"id": "hhlm44rd307qf",
+						"name": "ZIAM",
+						"displayName": "Authentication Service Administration",
+						"zapsOnboarded": false,
+						"externalName": "ZIAM"
+					},
+					"scopes": [
+						{"id": "hhlm44rd307qf::9h6p7ebv903k4", "name": "Role:Super Admin"},
+						{"id": "hhlm44rd307qf::9hi1fv30307oc", "name": "Role:Users Admin"}
+					]
+				},
+				{
+					"service": {
+						"id": "hhlm44rae07ib",
+						"name": "ZPA",
+						"displayName": "Zscaler Private Access",
+						"cloudName": "zpabeta.net",
+						"orgName": "William Guilherme - Internal",
+						"zapsOnboarded": false,
+						"externalName": "ZPA"
+					},
+					"scopes": [
+						{"id": "hhlm44rae07ib:mplm44rqi07jb:hplm44rqvg7n5", "name": "Scope:Default: Role:API Full Access"}
+					]
+				}
+			]
+		}`
+
+		var server resourceservers.ResourceServers
+		err := json.Unmarshal([]byte(jsonResponse), &server)
+		require.NoError(t, err)
+
+		assert.Equal(t, "jhlm44rd107q7", server.ID)
+		assert.Equal(t, "Zscaler APIs", server.Name)
+		assert.Equal(t, "https://api.zscaler.com", server.PrimaryAud)
+		assert.True(t, server.DefaultApi)
+		require.Len(t, server.ServiceScopes, 2)
+
+		ziam := server.ServiceScopes[0].Service
+		assert.Equal(t, "ZIAM", ziam.Name)
+		assert.Equal(t, "ZIAM", ziam.ExternalName)
+		assert.Equal(t, "Authentication Service Administration", ziam.DisplayName)
+		assert.False(t, ziam.ZapsOnboarded)
+		// Not cloud-scoped: the API omits both fields rather than sending them
+		// empty, so they unmarshal to the zero string.
+		assert.Empty(t, ziam.CloudName)
+		assert.Empty(t, ziam.OrgName)
+
+		zpa := server.ServiceScopes[1].Service
+		assert.Equal(t, "ZPA", zpa.Name)
+		assert.Equal(t, "ZPA", zpa.ExternalName)
+		assert.Equal(t, "zpabeta.net", zpa.CloudName)
+		assert.Equal(t, "William Guilherme - Internal", zpa.OrgName)
+
+		// Scope ids are opaque and their shape varies by service: ZIAM uses a
+		// two-part `service::role` form and ZPA a three-part
+		// `service:scope:role` form. Neither may be parsed.
+		require.Len(t, server.ServiceScopes[0].Scopes, 2)
+		assert.Equal(t, "hhlm44rd307qf::9h6p7ebv903k4", server.ServiceScopes[0].Scopes[0].ID)
+		require.Len(t, server.ServiceScopes[1].Scopes, 1)
+		assert.Equal(t, "hhlm44rae07ib:mplm44rqi07jb:hplm44rqvg7n5", server.ServiceScopes[1].Scopes[0].ID)
+	})
+
+	// The list envelope carries totalRecord alongside results_total. Both are
+	// present in tenant responses, so the pagination type must not depend on
+	// only one of them being set.
+	t.Run("Parse the list envelope as reported by a tenant", func(t *testing.T) {
+		jsonResponse := `{
+			"pageOffset": 0,
+			"pageSize": 100,
+			"totalRecord": 2,
+			"records": [
+				{
+					"id": "jhlm44rd107q7",
+					"name": "Zscaler APIs",
+					"displayName": "Zscaler APIs",
+					"description": "Zscaler APIs endpoint",
+					"primaryAud": "https://api.zscaler.com",
+					"defaultApi": true,
+					"serviceScopes": []
+				}
+			],
+			"results_total": 2
+		}`
+
+		var response common.PaginationResponse[resourceservers.ResourceServers]
+		err := json.Unmarshal([]byte(jsonResponse), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, 2, response.ResultsTotal)
+		assert.Equal(t, 100, response.PageSize)
+		require.Len(t, response.Records, 1)
+		assert.Equal(t, "Zscaler APIs", response.Records[0].Name)
+		assert.Empty(t, response.Records[0].ServiceScopes)
+	})
 }
 
 // =====================================================
@@ -238,7 +350,7 @@ func TestResourceServers_Get_SDK(t *testing.T) {
 	defer server.Close()
 
 	resourceID := "rs-12345"
-	path := "/admin/api/v1/resource-servers/" + resourceID
+	path := "/ziam/admin/api/v1/resource-servers/" + resourceID
 
 	server.On("GET", path, testcommon.SuccessResponse(resourceservers.ResourceServers{
 		ID:          resourceID,
@@ -264,7 +376,7 @@ func TestResourceServers_GetAll_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/resource-servers"
+	path := "/ziam/admin/api/v1/resource-servers"
 
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[resourceservers.ResourceServers]{
 		ResultsTotal: 2,
@@ -290,7 +402,7 @@ func TestResourceServers_GetByName_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/resource-servers"
+	path := "/ziam/admin/api/v1/resource-servers"
 
 	// Mock first page with matching results
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[resourceservers.ResourceServers]{

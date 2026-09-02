@@ -10,14 +10,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/services/users"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/groups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/users"
 )
 
 func TestUsers_Structure(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Users JSON marshaling", func(t *testing.T) {
+		enabled := true
 		user := users.Users{
 			ID:             "user-123",
 			Source:         "OKTA",
@@ -27,7 +29,7 @@ func TestUsers_Structure(t *testing.T) {
 			LastName:       "Doe",
 			PrimaryEmail:   "john.doe@example.com",
 			SecondaryEmail: "jdoe@personal.com",
-			Status:         true,
+			Status:         &enabled,
 			Department: &common.IDNameDisplayName{
 				ID:          "dept-001",
 				Name:        "Engineering",
@@ -84,7 +86,8 @@ func TestUsers_Structure(t *testing.T) {
 		assert.Equal(t, "AZURE_AD", user.Source)
 		assert.Equal(t, "jane.smith@example.com", user.LoginName)
 		assert.Equal(t, "Jane Smith", user.DisplayName)
-		assert.True(t, user.Status)
+		require.NotNil(t, user.Status)
+		assert.True(t, *user.Status)
 		assert.NotNil(t, user.Department)
 		assert.Equal(t, "Sales", user.Department.Name)
 		assert.NotNil(t, user.IDP)
@@ -94,12 +97,13 @@ func TestUsers_Structure(t *testing.T) {
 	})
 
 	t.Run("Users without optional fields", func(t *testing.T) {
+		enabled := true
 		user := users.Users{
 			ID:           "user-minimal",
 			LoginName:    "minimal@example.com",
 			DisplayName:  "Minimal User",
 			PrimaryEmail: "minimal@example.com",
-			Status:       true,
+			Status:       &enabled,
 		}
 
 		data, err := json.Marshal(user)
@@ -109,6 +113,25 @@ func TestUsers_Structure(t *testing.T) {
 		assert.NotContains(t, string(data), `"department"`)
 		assert.NotContains(t, string(data), `"idp"`)
 		assert.NotContains(t, string(data), `"secondaryEmail"`)
+	})
+
+	// Status is a pointer precisely so that these three states are distinct. As
+	// a plain bool with `omitempty`, the first two marshalled identically and a
+	// user could be enabled but never disabled.
+	t.Run("Status distinguishes disabled from unset", func(t *testing.T) {
+		disabled := false
+		data, err := json.Marshal(users.Users{ID: "user-1", Status: &disabled})
+		require.NoError(t, err)
+		assert.Contains(t, string(data), `"status":false`)
+
+		data, err = json.Marshal(users.Users{ID: "user-1"})
+		require.NoError(t, err)
+		assert.NotContains(t, string(data), `"status"`)
+
+		enabled := true
+		data, err = json.Marshal(users.Users{ID: "user-1", Status: &enabled})
+		require.NoError(t, err)
+		assert.Contains(t, string(data), `"status":true`)
 	})
 }
 
@@ -150,8 +173,10 @@ func TestUsers_ResponseParsing(t *testing.T) {
 		assert.Equal(t, 3, response.ResultsTotal)
 		assert.Len(t, response.Records, 3)
 		assert.Equal(t, "Admin User", response.Records[0].DisplayName)
-		assert.True(t, response.Records[0].Status)
-		assert.False(t, response.Records[2].Status)
+		require.NotNil(t, response.Records[0].Status)
+		assert.True(t, *response.Records[0].Status)
+		require.NotNil(t, response.Records[2].Status)
+		assert.False(t, *response.Records[2].Status)
 	})
 
 	t.Run("Parse single user with full details", func(t *testing.T) {
@@ -200,8 +225,8 @@ func TestUsers_ResponseParsing(t *testing.T) {
 			"results_total": 500,
 			"pageOffset": 200,
 			"pageSize": 100,
-			"next_link": "/admin/api/v1/users?offset=300&limit=100",
-			"prev_link": "/admin/api/v1/users?offset=100&limit=100",
+			"next_link": "/ziam/admin/api/v1/users?offset=300&limit=100",
+			"prev_link": "/ziam/admin/api/v1/users?offset=100&limit=100",
 			"records": [
 				{"id": "user-201", "displayName": "User 201"},
 				{"id": "user-202", "displayName": "User 202"}
@@ -229,8 +254,9 @@ func TestUsers_GetUser_SDK(t *testing.T) {
 	defer server.Close()
 
 	userID := "user-12345"
-	path := "/admin/api/v1/users/" + userID
+	path := "/ziam/admin/api/v1/users/" + userID
 
+	enabled := true
 	server.On("GET", path, testcommon.SuccessResponse(users.Users{
 		ID:           userID,
 		LoginName:    "john.doe@example.com",
@@ -238,7 +264,7 @@ func TestUsers_GetUser_SDK(t *testing.T) {
 		FirstName:    "John",
 		LastName:     "Doe",
 		PrimaryEmail: "john.doe@example.com",
-		Status:       true,
+		Status:       &enabled,
 		Source:       "OKTA",
 	}))
 
@@ -257,15 +283,16 @@ func TestUsers_GetAll_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/users"
+	path := "/ziam/admin/api/v1/users"
 
+	enabled := true
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
 		ResultsTotal: 2,
 		PageOffset:   0,
 		PageSize:     100,
 		Records: []users.Users{
-			{ID: "user-1", DisplayName: "User One", Status: true},
-			{ID: "user-2", DisplayName: "User Two", Status: true},
+			{ID: "user-1", DisplayName: "User One", Status: &enabled},
+			{ID: "user-2", DisplayName: "User Two", Status: &enabled},
 		},
 	}))
 
@@ -283,15 +310,16 @@ func TestUsers_Create_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/users"
+	path := "/ziam/admin/api/v1/users"
 
+	enabled := true
 	newUser := &users.Users{
 		LoginName:    "new.user@example.com",
 		DisplayName:  "New User",
 		FirstName:    "New",
 		LastName:     "User",
 		PrimaryEmail: "new.user@example.com",
-		Status:       true,
+		Status:       &enabled,
 	}
 
 	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &users.Users{
@@ -301,7 +329,7 @@ func TestUsers_Create_SDK(t *testing.T) {
 		FirstName:    "New",
 		LastName:     "User",
 		PrimaryEmail: "new.user@example.com",
-		Status:       true,
+		Status:       &enabled,
 	}))
 
 	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
@@ -319,7 +347,7 @@ func TestUsers_Update_SDK(t *testing.T) {
 	defer server.Close()
 
 	userID := "user-12345"
-	path := "/admin/api/v1/users/" + userID
+	path := "/ziam/admin/api/v1/users/" + userID
 
 	updateUser := &users.Users{
 		ID:          userID,
@@ -328,12 +356,13 @@ func TestUsers_Update_SDK(t *testing.T) {
 		LastName:    "User",
 	}
 
+	enabled := true
 	server.On("PUT", path, testcommon.SuccessResponse(&users.Users{
 		ID:          userID,
 		DisplayName: "Updated User",
 		FirstName:   "Updated",
 		LastName:    "User",
-		Status:      true,
+		Status:      &enabled,
 	}))
 
 	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
@@ -345,12 +374,179 @@ func TestUsers_Update_SDK(t *testing.T) {
 	assert.Equal(t, "Updated User", result.DisplayName)
 }
 
+// A PUT that answers 204 No Content used to dereference a nil response and
+// panic the calling process. Update now reports (nil, nil, nil) instead, and
+// the caller re-reads if it needs the current representation.
+func TestUsers_Update_NoContentResponse_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID
+
+	server.On("PUT", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Update(context.Background(), service, userID, &users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+	})
+	require.NoError(t, err)
+	assert.Nil(t, result)
+}
+
+// =====================================================
+// User operations: setskipmfa, resetpassword, updatepassword
+// =====================================================
+//
+// These endpoints have no GET, so the request the SDK sends is the only thing
+// worth asserting — there is no way to read back what they did. Each test
+// therefore checks the method, the path, and the exact request body.
+//
+// All three document their 200 body as a bare JSON string. That is why they use
+// ExecuteRequest rather than Client.Create / Client.UpdateWithPut: those two
+// unmarshal the response into the request struct's type, so `"Success"` would
+// come back as an error from a call that succeeded. The string responses below
+// are what pins that.
+
+func TestUsers_SetSkipMFA_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/setskipmfa"
+
+	server.On("POST", path, testcommon.SuccessResponse("MFA skip has been set"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.SetSkipMFA(context.Background(), service, userID, 1767225600)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Equal(t, "POST", req.Method)
+	assert.Equal(t, path, req.Path)
+	assert.JSONEq(t, `{"timestamp":1767225600}`, string(req.Body))
+}
+
+// A zero timestamp must still be transmitted: `timestamp` is required, and
+// `omitempty` would have dropped it and produced a body the endpoint rejects.
+func TestUsers_SetSkipMFA_ZeroTimestamp_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/setskipmfa"
+
+	server.On("POST", path, testcommon.SuccessResponse("MFA skip has been set"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.SetSkipMFA(context.Background(), service, userID, 0)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.JSONEq(t, `{"timestamp":0}`, string(req.Body))
+}
+
+func TestUsers_ResetPassword_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/resetpassword"
+
+	server.On("POST", path, testcommon.SuccessResponse("Password reset initiated"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.ResetPassword(context.Background(), service, userID)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Equal(t, "POST", req.Method)
+	assert.Equal(t, path, req.Path)
+	// The endpoint documents no request body, so none is sent.
+	assert.Empty(t, req.Body)
+}
+
+func TestUsers_UpdatePassword_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/updatepassword"
+
+	server.On("PUT", path, testcommon.SuccessResponse("Password has been reset"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, userID, &users.UpdatePasswordRequest{
+		Password:        "s3cret-value",
+		ResetPwdOnLogin: true,
+	})
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	// Note this one is a PUT, unlike the two actions above.
+	assert.Equal(t, "PUT", req.Method)
+	assert.Equal(t, path, req.Path)
+	assert.JSONEq(t, `{"password":"s3cret-value","resetPwdOnLogin":true}`, string(req.Body))
+}
+
+// resetPwdOnLogin carries no `omitempty`, so switching it off is expressible.
+// This is the same trap that made Users.Status a pointer: with `omitempty` a
+// caller could require a reset on next login but never stop requiring one.
+func TestUsers_UpdatePassword_ResetOnLoginFalse_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/updatepassword"
+
+	server.On("PUT", path, testcommon.SuccessResponse("Password has been reset"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, userID, &users.UpdatePasswordRequest{
+		Password:        "s3cret-value",
+		ResetPwdOnLogin: false,
+	})
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Contains(t, string(req.Body), `"resetPwdOnLogin":false`)
+}
+
+func TestUsers_UpdatePassword_NilPayload_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, "user-12345", nil)
+	require.Error(t, err)
+}
+
 func TestUsers_Delete_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
 	userID := "user-12345"
-	path := "/admin/api/v1/users/" + userID
+	path := "/ziam/admin/api/v1/users/" + userID
 
 	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
 
@@ -365,7 +561,7 @@ func TestUsers_GetByName_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
-	path := "/admin/api/v1/users"
+	path := "/ziam/admin/api/v1/users"
 
 	// Mock first page with matching results
 	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
@@ -388,54 +584,56 @@ func TestUsers_GetByName_SDK(t *testing.T) {
 	assert.Len(t, results, 2) // Should match "John Doe" and "Jane Doe"
 }
 
-func TestUsers_GetUsers_SDK(t *testing.T) {
-	server := testcommon.NewTestServer()
-	defer server.Close()
-
-	userID := "user-12345"
-	path := "/admin/api/v1/users/" + userID + "/users"
-
-	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
-		ResultsTotal: 2,
-		PageOffset:   0,
-		PageSize:     100,
-		Records: []interface{}{
-			map[string]interface{}{"id": "related-1", "displayName": "Related User 1"},
-			map[string]interface{}{"id": "related-2", "displayName": "Related User 2"},
-		},
-	}))
-
-	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
-	require.NoError(t, err)
-
-	results, err := users.GetUsers(context.Background(), service, userID, nil)
-	require.NoError(t, err)
-	require.NotNil(t, results)
-	assert.Len(t, results, 2)
-}
-
 func TestUsers_GetGroupsByUser_SDK(t *testing.T) {
 	server := testcommon.NewTestServer()
 	defer server.Close()
 
 	userID := "user-12345"
-	path := "/admin/api/v1/users/" + userID + "/groups"
+	path := "/ziam/admin/api/v1/users/" + userID + "/groups"
 
-	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[interface{}]{
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
 		ResultsTotal: 2,
 		PageOffset:   0,
 		PageSize:     100,
-		Records: []interface{}{
-			map[string]interface{}{"id": "group-1", "name": "Engineering"},
-			map[string]interface{}{"id": "group-2", "name": "Developers"},
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering"},
+			{ID: "group-2", Name: "Developers"},
 		},
 	}))
 
 	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	result, err := users.GetGroupsByUser(context.Background(), service, userID, nil)
+	results, err := users.GetGroupsByUser(context.Background(), service, userID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "Engineering", results[0].Name)
+}
+
+func TestUsers_GetGroupsByUserPage_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering"},
+			{ID: "group-2", Name: "Developers"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetGroupsByUserPage(context.Background(), service, userID, nil)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Len(t, result.Records, 2)
+	assert.Equal(t, 2, result.ResultsTotal)
 }

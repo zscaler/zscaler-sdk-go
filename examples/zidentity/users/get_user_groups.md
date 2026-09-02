@@ -13,9 +13,8 @@ import (
 	"log"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/services/users"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/users"
 )
 
 func main() {
@@ -26,9 +25,6 @@ func main() {
 			// Add your authentication configuration here
 		},
 	}
-
-	// Create zidentity service
-	zidentityService := zidentity.New(service)
 
 	// User ID to get groups for
 	userID := "your-user-id"
@@ -70,7 +66,10 @@ func main() {
 ## API Endpoint
 
 This example uses the following API endpoint:
-- **GET** `/admin/api/v1/users/{id}/groups`
+- **GET** `/ziam/admin/api/v1/users/{id}/groups`
+
+The `/ziam` prefix routes the call through the OneAPI gateway, the same way
+`/zia` and `/zpa` do for their services.
 
 ## Parameters
 
