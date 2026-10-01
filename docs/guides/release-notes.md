@@ -34,6 +34,14 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `users.SetSkipMFA`, `users.ResetPassword` and `users.UpdatePassword`. All three use `ExecuteRequest` rather than `Client.Create` or `Client.UpdateWithPut`: those helpers unmarshal the response into a value of the request struct's type, and each of these endpoints answers with a bare JSON string such as `"Success"`, so the helpers would report an error for a call that in fact succeeded. `UpdatePasswordRequest.ResetPwdOnLogin` and `SkipMFARequest.Timestamp` deliberately carry no `omitempty`, so that a caller can stop requiring a password change at next login and a zero epoch is not dropped from the body.
 
+- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Completed `users.Users` against the response the API actually returns. The struct previously modelled ten of the user object's fields and silently discarded the rest, which matters more than it sounds: a ZIdentity `PUT` replaces the whole user, so a field dropped on read is a field erased by the next update. Added:
+  - `mobilePhone`, `primaryPhone`, `language`, `timeZone`, `title`, `division`, `costCenter` and `organization`, all writable.
+  - `manager`, a reference to another user. The API accepts and reports only the id, unlike `department`, whose name and display name it resolves.
+  - `addresses`, a list of the new `users.Address` type (`type`, `streetAddress`, `locality`, `region`, `postalCode`, `country`).
+  - `groups`, the user's membership, as the new `users.UserGroup` type. This is not `groups.Groups`: the user payload reports the entitlement flags inverted, as `serviceEntitlementDisabled` and `adminEntitlementDisabled`, where the groups endpoint reports `serviceEntitlementEnabled` and `adminEntitlementEnabled`. Reusing the group type here would read every entitlement backwards. The payload's `associatedUsers` array is deliberately not modelled — it has only been observed empty, so its element type is unknown, and guessing wrong would fail the unmarshal of the entire user rather than of one field.
+  - `skipMfaUntil`, `guest`, `belongInternalDomain` and `hostedIdp`, all pointers so that a reported `false` or a zero epoch survives a read-modify-write cycle instead of being dropped by `omitempty`. This is the `Users.Status` lesson applied ahead of the bug rather than after it.
+  - `entityType`, `objectName` and `name`, the server-assigned identity metadata. `name` and `objectName` mirror `loginName` on every user observed.
+
 - [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `groups.GetUsersPage` and `users.GetGroupsByUserPage`, the single-page variants of the two membership listings, for callers that need the pagination metadata rather than the full collection.
 
 - [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `externalName` and `zapsOnboarded` to `resourceservers.Service`. Both are reported by the API for every service object. `zapsOnboarded` is undocumented and has been observed as `false` on every tenant examined; it is carried for fidelity with the payload.
@@ -55,6 +63,8 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 - [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `user_entitlement.GetServiceEntitlement` returned `[]Service` while the endpoint returns a list of `{"service": {...}}` envelopes, so every field unmarshalled empty and the call silently produced blank records. It now returns `[]ServiceEntitlement`.
 
 - [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `Entitlements.Scope` and `Entitlements.Service` were value types. `omitempty` has no effect on a struct value, so an omitted `scope` unmarshalled to a zero struct, indistinguishable from a scope whose fields are genuinely blank — and ZIdentity omits `scope` entirely from an administrative entitlement. Both are now pointers. A dead `Scope` type corresponding to no actual payload was removed at the same time.
+
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `applicationsegmentinspection.Update` never populated `commonAppsDto.deletedInspectApps`, so an inspection app omitted from the `PUT` was left in place by the API rather than deleted — a caller removing an app from `appsConfig` saw it persist indefinitely. The function now mirrors `applicationsegmentpra.Update`: existing inspection apps absent from the desired `appsConfig` are sent in `deletedInspectApps`, and `commonAppsDto` is only cleared when there is neither an app to keep nor one to delete, so a deletion-only update still reaches the API.
 
 # 3.8.48 (August 26, 2026)
 

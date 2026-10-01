@@ -135,6 +135,172 @@ func TestUsers_Structure(t *testing.T) {
 	})
 }
 
+// TestUsers_FullPayload pins the complete user representation against a
+// response captured from a tenant. Every field the API reports has to survive
+// the unmarshal: the ZIdentity PUT is a full replace, so a field the struct
+// drops on read is a field silently erased by the next update.
+func TestUsers_FullPayload(t *testing.T) {
+	t.Parallel()
+
+	const payload = `{
+		"loginName": "adam1.ashcroft@securitygeek.io",
+		"displayName": "Adam Ashcroft",
+		"firstName": "Adam",
+		"lastName": "Ashcroft",
+		"primaryEmail": "adam1.ashcroft@securitygeek.io",
+		"secondaryEmail": "adam2.ashcroft@securitygeek.io",
+		"customAttrsInfo": {},
+		"department": { "id": "tpln05jqhg7bi", "name": "Engineering", "idp": {} },
+		"status": true,
+		"skipMfaUntil": 0,
+		"mobilePhone": "6047539635",
+		"primaryPhone": "6047539635",
+		"language": "English (US)",
+		"timeZone": "(UTC+00:00) GMT",
+		"manager": { "id": "ihln05lt307ed" },
+		"addresses": [
+			{
+				"type": "work",
+				"streetAddress": "13-8089 209 St",
+				"locality": "Langley",
+				"region": "British Columbia",
+				"postalCode": "785542",
+				"country": "Canada"
+			}
+		],
+		"id": "igkq8fvc7c3cb",
+		"groups": [
+			{ "id": "i9lm44rd207qa", "name": "Dynamic Group Registered Domains", "dynamicGroup": true },
+			{
+				"id": "i9ln0296eg642",
+				"name": "A000",
+				"status": false,
+				"associatedUsers": [],
+				"source": "SCIM",
+				"emergencyGroup": false,
+				"serviceEntitlementDisabled": false,
+				"adminEntitlementDisabled": false,
+				"dynamicGroup": false,
+				"entityType": "GROUP_PROFILE",
+				"objectName": "A000",
+				"readOnly": false
+			}
+		],
+		"idp": {},
+		"source": "API",
+		"guest": false,
+		"belongInternalDomain": false,
+		"hostedIdp": false,
+		"entityType": "USER_PROFILE",
+		"objectName": "adam1.ashcroft@securitygeek.io",
+		"name": "adam1.ashcroft@securitygeek.io",
+		"division": "A000",
+		"costCenter": "45226",
+		"title": "Engineer",
+		"organization": "BD"
+	}`
+
+	t.Run("every reported field is captured", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		assert.Equal(t, "igkq8fvc7c3cb", user.ID)
+		assert.Equal(t, "API", user.Source)
+		assert.Equal(t, "6047539635", user.MobilePhone)
+		assert.Equal(t, "6047539635", user.PrimaryPhone)
+		assert.Equal(t, "English (US)", user.Language)
+		assert.Equal(t, "(UTC+00:00) GMT", user.TimeZone)
+		assert.Equal(t, "Engineer", user.Title)
+		assert.Equal(t, "A000", user.Division)
+		assert.Equal(t, "45226", user.CostCenter)
+		assert.Equal(t, "BD", user.Organization)
+		assert.Equal(t, "USER_PROFILE", user.EntityType)
+		assert.Equal(t, "adam1.ashcroft@securitygeek.io", user.ObjectName)
+		assert.Equal(t, "adam1.ashcroft@securitygeek.io", user.Name)
+
+		require.NotNil(t, user.Manager)
+		assert.Equal(t, "ihln05lt307ed", user.Manager.ID)
+
+		require.NotNil(t, user.Department)
+		assert.Equal(t, "Engineering", user.Department.Name)
+
+		require.Len(t, user.Addresses, 1)
+		assert.Equal(t, "work", user.Addresses[0].Type)
+		assert.Equal(t, "13-8089 209 St", user.Addresses[0].StreetAddress)
+		assert.Equal(t, "Langley", user.Addresses[0].Locality)
+		assert.Equal(t, "British Columbia", user.Addresses[0].Region)
+		assert.Equal(t, "785542", user.Addresses[0].PostalCode)
+		assert.Equal(t, "Canada", user.Addresses[0].Country)
+	})
+
+	// These four are pointers so that a reported false is distinguishable from
+	// a field the API did not send. A plain bool with `omitempty` would read
+	// both as false and then drop the field from the next update body.
+	t.Run("reported false flags are captured, not lost to omitempty", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		require.NotNil(t, user.SkipMfaUntil)
+		assert.Equal(t, int64(0), *user.SkipMfaUntil)
+
+		for name, got := range map[string]*bool{
+			"guest":                user.Guest,
+			"belongInternalDomain": user.BelongInternalDomain,
+			"hostedIdp":            user.HostedIdp,
+		} {
+			require.NotNil(t, got, "%s should be non-nil when the API reports it", name)
+			assert.False(t, *got, "%s should be false", name)
+		}
+	})
+
+	// The nested group payload inverts the entitlement flags relative to the
+	// groups endpoint — disabled here, enabled there — which is why it has its
+	// own type rather than reusing groups.Groups.
+	t.Run("nested groups keep the inverted entitlement flags", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		require.Len(t, user.Groups, 2)
+
+		dynamic := user.Groups[0]
+		assert.Equal(t, "Dynamic Group Registered Domains", dynamic.Name)
+		require.NotNil(t, dynamic.DynamicGroup)
+		assert.True(t, *dynamic.DynamicGroup)
+		assert.Nil(t, dynamic.Status, "a field the API omits must stay nil")
+
+		static := user.Groups[1]
+		assert.Equal(t, "SCIM", static.Source)
+		assert.Equal(t, "GROUP_PROFILE", static.EntityType)
+		require.NotNil(t, static.ServiceEntitlementDisabled)
+		assert.False(t, *static.ServiceEntitlementDisabled)
+		require.NotNil(t, static.AdminEntitlementDisabled)
+		assert.False(t, *static.AdminEntitlementDisabled)
+		require.NotNil(t, static.ReadOnly)
+		assert.False(t, *static.ReadOnly)
+	})
+
+	// A user built for a create carries none of the read-only metadata, and
+	// omitempty has to keep all of it out of the body.
+	t.Run("unset fields stay out of the request body", func(t *testing.T) {
+		data, err := json.Marshal(users.Users{
+			LoginName:  "minimal@example.com",
+			CostCenter: "45226",
+		})
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"costCenter":"45226"`)
+		for _, absent := range []string{
+			"mobilePhone", "primaryPhone", "language", "timeZone",
+			"title", "division", "organization", "manager",
+			"addresses", "groups", "skipMfaUntil",
+			"guest", "belongInternalDomain", "hostedIdp",
+			"entityType", "objectName",
+		} {
+			assert.NotContains(t, string(data), `"`+absent+`"`)
+		}
+	})
+}
+
 func TestUsers_ResponseParsing(t *testing.T) {
 	t.Parallel()
 
