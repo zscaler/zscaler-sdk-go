@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.49``
+``Last updated: v3.8.50``
 
 ---
+
+# 3.8.50 (October 1, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Enhancements
+
+- [PR #465](https://github.com/zscaler/zscaler-sdk-go/pull/465) - Added `IamIdpID` and `IamIdpName` to `scimgroup.ScimGroup`, and the function `scimgroup.GetByNameAndIamIdp`, which resolves a SCIM group by name within a specific ZIdentity (IAM) IdP. Several IAM IdPs can map to the same ZPA IdP, so a name is only unique within an IAM IdP; unlike `GetByName`, which returns the first name match, the new function returns an error listing the candidates when the match is ambiguous or empty. It also matches names still returned in the older `<name>(<iamIdpName>)` form. `GetByName` is unchanged.
 
 # 3.8.49 (September 1, 2026)
 
@@ -24,17 +33,17 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ### Enhancements
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Renamed the package `zscaler/zid` to `zscaler/ziam` and moved the ZIdentity admin API onto the OneAPI gateway. Endpoints are re-prefixed from `/admin/api/v1/...` to `/ziam/admin/api/v1/...` so that they resolve against `GetAPIBaseURL` like `/zia`, `/zpa` and `/zdx`, and `buildRequest` no longer constructs a vanity-domain URL specifically for ZIdentity. Authentication against `/token` is now identical to every other service. **This changes the import path for every ZIdentity caller.**
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Renamed the package `zscaler/zid` to `zscaler/ziam` and moved the ZIdentity admin API onto the OneAPI gateway. Endpoints are re-prefixed from `/admin/api/v1/...` to `/ziam/admin/api/v1/...` so that they resolve against `GetAPIBaseURL` like `/zia`, `/zpa` and `/zdx`, and `buildRequest` no longer constructs a vanity-domain URL specifically for ZIdentity. Authentication against `/token` is now identical to every other service. **This changes the import path for every ZIdentity caller.**
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added the `ziam/services/api_clients` package, covering OAuth2 API clients:
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Added the `ziam/services/api_clients` package, covering OAuth2 API clients:
   - `Get`, `GetAll`, `GetPage`, `GetByName`, `Create`, `Update` and `Delete` for `/ziam/admin/api/v1/api-clients`.
   - `GetSecrets`, `AddSecret` and `DeleteSecret` for the client's secrets sub-endpoint. `AddSecret` uses `ExecuteRequest` rather than `Client.Create`, because `Client.Create` unmarshals the response into a new value of the *request* struct's type — here `AddSecretRequest`, which carries only `expiresAt` — and would silently discard the secret `value`. The API discloses that value exactly once and masks it on every read afterwards, so the caller would be left with an unusable credential and no error.
   - `APIClients.Status` is a `*bool` and `ClientAuthentication` is a pointer, so that a disabled client and an absent authentication block are both expressible under `omitempty`.
   - `APIClientSecret.CreatedAt` and `ExpiresAt` are `int64` epochs in seconds. `int` is 32 bits on the 386 and arm builds, where any expiry past January 2038 exceeds `MaxInt32` and fails to unmarshal.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `users.SetSkipMFA`, `users.ResetPassword` and `users.UpdatePassword`. All three use `ExecuteRequest` rather than `Client.Create` or `Client.UpdateWithPut`: those helpers unmarshal the response into a value of the request struct's type, and each of these endpoints answers with a bare JSON string such as `"Success"`, so the helpers would report an error for a call that in fact succeeded. `UpdatePasswordRequest.ResetPwdOnLogin` and `SkipMFARequest.Timestamp` deliberately carry no `omitempty`, so that a caller can stop requiring a password change at next login and a zero epoch is not dropped from the body.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Added `users.SetSkipMFA`, `users.ResetPassword` and `users.UpdatePassword`. All three use `ExecuteRequest` rather than `Client.Create` or `Client.UpdateWithPut`: those helpers unmarshal the response into a value of the request struct's type, and each of these endpoints answers with a bare JSON string such as `"Success"`, so the helpers would report an error for a call that in fact succeeded. `UpdatePasswordRequest.ResetPwdOnLogin` and `SkipMFARequest.Timestamp` deliberately carry no `omitempty`, so that a caller can stop requiring a password change at next login and a zero epoch is not dropped from the body.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Completed `users.Users` against the response the API actually returns. The struct previously modelled ten of the user object's fields and silently discarded the rest, which matters more than it sounds: a ZIdentity `PUT` replaces the whole user, so a field dropped on read is a field erased by the next update. Added:
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Completed `users.Users` against the response the API actually returns. The struct previously modelled ten of the user object's fields and silently discarded the rest, which matters more than it sounds: a ZIdentity `PUT` replaces the whole user, so a field dropped on read is a field erased by the next update. Added:
   - `mobilePhone`, `primaryPhone`, `language`, `timeZone`, `title`, `division`, `costCenter` and `organization`, all writable.
   - `manager`, a reference to another user. The API accepts and reports only the id, unlike `department`, whose name and display name it resolves.
   - `addresses`, a list of the new `users.Address` type (`type`, `streetAddress`, `locality`, `region`, `postalCode`, `country`).
@@ -42,27 +51,27 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
   - `skipMfaUntil`, `guest`, `belongInternalDomain` and `hostedIdp`, all pointers so that a reported `false` or a zero epoch survives a read-modify-write cycle instead of being dropped by `omitempty`. This is the `Users.Status` lesson applied ahead of the bug rather than after it.
   - `entityType`, `objectName` and `name`, the server-assigned identity metadata. `name` and `objectName` mirror `loginName` on every user observed.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `groups.GetUsersPage` and `users.GetGroupsByUserPage`, the single-page variants of the two membership listings, for callers that need the pagination metadata rather than the full collection.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Added `groups.GetUsersPage` and `users.GetGroupsByUserPage`, the single-page variants of the two membership listings, for callers that need the pagination metadata rather than the full collection.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Added `externalName` and `zapsOnboarded` to `resourceservers.Service`. Both are reported by the API for every service object. `zapsOnboarded` is undocumented and has been observed as `false` on every tenant examined; it is carried for fidelity with the payload.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Added `externalName` and `zapsOnboarded` to `resourceservers.Service`. Both are reported by the API for every service object. `zapsOnboarded` is undocumented and has been observed as `false` on every tenant examined; it is carried for fidelity with the payload.
 
 ### Bug Fixes
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `detectServiceType` now recognises `ziam`, and checks it before `zia`. `ziam/admin/api/v1/...` has `zia` as a prefix, so the ZIA branch would otherwise claim every identity call and meter it against ZIA's rate limiter — including ZIA's hourly quotas, which a paged ZIdentity listing can exhaust on behalf of a service it has nothing to do with.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `detectServiceType` now recognises `ziam`, and checks it before `zia`. `ziam/admin/api/v1/...` has `zia` as a prefix, so the ZIA branch would otherwise claim every identity call and meter it against ZIA's rate limiter — including ZIA's hourly quotas, which a paged ZIdentity listing can exhaust on behalf of a service it has nothing to do with.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `users.Update` dereferenced its response without a nil check. The shared client returns a nil object for an empty body, so a `204 No Content` answer to the PUT panicked the calling process. It now returns `(nil, nil, nil)` for an empty body and leaves the caller to re-read the user.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `users.Update` dereferenced its response without a nil check. The shared client returns a nil object for an empty body, so a `204 No Content` answer to the PUT panicked the calling process. It now returns `(nil, nil, nil)` for an empty body and leaves the caller to re-read the user.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `users.Users.Status` was a plain `bool` with `omitempty`, so a configured `false` was indistinguishable from unset and was dropped from the request body entirely — it was possible to enable a user but never to disable one. It is now a `*bool`: nil still omits the field, so callers that do not set a status are unaffected, while an explicit `false` is transmitted.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `users.Users.Status` was a plain `bool` with `omitempty`, so a configured `false` was indistinguishable from unset and was dropped from the request body entirely — it was possible to enable a user but never to disable one. It is now a `*bool`: nil still omits the field, so callers that do not set a status are unaffected, while an explicit `false` is transmitted.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `users.GetGroupsByUser` read only the first page while the documentation described it as returning all of them, silently truncating the answer for any user in more than `limit` groups. A caller reconciling state against that result would read the truncation as the user having been removed from the missing groups. It now pages fully.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `users.GetGroupsByUser` read only the first page while the documentation described it as returning all of them, silently truncating the answer for any user in more than `limit` groups. A caller reconciling state against that result would read the truncation as the user having been removed from the missing groups. It now pages fully.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - Removed `users.GetUsers`, which built the endpoint `/users/{id}/users`. That endpoint does not exist; the function was a copy of the group variant and had no caller.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - Removed `users.GetUsers`, which built the endpoint `/users/{id}/users`. That endpoint does not exist; the function was a copy of the group variant and had no caller.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `groups.GetUsers` returned `[]interface{}`, leaving every caller to assert its way through a map. It now returns `[]groups.GroupUser`, a typed member record mirroring `users.Users`. The duplication is forced: `users` imports `groups`, so `groups` cannot import `users` back.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `groups.GetUsers` returned `[]interface{}`, leaving every caller to assert its way through a map. It now returns `[]groups.GroupUser`, a typed member record mirroring `users.Users`. The duplication is forced: `users` imports `groups`, so `groups` cannot import `users` back.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `user_entitlement.GetServiceEntitlement` returned `[]Service` while the endpoint returns a list of `{"service": {...}}` envelopes, so every field unmarshalled empty and the call silently produced blank records. It now returns `[]ServiceEntitlement`.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `user_entitlement.GetServiceEntitlement` returned `[]Service` while the endpoint returns a list of `{"service": {...}}` envelopes, so every field unmarshalled empty and the call silently produced blank records. It now returns `[]ServiceEntitlement`.
 
-- [PR #460](https://github.com/zscaler/zscaler-sdk-go/pull/460) - `Entitlements.Scope` and `Entitlements.Service` were value types. `omitempty` has no effect on a struct value, so an omitted `scope` unmarshalled to a zero struct, indistinguishable from a scope whose fields are genuinely blank — and ZIdentity omits `scope` entirely from an administrative entitlement. Both are now pointers. A dead `Scope` type corresponding to no actual payload was removed at the same time.
+- [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `Entitlements.Scope` and `Entitlements.Service` were value types. `omitempty` has no effect on a struct value, so an omitted `scope` unmarshalled to a zero struct, indistinguishable from a scope whose fields are genuinely blank — and ZIdentity omits `scope` entirely from an administrative entitlement. Both are now pointers. A dead `Scope` type corresponding to no actual payload was removed at the same time.
 
 - [PR #464](https://github.com/zscaler/zscaler-sdk-go/pull/464) - `applicationsegmentinspection.Update` never populated `commonAppsDto.deletedInspectApps`, so an inspection app omitted from the `PUT` was left in place by the API rather than deleted — a caller removing an app from `appsConfig` saw it persist indefinitely. The function now mirrors `applicationsegmentpra.Update`: existing inspection apps absent from the desired `appsConfig` are sent in `deletedInspectApps`, and `commonAppsDto` is only cleared when there is neither an app to keep nor one to delete, so a deletion-only update still reaches the API.
 

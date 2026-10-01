@@ -1,9 +1,18 @@
 # Changelog
 
+# 3.8.50 (October 1, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Enhancements
+
+- [PR #465](https://github.com/zscaler/zscaler-sdk-go/pull/465) - Added `IamIdpID` and `IamIdpName` to `scimgroup.ScimGroup`, and the function `scimgroup.GetByNameAndIamIdp`, which resolves a SCIM group by name within a specific ZIdentity (IAM) IdP. Several IAM IdPs can map to the same ZPA IdP, so a name is only unique within an IAM IdP; unlike `GetByName`, which returns the first name match, the new function returns an error listing the candidates when the match is ambiguous or empty. It also matches names still returned in the older `<name>(<iamIdpName>)` form. `GetByName` is unchanged.
+
 # 3.8.49 (October 1, 2026)
 
 ## Notes
-- Golang: **v1.25**
+- Golang: **v1.26**
 
 ### Enhancements
 
