@@ -29,6 +29,20 @@ type Users struct {
 	PrimaryEmail   string `json:"primaryEmail,omitempty"`
 	SecondaryEmail string `json:"secondaryEmail,omitempty"`
 
+	MobilePhone  string `json:"mobilePhone,omitempty"`
+	PrimaryPhone string `json:"primaryPhone,omitempty"`
+
+	// Language and TimeZone are the tenant's display strings rather than IETF
+	// tags or IANA zone names: the API reports "English (US)" and
+	// "(UTC+00:00) GMT". Send back a value the tenant offers.
+	Language string `json:"language,omitempty"`
+	TimeZone string `json:"timeZone,omitempty"`
+
+	Title        string `json:"title,omitempty"`
+	Division     string `json:"division,omitempty"`
+	CostCenter   string `json:"costCenter,omitempty"`
+	Organization string `json:"organization,omitempty"`
+
 	// Status is a pointer so that disabling a user is expressible.
 	//
 	// As a plain bool with `omitempty`, false was indistinguishable from unset
@@ -37,9 +51,90 @@ type Users struct {
 	// callers that do not care about status are unaffected.
 	Status *bool `json:"status,omitempty"`
 
-	Department      *common.IDNameDisplayName `json:"department,omitempty"`
-	IDP             *common.IDNameDisplayName `json:"idp,omitempty"`
-	CustomAttrsInfo map[string]interface{}    `json:"customAttrsInfo,omitempty"`
+	Department *common.IDNameDisplayName `json:"department,omitempty"`
+
+	// Manager is another user, referenced by id. The API returns only the id
+	// even though the field shares the {id, name, displayName} shape, so
+	// resolving the manager's name means a second read.
+	Manager *common.IDNameDisplayName `json:"manager,omitempty"`
+
+	IDP *common.IDNameDisplayName `json:"idp,omitempty"`
+
+	Addresses []Address `json:"addresses,omitempty"`
+
+	// Groups is the user's membership as reported by a user read, which saves a
+	// separate call to GET /users/{id}/groups.
+	//
+	// It is server-owned: membership is written through the group endpoints
+	// (PUT /groups/{id}/users and the per-edge routes), not by assigning to
+	// this field. Whether a PUT /users/{id} carrying it would be honoured,
+	// ignored, or rejected has not been established, so callers should clear it
+	// before an update rather than assume.
+	Groups []UserGroup `json:"groups,omitempty"`
+
+	// SkipMfaUntil is the epoch until which MFA is skipped for the user, as set
+	// by SetSkipMFA. It is a pointer for the Status reason: a zero epoch is a
+	// meaningful value and `omitempty` would drop it from a request body.
+	SkipMfaUntil *int64 `json:"skipMfaUntil,omitempty"`
+
+	// Guest, BelongInternalDomain, and HostedIdp are reported on every read and
+	// are pointers so that a false survives a read-modify-write cycle. As plain
+	// bools with `omitempty` they would be dropped from the body of an update
+	// built by overlaying onto a live record, which is how the ZIdentity API's
+	// full-replace PUT is meant to be driven.
+	Guest                *bool `json:"guest,omitempty"`
+	BelongInternalDomain *bool `json:"belongInternalDomain,omitempty"`
+	HostedIdp            *bool `json:"hostedIdp,omitempty"`
+
+	// EntityType, ObjectName, and Name are server-assigned identity metadata.
+	// Name and ObjectName both mirror LoginName on every user observed.
+	EntityType string `json:"entityType,omitempty"`
+	ObjectName string `json:"objectName,omitempty"`
+	Name       string `json:"name,omitempty"`
+
+	CustomAttrsInfo map[string]interface{} `json:"customAttrsInfo,omitempty"`
+}
+
+// Address is one postal address on a user. The API returns a list, and each
+// entry carries a Type such as "work"; the full set of accepted types is not
+// documented.
+type Address struct {
+	Type          string `json:"type,omitempty"`
+	StreetAddress string `json:"streetAddress,omitempty"`
+	Locality      string `json:"locality,omitempty"`
+	Region        string `json:"region,omitempty"`
+	PostalCode    string `json:"postalCode,omitempty"`
+	Country       string `json:"country,omitempty"`
+}
+
+// UserGroup is a group as reported inside a user record.
+//
+// It is not groups.Groups, and the difference is not cosmetic: this payload
+// reports the entitlement flags inverted, as serviceEntitlementDisabled and
+// adminEntitlementDisabled, where the groups endpoint reports
+// serviceEntitlementEnabled and adminEntitlementEnabled. Reusing groups.Groups
+// here would read every entitlement backwards. It also cannot import the groups
+// package, which imports this one.
+//
+// The booleans are pointers because the inverted names make a missing field and
+// a false mean opposite things, and `omitempty` cannot tell them apart.
+//
+// The payload's associatedUsers array is deliberately not modelled. It has only
+// ever been observed empty, so its element type is unknown, and guessing wrong
+// would fail the unmarshal of the entire user rather than of one field. Read a
+// group's membership with groups.GetUsers.
+type UserGroup struct {
+	ID                         string `json:"id,omitempty"`
+	Name                       string `json:"name,omitempty"`
+	Source                     string `json:"source,omitempty"`
+	Status                     *bool  `json:"status,omitempty"`
+	DynamicGroup               *bool  `json:"dynamicGroup,omitempty"`
+	EmergencyGroup             *bool  `json:"emergencyGroup,omitempty"`
+	ServiceEntitlementDisabled *bool  `json:"serviceEntitlementDisabled,omitempty"`
+	AdminEntitlementDisabled   *bool  `json:"adminEntitlementDisabled,omitempty"`
+	ReadOnly                   *bool  `json:"readOnly,omitempty"`
+	EntityType                 string `json:"entityType,omitempty"`
+	ObjectName                 string `json:"objectName,omitempty"`
 }
 
 type UsersResponse = common.PaginationResponse[Users]
