@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goVersion: ["1.25"]
+        goVersion: ["1.26"]
 
     steps:
       - name: Checkout code
