@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
@@ -21,8 +20,6 @@ import (
 const (
 	mgmtConfig = "/zpa/mgmtconfig/v1/admin/customers/"
 )
-
-var ruleMutex sync.Mutex
 
 type PolicySet struct {
 	CreationTime    string       `json:"creationTime,omitempty"`
@@ -160,7 +157,7 @@ func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType s
 
 func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
 	// GET operations don't need locking - they're safe to run concurrently
-	// Only CREATE/UPDATE/DELETE need the ruleMutex due to API restrictions
+	// Only CREATE/UPDATE/DELETE need common.PolicyRuleMutex due to API restrictions
 	v := new(PolicyRule)
 	url := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
@@ -172,8 +169,8 @@ func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, r
 
 // POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
 func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule) (*PolicyRule, *http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule", rule.PolicySetID)
@@ -186,8 +183,8 @@ func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule)
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
@@ -214,8 +211,8 @@ func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, rule
 
 // DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func Delete(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
@@ -252,8 +249,8 @@ func GetByNameAndTypes(ctx context.Context, service *zscaler.Service, policyType
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}
 func Reorder(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, order int) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)

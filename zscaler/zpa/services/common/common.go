@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -17,6 +18,12 @@ import (
 const (
 	DefaultPageSize = 500
 )
+
+// PolicyRuleMutex serializes policy rule writes across the policysetcontroller
+// and policysetcontrollerv2 packages. The API rejects concurrent changes to the
+// same policy set with api.concurrent.access.error, so v1 and v2 writes must
+// share one lock.
+var PolicyRuleMutex sync.Mutex
 
 type Pagination struct {
 	PageSize        int     `json:"pagesize,omitempty" url:"pagesize,omitempty"`
