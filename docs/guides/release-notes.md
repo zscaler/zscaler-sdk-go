@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.50``
+``Last updated: v3.8.51``
 
 ---
+
+# 3.8.51 (October 2, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Enhancements
+
+- [PR #466](https://github.com/zscaler/zscaler-sdk-go/pull/466) - `policysetcontroller` and `policysetcontrollerv2` each serialized rule writes with their own package-level mutex, so a v1 write and a v2 write to the same policy set could run concurrently and the API rejected one with `api.concurrent.access.error`. Both packages now share a single `common.PolicyRuleMutex`, so all policy rule creates, updates and deletes are serialized.
 
 # 3.8.50 (October 1, 2026)
 
