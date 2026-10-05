@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.51``
+``Last updated: v3.8.52``
 
 ---
+
+# 3.8.52 (October 5, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Enhancements
+
+- [PR #467](https://github.com/zscaler/zscaler-sdk-go/pull/467) - Fixed ZIA `end_user_notification` attribute `RecommendedCloudApp` to reflect API changes.
 
 # 3.8.51 (October 2, 2026)
 

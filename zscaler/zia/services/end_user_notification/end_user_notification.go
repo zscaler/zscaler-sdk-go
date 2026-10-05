@@ -80,21 +80,8 @@ type EunTemplateProduct struct {
 	NotificationDetails []string            `json:"notificationDetails,omitempty"`
 	CautionInterval     string              `json:"cautionInterval,omitempty"`
 	Default             bool                `json:"default,omitempty"`
-	RecommendedCloudApp RecommendedCloudApp `json:"recommendedCloudApp,omitempty"`
+	RecommendedCloudApp string              `json:"recommendedCloudApp,omitempty"`
 	LanguageTemplates   []LanguageTemplates `json:"languageTemplates,omitempty"`
-}
-
-type RecommendedCloudApp struct {
-	Val                 int    `json:"val,omitempty"`
-	Name                string `json:"name,omitempty"`
-	Channel             string `json:"channel,omitempty"`
-	Product             string `json:"product,omitempty"`
-	Type                string `json:"type,omitempty"`
-	CautionMiscInterval string `json:"misc,omitempty"`
-	AppNotReady         bool   `json:"appNotReady,omitempty"`
-	UnderMigration      bool   `json:"underMigration,omitempty"`
-	AppCatModified      bool   `json:"appCatModified,omitempty"`
-	Deprecated          bool   `json:"deprecated,omitempty"`
 }
 
 type LanguageTemplates struct {
