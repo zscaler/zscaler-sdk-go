@@ -484,13 +484,13 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		if token, ok := ctx.Value(ContextAccessToken).(string); ok && token != "" {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			if c.oauth2Credentials.Debug {
-				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from context: Bearer %s...", token[:min(len(token), 20)])
+				// Never log token content, not even a prefix.
+				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from context")
 			}
 		} else {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
 			if c.oauth2Credentials.Debug {
-				token := c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken
-				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from AuthToken: Bearer %s...", token[:min(len(token), 20)])
+				c.oauth2Credentials.Logger.Printf("[DEBUG] Using Authorization header from AuthToken")
 			}
 		}
 	}

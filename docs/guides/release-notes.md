@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.53``
+``Last updated: v3.8.54``
 
 ---
+
+# 3.8.54 (October 8, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #469](https://github.com/zscaler/zscaler-sdk-go/pull/469) - Debug logs no longer include the first characters of the OAuth access token in the "Using Authorization header" message. Token content is never logged.
 
 # 3.8.53 (October 7, 2026)
 
