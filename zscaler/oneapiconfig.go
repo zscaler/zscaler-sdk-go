@@ -626,8 +626,8 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, err
 		}
 
-		// ✅ Check for session invalidation errors in 401 responses
-		if resp.StatusCode == http.StatusUnauthorized {
+		// ✅ Check for session invalidation errors in 401 / 403 responses
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 			bodyCopy, readErr := io.ReadAll(resp.Body)
 			if readErr == nil {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
@@ -687,7 +687,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		}
 
 		// Reset session retry counter on successful requests or other errors
-		if resp.StatusCode != http.StatusUnauthorized {
+		if resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusForbidden {
 			sessionNotValidRetryCount = 0
 		}
 

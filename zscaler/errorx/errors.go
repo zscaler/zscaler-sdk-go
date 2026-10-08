@@ -95,6 +95,12 @@ func CheckErrorInResponse(res *http.Response, respErr error) error {
 			if ex, ok := jsonBody["exception"].(string); ok {
 				parsed.Exception = ex
 			}
+			// None of the recognised fields were present: report the body as
+			// returned instead of an empty code/message, so the API's actual
+			// response is not lost.
+			if parsed.Code == nil && parsed.Message == "" && parsed.ID == "" && parsed.Reason == "" && parsed.Exception == "" {
+				parsed.Message = msg
+			}
 		} else {
 			parsed.Message = fmt.Sprintf("Failed to parse JSON error body: %s", err.Error())
 		}
@@ -211,8 +217,14 @@ func (r *ErrorResponse) IsLimitExceeded() bool {
 
 // IsSessionInvalidError checks if the response indicates a session invalidation error
 // that requires token refresh. Only checks for known error messages returned by the API.
+//
+// Both 401 and 403 are considered: once the platform's API session ends (e.g. at
+// the ZIA API session timeout) requests made with the still-unexpired OAuth token
+// are rejected with 403 "Resource Access Blocked", and a fresh token restores
+// access. Other 403s (permissions, LIMIT_EXCEEDED) carry different bodies and are
+// not matched.
 func IsSessionInvalidError(res *http.Response) bool {
-	if res.StatusCode != http.StatusUnauthorized {
+	if res.StatusCode != http.StatusUnauthorized && res.StatusCode != http.StatusForbidden {
 		return false
 	}
 
@@ -231,7 +243,7 @@ func IsSessionInvalidError(res *http.Response) bool {
 		"getAttribute: Session already invalidated",      // Java exception message format (legacy)
 		"getAttributeNames: Session already invalidated", // Java exception message format (newer API variant)
 		"Session already invalidated",                    // Broad match for any future method name variants
-		"Resource Access Blocked",                        // Occurs under high concurrency/load - API returns 401 instead of 429
+		"Resource Access Blocked",                        // 401 under high concurrency/load; 403 once the API session has ended
 	}
 
 	for _, msg := range knownSessionInvalidMessages {

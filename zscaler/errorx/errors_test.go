@@ -223,6 +223,34 @@ func TestCheckErrorInResponse_InvalidJSON(t *testing.T) {
 	require.Contains(t, respErr.Parsed.Message, "Failed to parse JSON error body")
 }
 
+func TestCheckErrorInResponse_JSONWithoutRecognisedFields(t *testing.T) {
+	body := `{"error":"invalid_token","error_description":"session expired"}`
+	res := newResponse(http.StatusUnauthorized, "application/json", body, http.MethodGet, "https://api.example.com/x")
+
+	err := CheckErrorInResponse(res, nil)
+	respErr, ok := AsErrorResponse(err)
+	require.True(t, ok)
+	require.Nil(t, respErr.Parsed.Code)
+	require.Equal(t, body, respErr.Parsed.Message, "unrecognised JSON body must be reported as returned")
+	require.Contains(t, respErr.Error(), "invalid_token")
+}
+
+func TestCheckErrorInResponse_EmptyBody(t *testing.T) {
+	// Non-JSON (or missing) content type: an empty body yields an empty message.
+	for _, ct := range []string{"text/plain", ""} {
+		res := newResponse(http.StatusUnauthorized, ct, "", http.MethodGet, "https://api.example.com/x")
+		respErr, ok := AsErrorResponse(CheckErrorInResponse(res, nil))
+		require.True(t, ok)
+		require.Equal(t, "", respErr.Parsed.Message, "content type %q", ct)
+	}
+
+	// JSON content type: an empty body is reported as unparseable, not as an empty message.
+	res := newResponse(http.StatusUnauthorized, "application/json", "", http.MethodGet, "https://api.example.com/x")
+	respErr, ok := AsErrorResponse(CheckErrorInResponse(res, nil))
+	require.True(t, ok)
+	require.Contains(t, respErr.Parsed.Message, "Failed to parse JSON error body")
+}
+
 func TestCheckErrorInResponse_NonJSONGeneric(t *testing.T) {
 	res := newResponse(http.StatusInternalServerError, "text/plain", "boom", http.MethodGet, "https://api.example.com/x")
 
@@ -307,6 +335,22 @@ func TestIsSessionInvalidError_Match(t *testing.T) {
 func TestIsSessionInvalidError_NoMatch(t *testing.T) {
 	res := newResponse(http.StatusUnauthorized, "text/plain", "some other 401", http.MethodGet, "https://api.example.com/x")
 	require.False(t, IsSessionInvalidError(res))
+}
+
+func TestIsSessionInvalidError_ForbiddenSessionEnded(t *testing.T) {
+	res := newResponse(http.StatusForbidden, "application/json", `{"message":"Resource Access Blocked"}`, http.MethodGet, "https://api.example.com/x")
+	require.True(t, IsSessionInvalidError(res))
+}
+
+func TestIsSessionInvalidError_ForbiddenOtherReasons(t *testing.T) {
+	for _, body := range []string{
+		`{"code":"LIMIT_EXCEEDED","message":"Maximum number of rules reached"}`,
+		`{"code":"ACCESS_DENIED","message":"Insufficient permissions"}`,
+		``,
+	} {
+		res := newResponse(http.StatusForbidden, "application/json", body, http.MethodGet, "https://api.example.com/x")
+		require.False(t, IsSessionInvalidError(res), "403 body %q must not be treated as a session error", body)
+	}
 }
 
 // =====================================================
