@@ -331,7 +331,7 @@ The `errorx` package provides:
 - `AsErrorResponse(err)` — safely extracts an `*ErrorResponse` from any error, aware of wrapping. Use this instead of an unguarded `err.(*ErrorResponse)` type assertion, which panics on a mismatch.
 - `IsObjectNotFound()` — `true` for 404 / `resource.not.found`
 - `IsLimitExceeded()` — `true` for 403 tenant limit errors
-- `IsSessionInvalidError(resp)` — `true` for a 401 whose body indicates an invalidated session
+- `IsSessionInvalidError(resp)` — `true` for a 401 or 403 whose body indicates an invalidated or ended session (e.g. `SESSION_NOT_VALID`, `Resource Access Blocked`); other 403s (permissions, `LIMIT_EXCEEDED`) do not match
 - `IsEditLockError(resp)` — `true` for a 409 / 412 transient edit-lock or org-barrier condition
 - `IsRetryableServerError(resp)` — `true` when a `5xx` is transient rather than a deterministic API verdict (see Rate Limiting & Retries)
 
@@ -343,7 +343,7 @@ Automatic, per-cloud:
 - **Rate limiting** — e.g., ZIA: 20 GET/10s, 10 POST/10s
 - **429 / 503 / 401** — `Retry-After` is honoured as the FLOOR for the first retry, then grown exponentially per consecutive retry of the same call (`base · 2^attempt`, capped at `RetryWaitMax`, default 10s) and perturbed by ±25% jitter so parallel goroutines do not stampede the per-endpoint limiter (v3.8.33+, `oneapiconfig.go` `Backoff` closure + `jitter` helper). The same policy is mirrored in `ExecuteRequest`'s outer 429 fallback.
 - **`MaxNumOfRetries`** — default `10` (v3.8.33+, was `100`). Override via `cfg.Zscaler.Client.RateLimit.MaxRetries` or env `ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES`. Lowered because a single stuck call no longer needs to monopolise a goroutine for ~100s; ten attempts across a jittered exponential window cover all observed real-world recoveries.
-- **401 SESSION_NOT_VALID** — auto-refreshes OAuth2 token; bounded by `MaxSessionNotValidRetries` (default 3).
+- **401 / 403 session errors** — auto-refreshes the OAuth2 token and retries; bounded by `MaxSessionNotValidRetries` (default 3). A 403 `Resource Access Blocked` is returned once the platform's API session has ended (e.g. the ZIA API session timeout, 5–20 min) even though the OAuth token has not expired; a fresh token restores access. Locked in by `zscaler/oneapiconfig_session_test.go`.
 - **409 / 412 EDIT_LOCK_NOT_AVAILABLE / `Failed during enter Org barrier`** — exponential backoff in both the retryablehttp `CheckRetry` (`errorx.IsEditLockError`) and the `ExecuteRequest` outer loop.
 - **5xx** — retried only when the body does NOT carry a deterministic API verdict (v3.8.43+, **all clients**). `errorx.IsRetryableServerError` refuses a retry when the body parses as JSON with a non-empty string `code`, because the API reuses `500 UNEXPECTED_ERROR` for permanent validation failures (e.g. an unknown URL category) that no retry can fix. Recognised transient markers always win, and empty / non-JSON / unparseable bodies (gateway HTML, load balancer errors) are still retried. `501` is never retried. **`502` / `503` / `504` are always retried and their bodies are never inspected** — they come from gateways and overload protection, never from business logic, and `503` in particular is wired into every client's `Backoff` closure as a `Retry-After` bearing rate-limit signal, so treating one as deterministic would silently disable that path.
 
@@ -392,6 +392,7 @@ When `WithCache(true)`:
 - **ZCC requires manual response handling.** `defer resp.Body.Close()`, check `resp.StatusCode`, decode with `json.NewDecoder`.
 - **ZDX is mostly read-only.** Cursor-based pagination with `next_offset` — no centralized `ReadAllPages`.
 - **Boolean omitempty.** Adding `omitempty` to `Enabled` means `false` is never sent — use `json:"enabled"` without `omitempty` for meaningful booleans.
+- **Never log credentials.** Log requests and responses only through `logger.LogRequest` / `logger.LogResponse` / `logger.LogRequestSensitive`, which mask `Authorization`, `Cookie`, `Set-Cookie`, `JSessionID`, `auth-token` and `X-Api-Key` (v3.8.53+). A new auth header must be added to `sensitiveHeaders` in `logger/logger.go`. Never log a token or login request/response body with `Printf`. Locked in by `logger/logger_test.go`.
 
 ## Directory Layout for New Services
 

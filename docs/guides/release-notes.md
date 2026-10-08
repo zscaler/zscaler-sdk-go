@@ -13,9 +13,26 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.52``
+``Last updated: v3.8.53``
 
 ---
+
+# 3.8.53 (October 7, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #468](https://github.com/zscaler/zscaler-sdk-go/pull/468) - OneAPI requests rejected with `403 Resource Access Blocked` after the platform's API session ends (e.g. the ZIA API session timeout) now refresh the OAuth token and retry, the same way session-invalid `401` responses already did (bounded by `MaxSessionNotValidRetries`). Other `403` responses, such as permission errors and `LIMIT_EXCEEDED`, still fail immediately.
+
+- [PR #468](https://github.com/zscaler/zscaler-sdk-go/pull/468) - API error responses whose JSON body contains none of the recognised fields (`code`, `message`, `id`, `reason`, `exception`) now report the body as returned by the API, instead of an empty `code` and `message`.
+
+- [PR #468](https://github.com/zscaler/zscaler-sdk-go/pull/468) - Debug logs no longer contain credentials: the values of the `Authorization`, `Cookie`, `Set-Cookie`, `JSessionID` and `auth-token` headers are now masked in logged requests and responses, keeping the header name and authorization scheme. Previously the OAuth access token was logged in clear text on every request.
+
+### Documentation
+
+- [PR #468](https://github.com/zscaler/zscaler-sdk-go/pull/468) - Replaced the placeholder troubleshooting guide with guidance on collecting debug logs, how API errors are reported, which responses are retried automatically, `403 Resource Access Blocked`, and intermittent `401` errors with an empty code and message.
 
 # 3.8.52 (October 5, 2026)
 
