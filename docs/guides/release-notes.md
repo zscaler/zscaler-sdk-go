@@ -13,9 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.54``
+``Last updated: v3.8.55``
 
 ---
+
+# 3.8.55 (October 8, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #470](https://github.com/zscaler/zscaler-sdk-go/pull/470) - ZPA: writes now also invalidate cached reads of the same object under the other management API version (`/mgmtconfig/v1/` and `/mgmtconfig/v2/`). Segment groups are updated through v2 but read through v1, so a read right after an update was served stale from the cache (e.g. Terraform reporting "produced an unexpected new value" for the updated `description`). Applies to the OneAPI and legacy ZPA clients.
+
+- [PR #470](https://github.com/zscaler/zscaler-sdk-go/pull/470) - ZPA `segmentgroup`: Added `UpdateV2Changes` and the `SegmentGroupV2Update` request type for the v2 segment group update endpoint. It sends the applications added to and removed from the group as `addedApps` / `deletedApps` (integer ID lists, as defined by the API) instead of the full `applications` list, so the request size no longer grows with the number of applications. Updating groups with many applications through `UpdateV2` with the full list could fail with `payload.size.exceeded`. `Update` and `UpdateV2` are unchanged.
 
 # 3.8.54 (October 8, 2026)
 
