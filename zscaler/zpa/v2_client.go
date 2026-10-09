@@ -375,6 +375,13 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 
 			// Clear all cache entries with the same URL prefix to handle query param differences
 			client.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+
+			// Also clear the same object under its other API version (e.g.
+			// segment groups are written through /mgmtconfig/v2/ but read
+			// through /mgmtconfig/v1/).
+			for _, related := range cache.RelatedAPIVersionKeys(strings.Split(key, "?")[0]) {
+				client.cache.ClearAllKeysWithPrefix(related)
+			}
 		}
 
 		// Check if response is in cache

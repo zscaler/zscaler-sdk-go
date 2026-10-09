@@ -2,6 +2,7 @@
 package unit
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -414,3 +415,64 @@ func TestSegmentGroup_MicroTenant(t *testing.T) {
 	})
 }
 
+// =============================================================================
+// SegmentGroup v2 update with application changes (addedApps / deletedApps)
+// =============================================================================
+
+func TestSegmentGroup_UpdateV2Changes_SDK(t *testing.T) {
+	path := "/zpa/mgmtconfig/v2/admin/customers/" + testCustomerID + "/segmentGroup/sg-123"
+
+	t.Run("sends only the application changes, never the full list", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+		server.On("PUT", path, common.NoContentResponse())
+
+		service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+		require.NoError(t, err)
+
+		_, err = segmentgroup.UpdateV2Changes(context.Background(), service, "sg-123", &segmentgroup.SegmentGroupV2Update{
+			Name:        "Non SSO apps",
+			Enabled:     true,
+			AddedApps:   []int64{216196257331372000},
+			DeletedApps: []int64{216196257331371999, 216196257331371998},
+		})
+		require.NoError(t, err)
+
+		last := server.LastRequest()
+		require.NotNil(t, last)
+		assert.Equal(t, "PUT", last.Method)
+		assert.Equal(t, path, last.Path)
+
+		var body map[string]interface{}
+		require.NoError(t, json.Unmarshal(last.Body, &body))
+		assert.NotContains(t, body, "applications", "v2 updates must not send the full applications list")
+		assert.Equal(t, "Non SSO apps", body["name"])
+		assert.Equal(t, true, body["enabled"])
+		// IDs are sent as JSON numbers (int64 in the API specification).
+		assert.Contains(t, string(last.Body), `"addedApps":[216196257331372000]`)
+		assert.Contains(t, string(last.Body), `"deletedApps":[216196257331371999,216196257331371998]`)
+	})
+
+	t.Run("metadata-only update carries no application fields", func(t *testing.T) {
+		server := common.NewTestServer()
+		defer server.Close()
+		server.On("PUT", path, common.NoContentResponse())
+
+		service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+		require.NoError(t, err)
+
+		_, err = segmentgroup.UpdateV2Changes(context.Background(), service, "sg-123", &segmentgroup.SegmentGroupV2Update{
+			Name:        "Non SSO apps",
+			Description: "updated description",
+			Enabled:     true,
+		})
+		require.NoError(t, err)
+
+		var body map[string]interface{}
+		require.NoError(t, json.Unmarshal(server.LastRequest().Body, &body))
+		assert.NotContains(t, body, "applications")
+		assert.NotContains(t, body, "addedApps")
+		assert.NotContains(t, body, "deletedApps")
+		assert.Equal(t, "updated description", body["description"])
+	})
+}

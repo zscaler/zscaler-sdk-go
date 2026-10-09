@@ -129,6 +129,34 @@ func UpdateV2(ctx context.Context, service *zscaler.Service, segmentGroupId stri
 	return resp, err
 }
 
+// SegmentGroupV2Update is the request body of the v2 update endpoint
+// (PUT /mgmtconfig/v2/.../segmentGroup/{id}, ApplicationGroupDto in the API
+// specification). Unlike the v1 payload it has no applications list: changes to
+// the group's applications are sent as the IDs to add (AddedApps) and to remove
+// (DeletedApps). Applications not listed keep their current membership, so the
+// request size does not grow with the number of applications in the group.
+type SegmentGroupV2Update struct {
+	Name          string  `json:"name"`
+	Description   string  `json:"description,omitempty"`
+	Enabled       bool    `json:"enabled"`
+	MicroTenantID string  `json:"microtenantId,omitempty"`
+	AddedApps     []int64 `json:"addedApps,omitempty"`
+	DeletedApps   []int64 `json:"deletedApps,omitempty"`
+}
+
+// UpdateV2Changes updates a segment group through the v2 endpoint, sending only
+// the applications added to and removed from the group instead of the full
+// applications list. Use it for groups with many applications, where sending the
+// full list can exceed the API's request size limit (payload.size.exceeded).
+func UpdateV2Changes(ctx context.Context, service *zscaler.Service, segmentGroupId string, segmentGroupRequest *SegmentGroupV2Update) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfigV2+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
 func Delete(ctx context.Context, service *zscaler.Service, segmentGroupId string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)

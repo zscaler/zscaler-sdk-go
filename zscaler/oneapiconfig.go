@@ -589,6 +589,16 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			parentKey := baseKey[:idx]
 			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(parentKey)
 		}
+		// The same ZPA object can be written through one API version and read
+		// through another (segment groups: PUT /mgmtconfig/v2/..., GET
+		// /mgmtconfig/v1/...). Invalidate the other version's entries too, so
+		// a read right after the write is not served stale.
+		for _, related := range cache.RelatedAPIVersionKeys(baseKey) {
+			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(related)
+			if idx := strings.LastIndex(related, "/"); idx > 0 {
+				c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(related[:idx])
+			}
+		}
 	}
 
 	var resp *http.Response
