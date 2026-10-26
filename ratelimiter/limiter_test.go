@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 )
 
 // ---------------------------------------------------------------------------
@@ -261,3 +262,85 @@ func TestRateLimitTransport_MethodBasedThrottling(t *testing.T) {
 type nopLogger struct{}
 
 func (n *nopLogger) Printf(format string, args ...interface{}) {}
+
+// ---------------------------------------------------------------------------
+// NewRateLimiterWithEndpointHourly: hourly limits per endpoint
+// ---------------------------------------------------------------------------
+
+func TestEndpointHourly_SameEndpointSharesBudgetAcrossIDs(t *testing.T) {
+	limiter := NewRateLimiterWithEndpointHourly(100, 100, 1, 1, 100, 2, 100)
+
+	wait, _ := limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/101")
+	require.False(t, wait)
+	wait, _ = limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/202")
+	require.False(t, wait)
+
+	wait, delay := limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/303")
+	require.True(t, wait, "a 3rd PUT to the same endpoint (any rule ID) should hit its hourly limit")
+	require.Greater(t, delay, time.Duration(0))
+}
+
+func TestEndpointHourly_EndpointsAreIndependent(t *testing.T) {
+	limiter := NewRateLimiterWithEndpointHourly(100, 100, 1, 1, 100, 1, 100)
+
+	wait, _ := limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/1")
+	require.False(t, wait)
+	wait, _ = limiter.WaitFor(http.MethodPut, "/zia/api/v1/urlFilteringRules/1")
+	require.False(t, wait, "another endpoint has its own hourly budget")
+	wait, _ = limiter.WaitFor(http.MethodPost, "/zia/api/v1/firewallFilteringRules")
+	require.False(t, wait, "POST to the collection is a different endpoint from PUT to a rule")
+
+	wait, _ = limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/2")
+	require.True(t, wait)
+}
+
+func TestEndpointHourly_PerSecondLimitStillGlobal(t *testing.T) {
+	limiter := NewRateLimiterWithEndpointHourly(100, 2, 1, 10, 100, 100, 100)
+
+	wait, _ := limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/1")
+	require.False(t, wait)
+	wait, _ = limiter.WaitFor(http.MethodPost, "/zia/api/v1/urlFilteringRules")
+	require.False(t, wait)
+	wait, _ = limiter.WaitFor(http.MethodDelete, "/zia/api/v1/sslInspectionRules/1")
+	require.True(t, wait, "the per-second write limit applies across endpoints")
+}
+
+func TestEndpointHourly_WaitIsUnchangedForOtherLimiters(t *testing.T) {
+	limiter := NewRateLimiterWithHourly(100, 100, 1, 1, 100, 1, 100)
+
+	wait, _ := limiter.WaitFor(http.MethodPut, "/zia/api/v1/firewallFilteringRules/1")
+	require.False(t, wait)
+	wait, _ = limiter.WaitFor(http.MethodPut, "/zia/api/v1/urlFilteringRules/1")
+	require.True(t, wait, "without per-endpoint tracking the hourly limit is per method, as before")
+}
+
+func TestNormalizeEndpoint(t *testing.T) {
+	require.Equal(t, "/zia/api/v1/firewallFilteringRules/{id}", normalizeEndpoint("/zia/api/v1/firewallFilteringRules/2236148"))
+	require.Equal(t, "/zia/api/v1/firewallFilteringRules", normalizeEndpoint("/zia/api/v1/firewallFilteringRules"))
+	require.Equal(t, "/zia/api/v1/webApplicationRules/STREAMING_MEDIA/{id}", normalizeEndpoint("/zia/api/v1/webApplicationRules/STREAMING_MEDIA/77"))
+}
+
+type countingTransport struct{ n int }
+
+func (c *countingTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	c.n++
+	return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody}, nil
+}
+
+// A request sent after waiting is recorded too, so the next one sees it.
+func TestRateLimitTransport_RecordsRequestsAfterWaiting(t *testing.T) {
+	limiter := NewRateLimiterWithEndpointHourly(100, 1, 1, 1, 100, 100, 100)
+	base := &countingTransport{}
+	transport := &RateLimitTransport{Base: base, Limiter: limiter, Logger: logger.NewNopLogger()}
+
+	for i := 0; i < 3; i++ {
+		req, _ := http.NewRequest(http.MethodPut, "https://api.zsapi.net/zia/api/v1/firewallFilteringRules/1", nil)
+		start := time.Now()
+		_, err := transport.RoundTrip(req)
+		require.NoError(t, err)
+		if i > 0 {
+			require.GreaterOrEqual(t, time.Since(start), 900*time.Millisecond, "request %d should wait for the 1/sec write limit", i+1)
+		}
+	}
+	require.Equal(t, 3, base.n)
+}
