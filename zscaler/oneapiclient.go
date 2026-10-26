@@ -193,15 +193,16 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 }
 
 func setHttpClients(cfg *Configuration) {
-	// ZIA-specific rate limits with hourly tracking:
-	// ZIA rate limits: server enforces per-endpoint limits via 429 + Retry-After.
-	// Client-side limiter provides a first-pass throttle; server handles endpoint-specific enforcement.
+	// ZIA-specific rate limits. The ZIA API enforces them per endpoint (see the
+	// API Rate Limit Summary): GET 2/sec and 1000/hr, POST/PUT 1/sec and 400/hr,
+	// DELETE up to 1/sec and 400/hr. The hourly limits are therefore tracked per
+	// endpoint (method + path, IDs normalized), with safety buffers.
 	// Per-second: GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
-	// Hourly: GET: 950/hr, POST/PUT: 950/hr, DELETE: 380/hr (with safety buffers)
-	ziaRateLimiter := rl.NewRateLimiterWithHourly(
+	// Hourly, per endpoint: GET: 950/hr, POST/PUT: 380/hr, DELETE: 380/hr
+	ziaRateLimiter := rl.NewRateLimiterWithEndpointHourly(
 		20, 10, // GET: 20 per 10 seconds, POST/PUT/DELETE: 10 per 10 seconds
 		10, 10, // GET frequency: 10 seconds, POST/PUT/DELETE frequency: 10 seconds
-		950, 950, 380, // Hourly: GET: 950, POST/PUT: 950, DELETE: 380 (with safety buffers)
+		950, 380, 380, // Hourly per endpoint: GET: 950, POST/PUT: 380, DELETE: 380 (with safety buffers)
 	)
 
 	// ZTW uses same limits as ZIA

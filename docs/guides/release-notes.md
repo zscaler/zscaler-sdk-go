@@ -17,6 +17,15 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
+# 3.8.56 (Unreleased)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #473](https://github.com/zscaler/zscaler-sdk-go/pull/473) - ZIA: the client-side hourly rate limits now match the ZIA API, which enforces them per endpoint: GET 1000/hr, POST/PUT 400/hr. They were applied to all requests of a method together (950/hr for POST/PUT), which let more writes to a single endpoint through than the API allows. Requests are now counted per endpoint (for example all `PUT /firewallFilteringRules/{ruleId}` calls share one budget), and a request sent after waiting for the rate limit is now counted as well.
+
 # 3.8.55 (October 8, 2026)
 
 ## Notes
