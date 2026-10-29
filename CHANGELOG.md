@@ -1,6 +1,15 @@
 # Changelog
 
-# 3.8.56 (Unreleased)
+# 3.8.57 (October 29, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #474](https://github.com/zscaler/zscaler-sdk-go/pull/474) - ZIA `networkservices`: `GetAllNetworkServices` and `GetByName` now read `/networkServices` in a single request without `page` or `pageSize`. The endpoint is not paginated and accepts only `search`, `protocol` and `locale`. Some clouds reject the page size with `INVALID_INPUT_ARGUMENT` `Invalid Page Size 1,000`, so every network service lookup failed there ([terraform-provider-zia issue #617](https://github.com/zscaler/terraform-provider-zia/issues/617)). The `protocol` and `locale` filters and the optional JMESPath filter from the context still apply.
+
+# 3.8.56 (October 26, 2026)
 
 ## Notes
 - Golang: **v1.26**

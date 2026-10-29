@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -47,25 +46,7 @@ func Get(ctx context.Context, service *zscaler.Service, serviceID int) (*Network
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, networkServiceName string, protocol, locale *string) (*NetworkServices, error) {
-	var networkServices []NetworkServices
-
-	// Build the endpoint with optional query parameters
-	endpoint := networkServicesEndpoint
-	queryParams := url.Values{}
-
-	if protocol != nil && *protocol != "" {
-		queryParams.Set("protocol", *protocol)
-	}
-	if locale != nil && *locale != "" {
-		queryParams.Set("locale", *locale)
-	}
-
-	// Append query parameters to endpoint if any exist
-	if len(queryParams) > 0 {
-		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
-	}
-
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &networkServices)
+	networkServices, err := GetAllNetworkServices(ctx, service, protocol, locale)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +106,10 @@ func Delete(ctx context.Context, service *zscaler.Service, serviceID int) (*http
 	return nil, nil
 }
 
+// GetAllNetworkServices retrieves all network services, optionally filtered by
+// protocol and localized by locale. The API does not support pagination: it
+// accepts only search, protocol and locale, returns every service in a single
+// response, and rejects pageSize on some clouds ("Invalid Page Size").
 func GetAllNetworkServices(ctx context.Context, service *zscaler.Service, protocol, locale *string) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
 
@@ -144,6 +129,11 @@ func GetAllNetworkServices(ctx context.Context, service *zscaler.Service, protoc
 		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
 	}
 
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &networkServices)
-	return networkServices, err
+	// Single read: the endpoint is not paginated, so no page or pageSize is sent.
+	if err := service.Client.Read(ctx, endpoint, &networkServices); err != nil {
+		return nil, err
+	}
+
+	// Keep the optional client-side JMESPath filter the paged read used to apply.
+	return zscaler.ApplyJMESPathFromContext(ctx, networkServices)
 }
