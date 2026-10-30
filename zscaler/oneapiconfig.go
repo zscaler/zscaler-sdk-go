@@ -77,6 +77,9 @@ type Client struct {
 	oauth2Credentials *Configuration
 	stopTicker        chan bool
 	inFlightRequests  sync.Map // Map[string]*inFlightRequest - tracks in-flight GET requests for deduplication
+	// cacheWrites keeps a GET that overlaps a write from caching the data the
+	// write replaces (see cache.WriteTracker).
+	cacheWrites cache.WriteTracker
 }
 
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
@@ -523,6 +526,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 	// For GET requests, check cache first and handle request deduplication
 	var ifr *inFlightRequest
+	var cacheRead *cache.TrackedRead
 	if method == http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
 		// Check cache first
 		cachedResp := c.oauth2Credentials.CacheManager.Get(key)
@@ -572,32 +576,22 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				})
 			}
 		}()
+
+		// A write that overlaps this read can make its response stale: it is
+		// then not cached (see the cache logic after the request).
+		cacheRead = c.cacheWrites.BeginRead(key)
+		defer cacheRead.Done()
 	} else if method != http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
 		// For non-GET requests, invalidate cache
+		prefixes := oneAPIWriteInvalidationPrefixes(key)
+		// Register the write before invalidating: a GET of an invalidated key
+		// that is in flight now, or that starts before the write finishes, may
+		// return the data from before the write and must not be cached. Entries
+		// cached by GETs that finished earlier are cleared below.
+		defer c.cacheWrites.BeginWrite(prefixes...)()
 		c.oauth2Credentials.CacheManager.Delete(key)
-		baseKey := strings.Split(key, "?")[0]
-		c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(baseKey)
-		// Also invalidate the parent collection endpoint so that list
-		// responses (e.g. /sslInspectionRules) are cleared when a child
-		// resource (e.g. /sslInspectionRules/123) is mutated. Without
-		// this, a GET on the collection is served stale from cache for
-		// up to the TTL after a child PUT/POST/DELETE, which breaks
-		// any client logic that mutates and immediately re-reads
-		// (e.g. terraform-provider-zia rule reordering — SUP-3988).
-		// Mirrors the legacy v2 ZIA client (zia/v2_client.go).
-		if idx := strings.LastIndex(baseKey, "/"); idx > 0 {
-			parentKey := baseKey[:idx]
-			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(parentKey)
-		}
-		// The same ZPA object can be written through one API version and read
-		// through another (segment groups: PUT /mgmtconfig/v2/..., GET
-		// /mgmtconfig/v1/...). Invalidate the other version's entries too, so
-		// a read right after the write is not served stale.
-		for _, related := range cache.RelatedAPIVersionKeys(baseKey) {
-			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(related)
-			if idx := strings.LastIndex(related, "/"); idx > 0 {
-				c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(related[:idx])
-			}
+		for _, prefix := range prefixes {
+			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(prefix)
 		}
 	}
 
@@ -867,11 +861,43 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	// Cache logic for successful GET requests
 	if !isSandboxRequest && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
 		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-		c.oauth2Credentials.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
+		if cacheRead.Done() {
+			c.oauth2Credentials.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+			c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
+		} else {
+			c.oauth2Credentials.Logger.Printf("[INFO] not caching response that overlapped a write, key:%s\n", key)
+		}
 	}
 	_ = tryDrainBody(resp.Body)
 	return bodyBytes, resp, req, nil
+}
+
+// oneAPIWriteInvalidationPrefixes returns the cache key prefixes a write to key
+// invalidates:
+//   - the written path itself, with any query parameters;
+//   - its parent collection, so list responses (e.g. /sslInspectionRules) are
+//     cleared when a child resource (e.g. /sslInspectionRules/123) is
+//     mutated. Without this, a GET on the collection is served stale from
+//     cache for up to the TTL after a child PUT/POST/DELETE, which breaks any
+//     client logic that mutates and immediately re-reads (e.g.
+//     terraform-provider-zia rule reordering, SUP-3988). Mirrors the legacy
+//     v2 ZIA client (zia/v2_client.go);
+//   - the same ZPA object and its parent under the other API version, since
+//     some objects are written through one version and read through another
+//     (segment groups: PUT /mgmtconfig/v2/..., GET /mgmtconfig/v1/...).
+func oneAPIWriteInvalidationPrefixes(key string) []string {
+	baseKey := strings.Split(key, "?")[0]
+	prefixes := []string{baseKey}
+	if idx := strings.LastIndex(baseKey, "/"); idx > 0 {
+		prefixes = append(prefixes, baseKey[:idx])
+	}
+	for _, related := range cache.RelatedAPIVersionKeys(baseKey) {
+		prefixes = append(prefixes, related)
+		if idx := strings.LastIndex(related, "/"); idx > 0 {
+			prefixes = append(prefixes, related[:idx])
+		}
+	}
+	return prefixes
 }
 
 func tryDrainBody(body io.ReadCloser) error {

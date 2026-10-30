@@ -13,9 +13,18 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.57``
+``Last updated: v3.8.58``
 
 ---
+
+# 3.8.58 (Unreleased)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #475](https://github.com/zscaler/zscaler-sdk-go/pull/475) - A cached read could keep data from before a write. Writes invalidate the cached responses they affect before they are sent, but a read of one of those responses that ran while the write was still being processed could receive the data from before the write and store it in the cache, and later reads were served that stale response until it expired. Reads that overlap a write that affects them are no longer cached. Observed with terraform-provider-zia updating several URL categories in parallel: the read after one update was served the URL category list from before it, so the Terraform state kept URLs that had been removed. Applies to the OneAPI client and the legacy ZIA, ZPA and ZTW clients.
 
 # 3.8.57 (Unreleased)
 

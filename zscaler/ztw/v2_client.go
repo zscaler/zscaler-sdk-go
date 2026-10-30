@@ -601,10 +601,15 @@ func (c *Client) Close() {
 
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
 	key := cache.CreateCacheKey(req)
+	var cacheRead *cache.TrackedRead
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
+			baseKey := strings.Split(key, "?")[0]
+			// Register the write before invalidating, so a GET of an
+			// invalidated key that overlaps the write is not cached.
+			defer c.cacheWrites.BeginWrite(baseKey)()
 			c.cache.Delete(key)
-			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+			c.cache.ClearAllKeysWithPrefix(baseKey)
 		}
 		resp := c.cache.Get(key)
 		inCache := resp != nil
@@ -616,6 +621,10 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		if inCache {
 			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
 			return resp, nil
+		}
+		if req.Method == http.MethodGet {
+			cacheRead = c.cacheWrites.BeginRead(key)
+			defer cacheRead.Done()
 		}
 	}
 
@@ -653,8 +662,12 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	}
 
 	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
-		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-		c.cache.Set(key, cache.CopyResponse(resp))
+		if cacheRead.Done() {
+			c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+			c.cache.Set(key, cache.CopyResponse(resp))
+		} else {
+			c.Logger.Printf("[INFO] not caching response that overlapped a write, key:%s\n", key)
+		}
 	}
 
 	return resp, nil
