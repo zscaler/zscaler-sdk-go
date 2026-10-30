@@ -34,6 +34,9 @@ type Client struct {
 	sync.Mutex
 	cache  cache.Cache
 	Config *Configuration
+	// cacheWrites keeps a GET that overlaps a write from caching the data
+	// the write replaces (see cache.WriteTracker).
+	cacheWrites cache.WriteTracker
 }
 
 func NewClient(config *Configuration) (*Client, error) {
@@ -366,21 +369,26 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 		return nil, err
 	}
 	key := cache.CreateCacheKey(req)
+	var cacheRead *cache.TrackedRead
 
 	// Check if caching is enabled in the configuration
 	if client.Config.ZPA.Client.Cache.Enabled {
 		if req.Method != http.MethodGet {
+			// Clear all cache entries with the same URL prefix to handle query
+			// param differences, and the same object under its other API
+			// version (e.g. segment groups are written through
+			// /mgmtconfig/v2/ but read through /mgmtconfig/v1/).
+			baseKey := strings.Split(key, "?")[0]
+			prefixes := append([]string{baseKey}, cache.RelatedAPIVersionKeys(baseKey)...)
+
+			// Register the write before invalidating, so a GET of an
+			// invalidated key that overlaps the write is not cached.
+			defer client.cacheWrites.BeginWrite(prefixes...)()
+
 			// Remove resource from cache for non-GET requests
 			client.cache.Delete(key)
-
-			// Clear all cache entries with the same URL prefix to handle query param differences
-			client.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
-
-			// Also clear the same object under its other API version (e.g.
-			// segment groups are written through /mgmtconfig/v2/ but read
-			// through /mgmtconfig/v1/).
-			for _, related := range cache.RelatedAPIVersionKeys(strings.Split(key, "?")[0]) {
-				client.cache.ClearAllKeysWithPrefix(related)
+			for _, prefix := range prefixes {
+				client.cache.ClearAllKeysWithPrefix(prefix)
 			}
 		}
 
@@ -410,6 +418,10 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 			client.Config.Logger.Printf("[INFO] served from cache, key:%s\n", key)
 			return resp, nil
 		}
+		if req.Method == http.MethodGet {
+			cacheRead = client.cacheWrites.BeginRead(key)
+			defer cacheRead.Done()
+		}
 	}
 
 	// Make the actual request if not in cache
@@ -421,7 +433,9 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 	// Save the response to cache if caching is enabled and the response is cacheable
 	if client.Config.ZPA.Client.Cache.Enabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet && v != nil && reflect.TypeOf(v).Kind() != reflect.Slice {
 		d, err := json.Marshal(v)
-		if err == nil {
+		if err == nil && !cacheRead.Done() {
+			client.Config.Logger.Printf("[INFO] not caching response that overlapped a write, key:%s\n", key)
+		} else if err == nil {
 			resp.Body = io.NopCloser(bytes.NewReader(d))
 			client.Config.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 			client.cache.Set(key, cache.CopyResponse(resp))

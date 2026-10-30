@@ -70,6 +70,9 @@ type Client struct {
 	freshCache       bool
 	cacheEnabled     bool
 	cache            cache.Cache
+	// cacheWrites keeps a GET that overlaps a write from caching the data
+	// the write replaces (see cache.WriteTracker).
+	cacheWrites      cache.WriteTracker
 	cacheTtl         time.Duration
 	cacheCleanwindow time.Duration
 	cacheMaxSizeMB   int
