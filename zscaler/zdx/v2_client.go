@@ -500,7 +500,7 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	// A DELETE that an earlier attempt may have applied is done: the object
 	// is gone, which is what the caller asked for.
 	if errorx.DeleteAlreadyApplied(req.Context(), req.Method, resp) {
-		client.Config.Logger.Printf("[INFO] %s %s returned 404 after an earlier attempt that may have deleted it; treating it as deleted", req.Method, req.URL)
+		client.Config.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", req.Method)
 		return resp, nil
 	}
 

@@ -740,7 +740,7 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		// A DELETE that an earlier attempt may have applied is done: the
 		// object is gone, which is what the caller asked for.
 		if errorx.DeleteAlreadyApplied(ctx, method, resp) {
-			c.Logger.Printf("[INFO] %s %s returned 404 after an earlier attempt that may have deleted it; treating it as deleted", method, fullURL)
+			c.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", method)
 			return nil, nil
 		}
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {

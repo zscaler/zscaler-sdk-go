@@ -845,7 +845,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		// A DELETE that an earlier attempt may have applied is done: the object
 		// is gone, which is what the caller asked for.
 		if errorx.DeleteAlreadyApplied(ctx, method, resp) {
-			c.oauth2Credentials.Logger.Printf("[INFO] %s %s returned 404 after an earlier attempt that may have deleted it; treating it as deleted", method, req.URL)
+			c.oauth2Credentials.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", method)
 			_ = tryDrainBody(resp.Body)
 			return nil, resp, req, nil
 		}
