@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/allegro/bigcache/v3 v3.2.0
-	github.com/go-jose/go-jose/v4 v4.1.6
+	github.com/go-jose/go-jose/v4 v4.1.8
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-querystring v1.2.0
 	github.com/google/uuid v1.6.0
