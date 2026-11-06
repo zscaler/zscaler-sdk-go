@@ -1,6 +1,15 @@
 # Changelog
 
-# 3.8.58 (Unreleased)
+# 3.8.59 (November 6, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #478](https://github.com/zscaler/zscaler-sdk-go/pull/478) - A delete could fail with `404 RESOURCE_NOT_FOUND` although the object had been deleted. When the API applies a `DELETE` but answers it with an error that the clients retry (an edit lock or org barrier conflict, a 5xx from a gateway, or a dropped connection), the retry finds the object gone and gets 404. That 404 is now reported as a successful delete. A 404 on the first attempt, or after attempts the API turned away without processing them (429, 401, 403), is still returned as an error. Observed with terraform-provider-zia destroying several firewall filtering rules with configuration activation enabled: ZIA deleted a rule but answered with an edit lock conflict after about 30 seconds, the retry got 404, and the destroy failed ([terraform-provider-zia issue #619](https://github.com/zscaler/terraform-provider-zia/issues/619)). Applies to the OneAPI client and the legacy ZIA, ZTW, ZPA, ZCC, ZDX and ZWA clients.
+
+# 3.8.58 (October 30, 2026)
 
 ## Notes
 - Golang: **v1.26**

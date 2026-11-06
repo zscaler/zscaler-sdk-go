@@ -13,11 +13,20 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.58``
+``Last updated: v3.8.59``
 
 ---
 
-# 3.8.58 (Unreleased)
+# 3.8.59 (November 6, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #478](https://github.com/zscaler/zscaler-sdk-go/pull/478) - A delete could fail with `404 RESOURCE_NOT_FOUND` although the object had been deleted. When the API applies a `DELETE` but answers it with an error that the clients retry (an edit lock or org barrier conflict, a 5xx from a gateway, or a dropped connection), the retry finds the object gone and gets 404. That 404 is now reported as a successful delete. A 404 on the first attempt, or after attempts the API turned away without processing them (429, 401, 403), is still returned as an error. Observed with terraform-provider-zia destroying several firewall filtering rules with configuration activation enabled: ZIA deleted a rule but answered with an edit lock conflict after about 30 seconds, the retry got 404, and the destroy failed ([terraform-provider-zia issue #619](https://github.com/zscaler/terraform-provider-zia/issues/619)). Applies to the OneAPI client and the legacy ZIA, ZTW, ZPA, ZCC, ZDX and ZWA clients.
+
+# 3.8.58 (October 30, 2026)
 
 ## Notes
 - Golang: **v1.26**
@@ -26,7 +35,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - [PR #475](https://github.com/zscaler/zscaler-sdk-go/pull/475) - A cached read could keep data from before a write. Writes invalidate the cached responses they affect before they are sent, but a read of one of those responses that ran while the write was still being processed could receive the data from before the write and store it in the cache, and later reads were served that stale response until it expired. Reads that overlap a write that affects them are no longer cached. Observed with terraform-provider-zia updating several URL categories in parallel: the read after one update was served the URL category list from before it, so the Terraform state kept URLs that had been removed. Applies to the OneAPI client and the legacy ZIA, ZPA and ZTW clients.
 
-# 3.8.57 (Unreleased)
+# 3.8.57 (October 29, 2026)
 
 ## Notes
 - Golang: **v1.26**
@@ -35,7 +44,7 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 - [PR #474](https://github.com/zscaler/zscaler-sdk-go/pull/474) - ZIA `networkservices`: `GetAllNetworkServices` and `GetByName` now read `/networkServices` in a single request without `page` or `pageSize`. The endpoint is not paginated and accepts only `search`, `protocol` and `locale`. Some clouds reject the page size with `INVALID_INPUT_ARGUMENT` `Invalid Page Size 1,000`, so every network service lookup failed there ([terraform-provider-zia issue #617](https://github.com/zscaler/terraform-provider-zia/issues/617)). The `protocol` and `locale` filters and the optional JMESPath filter from the context still apply.
 
-# 3.8.56 (Unreleased)
+# 3.8.56 (October 26, 2026)
 
 ## Notes
 - Golang: **v1.26**

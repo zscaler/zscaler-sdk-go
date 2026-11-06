@@ -362,6 +362,16 @@ The handler must discriminate on `err`, not on `resp`. `retryablehttp` invokes `
 
 The naive `if resp != nil { return resp, nil }` form is wrong: it swallows context cancellation.
 
+### A retried DELETE that gets 404 is deleted (all clients, v3.8.59+)
+
+The API can apply a `DELETE` and still answer it with a retryable error: SUP-4290 / terraform-provider-zia#619 logged `429` → `409` edit lock after ~33s (rule deleted, while configuration activations were running) → `404 RESOURCE_NOT_FOUND`. The retry then fails a delete that succeeded. `zscaler/errorx/delete_resend.go` handles this in three places per client:
+
+- `errorx.TrackAttempts` wraps the transport in every `getHTTPClient`, so each attempt is recorded whether `retryablehttp` or the client's own loop sends it;
+- `errorx.TrackDeleteAttempts(ctx, method)` (or `TrackDeleteRequestAttempts(req)` where the request is never rebuilt) marks the DELETE's context once, before the first attempt, so rebuilt requests share the record: OneAPI `ExecuteRequest`, ZIA/ZTW `GenericRequest`, ZPA/ZCC/ZDX/ZWA `do`;
+- `errorx.DeleteAlreadyApplied` is checked before the request layer turns a 4xx into an error, and the 404 is returned as success.
+
+A 404 counts only after an attempt that may have been applied: `409`, `412`, any `5xx`, or no response. After only `429` / `401` / `403` (turned away unprocessed), or on the first attempt, the 404 is still an error, so a wrong ID is reported. Never treat a GET 404 as success here. Tests: `zscaler/errorx/delete_resend_test.go` (outcome table) and a `v2_client_delete_retry_test.go` / `oneapiconfig_delete_retry_test.go` per client, which go through the real `getHTTPClient` and request layer.
+
 This is wired in the `getHTTPClient` of every client: `zscaler/oneapiconfig.go`, `zscaler/zia/v2_client.go`, `zscaler/zpa/v2_client.go`, `zscaler/zcc/v2_client.go`, `zscaler/zdx/v2_client.go`, `zscaler/ztw/v2_client.go` and `zscaler/zwa/v2_client.go`. **Any new client must do the same.** Note the ZCC client only builds a retryable client when `cfg.ZCC.Client.RateLimit.BackoffConf` is non-nil and enabled.
 
 Because the handler hands back a non-2xx response where the caller previously received an error, each client's request layer must classify non-2xx responses itself. ZPA / ZCC / ZDX / ZWA call `errorx.CheckErrorInResponse` immediately after `httpClient.Do`, so they are covered. ZIA and ZTW use a `for retry := 1; retry <= 5` loop that skips `401`, so both have an explicit post-loop guard — without it a persistently unauthorized response would be returned to the caller as a success.
