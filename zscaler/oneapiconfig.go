@@ -289,6 +289,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	} else {
 		retryableClient.HTTPClient.Transport = transport
 	}
+	// Record every attempt of a DELETE, so a 404 after an attempt the API may
+	// have applied is reported as deleted (see errorx.DeleteAlreadyApplied).
+	retryableClient.HTTPClient.Transport = errorx.TrackAttempts(retryableClient.HTTPClient.Transport)
 
 	return retryableClient.StandardClient()
 }
@@ -511,6 +514,11 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, nil, nil, fmt.Errorf("failed to read request body: %w", err)
 		}
 	}
+
+	// Every attempt of a DELETE, including requests rebuilt below for a resend,
+	// shares this context, so a 404 after an attempt the API may have applied
+	// can be recognised (see errorx.DeleteAlreadyApplied).
+	ctx = errorx.TrackDeleteAttempts(ctx, method)
 
 	req, err := c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
 	if err != nil {
@@ -832,6 +840,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				}
 			}
 			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy))
+		}
+
+		// A DELETE that an earlier attempt may have applied is done: the object
+		// is gone, which is what the caller asked for.
+		if errorx.DeleteAlreadyApplied(ctx, method, resp) {
+			c.oauth2Credentials.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", method)
+			_ = tryDrainBody(resp.Body)
+			return nil, resp, req, nil
 		}
 
 		// Handle non-retryable client errors (4xx except 401, 409, 429 which are handled above)

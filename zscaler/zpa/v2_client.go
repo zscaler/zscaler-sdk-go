@@ -191,7 +191,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
-	retryableClient.HTTPClient.Transport = transport
+	// Record every attempt of a DELETE, so a 404 after an attempt the API may
+	// have applied is reported as deleted (see errorx.DeleteAlreadyApplied).
+	retryableClient.HTTPClient.Transport = errorx.TrackAttempts(transport)
 	return retryableClient.StandardClient()
 }
 
@@ -609,6 +611,9 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 		httpClient = client.Config.HTTPClient // Fallback to default HTTP client
 	}
 
+	// Record the attempts of a DELETE (see errorx.DeleteAlreadyApplied)
+	req = errorx.TrackDeleteRequestAttempts(req)
+
 	// Execute the HTTP request
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -619,6 +624,14 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	respData, err := io.ReadAll(resp.Body)
 	if err == nil {
 		resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+	}
+
+	// A DELETE that an earlier attempt may have applied is done: the object
+	// is gone, which is what the caller asked for.
+	if errorx.DeleteAlreadyApplied(req.Context(), req.Method, resp) {
+		client.Config.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", req.Method)
+		logger.LogResponse(client.Config.Logger, resp, start, reqID)
+		return resp, nil
 	}
 
 	// Check for errors in the response

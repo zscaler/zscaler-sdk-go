@@ -426,7 +426,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
-	retryableClient.HTTPClient.Transport = transport
+	// Record every attempt of a DELETE, so a 404 after an attempt the API may
+	// have applied is reported as deleted (see errorx.DeleteAlreadyApplied).
+	retryableClient.HTTPClient.Transport = errorx.TrackAttempts(transport)
 	return retryableClient.StandardClient()
 }
 
@@ -692,6 +694,10 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
+	// Every attempt of a DELETE shares this context, so a 404 after an attempt
+	// the API may have applied can be recognised (see
+	// errorx.DeleteAlreadyApplied).
+	ctx = errorx.TrackDeleteAttempts(ctx, method)
 	req, err = http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return nil, err
@@ -731,6 +737,12 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		}
 
 		resp.Body.Close()
+		// A DELETE that an earlier attempt may have applied is done: the
+		// object is gone, which is what the caller asked for.
+		if errorx.DeleteAlreadyApplied(ctx, method, resp) {
+			c.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", method)
+			return nil, nil
+		}
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
 			return nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		}
