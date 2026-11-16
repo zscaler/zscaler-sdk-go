@@ -183,3 +183,51 @@ func TestScimGroup_GetByNameAndIamIdp_EmptyCriteria_SDK(t *testing.T) {
 	require.NotNil(t, got)
 	assert.Equal(t, int64(1), got.ID, "empty criteria must keep GetByName's first-match behavior")
 }
+
+// Some ZPA clouds return the SCIM group id as a string; the other numeric
+// fields can be numbers or strings too.
+func TestScimGroup_GetByName_StringID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "72060623063613444"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(`{"totalPages":1,"totalCount":2,"list":[
+		{"id":"799580","name":"A000","idpGroupId":"428lik90rms4ih","idpId":72060623063613444,"creationTime":1794849806,"modifiedTime":1794849806},
+		{"id":799581,"name":"A001","idpId":"72060623063613444","creationTime":"1794849807","modifiedTime":null}
+	]}`))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, "A000", idpID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(799580), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+	assert.Equal(t, int64(1794849806), got.CreationTime)
+	assert.Equal(t, "428lik90rms4ih", got.IdpGroupID)
+
+	got, _, err = scimgroup.GetByName(context.Background(), api.Service, "A001", idpID)
+	require.NoError(t, err)
+	assert.Equal(t, int64(799581), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+	assert.Equal(t, int64(1794849807), got.CreationTime)
+	assert.Equal(t, int64(0), got.ModifiedTime)
+}
+
+func TestScimGroup_Get_StringID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "799580")
+	api.On("GET", path, common.SuccessResponse(`{"id":"799580","name":"A000","idpId":72060623063613444}`))
+
+	got, _, err := scimgroup.Get(context.Background(), api.Service, "799580")
+	require.NoError(t, err)
+	assert.Equal(t, int64(799580), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+}
+
+// A value that is not a number is still an error.
+func TestScimGroup_Get_InvalidID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "1")
+	api.On("GET", path, common.SuccessResponse(`{"id":"abc","name":"A000"}`))
+
+	_, _, err := scimgroup.Get(context.Background(), api.Service, "1")
+	require.Error(t, err)
+}

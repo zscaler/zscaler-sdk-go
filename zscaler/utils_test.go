@@ -350,3 +350,23 @@ func TestMin(t *testing.T) {
 	})
 }
 
+
+// Integers above 2^53 (such as 18-digit IDs) must not be rounded by the
+// unescape round trip.
+func TestUnescapeHTML_KeepsLargeIntegers(t *testing.T) {
+	type item struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+	}
+	entity := struct {
+		IdpID int64  `json:"idpId"`
+		Name  string `json:"name"`
+		List  []item `json:"list"`
+	}{IdpID: 72060623063613444, Name: "a &amp; b", List: []item{{ID: 216196257331285825, Name: "x"}}}
+
+	unescapeHTML(&entity)
+
+	assert.Equal(t, int64(72060623063613444), entity.IdpID)
+	assert.Equal(t, int64(216196257331285825), entity.List[0].ID)
+	assert.Equal(t, "a & b", entity.Name)
+}

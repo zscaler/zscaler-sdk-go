@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.59``
+``Last updated: v3.8.60``
 
 ---
+
+# 3.8.60 (November 16, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #479](https://github.com/zscaler/zscaler-sdk-go/pull/479) - ZPA `scimgroup`: `id`, `idpId`, `creationTime` and `modifiedTime` are read whether the API returns them as a number or as a number in a string. Some ZPA clouds now return the SCIM group `id` as a string, which made every SCIM group lookup fail with `json: cannot unmarshal string into Go struct field ScimGroup.list.id of type int64` ([terraform-provider-zpa issue #705](https://github.com/zscaler/terraform-provider-zpa/issues/705)).
+- [PR #479](https://github.com/zscaler/zscaler-sdk-go/pull/479) - Integers above 2^53 in API responses, such as 18-digit IDs stored as numbers, are no longer rounded. The step that unescapes HTML in `name` and `description` read the response as floating-point numbers, so a value such as the ZPA SCIM group `idpId` `72060623063613444` came back as `72060623063613440`. Applies to the OneAPI client and the legacy ZPA, ZIA SCIM, ZCC, ZDX and ZWA clients.
 
 # 3.8.59 (November 6, 2026)
 
