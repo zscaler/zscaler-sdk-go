@@ -1,9 +1,12 @@
 package scimgroup
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -27,6 +30,60 @@ type ScimGroup struct {
 	InternalID   string `json:"internalId,omitempty"`
 	IamIdpID     string `json:"iamIdpId,omitempty"`
 	IamIdpName   string `json:"iamIdpName,omitempty"`
+}
+
+// UnmarshalJSON accepts id, idpId, creationTime and modifiedTime as a JSON
+// number or as a number in a string: some ZPA clouds return the SCIM group id
+// as a string (for example "id":"799580").
+func (s *ScimGroup) UnmarshalJSON(data []byte) error {
+	type plain ScimGroup
+	aux := struct {
+		*plain
+		CreationTime json.RawMessage `json:"creationTime,omitempty"`
+		ID           json.RawMessage `json:"id,omitempty"`
+		IdpID        json.RawMessage `json:"idpId,omitempty"`
+		ModifiedTime json.RawMessage `json:"modifiedTime,omitempty"`
+	}{plain: (*plain)(s)}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	for _, f := range []struct {
+		name string
+		raw  json.RawMessage
+		dst  *int64
+	}{
+		{"creationTime", aux.CreationTime, &s.CreationTime},
+		{"id", aux.ID, &s.ID},
+		{"idpId", aux.IdpID, &s.IdpID},
+		{"modifiedTime", aux.ModifiedTime, &s.ModifiedTime},
+	} {
+		v, err := parseFlexibleInt64(f.raw)
+		if err != nil {
+			return fmt.Errorf("scim group %s: %w", f.name, err)
+		}
+		*f.dst = v
+	}
+	return nil
+}
+
+// parseFlexibleInt64 parses a JSON number, a number in a JSON string, or
+// null/"" (0).
+func parseFlexibleInt64(raw json.RawMessage) (int64, error) {
+	raw = bytes.TrimSpace(raw)
+	if len(raw) == 0 || bytes.Equal(raw, []byte("null")) {
+		return 0, nil
+	}
+	if raw[0] == '"' {
+		var str string
+		if err := json.Unmarshal(raw, &str); err != nil {
+			return 0, err
+		}
+		if str = strings.TrimSpace(str); str == "" {
+			return 0, nil
+		}
+		return strconv.ParseInt(str, 10, 64)
+	}
+	return strconv.ParseInt(string(raw), 10, 64)
 }
 
 // IamIdpCriteria narrows a SCIM group name lookup to the groups that belong to a

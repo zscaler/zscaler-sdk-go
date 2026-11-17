@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,9 +18,11 @@ func (c *captureLogger) Printf(format string, v ...interface{}) {
 	fmt.Fprintf(&c.buf, format, v...)
 }
 
-const (
-	testToken   = "eyJhbGciOiJSUzI1NiJ9.secret-access-token"
-	testSession = "SESSION-ID-0123456789"
+// Secrets are generated when the tests run, so none is stored in the source.
+var (
+	testToken    = rand.Text()
+	testSession  = rand.Text()
+	testPassword = rand.Text()
 )
 
 func newTestRequest(t *testing.T, body string) *http.Request {
@@ -78,13 +81,13 @@ func TestLogRequest_MasksSensitiveHeaders(t *testing.T) {
 
 func TestLogRequestSensitive_MasksSensitiveHeaders(t *testing.T) {
 	l := &captureLogger{}
-	req := newTestRequest(t, `{"password":"p@ss"}`)
+	req := newTestRequest(t, fmt.Sprintf(`{"password":%q}`, testPassword))
 
-	LogRequestSensitive(l, req, "req-2", []string{"p@ss"})
+	LogRequestSensitive(l, req, "req-2", []string{testPassword})
 	out := l.buf.String()
 
 	assertNoSecrets(t, out)
-	if strings.Contains(out, "p@ss") {
+	if strings.Contains(out, testPassword) {
 		t.Errorf("explicit sensitive content was not masked:\n%s", out)
 	}
 }
@@ -119,7 +122,7 @@ func TestLogResponse_MasksSetCookie(t *testing.T) {
 }
 
 func TestMaskSensitiveHeaders_LeavesBodyUntouched(t *testing.T) {
-	dump := "POST /x HTTP/1.1\r\nAuthorization: Bearer abc\r\n\r\nAuthorization: Bearer not-a-header"
+	dump := "POST /x HTTP/1.1\r\nAuthorization: Bearer " + testToken + "\r\n\r\nAuthorization: Bearer not-a-header"
 	got := string(maskSensitiveHeaders([]byte(dump)))
 	want := "POST /x HTTP/1.1\r\nAuthorization: Bearer ********\r\n\r\nAuthorization: Bearer not-a-header"
 	if got != want {
