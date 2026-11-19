@@ -8,12 +8,18 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
 )
 
 const (
 	networkServiceGroupsEndpoint = "/zia/api/v1/networkServiceGroups"
+
+	// networkServiceGroupsPageSize is the number of groups requested per page.
+	// The API rejects a pageSize above the tenant's service group limit (127 by
+	// default, up to 1,000 with the extended limit) with INVALID_INPUT_ARGUMENT
+	// "Invalid Page Size", so the common default of 1,000 fails on most
+	// tenants. 127 is accepted on every tenant.
+	networkServiceGroupsPageSize = 127
 )
 
 type NetworkServiceGroups struct {
@@ -48,8 +54,7 @@ func GetNetworkServiceGroups(ctx context.Context, service *zscaler.Service, serv
 }
 
 func GetNetworkServiceGroupsByName(ctx context.Context, service *zscaler.Service, serviceGroupsName string) (*NetworkServiceGroups, error) {
-	var networkServiceGroups []NetworkServiceGroups
-	err := common.ReadAllPages(ctx, service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
+	networkServiceGroups, err := GetAllNetworkServiceGroups(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +101,41 @@ func DeleteNetworkServiceGroups(ctx context.Context, service *zscaler.Service, s
 	return nil, nil
 }
 
+// GetAllNetworkServiceGroups retrieves all network service groups. The
+// optional JMESPath filter from the context is applied to the combined result.
+//
+// It pages with its own loop rather than common.ReadAllPages, whose default
+// page size of 1,000 this endpoint rejects.
 func GetAllNetworkServiceGroups(ctx context.Context, service *zscaler.Service) ([]NetworkServiceGroups, error) {
 	var networkServiceGroups []NetworkServiceGroups
-	err := common.ReadAllPages(ctx, service.Client, networkServiceGroupsEndpoint, &networkServiceGroups)
-	return networkServiceGroups, err
+	seen := make(map[int]struct{})
+
+	for page := 1; ; page++ {
+		endpoint := fmt.Sprintf("%s?page=%d&pageSize=%d", networkServiceGroupsEndpoint, page, networkServiceGroupsPageSize)
+
+		var pageItems []NetworkServiceGroups
+		if err := service.Client.Read(ctx, endpoint, &pageItems); err != nil {
+			return nil, err
+		}
+
+		added := 0
+		for _, group := range pageItems {
+			if _, ok := seen[group.ID]; ok {
+				continue
+			}
+			seen[group.ID] = struct{}{}
+			networkServiceGroups = append(networkServiceGroups, group)
+			added++
+		}
+
+		// A short page is the last one. Also stop if the API returned more
+		// groups than requested (it ignored pageSize and sent the whole list) or
+		// only groups already read (it ignored page): requesting the next page
+		// would return the same groups forever.
+		if len(pageItems) != networkServiceGroupsPageSize || added == 0 {
+			break
+		}
+	}
+
+	return zscaler.ApplyJMESPathFromContext(ctx, networkServiceGroups)
 }

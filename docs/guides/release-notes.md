@@ -13,9 +13,19 @@ Track all Zscaler SDK GO releases. New resources, features, and bug fixes will b
 
 ---
 
-``Last updated: v3.8.60``
+``Last updated: v3.8.61``
 
 ---
+
+# 3.8.61 (November 19, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #480](https://github.com/zscaler/zscaler-sdk-go/pull/480) - ZIA `networkservicegroups` and `networkservices`: network service group and network service lists are read page by page, 127 per page. The API now validates the page size: it rejects one above the tenant's limit (127 service groups by default, up to 1,000 with the extended limit) with `INVALID_INPUT_ARGUMENT` `Invalid Page Size 1,000`, so every network service group lookup by name failed. Network services were read in a single request without a page size since v3.8.57, which returns only the first page now that the API pages by default; they are paged again, with the `protocol` and `locale` filters sent on every page. The reads stop after a page that holds more items than requested, or only items already read, so they cannot repeat the same request on an API that does not page. The optional JMESPath filter from the context applies to the combined result. Other ZIA list reads are unchanged.
+- [PR #481](https://github.com/zscaler/zscaler-sdk-go/pull/481) - ZIA: rate limits are now applied per method and resource, as listed in the ZIA API Rate Limit Summary. Each method on each resource is paced on its own: for most resources 2 GET and 1 POST, PUT or DELETE per second, and 1,000 GET and 400 write requests per hour. Resources with stricter limits use them, for example 1 GET per second on several rule types and time intervals, and 10 activations per minute and 40 per hour. Requests were paced together, up to 10 writes in the same second, so the API rejected most parallel writes to one resource with `429`, and the hourly budget counted every retried attempt. Observed with terraform-provider-zia creating 127 network service groups: 77 groups used the hourly budget for that resource, and the remaining creates waited 53 minutes. A request the API rejects with `429` no longer counts against the hourly budget.
 
 # 3.8.60 (November 16, 2026)
 

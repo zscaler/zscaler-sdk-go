@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
@@ -13,6 +14,13 @@ import (
 
 const (
 	networkServicesEndpoint = "/zia/api/v1/networkServices"
+
+	// networkServicesPageSize is the number of services requested per page.
+	// The API rejects a pageSize above its limit with INVALID_INPUT_ARGUMENT
+	// "Invalid Page Size" (1,000 is rejected on some clouds), and pages with a
+	// default size when pageSize is omitted, so a single unpaged read can miss
+	// services. 127 is accepted on every tenant.
+	networkServicesPageSize = 127
 )
 
 type NetworkServices struct {
@@ -107,33 +115,50 @@ func Delete(ctx context.Context, service *zscaler.Service, serviceID int) (*http
 }
 
 // GetAllNetworkServices retrieves all network services, optionally filtered by
-// protocol and localized by locale. The API does not support pagination: it
-// accepts only search, protocol and locale, returns every service in a single
-// response, and rejects pageSize on some clouds ("Invalid Page Size").
+// protocol and localized by locale. The filters are sent on every page. The
+// optional JMESPath filter from the context is applied to the combined result.
+//
+// It pages with its own loop rather than common.ReadAllPages, whose default
+// page size of 1,000 this endpoint rejects on some clouds.
 func GetAllNetworkServices(ctx context.Context, service *zscaler.Service, protocol, locale *string) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
+	seen := make(map[int]struct{})
 
-	// Build the endpoint with optional query parameters
-	endpoint := networkServicesEndpoint
-	queryParams := url.Values{}
+	for page := 1; ; page++ {
+		queryParams := url.Values{}
+		if protocol != nil && *protocol != "" {
+			queryParams.Set("protocol", *protocol)
+		}
+		if locale != nil && *locale != "" {
+			queryParams.Set("locale", *locale)
+		}
+		queryParams.Set("page", strconv.Itoa(page))
+		queryParams.Set("pageSize", strconv.Itoa(networkServicesPageSize))
+		endpoint := fmt.Sprintf("%s?%s", networkServicesEndpoint, queryParams.Encode())
 
-	if protocol != nil && *protocol != "" {
-		queryParams.Set("protocol", *protocol)
+		var pageItems []NetworkServices
+		if err := service.Client.Read(ctx, endpoint, &pageItems); err != nil {
+			return nil, err
+		}
+
+		added := 0
+		for _, svc := range pageItems {
+			if _, ok := seen[svc.ID]; ok {
+				continue
+			}
+			seen[svc.ID] = struct{}{}
+			networkServices = append(networkServices, svc)
+			added++
+		}
+
+		// A short page is the last one. Also stop if the API returned more
+		// services than requested (it ignored pageSize and sent the whole list)
+		// or only services already read (it ignored page): requesting the next
+		// page would return the same services forever.
+		if len(pageItems) != networkServicesPageSize || added == 0 {
+			break
+		}
 	}
-	if locale != nil && *locale != "" {
-		queryParams.Set("locale", *locale)
-	}
 
-	// Append query parameters to endpoint if any exist
-	if len(queryParams) > 0 {
-		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
-	}
-
-	// Single read: the endpoint is not paginated, so no page or pageSize is sent.
-	if err := service.Client.Read(ctx, endpoint, &networkServices); err != nil {
-		return nil, err
-	}
-
-	// Keep the optional client-side JMESPath filter the paged read used to apply.
 	return zscaler.ApplyJMESPathFromContext(ctx, networkServices)
 }

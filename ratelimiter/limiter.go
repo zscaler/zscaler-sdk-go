@@ -367,6 +367,7 @@ func sleepCtx(req *http.Request, d time.Duration) error {
 type RateLimitTransport struct {
 	Base            http.RoundTripper
 	Limiter         *RateLimiter                 // Standard rate limiter
+	EndpointLimiter *EndpointRateLimiter         // Limits per method and resource URI (ZIA); takes precedence over Limiter
 	GlobalLimiter   *GlobalRateLimiter           // For ZDX global limiting
 	WaitFunc        func() (bool, time.Duration) // Wait function reference (optional, overrides Limiter)
 	Logger          logger.Logger
@@ -376,7 +377,20 @@ type RateLimitTransport struct {
 // RoundTrip implements the http.RoundTripper interface for rate limiting.
 func (rlt *RateLimitTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Determine which rate limiter to use
-	if rlt.WaitFunc != nil {
+	var ticket Ticket
+	if rlt.EndpointLimiter != nil {
+		for {
+			shouldWait, delay, t := rlt.EndpointLimiter.Acquire(req.Method, req.URL.Path)
+			if !shouldWait {
+				ticket = t
+				break
+			}
+			rlt.Logger.Printf("[INFO] Rate limit exceeded for %s %s. Waiting for %v before proceeding.", req.Method, req.URL.Path, delay)
+			if err := sleepCtx(req, delay+rlt.AdditionalDelay); err != nil {
+				return nil, err
+			}
+		}
+	} else if rlt.WaitFunc != nil {
 		// Use custom wait function if provided
 		if shouldWait, delay := rlt.WaitFunc(); shouldWait {
 			rlt.Logger.Printf("[INFO] Rate limit exceeded for %s request. Waiting for %v before proceeding.", req.Method, delay)
@@ -408,5 +422,11 @@ func (rlt *RateLimitTransport) RoundTrip(req *http.Request) (*http.Response, err
 	if rlt.Base == nil {
 		rlt.Base = http.DefaultTransport
 	}
-	return rlt.Base.RoundTrip(req)
+	resp, err := rlt.Base.RoundTrip(req)
+	// The API does not process a request it rejects with 429, so it does not
+	// count against the hourly budget.
+	if rlt.EndpointLimiter != nil && resp != nil && resp.StatusCode == http.StatusTooManyRequests {
+		rlt.EndpointLimiter.Release(ticket)
+	}
+	return resp, err
 }
