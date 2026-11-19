@@ -193,17 +193,13 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 }
 
 func setHttpClients(cfg *Configuration) {
-	// ZIA-specific rate limits. The ZIA API enforces them per endpoint (see the
-	// API Rate Limit Summary): GET 2/sec and 1000/hr, POST/PUT 1/sec and 400/hr,
-	// DELETE up to 1/sec and 400/hr. The hourly limits are therefore tracked per
-	// endpoint (method + path, IDs normalized), with safety buffers.
-	// Per-second: GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
-	// Hourly, per endpoint: GET: 950/hr, POST/PUT: 380/hr, DELETE: 380/hr
-	ziaRateLimiter := rl.NewRateLimiterWithEndpointHourly(
-		20, 10, // GET: 20 per 10 seconds, POST/PUT/DELETE: 10 per 10 seconds
-		10, 10, // GET frequency: 10 seconds, POST/PUT/DELETE frequency: 10 seconds
-		950, 380, 380, // Hourly per endpoint: GET: 950, POST/PUT: 380, DELETE: 380 (with safety buffers)
-	)
+	// ZIA rate limits apply per method and resource URI (API Rate Limit
+	// Summary): GET 2/sec and 1000/hr, POST/PUT/DELETE 1/sec and 400/hr for
+	// most resources, with stricter limits on some (see
+	// ratelimiter.ZIAEndpointRules). Each method on each resource is paced and
+	// budgeted separately, and a request the API rejects with 429 does not
+	// count against the hourly budget.
+	ziaRateLimiter := rl.NewZIAEndpointRateLimiter()
 
 	// ZTW uses same limits as ZIA
 	ztwRateLimiter := rl.NewRateLimiterWithHourly(
@@ -226,7 +222,7 @@ func setHttpClients(cfg *Configuration) {
 
 	// Pass the config to getHTTPClient so it can access proxy settings
 	cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
-	cfg.ZIAHTTPClient = getHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
+	cfg.ZIAHTTPClient = getEndpointLimitedHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
 	cfg.ZTWHTTPClient = getHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
 	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)

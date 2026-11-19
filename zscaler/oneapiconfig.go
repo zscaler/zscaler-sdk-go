@@ -153,6 +153,16 @@ func (client *Client) GetLogger() logger.Logger {
 
 // getHTTPClient sets up the retryable HTTP client with backoff and retry policies.
 func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configuration) *http.Client {
+	return buildHTTPClient(l, rateLimiter, nil, cfg)
+}
+
+// getEndpointLimitedHTTPClient is getHTTPClient for a service whose rate limits
+// apply per method and resource URI (ZIA).
+func getEndpointLimitedHTTPClient(l logger.Logger, limiter *rl.EndpointRateLimiter, cfg *Configuration) *http.Client {
+	return buildHTTPClient(l, nil, limiter, cfg)
+}
+
+func buildHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, endpointLimiter *rl.EndpointRateLimiter, cfg *Configuration) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 
 	// Set the retry settings, allowing user to override defaults.
@@ -278,10 +288,11 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 
 	// Wrap the transport with rate limiting
-	if rateLimiter != nil {
+	if rateLimiter != nil || endpointLimiter != nil {
 		rateLimitedTransport := &rl.RateLimitTransport{
 			Base:            transport,
 			Limiter:         rateLimiter,
+			EndpointLimiter: endpointLimiter,
 			Logger:          l,
 			AdditionalDelay: 0,
 		}
@@ -716,7 +727,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				// If Retry-After is very long (> 5 minutes), fail fast with clear message
 				if retryAfter > 5*time.Minute {
 					c.oauth2Credentials.Logger.Printf("[ERROR] Rate limit exceeded with very long Retry-After: %v. This typically indicates hourly rate limits have been reached.", retryAfter)
-					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v before retrying. This typically means hourly rate limits (GET: 1000/hr, POST/PUT: 1000/hr, DELETE: 400/hr) have been reached. Please wait before retrying", retryAfter)
+					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v before retrying. This typically means an hourly rate limit has been reached (for most ZIA resources GET: 1000/hr, POST/PUT/DELETE: 400/hr). Please wait before retrying", retryAfter)
 				}
 
 				// Capped exponential growth on consecutive 429s for the same
