@@ -1,5 +1,15 @@
 # Changelog
 
+# 3.8.62 (November 20, 2026)
+
+## Notes
+- Golang: **v1.26**
+
+### Bug Fixes
+
+- [PR #484](https://github.com/zscaler/zscaler-sdk-go/pull/484) - ZTW `networkservicegroups` and `networkservices`: network service group and network service lists are read page by page, 127 per page. The API now validates the page size and rejects 1,000 with `INVALID_INPUT_ARGUMENT` `Invalid Page Size 1,000`, so every network service and network service group lookup by name failed. The reads stop after a page that holds more items than requested, or only items already read, so they cannot repeat the same request on an API that does not page. The optional JMESPath filter from the context applies to the combined result. Other ZTW list reads are unchanged.
+- [PR #484](https://github.com/zscaler/zscaler-sdk-go/pull/484) - ZTW: rate limits are now applied per method and resource, with the same limits as ZIA. Each method on each resource is paced on its own: for most resources 2 GET and 1 POST, PUT or DELETE per second, and 1,000 GET and 400 write requests per hour, with the stricter ZIA limits on resources both APIs share (for example 1 GET per second on DNS gateways). Requests were paced together, up to 10 writes in the same 10 seconds, and the hourly budgets were shared by every resource and counted every retried attempt. A request the API rejects with `429` no longer counts against the hourly budget. ZTW and ZIA requests are paced separately.
+
 # 3.8.61 (November 19, 2026)
 
 ## Notes

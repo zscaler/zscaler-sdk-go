@@ -157,7 +157,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 }
 
 // getEndpointLimitedHTTPClient is getHTTPClient for a service whose rate limits
-// apply per method and resource URI (ZIA).
+// apply per method and resource URI (ZIA and ZTW).
 func getEndpointLimitedHTTPClient(l logger.Logger, limiter *rl.EndpointRateLimiter, cfg *Configuration) *http.Client {
 	return buildHTTPClient(l, nil, limiter, cfg)
 }
