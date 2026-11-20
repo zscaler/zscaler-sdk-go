@@ -201,12 +201,10 @@ func setHttpClients(cfg *Configuration) {
 	// count against the hourly budget.
 	ziaRateLimiter := rl.NewZIAEndpointRateLimiter()
 
-	// ZTW uses same limits as ZIA
-	ztwRateLimiter := rl.NewRateLimiterWithHourly(
-		20, 10,
-		10, 10,
-		950, 950, 380,
-	)
+	// ZTW runs on the same platform as ZIA and uses the same limits, per method
+	// and resource URI (ratelimiter.NewZTWEndpointRateLimiter), with its own
+	// budgets: a ZTW request does not count against the ZIA limits.
+	ztwRateLimiter := rl.NewZTWEndpointRateLimiter()
 
 	// ZPA-specific rate limits:
 	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
@@ -223,7 +221,7 @@ func setHttpClients(cfg *Configuration) {
 	// Pass the config to getHTTPClient so it can access proxy settings
 	cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
 	cfg.ZIAHTTPClient = getEndpointLimitedHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
-	cfg.ZTWHTTPClient = getHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
+	cfg.ZTWHTTPClient = getEndpointLimitedHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
 	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)
 	cfg.ZDXHTTPClient = getHTTPClient(cfg.Logger, zdxRateLimiter, cfg)

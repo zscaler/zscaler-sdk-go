@@ -8,11 +8,16 @@ import (
 	"strings"
 
 	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
-	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/common"
 )
 
 const (
 	networkServicesEndpoint = "/ztw/api/v1/networkServices"
+
+	// networkServicesPageSize is the number of services requested per page.
+	// The API rejects a pageSize above its limit with INVALID_INPUT_ARGUMENT
+	// "Invalid Page Size" (1,000 is rejected on some clouds), so the shared page
+	// size of 1,000 cannot be used. 127 is accepted on every tenant.
+	networkServicesPageSize = 127
 )
 
 type NetworkServices struct {
@@ -67,8 +72,7 @@ func Get(ctx context.Context, service *zscaler.Service, serviceID int) (*Network
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, networkServiceName string) (*NetworkServices, error) {
-	var networkServices []NetworkServices
-	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
+	networkServices, err := GetAllNetworkServices(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +121,34 @@ func Delete(ctx context.Context, service *zscaler.Service, serviceID int) (*http
 
 func GetAllNetworkServices(ctx context.Context, service *zscaler.Service) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
-	err := common.ReadAllPages(ctx, service.Client, networkServicesEndpoint, &networkServices)
-	return networkServices, err
+	seen := make(map[int]struct{})
+
+	for page := 1; ; page++ {
+		endpoint := fmt.Sprintf("%s?page=%d&pageSize=%d", networkServicesEndpoint, page, networkServicesPageSize)
+
+		var pageItems []NetworkServices
+		if err := service.Client.ReadResource(ctx, endpoint, &pageItems); err != nil {
+			return nil, err
+		}
+
+		added := 0
+		for _, svc := range pageItems {
+			if _, ok := seen[svc.ID]; ok {
+				continue
+			}
+			seen[svc.ID] = struct{}{}
+			networkServices = append(networkServices, svc)
+			added++
+		}
+
+		// A short page is the last one. Also stop if the API returned more
+		// services than requested (it ignored pageSize and sent the whole list)
+		// or only services already read (it ignored page): requesting the next
+		// page would return the same services forever.
+		if len(pageItems) != networkServicesPageSize || added == 0 {
+			break
+		}
+	}
+
+	return zscaler.ApplyJMESPathFromContext(ctx, networkServices)
 }
